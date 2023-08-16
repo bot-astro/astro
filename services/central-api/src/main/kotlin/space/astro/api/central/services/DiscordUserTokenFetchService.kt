@@ -19,7 +19,7 @@ import space.astro.shared.core.configs.DiscordConfig
 import space.astro.shared.core.configs.WebClientConfig
 import java.time.Duration
 
-val log = KotlinLogging.logger { }
+private val log = KotlinLogging.logger { }
 
 @Service
 class DiscordUserTokenFetchService(
