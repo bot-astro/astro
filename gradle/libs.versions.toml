@@ -25,6 +25,10 @@ jjwt = "0.11.5"
 # Caching
 caffeine = "3.0.5"
 
+# JDA
+jda = "5.0.0-beta.13"
+jda-ktx = "9370cb1"
+
 [libraries]
 # Spring
 spring-core = { module = "org.springframework:spring-core", version.ref = "spring"}
@@ -59,6 +63,10 @@ jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt"}
 # Caching
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine"}
 
+# JDA
+jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
+jda-ktx = { module = "com.github.minndevelopment:jda-ktx", version.ref = "jda-ktx" }
+
 [bundles]
 base = [
     "kotlin-logging",
@@ -86,6 +94,10 @@ jwt = [
     "jjwt-api",
     "jjwt-impl",
     "jjwt-jackson"
+]
+discord = [
+    "jda",
+    "jda-ktx"
 ]
 
 [plugins]
