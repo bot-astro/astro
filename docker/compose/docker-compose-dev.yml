@@ -1,0 +1,51 @@
+version: "3.8"
+services:
+  astro-mongo:
+    image: mongo:latest
+    container_name: "astro-mongo"
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - astro:/data
+    networks:
+      - astro-network
+    environment:
+      - MONGO_INITDB_DATABASE=AstroDev
+  astro-mongo-express:
+    image: mongo-express:latest
+    container_name: "astro-mongo-express"
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    networks:
+      - mongo-network
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=astro-mongo
+  astro-redis:
+    image: redis:latest
+    container_name: "astro-redis"
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - redis-network
+  astro-redis-insight:
+    image: redislabs/redisinsight
+    container_name: "astro-redis-insight"
+    restart: unless-stopped
+    ports:
+      - "8082:8001"
+    networks:
+      - redis-network
+volumes:
+  redis:
+  mongo:
+
+networks:
+  mongo-network:
+    name: mongo-network
+  redis-network:
+    name: redis-network
