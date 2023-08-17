@@ -12,9 +12,7 @@ spring-boot = "2.6.7"
 kotlin-logging = "2.1.21"
 
 # Databases
-# TODO: Migrate to new official kotlin driver
-lettuce = "6.1.5.RELEASE"
-mongo = "4.6.0"
+mongo = "4.10.2"
 
 # Serializing
 jackson-kotlin = "2.13.0"
@@ -29,6 +27,7 @@ jjwt = "0.11.5"
 
 # Caching
 caffeine = "3.0.5"
+lettuce = "6.1.5.RELEASE"
 
 # JDA
 jda = "5.0.0-beta.13"
@@ -54,7 +53,6 @@ spring-boot-configuration-processor = { module = "org.springframework.boot:sprin
 kotlin-logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin-logging"}
 
 # Databases
-lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce"}
 mongo = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongo"}
 
 # Serializing
@@ -72,6 +70,7 @@ jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt"}
 
 # Caching
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine"}
+lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce"}
 
 # JDA
 jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
