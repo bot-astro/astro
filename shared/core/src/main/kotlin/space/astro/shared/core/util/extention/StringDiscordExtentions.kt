@@ -16,6 +16,11 @@ fun String.asRoleMention() = "<@&$this>"
 fun String.asChannelMention() = "<#$this>"
 
 /**
+ * Returns a markdown link with this String as its name
+ */
+fun String.link(url: String) = "[$this]($url)"
+
+/**
  * Returns a relative timestamp from a long: <t:long:style>
  */
 fun Long.asTimestamp(style: Char = 'f') = "<t:${(this / 1000)}:$style>"
