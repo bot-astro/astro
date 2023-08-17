@@ -1,6 +1,9 @@
 [versions]
 # Core
 guava = "32.1.2-jre"
+nanoid = "2.0.0"
+datetime = "0.4.0"
+
 # Spring
 spring = "5.3.19"
 spring-boot = "2.6.7"
@@ -34,6 +37,8 @@ jda-ktx = "9370cb1"
 [libraries]
 # Core
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+nanoid = { module = "com.aventrix.jnanoid:jnanoid", version.ref = "nanoid" }
+datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
 
 # Spring
 spring-core = { module = "org.springframework:spring-core", version.ref = "spring"}

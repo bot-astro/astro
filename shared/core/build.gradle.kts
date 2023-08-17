@@ -10,6 +10,8 @@ dependencies {
     implementation(libs.bundles.web)
     implementation(libs.bundles.serialization)
 
+    implementation(libs.nanoid)
+    implementation(libs.jda)
     implementation(libs.lettuce)
     implementation(libs.mongo)
 }
