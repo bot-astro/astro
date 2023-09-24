@@ -2,7 +2,6 @@ package space.astro.bot.listeners.voice
 
 import mu.KotlinLogging
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.managers.vc.VCEventData
@@ -11,7 +10,7 @@ import space.astro.bot.managers.vc.VCEventDetector
 private val log = KotlinLogging.logger {  }
 
 @Component
-class GuildAstroVCEventDetectorAndPublisher {
+class GuildAstroVCEventDetector {
 
     @EventListener
     fun receiveGuildVoiceUpdate(event: GuildVoiceUpdateEvent) {
