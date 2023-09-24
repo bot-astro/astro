@@ -11,9 +11,7 @@ import space.astro.bot.managers.vc.VCEventDetector
 private val log = KotlinLogging.logger {  }
 
 @Component
-class GuildAstroVCEventDetectorAndPublisher(
-    private val applicationEventPublisher: ApplicationEventPublisher
-) {
+class GuildAstroVCEventDetectorAndPublisher {
 
     @EventListener
     fun receiveGuildVoiceUpdate(event: GuildVoiceUpdateEvent) {
@@ -30,10 +28,11 @@ class GuildAstroVCEventDetectorAndPublisher(
         )
 
         try {
-           VCEventDetector.detectAstroVoiceEvents(vcEventData)
-               .forEach {
-                   applicationEventPublisher.publishEvent(it)
-               }
+            val events = VCEventDetector.detectAstroVoiceEvents(vcEventData)
+            // TODO:
+            // - manage events one by one
+            // - create a role manager instance and pass it to each event manager
+            // - queue the role manager at the end
         } catch (e: IllegalStateException) {
             log.error { e.message }
         }
