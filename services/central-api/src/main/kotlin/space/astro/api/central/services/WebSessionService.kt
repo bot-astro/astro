@@ -18,7 +18,8 @@ import javax.crypto.SecretKey
 
 @Service
 class WebSessionService(
-    jwtConfig: JwtConfig, val redis: RedisClusterAsyncCommands<String, String>
+    jwtConfig: JwtConfig,
+    val redis: RedisClusterAsyncCommands<String, String>
 ) {
 
     companion object {

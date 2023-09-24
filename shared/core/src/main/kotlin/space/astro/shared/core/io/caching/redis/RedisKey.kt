@@ -16,5 +16,7 @@ enum class RedisKey(val key: String) {
     /**
      * Format with: DISCORD_USER_ID
      */
-    WEB_SESSION_TOKENS("WST:%s:*")
+    WEB_SESSION_TOKENS("WST:%s:*"),
+
+    TEMPORARY_VCS("vcs")
 }
