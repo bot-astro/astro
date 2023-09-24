@@ -1,4 +1,4 @@
-package space.astro.bot.util
+package space.astro.bot.ui
 
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import space.astro.shared.core.util.Links

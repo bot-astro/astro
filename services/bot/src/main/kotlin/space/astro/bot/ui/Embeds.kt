@@ -1,7 +1,6 @@
-package space.astro.bot.util
+package space.astro.bot.ui
 
 import dev.minn.jda.ktx.messages.Embed
-import dev.minn.jda.ktx.messages.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import space.astro.shared.core.util.Colors
 import space.astro.shared.core.util.Links

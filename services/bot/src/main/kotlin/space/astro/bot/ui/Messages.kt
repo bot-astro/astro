@@ -1,4 +1,4 @@
-package space.astro.bot.util
+package space.astro.bot.ui
 
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
