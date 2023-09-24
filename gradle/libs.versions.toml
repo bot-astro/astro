@@ -53,7 +53,7 @@ spring-boot-configuration-processor = { module = "org.springframework.boot:sprin
 kotlin-logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin-logging"}
 
 # Databases
-mongo = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongo"}
+mongo = { module = "org.mongodb:mongodb-driver-kotlin-sync", version.ref = "mongo"}
 
 # Serializing
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-kotlin"}
