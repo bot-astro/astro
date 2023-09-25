@@ -1,13 +1,13 @@
 package space.astro.bot.managers.vc
 
-import space.astro.shared.core.models.database.GeneratorDto
+import space.astro.shared.core.models.database.GeneratorData
 
 sealed class VCEvent(
     val vcEventData: VCEventData
 ) {
     class JoinedGenerator(
         vcEventData: VCEventData,
-        val generatorDto: GeneratorDto
+        val generatorData: GeneratorData
     ): VCEvent(vcEventData)
     class JoinedTemporaryVC(
         vcEventData: VCEventData

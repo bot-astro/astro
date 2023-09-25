@@ -1,9 +1,11 @@
 package space.astro.bot.managers.vc
 
 import net.dv8tion.jda.api.entities.channel.ChannelType
-import space.astro.shared.core.models.database.ConnectionDto
-import space.astro.shared.core.models.database.TemporaryVCDto
+import org.springframework.stereotype.Component
+import space.astro.shared.core.models.database.ConnectionData
+import space.astro.shared.core.models.database.TemporaryVCData
 
+@Component
 class VCEventDetector {
 
     /**
@@ -21,10 +23,10 @@ class VCEventDetector {
         }
 
         // These two variables are needed for optimizing connection events calculation
-        var joinedTemporaryVC: TemporaryVCDto? = null
-        var leftTemporaryVC: TemporaryVCDto? = null
-        var joinedConnection: ConnectionDto? = null
-        var leftConnection: ConnectionDto? = null
+        var joinedTemporaryVC: TemporaryVCData? = null
+        var leftTemporaryVC: TemporaryVCData? = null
+        var joinedConnection: ConnectionData? = null
+        var leftConnection: ConnectionData? = null
 
         ///////////////////////////////
         /// TEMPORARY VC JOIN EVENT ///

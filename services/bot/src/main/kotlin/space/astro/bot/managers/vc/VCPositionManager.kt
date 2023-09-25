@@ -1,19 +1,20 @@
 package space.astro.bot.managers.vc
 
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
-import space.astro.shared.core.models.database.GeneratorDto
+import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.InitialPosition
-import space.astro.shared.core.models.database.TemporaryVCDto
+import space.astro.shared.core.models.database.TemporaryVCData
 
 object VCPositionManager {
     /**
      * Minimum distance between two temporary VCs
      * Set to two because it needs to leave a space for waiting rooms
      */
-    private val rawPositionsMinimumDistance = 2
+    private const val RAW_POSITIONS_MINIMUM_DISTANCE = 2
+    const val RAW_POSITIONS_WAITING_ROOM_DISTANCE = 1
 
     private fun getRawPositionWithoutPositionalData(
-        generator: GeneratorDto, 
+        generator: GeneratorData,
         generatorVC: VoiceChannel
     ): Int? {
         // If the temporary VC gets generated in a different category than the one of the generator
@@ -27,23 +28,23 @@ object VCPositionManager {
         return when (generator.initialPosition) {
             InitialPosition.BOTTOM -> null
             InitialPosition.BEFORE -> {
-                generatorPosition - rawPositionsMinimumDistance
+                generatorPosition - RAW_POSITIONS_MINIMUM_DISTANCE
             }
             InitialPosition.AFTER -> {
-                generatorPosition + rawPositionsMinimumDistance
+                generatorPosition + RAW_POSITIONS_MINIMUM_DISTANCE
             }
         }?.coerceAtLeast(0)
     }
 
     private fun getRawPositionWithIncrementalPosition(
         incrementalPosition: Int,
-        generator: GeneratorDto,
+        generator: GeneratorData,
         generatorVC: VoiceChannel
     ): Int {
         val defaultRawPosition = getRawPositionWithoutPositionalData(generator, generatorVC)
             ?: 0
 
-        return defaultRawPosition + (rawPositionsMinimumDistance * incrementalPosition)
+        return defaultRawPosition + (RAW_POSITIONS_MINIMUM_DISTANCE * incrementalPosition)
     }
 
     /**
@@ -53,15 +54,15 @@ object VCPositionManager {
      * @param excludedVCId id of a channel to exclude from the search, usually the existing channel of which we need to recalculate the position
      * @param temporaryVCs list of existing temporary VCs
      */
-    fun getIncrementalPosition(generatorId: String, excludedVCId: String?, temporaryVCs: List<TemporaryVCDto>): Int {
+    fun getIncrementalPosition(generatorId: String, excludedVCId: String?, temporaryVCs: List<TemporaryVCData>): Int {
         var incrementalPosition = 1
 
         val positions = temporaryVCs.filter {
             it.generatorId == generatorId
                     && it.id != excludedVCId
-                    && it.position != null
+                    && it.incrementalPosition != null
         }
-            .mapNotNull { it.position }
+            .mapNotNull { it.incrementalPosition }
             .toSortedSet()
 
         for (position in positions) {
@@ -81,7 +82,7 @@ object VCPositionManager {
      * otherwise it will search for the correct position based on the other temporary VCs
      * which are supposed to use incremental ordering already
      */
-    fun getRawPosition(incrementalPosition: Int?, generator: GeneratorDto, generatorVC: VoiceChannel): Int? {
+    fun getRawPosition(incrementalPosition: Int?, generator: GeneratorData, generatorVC: VoiceChannel): Int? {
         return if (incrementalPosition == null) {
             getRawPositionWithoutPositionalData(generator, generatorVC)
         } else {

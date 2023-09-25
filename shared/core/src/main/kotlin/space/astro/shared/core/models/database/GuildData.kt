@@ -1,25 +1,20 @@
 package space.astro.shared.core.models.database
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import space.astro.shared.core.util.Colors
 import space.astro.shared.core.util.Links
-import space.astro.shared.core.util.extention.asChannelMention
-import space.astro.shared.core.util.extention.asMessageMarkdownLink
-import space.astro.shared.core.util.extention.asRoleMention
-import space.astro.shared.core.util.extention.asTrueOrFalse
 
-data class GuildDto(
+data class GuildData(
     val guildID: String,
     val upgradedByUserID: String? = null,
     val entitlements: MutableList<GuildEntitlement> = mutableListOf(),
     var bannedCommands: MutableList<String> = mutableListOf(),
-    val templates: MutableList<TemplateDto> = mutableListOf(),
-    val connections: MutableList<ConnectionDto> = mutableListOf(),
-    val generators: MutableList<GeneratorDto> = mutableListOf(),
-    var interfaces: MutableList<InterfaceDto> = mutableListOf(),
+    val templates: MutableList<TemplateData> = mutableListOf(),
+    val connections: MutableList<ConnectionData> = mutableListOf(),
+    val generators: MutableList<GeneratorData> = mutableListOf(),
+    var interfaces: MutableList<InterfaceData> = mutableListOf(),
     var errorLogsChannelId: String? = null,
     var allowMissingAdminPerm: Boolean = false,
 )
@@ -37,7 +32,7 @@ data class GuildEntitlement(
     val endsAt: Long?
 )
 
-data class TemplateDto(
+data class TemplateData(
     val id: String = NanoIdUtils.randomNanoId(),
     val name: String,
     val enabledGeneratorIds: MutableList<String>? = null,
@@ -47,7 +42,7 @@ data class TemplateDto(
     val vcRegion: String? = null
 )
 
-data class GeneratorDto(
+data class GeneratorData(
     val id: String,
     var fallbackId: String? = null,
     var queueMode: Boolean = false,
@@ -68,6 +63,8 @@ data class GeneratorDto(
     var commandsSettings: CommandsSettings = CommandsSettings(),
 
     var autoChat: Boolean = false,
+    var autoWaiting: Boolean = false,
+
     var chatCategory: String? = category,
     var chatTopic: String? = "Temporary text chat made by Astro | ${Links.base}",
     var chatNsfw: Boolean = false,
@@ -76,7 +73,15 @@ data class GeneratorDto(
     var defaultChatName: String = "{vc_name}",
     var defaultChatText: String? = null,
     var defaultChatTextEmbed: Boolean = true,
-    var chatInterface: Int = -1
+    var chatInterface: Int = -1,
+
+    var waitingCategory: String? = category,
+    var waitingPermissionsInherited: PermissionsInherited = PermissionsInherited.NONE,
+    var defaultWaitingName: String = "Waiting for {vc_name}",
+    var waitingBitrate: Int = 0,
+    var waitingPosition: InitialPosition = InitialPosition.BEFORE,
+    var waitingUserLimit: Int = 0
+
 )
 
 
@@ -95,7 +100,7 @@ enum class VCState(
 }
 
 
-data class InterfaceDto(
+data class InterfaceData(
     var channelID: String,
     var messageID: String,
     var buttons: MutableList<InterfaceButton> = mutableListOf(),
@@ -144,7 +149,7 @@ data class InterfaceButton(
     var fieldValue: String = id
 )
 
-data class ConnectionDto(
+data class ConnectionData(
     var id: String,
     var roleID: String,
     var action: ConnectionAction = ConnectionAction.ASSIGN

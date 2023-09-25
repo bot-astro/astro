@@ -2,25 +2,24 @@ package space.astro.bot.managers.vc
 
 import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import space.astro.bot.extentions.modifyPermissionOverride
 import space.astro.bot.managers.util.PermissionSets
-import space.astro.shared.core.models.database.GeneratorDto
+import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.PermissionsInherited
 
 object VCTextChatManager {
     suspend fun create(
         owner: Member,
-        generatorData: GeneratorDto,
+        generatorData: GeneratorData,
         temporaryVC: VoiceChannel,
     ) : TextChannel? {
         try {
             val guild = owner.guild
 
-            val name = VCNameManager.computeTextChatName(generatorData.defaultChatName, owner, temporaryVC)
+            val name = VariablesManager.computeTextChatName(generatorData.defaultChatName, owner, temporaryVC)
             val category = generatorData.chatCategory?.let { guild.getCategoryById(it) }
 
             val builder = guild.createTextChannel(name)

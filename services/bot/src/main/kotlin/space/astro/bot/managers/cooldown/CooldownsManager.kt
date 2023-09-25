@@ -29,4 +29,12 @@ class CooldownsManager(
             0
         }
     }
+
+    fun markUserGeneratorsCooldown(userId: String) {
+        redis.hset(
+            RedisKey.GENERATOR_RATELIMIT.key,
+            userId,
+            System.currentTimeMillis().toString()
+        )
+    }
 }

@@ -7,6 +7,13 @@ import space.astro.shared.core.util.Links
 import space.astro.shared.core.util.extention.link
 
 object Embeds {
+    fun withDescription(description: String): MessageEmbed {
+        return Embed(
+            color = Colors.purple.rgb,
+            description = description
+        )
+    }
+
     fun dashboardSettings() : MessageEmbed {
         return Embed(
             color = Colors.purple.rgb,

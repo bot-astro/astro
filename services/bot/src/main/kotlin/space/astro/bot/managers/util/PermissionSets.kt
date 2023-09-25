@@ -34,7 +34,13 @@ object PermissionSets {
         Permission.VIEW_CHANNEL
     )
 
-    val ownerPermissions = Permission.getRaw(
+    val ownerVCPermissions = Permission.getRaw(
+        Permission.VOICE_MOVE_OTHERS,
+        Permission.VOICE_CONNECT,
+        Permission.VIEW_CHANNEL
+    )
+
+    val ownerWaitingRoomVCPermissions = Permission.getRaw(
         Permission.VOICE_MOVE_OTHERS,
         Permission.VOICE_CONNECT,
         Permission.VIEW_CHANNEL

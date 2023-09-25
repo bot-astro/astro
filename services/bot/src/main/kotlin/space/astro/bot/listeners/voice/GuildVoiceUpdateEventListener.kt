@@ -11,8 +11,8 @@ import space.astro.bot.managers.roles.SimpleMemberRolesManager
 import space.astro.bot.managers.util.GuildErrorNotifier
 import space.astro.bot.managers.vc.VCEventData
 import space.astro.bot.managers.vc.VCEventDetector
-import space.astro.shared.core.dao.GuildDao
-import space.astro.shared.core.dao.TemporaryVCDao
+import space.astro.shared.core.services.dao.GuildDao
+import space.astro.shared.core.services.dao.TemporaryVCDao
 
 private val log = KotlinLogging.logger {  }
 
@@ -37,7 +37,7 @@ class GuildVoiceUpdateEventListener(
 
         val vcEventData = VCEventData(
             event = event,
-            guildDto = guildDto,
+            guildData = guildDto,
             temporaryVCs = temporaryVcs,
         )
 

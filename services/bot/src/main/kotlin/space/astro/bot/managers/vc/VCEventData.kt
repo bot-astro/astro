@@ -1,21 +1,18 @@
 package space.astro.bot.managers.vc
 
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent
-import space.astro.shared.core.models.database.ConnectionDto
-import space.astro.shared.core.models.database.GeneratorDto
-import space.astro.shared.core.models.database.GuildDto
-import space.astro.shared.core.models.database.TemporaryVCDto
+import space.astro.shared.core.models.database.GuildData
+import space.astro.shared.core.models.database.TemporaryVCData
 
 /**
  * @param event the voice update event that triggered this [VCEventData]
- * @param generators list of astro temporary VC generators
+ * @param guildData
  * @param temporaryVCs list of existing temporary VCs
- * @param connections list of astro connections
  */
 data class VCEventData(
     val event: GuildVoiceUpdateEvent,
-    val guildDto: GuildDto,
-    val temporaryVCs: List<TemporaryVCDto>,
+    val guildData: GuildData,
+    val temporaryVCs: List<TemporaryVCData>,
 ) {
     val guild = event.guild
     val member = event.member
@@ -23,6 +20,6 @@ data class VCEventData(
     val joinedChannel = event.channelJoined
     val leftChannel = event.channelLeft
 
-    val generators = guildDto.generators
-    val connections = guildDto.connections
+    val generators = guildData.generators
+    val connections = guildData.connections
 }

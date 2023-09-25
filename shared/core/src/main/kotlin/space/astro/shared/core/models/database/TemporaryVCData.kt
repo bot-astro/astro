@@ -1,9 +1,8 @@
 package space.astro.shared.core.models.database
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import space.astro.shared.core.models.database.VCState
 
-data class TemporaryVCDto(
+data class TemporaryVCData(
     val id: String,
     @JsonProperty("ownerID")
     var ownerId: String,
@@ -16,7 +15,8 @@ data class TemporaryVCDto(
     var lastNameChange: Long? = null,
     var renamed: Boolean = false,
 
-    var position: Int? = null,
+    @JsonProperty("position")
+    var incrementalPosition: Int? = null,
 
     var chatID: String?,
     var chatLogs: Boolean = false,

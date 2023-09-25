@@ -3,7 +3,6 @@ package space.astro.bot.managers.roles
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
-import java.lang.Exception
 import java.util.function.Consumer
 
 /**

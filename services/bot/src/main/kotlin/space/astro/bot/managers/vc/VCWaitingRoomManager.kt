@@ -3,32 +3,49 @@ package space.astro.bot.managers.vc
 import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import space.astro.bot.extentions.modifyPermissionOverride
 import space.astro.bot.managers.util.PermissionSets
-import space.astro.shared.core.models.database.GeneratorDto
+import space.astro.shared.core.models.database.GeneratorData
+import space.astro.shared.core.models.database.InitialPosition
 import space.astro.shared.core.models.database.PermissionsInherited
 
 object VCWaitingRoomManager {
     suspend fun create(
         owner: Member,
-        generatorData: GeneratorDto,
+        generatorData: GeneratorData,
         temporaryVC: VoiceChannel,
+        temporaryVCIncrementalPosition: Int?
     ) : VoiceChannel? {
         try {
             val guild = owner.guild
 
-            val name = VCNameManager.computeVcNameForExisting(generatorData., owner, temporaryVC)
-            val category = generatorData.chatCategory?.let { guild.getCategoryById(it) }
+            val bitrate = generatorData.waitingBitrate
+                .takeIf { it != 0 }
+                ?.coerceAtMost(guild.maxBitrate)
+                ?: 64000
 
-            val builder = guild.createTextChannel(name)
+            val name = VariablesManager.computeVcNameForExisting(
+                generatorData.defaultWaitingName,
+                owner,
+                temporaryVC,
+                temporaryVCIncrementalPosition
+            )
+
+            val position = when (generatorData.waitingPosition) {
+                InitialPosition.BOTTOM -> null
+                InitialPosition.BEFORE -> temporaryVC.positionRaw - VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
+                InitialPosition.AFTER -> temporaryVC.positionRaw + VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
+            }?.coerceAtLeast(0)
+
+            val category = generatorData.waitingCategory?.let { guild.getCategoryById(it) }
+
+            val builder = guild.createVoiceChannel(name)
+                .setBitrate(bitrate)
+                .setUserlimit(generatorData.waitingUserLimit)
                 .setSlowmode(generatorData.chatSlowmode)
-                .setNSFW(generatorData.chatNsfw)
+                .setPosition(position)
                 .apply {
-                    if (generatorData.chatTopic != null)
-                        setTopic(generatorData.chatTopic)
-
                     if (category != null)
                         setParent(category)
                 }
@@ -36,21 +53,13 @@ object VCWaitingRoomManager {
             // add bot permissions
             builder.addMemberPermissionOverride(
                 guild.selfMember.idLong,
-                PermissionSets.astroTextChatPermissions,
+                PermissionSets.astroVCPermissions,
                 0L
             )
 
             // inherit permissions if needed
-            val permissionOverrides = when (generatorData.chatPermissionsInherited) {
-                PermissionsInherited.NONE -> {
-                    // when inheriting is not enabled just deny the public role `VIEW CHANNEL` permission
-                    builder.addRolePermissionOverride(
-                        guild.publicRole.idLong,
-                        0,
-                        Permission.VIEW_CHANNEL.rawValue
-                    )
-                    emptyList()
-                }
+            val permissionOverrides = when (generatorData.waitingPermissionsInherited) {
+                PermissionsInherited.NONE -> emptyList()
 
                 PermissionsInherited.CATEGORY -> {
                     builder.syncPermissionOverrides()
@@ -71,18 +80,13 @@ object VCWaitingRoomManager {
                 }
             }
 
-
-            // immune role permissions
-            generatorData.permissionsImmuneRole
-                ?.let { guild.getRoleById(it) }
-                ?.let {  immuneRole ->
-                    builder.modifyPermissionOverride(
-                        permissionOverrides.firstOrNull { it.id == immuneRole.id },
-                        immuneRole,
-                        PermissionSets.immuneRoleTextChatPermissions,
-                        0
-                    )
-                }
+            // temporary vc owner permissions
+            builder.modifyPermissionOverride(
+                permissionOverrides.firstOrNull { it.id == owner.id },
+                owner,
+                PermissionSets.ownerWaitingRoomVCPermissions,
+                0
+            )
 
             temporaryVC.members.forEach { vcMember ->
                 builder.modifyPermissionOverride(

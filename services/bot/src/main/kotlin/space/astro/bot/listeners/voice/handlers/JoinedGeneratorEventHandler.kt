@@ -3,13 +3,16 @@ package space.astro.bot.listeners.voice.handlers
 import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.concrete.Category
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import space.astro.bot.extentions.modifyPermissionOverride
+import space.astro.bot.managers.interfaces.InterfaceManager
 import space.astro.bot.managers.roles.SimpleMemberRolesManager
 import space.astro.bot.managers.util.GuildErrorNotifier
 import space.astro.bot.managers.util.PermissionSets
-import space.astro.bot.managers.vc.VCEvent
-import space.astro.bot.managers.vc.VCTextChatManager
+import space.astro.bot.managers.vc.*
+import space.astro.bot.ui.Embeds
 import space.astro.shared.core.models.database.PermissionsInherited
+import space.astro.shared.core.models.database.TemporaryVCData
 import java.util.concurrent.TimeUnit
 
 /**
@@ -25,7 +28,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     val data = event.vcEventData
     val guild = data.guild
     val owner = data.member
-    val generatorData = event.generatorDto
+    val generatorData = event.generatorData
 
     ///////////////////
     /// STATE CHECK ///
@@ -38,7 +41,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     //////////////////////////
     /// PREMIUM REQUISITES ///
     //////////////////////////
-    if (premiumRequirementDetector.exceededMaximumGeneratorAmount(data.guildDto)) {
+    if (premiumRequirementDetector.exceededMaximumGeneratorAmount(data.guildData)) {
         TODO()
 
         return false
@@ -82,7 +85,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     if (category != null && category!!.channels.size >= 50) {
         val fallbackGenerator = generatorData.fallbackId
             ?.let { fallback ->
-                data.guildDto.generators.firstOrNull { it.id == fallback && it.id != data.leftChannel?.id }
+                data.guildData.generators.firstOrNull { it.id == fallback && it.id != data.leftChannel?.id }
             }
             ?.let {
                 guild.getVoiceChannelById(it.id)
@@ -121,18 +124,18 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     /////////////////////////////
 
     val generatorVC = data.joinedChannel.asVoiceChannel()
-    val nameTemplate = vcNameManager.getCreationNameTemplate(generatorData)
+    val nameTemplate = VariablesManager.getCreationNameTemplate(generatorData)
 
     // positional data
-    val requiresPositionalData = vcNameManager.doesTemplateRequireVCPositionalData(nameTemplate)
+    val requiresPositionalData = VariablesManager.doesTemplateRequireVCPositionalData(nameTemplate)
     val incrementalPosition = if (requiresPositionalData) {
-        vcPositionManager.getIncrementalPosition(
+        VCPositionManager.getIncrementalPosition(
             generatorId = generatorData.id,
             excludedVCId = null,
             temporaryVCs = data.temporaryVCs
         )
     } else { null }
-    val rawPosition = vcPositionManager.getRawPosition(incrementalPosition, generatorData, generatorVC)
+    val rawPosition = VCPositionManager.getRawPosition(incrementalPosition, generatorData, generatorVC)
 
     // bitrate, userlimit and name
     val bitrate = generatorData.bitrate
@@ -140,7 +143,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         ?.coerceAtMost(guild.maxBitrate)
         ?: 64000
     val userLimit = generatorData.userLimit
-    val name = vcNameManager.computeVcNameForCreation(nameTemplate, owner, bitrate, userLimit, incrementalPosition)
+    val name = VariablesManager.computeVcNameForCreation(nameTemplate, owner, bitrate, userLimit, incrementalPosition)
 
     // channel builder initialization
     val temporaryVCBuilder = generatorVC.createCopy()
@@ -213,7 +216,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     // owner permissions
     val ownerPermissions = generatorData.ownerPermissions.takeIf { it != 0L }
-        ?: PermissionSets.ownerPermissions
+        ?: PermissionSets.ownerVCPermissions
 
     temporaryVCBuilder.modifyPermissionOverride(
         permissionOverride = permissionOverrides.firstOrNull { it.id == owner.id },
@@ -221,6 +224,10 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         allow = ownerPermissions,
         deny = 0L
     )
+
+    /////////////////////////////
+    /// TEMPORARY VC CREATION ///
+    /////////////////////////////
 
     val temporaryVC = try {
         temporaryVCBuilder.await()
@@ -239,16 +246,112 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         return false
     }
 
+    ///////////////////////////////
+    /// TEXT & WAITING CREATION ///
+    ///////////////////////////////
+
     val textChat = if (generatorData.autoChat) {
         try {
-            VCTextChatManager.create(owner, generatorData, temporaryVC)
+            VCTextChatManager.create(
+                owner = owner,
+                generatorData = generatorData,
+                temporaryVC = temporaryVC
+            )
         } catch (e: Exception) {
             TODO()
             null
         }
     } else null
 
+    val waitingVC = if (generatorData.autoWaiting) {
+        try {
+            VCWaitingRoomManager.create(
+                owner = owner,
+                generatorData = generatorData,
+                temporaryVC = temporaryVC,
+                temporaryVCIncrementalPosition = incrementalPosition
+            )
+        } catch (e: Exception) {
+            TODO()
+            null
+        }
+    } else null
 
+    ////////////////////
+    /// CHAT MESSAGE ///
+    ////////////////////
+    val chatForMessage = textChat ?: temporaryVC
+
+    val interfaceToSend = generatorData.chatInterface
+        .takeIf { it > -1 }
+        ?.let {
+            data.guildData.interfaces.getOrNull(it) // this is not a great approach
+        }
+
+
+    val interfaceMessage = if (interfaceToSend != null) {
+        InterfaceManager.computeMessage(interfaceToSend)
+    } else if (generatorData.defaultChatText != null) {
+        val content = VariablesManager.computeChatMessage(generatorData.defaultChatText!!, owner, temporaryVC)
+
+        MessageCreateBuilder()
+            .apply {
+                if (generatorData.defaultChatTextEmbed) {
+                    setEmbeds(Embeds.withDescription(content))
+                } else {
+                    setContent(content)
+                }
+            }
+            .build()
+    } else
+        null
+
+    if (interfaceMessage != null) {
+        chatForMessage.sendMessage(interfaceMessage).queue()
+    }
+
+    ///////////////////////////////
+    /// STORE TEMPORARY VC DATA ///
+    ///////////////////////////////
+
+    // check if user is still in the created temporary vc before saving the data
+    if (owner.voiceState!!.channel?.id != temporaryVC.id) {
+        waitingVC?.delete()?.queueAfter(1000, TimeUnit.MILLISECONDS)
+        textChat?.delete()?.queueAfter(2000, TimeUnit.SECONDS)
+        temporaryVC.delete().queueAfter(3000, TimeUnit.SECONDS)
+
+        cooldownsManager.markUserGeneratorsCooldown(data.userId)
+
+        return false
+    }
+
+    val temporaryVCData = TemporaryVCData(
+        id = temporaryVC.id,
+        ownerId = owner.id,
+        generatorId = generatorData.id,
+        state = generatorData.initialState,
+        incrementalPosition = incrementalPosition,
+        chatID = textChat?.id
+    )
+
+    temporaryVCDao.save(guild.id, temporaryVCData)
+
+
+    //////////////////
+    /// OWNER ROLE ///
+    //////////////////
+
+    generatorData.ownerRole
+        ?.takeIf { premiumRequirementDetector.isGuildPremium(data.guildData) }
+        ?.let {
+            guild.getRoleById(it)
+        }?.also {
+            memberRolesManager.add(it)
+        }
+
+    // TODO: generator statistics
+
+    // TODO: first time user created a temporary vc private message
 
     return true
 }

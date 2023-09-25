@@ -4,13 +4,13 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.entities.emoji.Emoji
-import space.astro.shared.core.models.database.GeneratorDto
+import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.VCState
 import space.astro.shared.core.util.extention.capitalize
 import java.text.SimpleDateFormat
 import java.util.*
 
-object VCNameManager {
+object VariablesManager {
     private object Alphabets {
         val nateAlphabet = listOf(
             "Alpha", "Bravo", "Charlie", "Delta", "Echo",
@@ -41,6 +41,7 @@ object VCNameManager {
         )
     }
 
+    @Suppress("UNUSED")
     private object Variables {
         val owner = listOf("{nickname}", "{username}", "{tag}", "{mention}", "{id}")
         val activity = listOf("{activity_name}", "{activity_emoji}", "{activity_start_time}", "{activity_end_time}", "{activity_type}", "{activity_link}")
@@ -145,7 +146,7 @@ object VCNameManager {
     }
 
 
-    fun getCreationNameTemplate(generator: GeneratorDto) = when (generator.initialState) {
+    fun getCreationNameTemplate(generator: GeneratorData) = when (generator.initialState) {
         VCState.UNLOCKED -> generator.defaultName
         VCState.LOCKED -> generator.defaultLockedName
         VCState.HIDDEN -> generator.defaultHiddenName
@@ -201,5 +202,20 @@ object VCNameManager {
             .let {
                 Formatters.formatChannelNameLength(it)
             }
+    }
+
+    fun computeChatMessage(
+        template: String,
+        owner: Member,
+        temporaryVC: VoiceChannel
+    ): String {
+        var name = Parsers.owner(template, owner)
+            .let { Parsers.activity(it, owner) }
+            .let { Parsers.vc(it, temporaryVC) }
+
+        if (name.length < 2)
+            name += "-".repeat(2)
+
+        return name.take(2000)
     }
 }
