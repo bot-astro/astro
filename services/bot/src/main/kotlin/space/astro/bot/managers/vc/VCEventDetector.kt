@@ -43,7 +43,7 @@ class VCEventDetector {
                         .firstOrNull { it.id == joinedVC.id }
                         ?.also {
                             joinedTemporaryVC = it
-                            events.add(VCEvent.JoinedTemporaryVC(vcEventData))
+                            events.add(VCEvent.JoinedTemporaryVC(vcEventData, it))
                         }
                 }
             }
@@ -61,9 +61,9 @@ class VCEventDetector {
 
                         events.add(
                             if (temporaryVCData.ownerId == vcEventData.userId)
-                                VCEvent.OwnerLeftTemporaryVC(vcEventData)
+                                VCEvent.OwnerLeftTemporaryVC(vcEventData, temporaryVCData)
                             else
-                                VCEvent.LeftTemporaryVC(vcEventData)
+                                VCEvent.LeftTemporaryVC(vcEventData, temporaryVCData)
                         )
                     }
             }

@@ -13,17 +13,18 @@ import space.astro.shared.core.services.dao.TemporaryVCDao
 class VCEventHandler(
     val premiumRequirementDetector: PremiumRequirementDetector,
     val cooldownsManager: CooldownsManager,
-    val temporaryVCDao: TemporaryVCDao
+    val temporaryVCDao: TemporaryVCDao,
+    val guildErrorNotifier: GuildErrorNotifier
 ) {
     fun handleEvents(
         events: List<VCEvent>,
-        guildErrorNotifier: GuildErrorNotifier,
         memberRolesManager: SimpleMemberRolesManager
     ) {
         runBlocking {
             events.forEach {
                 when (it) {
-                    is VCEvent.JoinedGenerator -> handleJoinedGeneratorEvent(it, guildErrorNotifier, memberRolesManager)
+                    is VCEvent.JoinedGenerator -> handleJoinedGeneratorEvent(it, memberRolesManager)
+                    is VCEvent.JoinedTemporaryVC -> handleJoinedTemporaryVCEvent(it, memberRolesManager)
                 }
             }
         }
