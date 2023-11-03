@@ -22,6 +22,8 @@ object VCOwnershipManager {
         markPrivateChatManagerAsUpdated()
         markWaitingRoomManagerAsUpdated()
 
+        // TODO: Owner role
+
 
         /////////////////////////////
         /// NEW OWNER PERMISSIONS ///

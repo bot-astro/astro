@@ -42,16 +42,16 @@ data class VCOperationCTX(
     }
 
     fun queueUpdatedManagers(
-        success: (managerType: ManagerType) -> Unit,
-        failure: (managerType: ManagerType, throwable: Throwable) -> Unit,
+        success: ((managerType: ManagerType) -> Unit)? = null,
+        failure: ((managerType: ManagerType, throwable: Throwable) -> Unit)? = null,
     ) {
         if (temporaryVCManagerUpdated) {
             temporaryVCManager.queue(
                 {
-                    success(ManagerType.TEMPORARY_VC)
+                    success?.invoke(ManagerType.TEMPORARY_VC)
                 },
                 { throwable ->
-                    failure(ManagerType.TEMPORARY_VC, throwable)
+                    failure?.invoke(ManagerType.TEMPORARY_VC, throwable)
                 }
             )
         }
@@ -59,10 +59,10 @@ data class VCOperationCTX(
         if (privateChatManagerUpdated) {
             privateChatManager?.queue(
                 {
-                    success(ManagerType.PRIVATE_CHAT)
+                    success?.invoke(ManagerType.PRIVATE_CHAT)
                 },
                 { throwable ->
-                    failure(ManagerType.PRIVATE_CHAT, throwable)
+                    failure?.invoke(ManagerType.PRIVATE_CHAT, throwable)
                 }
             )
         }
@@ -70,10 +70,10 @@ data class VCOperationCTX(
         if (waitingRoomManagerUpdated) {
             waitingRoomManager?.queue(
                 {
-                    success(ManagerType.WAITING_ROOM)
+                    success?.invoke(ManagerType.WAITING_ROOM)
                 },
                 { throwable ->
-                    failure(ManagerType.WAITING_ROOM, throwable)
+                    failure?.invoke(ManagerType.WAITING_ROOM, throwable)
                 }
             )
         }

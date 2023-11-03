@@ -5,18 +5,21 @@ import net.dv8tion.jda.api.Permission
 import space.astro.bot.managers.roles.SimpleMemberRolesManager
 import space.astro.bot.managers.util.PermissionSets
 import space.astro.bot.managers.vc.VCOwnershipManager
+import space.astro.bot.managers.vc.VCOwnershipManager.changeOwner
+import space.astro.bot.managers.vc.dto.VCOperationCTX
 import space.astro.bot.managers.vc.events.VCEvent
 import space.astro.bot.ui.Emojis
 
 fun VCEventHandler.handleLeftTemporaryVCEvent(
-        event: VCEvent.LeftTemporaryVC,
-        memberRolesManager: SimpleMemberRolesManager,
+    event: VCEvent.LeftTemporaryVC,
+    memberRolesManager: SimpleMemberRolesManager,
 ) {
     val data = event.vcEventData
     val guild = data.guild
     val vc = data.leftChannel?.asVoiceChannel()
         ?: throw IllegalStateException("Received left temporary VC event with a null left channel")
     val privateChat = event.temporaryVCData.chatID?.let { guild.getTextChannelById(it) }
+    val waitingRoom = event.temporaryVCData.waitingID?.let { guild.getVoiceChannelById(it) }
     val newOwner = vc.members.firstOrNull { !it.user.isBot }
 
     ////////////////
@@ -26,27 +29,43 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
         temporaryVCDao.delete(guild.id, event.temporaryVCData.id)
 
         vc.delete().queue()
-
         privateChat?.delete()?.queue()
-
-        // TODO: Waiting rooms
+        waitingRoom?.delete()?.queue()
 
         return
     }
-
 
     if (event.ownerLeft) {
         //////////////////
         /// OWNER LEFT ///
         //////////////////
+        val generator = guild.getVoiceChannelById(event.temporaryVCData.generatorId)
         val generatorData = data.generators.firstOrNull { it.id == event.temporaryVCData.generatorId }
 
-        if (generatorData != null) {
+        if (generatorData != null && generator != null) {
+            val vcOperationCTX = VCOperationCTX(
+                generator = generator,
+                generatorData = generatorData,
+                temporaryVCOwner = data.member,
+                temporaryVC = vc,
+                temporaryVCManager = vc.manager,
+                temporaryVCData = event.temporaryVCData,
+                temporaryVCsData = event.vcEventData.temporaryVCs,
+                privateChat = privateChat,
+                privateChatManager = privateChat?.manager,
+                waitingRoom = waitingRoom,
+                waitingRoomManager = waitingRoom?.manager,
+            )
+
+            // TODO: Move owner role to changeOwner function
             val ownerRole = generatorData.ownerRole?.let { guild.getRoleById(it) }
             ownerRole?.also { memberRolesManager.remove(it) }
 
-            // TODO: Change owner
-            // VCOwnershipManager.changeOwner(guild)
+            vcOperationCTX.changeOwner(newOwner)
+            // TODO: Handle errors
+            vcOperationCTX.queueUpdatedManagers(
+                failure = { managerType, throwable ->  }
+            )
 
             ownerRole?.also { guild.addRoleToMember(newOwner, it).queue() }
         }
@@ -54,7 +73,6 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
         //////////////////////
         /// NON-OWNER LEFT ///
         //////////////////////
-        // TODO: Find a solution, don't like this
         vc.manager.removePermissionOverride(data.member.idLong).queue()
         privateChat?.manager?.removePermissionOverride(data.member.idLong)?.queue()
     }
