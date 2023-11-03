@@ -4,9 +4,8 @@ import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.Permission
 import space.astro.bot.managers.roles.SimpleMemberRolesManager
 import space.astro.bot.managers.util.PermissionSets
-import space.astro.bot.managers.vc.VCOwnershipManager
 import space.astro.bot.managers.vc.VCOwnershipManager.changeOwner
-import space.astro.bot.managers.vc.dto.VCOperationCTX
+import space.astro.bot.managers.vc.ctx.VCOperationCTX
 import space.astro.bot.managers.vc.events.VCEvent
 import space.astro.bot.ui.Emojis
 
@@ -57,7 +56,7 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
                 waitingRoomManager = waitingRoom?.manager,
             )
 
-            // TODO: Move owner role to changeOwner function
+            // Owner role is handled here because it needs the memberRolesManager
             val ownerRole = generatorData.ownerRole?.let { guild.getRoleById(it) }
             ownerRole?.also { memberRolesManager.remove(it) }
 
@@ -66,6 +65,7 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
             vcOperationCTX.queueUpdatedManagers(
                 failure = { managerType, throwable ->  }
             )
+            temporaryVCDao.save(guild.id, vcOperationCTX.temporaryVCData)
 
             ownerRole?.also { guild.addRoleToMember(newOwner, it).queue() }
         }
@@ -97,5 +97,4 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
 
         logChat.sendMessageEmbeds(userLeftEmbed).queue()
     }
-
 }

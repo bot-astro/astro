@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import space.astro.bot.extentions.modifyPermissionOverride
 import space.astro.bot.managers.util.PermissionSets
-import space.astro.bot.managers.vc.dto.VCOperationCTX
+import space.astro.bot.managers.vc.ctx.VCOperationCTX
 import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.PermissionsInherited
 import space.astro.shared.core.models.database.TemporaryVCData

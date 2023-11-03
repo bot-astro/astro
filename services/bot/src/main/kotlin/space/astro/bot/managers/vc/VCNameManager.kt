@@ -1,10 +1,15 @@
 package space.astro.bot.managers.vc
 
-import space.astro.bot.managers.vc.dto.VCOperationCTX
+import space.astro.bot.managers.vc.ctx.VCOperationCTX
 import space.astro.shared.core.models.database.InitialPosition
 import space.astro.shared.core.models.database.TemporaryVCData
 
 object VCNameManager {
+    /**
+     * Change the name of a temporary vc
+     *
+     * @param newNameTemplate
+     */
     fun VCOperationCTX.performVCRename(newNameTemplate: String) {
         if (!temporaryVCData.canBeRenamed()) {
             return
@@ -12,11 +17,19 @@ object VCNameManager {
 
         performPositionUpdates(newNameTemplate)
 
-        val newName = VariablesManager.computeVcNameForExisting(newNameTemplate, temporaryVCOwner, temporaryVC, temporaryVCData.incrementalPosition)
+        val newName = VariablesManager.computeVcNameForExisting(
+            template = newNameTemplate,
+            owner = temporaryVCOwner,
+            temporaryVC = temporaryVC,
+            incrementalPosition = temporaryVCData.incrementalPosition
+        )
         
         performNameUpdates(newName)
     }
-    
+
+    /**
+     * Refresh the name of a temporary vc
+     */
     fun VCOperationCTX.performVCNameRefresh() {
         if (!temporaryVCData.canBeRenamed()) {
             return
@@ -26,7 +39,12 @@ object VCNameManager {
         
         performPositionUpdates(nameTemplate)
         
-        val newName = VariablesManager.computeVcNameForExisting(nameTemplate, temporaryVCOwner, temporaryVC, temporaryVCData.incrementalPosition)
+        val newName = VariablesManager.computeVcNameForExisting(
+            template = nameTemplate,
+            owner = temporaryVCOwner,
+            temporaryVC = temporaryVC,
+            incrementalPosition = temporaryVCData.incrementalPosition
+        )
         performNameUpdates(newName)
     }
     
@@ -65,6 +83,11 @@ object VCNameManager {
     /// OTHER HELPERS ///
     /////////////////////
 
+    /**
+     * Updates the incremental, raw and waiting room raw position related to this temporary vc
+     *
+     * @param nameTemplate the name template of the temporary vc to check whether positional data is required
+     */
     private fun VCOperationCTX.performPositionUpdates(
         nameTemplate: String
     ) {
@@ -78,10 +101,13 @@ object VCNameManager {
             )
             temporaryVCData.incrementalPosition = incrementalPosition
 
-            VCPositionManager.getRawPosition(incrementalPosition, generatorData, generator)
+            VCPositionManager.getRawPosition(
+                incrementalPosition = incrementalPosition,
+                generator = generatorData,
+                generatorVC = generator
+            )
                 ?.also {  temporaryVCRawPosition ->
                     temporaryVCManager.setPosition(temporaryVCRawPosition)
-
                     markTemporaryVCManagerAsUpdated()
 
                     if (waitingRoomManager != null) {
@@ -97,7 +123,8 @@ object VCNameManager {
                 }
         }
     }
-    
+
+
     private fun VCOperationCTX.performNameUpdates(
         name: String
     ) {

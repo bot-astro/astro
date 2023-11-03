@@ -1,9 +1,12 @@
 package space.astro.bot.listeners.voice.handlers
 
+import dev.minn.jda.ktx.messages.Embed
+import net.dv8tion.jda.api.Permission
 import space.astro.bot.extentions.modifyPermissionOverride
 import space.astro.bot.managers.roles.SimpleMemberRolesManager
 import space.astro.bot.managers.util.PermissionSets
 import space.astro.bot.managers.vc.events.VCEvent
+import space.astro.bot.ui.Emojis
 
 fun VCEventHandler.handleJoinedTemporaryVCEvent(
         event: VCEvent.JoinedTemporaryVC,
@@ -52,9 +55,23 @@ fun VCEventHandler.handleJoinedTemporaryVCEvent(
             }
         }
 
-    if (temporaryVCData.chatLogs) {
-        val logsChannel = privateChat ?: temporaryVC
+    ////////////////
+    /// LOG CHAT ///
+    ////////////////
+    val logChat = privateChat ?: temporaryVC
 
-        // not sure I wanna keep this feature
+    if (temporaryVCData.chatLogs && guild.selfMember.hasPermission(logChat, Permission.getPermissions(PermissionSets.astroSendMessagePermissions))) {
+        val userJoinedEmbed = Embed {
+            color = guild.selfMember.colorRaw
+            title = "${Emojis.logs.formatted} Voice channel logs"
+            description = "*${data.member.asMention} just joined the VC!*"
+            /* TODO
+            footer {
+                name = "You can disable these logs with /${VcLogsSC().path}"
+            }
+             */
+        }
+
+        logChat.sendMessageEmbeds(userJoinedEmbed).queue()
     }
 }

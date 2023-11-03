@@ -6,9 +6,15 @@ import space.astro.bot.managers.util.PermissionSets
 import space.astro.bot.managers.vc.VCNameManager.performVCNameRefresh
 import space.astro.bot.managers.vc.VCPrivateChatManager.performPrivateChatNameRefresh
 import space.astro.bot.managers.vc.VCWaitingRoomManager.performWaitingRoomNameRefresh
-import space.astro.bot.managers.vc.dto.VCOperationCTX
+import space.astro.bot.managers.vc.ctx.VCOperationCTX
 
 object VCOwnershipManager {
+    /**
+     * Change the owner of a temporary vc.
+     * Updates the vc name properly
+     *
+     * **This doesn't handle owner roles!**
+     */
     fun VCOperationCTX.changeOwner(newOwner: Member) {
         /////////////////////////////
         /// OLD OWNER PERMISSIONS ///
@@ -21,8 +27,6 @@ object VCOwnershipManager {
         markTemporaryVCManagerAsUpdated()
         markPrivateChatManagerAsUpdated()
         markWaitingRoomManagerAsUpdated()
-
-        // TODO: Owner role
 
 
         /////////////////////////////

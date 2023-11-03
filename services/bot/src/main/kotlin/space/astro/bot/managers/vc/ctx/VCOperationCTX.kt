@@ -1,16 +1,31 @@
-package space.astro.bot.managers.vc.dto
+package space.astro.bot.managers.vc.ctx
 
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
-import net.dv8tion.jda.api.managers.Manager
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager
 import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.TemporaryVCData
 
 /**
- * 
+ * Context for most temporary vc related operations
+ *
+ * This includes a method to queue the managers: [queueUpdatedManagers]
+ *
+ * **You should also save the new [temporaryVCData] once finished with the operations on the temporary vc**
+ *
+ * @param generator The generator voice channel entity
+ * @param generatorData
+ * @param temporaryVCOwner
+ * @param temporaryVC
+ * @param temporaryVCManager
+ * @param temporaryVCData
+ * @param temporaryVCsData all temporary vcs related to the same guild of this temporary vc
+ * @param privateChat
+ * @param privateChatManager
+ * @param waitingRoom
+ * @param waitingRoomManager
  */
 data class VCOperationCTX(
     val generator: VoiceChannel,
@@ -29,18 +44,38 @@ data class VCOperationCTX(
     private var privateChatManagerUpdated = false
     private var waitingRoomManagerUpdated = false
 
+    /**
+     * Marks the [temporaryVCManager] as updated
+     * Useful to decide whether it should be queued or not
+     */
     fun markTemporaryVCManagerAsUpdated() {
         temporaryVCManagerUpdated = true
     }
 
+    /**
+     * Marks the [privateChatManager] as updated
+     * Useful to decide whether it should be queued or not
+     */
     fun markPrivateChatManagerAsUpdated() {
         privateChatManagerUpdated = true
     }
 
+    /**
+     * Marks the [waitingRoomManager] as updated
+     * Useful to decide whether it should be queued or not
+     */
     fun markWaitingRoomManagerAsUpdated() {
         waitingRoomManagerUpdated = true
     }
 
+
+    /**
+     * Queues [temporaryVCManager], [privateChatManager] and [waitingRoomManager]
+     * but checks for each one if it has been updated
+     *
+     * @param success Success handler (pass null to use default), which receives a [ManagerType] that indicates the manager queued
+     * @param failure Failure handler (pass null to use default), which receives a [ManagerType] that indicates the manager queued
+     */
     fun queueUpdatedManagers(
         success: ((managerType: ManagerType) -> Unit)? = null,
         failure: ((managerType: ManagerType, throwable: Throwable) -> Unit)? = null,
