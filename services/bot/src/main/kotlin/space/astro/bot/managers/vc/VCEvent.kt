@@ -1,5 +1,6 @@
 package space.astro.bot.managers.vc
 
+import space.astro.shared.core.models.database.ConnectionData
 import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.TemporaryVCData
 
@@ -14,18 +15,20 @@ sealed class VCEvent(
         vcEventData: VCEventData,
         val temporaryVCData: TemporaryVCData
     ): VCEvent(vcEventData)
+
     class JoinedConnectedVC(
-        vcEventData: VCEventData
-    ): VCEvent(vcEventData)
-    class OwnerLeftTemporaryVC(
         vcEventData: VCEventData,
-        val temporaryVCData: TemporaryVCData
+        val connectionData: ConnectionData
     ): VCEvent(vcEventData)
+
     class LeftTemporaryVC(
         vcEventData: VCEventData,
-        val temporaryVCData: TemporaryVCData
+        val ownerLeft: Boolean,
+        val temporaryVCData: TemporaryVCData,
     ): VCEvent(vcEventData)
+
     class LeftConnectedVC(
-        vcEventData: VCEventData
+        vcEventData: VCEventData,
+        val connectionData: ConnectionData
     ): VCEvent(vcEventData)
 }

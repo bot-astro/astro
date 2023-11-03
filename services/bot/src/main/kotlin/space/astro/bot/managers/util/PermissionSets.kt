@@ -3,6 +3,11 @@ package space.astro.bot.managers.util
 import net.dv8tion.jda.api.Permission
 
 object PermissionSets {
+    val astroSendMessagePermissions = Permission.getRaw(
+        Permission.MESSAGE_SEND,
+        Permission.MESSAGE_EMBED_LINKS
+    )
+
     val astroVCPermissions = Permission.getRaw(
         Permission.VIEW_CHANNEL,
         Permission.MANAGE_CHANNEL,

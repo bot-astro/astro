@@ -61,9 +61,17 @@ class VCEventDetector {
 
                         events.add(
                             if (temporaryVCData.ownerId == vcEventData.userId)
-                                VCEvent.OwnerLeftTemporaryVC(vcEventData, temporaryVCData)
+                                VCEvent.LeftTemporaryVC(
+                                    vcEventData = vcEventData,
+                                    ownerLeft = true,
+                                    temporaryVCData = temporaryVCData
+                                )
                             else
-                                VCEvent.LeftTemporaryVC(vcEventData, temporaryVCData)
+                                VCEvent.LeftTemporaryVC(
+                                    vcEventData = vcEventData,
+                                    ownerLeft = false,
+                                    temporaryVCData = temporaryVCData
+                                )
                         )
                     }
             }
@@ -127,11 +135,11 @@ class VCEventDetector {
         }
 
         if (joinedConnection != null) {
-            events.add(VCEvent.JoinedConnectedVC(vcEventData))
+            events.add(VCEvent.JoinedConnectedVC(vcEventData, joinedConnection!!))
         }
 
         if (leftConnection != null) {
-            events.add(VCEvent.LeftConnectedVC(vcEventData))
+            events.add(VCEvent.LeftConnectedVC(vcEventData, leftConnection!!))
         }
 
         return events

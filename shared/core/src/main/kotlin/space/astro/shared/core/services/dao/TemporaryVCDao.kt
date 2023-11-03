@@ -25,4 +25,8 @@ class TemporaryVCDao(
     fun getAll(guildId: String): List<TemporaryVCData> {
         return cacheManager.getAll(guildId)
     }
+
+    fun delete(guildId: String, vcId: String) {
+        cacheManager.delete(guildId, vcId)
+    }
 }

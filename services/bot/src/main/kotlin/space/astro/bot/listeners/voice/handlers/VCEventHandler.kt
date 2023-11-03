@@ -25,6 +25,9 @@ class VCEventHandler(
                 when (it) {
                     is VCEvent.JoinedGenerator -> handleJoinedGeneratorEvent(it, memberRolesManager)
                     is VCEvent.JoinedTemporaryVC -> handleJoinedTemporaryVCEvent(it, memberRolesManager)
+                    is VCEvent.JoinedConnectedVC -> handleJoinedConnectedVCEvent(it, memberRolesManager)
+                    is VCEvent.LeftTemporaryVC -> handleLeftTemporaryVCEvent(it, memberRolesManager)
+                    is VCEvent.LeftConnectedVC -> handleLeftConnectedVCEvent(it, memberRolesManager)
                 }
             }
         }
