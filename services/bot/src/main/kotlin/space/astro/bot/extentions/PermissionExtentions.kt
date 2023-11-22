@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.managers.channel.attribute.IPermissionContainerManager
 import net.dv8tion.jda.api.requests.restaction.ChannelAction
 
+fun Long.toPermissionList() = Permission.getPermissions(this)
+
 fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
     permissionOverride: PermissionOverride?,
     permissionHolder: IPermissionHolder,

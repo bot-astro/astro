@@ -48,10 +48,10 @@ fun VCEventHandler.handleJoinedTemporaryVCEvent(
                 it.upsertPermissionOverride(member)
                     .grant(PermissionSets.userTemporaryVCChatPermissions)
                     .queue({}) {
-                        TODO()
+                        TODO("Error event")
                     }
             } else {
-                TODO()
+                TODO("Error event")
             }
         }
 

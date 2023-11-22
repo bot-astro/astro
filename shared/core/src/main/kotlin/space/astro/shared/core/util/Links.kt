@@ -21,8 +21,7 @@ object Links {
     const val vote = "$topgg/vote"
     const val github = "https://github.com/bot-astro"
 
-    const val developer = "https://giuliopime.dev"
-    const val developerLogo = "https://cdn.discordapp.com/avatars/256851887502917633/7750731e71f8634403ef6d078a71614e.png"
+    const val developers = "$base/about"
 
     const val roleHierarchy = "https://support.discord.com/hc/en-us/articles/214836687-Role-Management-101"
     const val getId = "https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-"

@@ -101,7 +101,7 @@ object VCWaitingRoomManager {
 
             return builder.await()
         } catch (e: Exception) {
-            TODO()
+            TODO("Document error")
             throw e
         }
     }

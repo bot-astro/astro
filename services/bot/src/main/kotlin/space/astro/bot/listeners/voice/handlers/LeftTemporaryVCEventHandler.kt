@@ -61,9 +61,10 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
             ownerRole?.also { memberRolesManager.remove(it) }
 
             vcOperationCTX.changeOwner(newOwner)
-            // TODO: Handle errors
             vcOperationCTX.queueUpdatedManagers(
-                failure = { managerType, throwable ->  }
+                failure = { managerType, throwable ->
+                    TODO("Error event")
+                }
             )
             temporaryVCDao.save(guild.id, vcOperationCTX.temporaryVCData)
 

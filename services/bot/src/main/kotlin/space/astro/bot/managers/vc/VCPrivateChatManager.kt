@@ -97,7 +97,7 @@ object VCPrivateChatManager {
 
             return builder.await()
         } catch (e: Exception) {
-            TODO()
+            TODO("Docuement error")
             throw e
         }
     }

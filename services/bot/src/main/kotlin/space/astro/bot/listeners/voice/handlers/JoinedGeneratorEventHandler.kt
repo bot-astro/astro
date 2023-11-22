@@ -41,7 +41,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     /// PREMIUM REQUISITES ///
     //////////////////////////
     if (premiumRequirementDetector.exceededMaximumGeneratorAmount(data.guildData)) {
-        TODO()
+        TODO("Error event")
 
         return false
     }
@@ -63,7 +63,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
         if (availableTemporaryVC != null) {
             guild.moveVoiceMember(owner, availableTemporaryVC).queue(null) {
-                TODO()
+                TODO("Error event")
             }
 
             return false
@@ -96,7 +96,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         if (fallbackGenerator != null) {
             guild.moveVoiceMember(owner, fallbackGenerator)
                 .queueAfter(1, TimeUnit.SECONDS, null) {
-                    TODO()
+                    TODO("Error event")
                 }
         } else {
             TODO("Send error")
@@ -179,7 +179,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         val targetRole = guild.getRoleById(generatorData.permissionsTargetRole ?: guild.id)
 
         if (targetRole == null) {
-            TODO("")
+            TODO("Error event")
             return false
         }
 
@@ -231,7 +231,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     val temporaryVC = try {
         temporaryVCBuilder.await()
     } catch (e: Exception) {
-        TODO()
+        TODO("Error event")
         return false
     }
 
@@ -239,9 +239,9 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         guild.moveVoiceMember(owner, temporaryVC).await()
     } catch (e: Exception) {
         temporaryVC.delete().queueAfter(1, TimeUnit.SECONDS, null) {
-            TODO()
+            TODO("Error event")
         }
-        TODO()
+        TODO("Error event")
         return false
     }
 
@@ -257,7 +257,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
                 temporaryVC = temporaryVC
             )
         } catch (e: Exception) {
-            TODO()
+            TODO("Error event")
             null
         }
     } else null
@@ -271,7 +271,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
                 temporaryVCIncrementalPosition = incrementalPosition
             )
         } catch (e: Exception) {
-            TODO()
+            TODO("Error event")
             null
         }
     } else null
@@ -349,9 +349,9 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
             memberRolesManager.add(it)
         }
 
-    // TODO: generator statistics
+    // TODO: BIGQUERY - generator statistics
 
-    // TODO: first time user created a temporary vc private message
+    // TODO: PROPOSAL - first time user created a temporary vc private message
 
     return true
 }
