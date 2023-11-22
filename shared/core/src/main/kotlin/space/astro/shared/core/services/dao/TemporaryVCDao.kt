@@ -22,6 +22,10 @@ class TemporaryVCDao(
         cacheManager.cache(guildId, temporaryVCData.id, temporaryVCData)
     }
 
+    fun get(guildId: String, temporaryVCId: String): TemporaryVCData? {
+        return cacheManager.get(guildId, temporaryVCId)
+    }
+
     fun getAll(guildId: String): List<TemporaryVCData> {
         return cacheManager.getAll(guildId)
     }

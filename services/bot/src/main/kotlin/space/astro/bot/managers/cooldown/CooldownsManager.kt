@@ -10,6 +10,7 @@ class CooldownsManager(
     val applicationFeaturesConfig: ApplicationFeaturesConfig,
     val redis: RedisClusterCommands<String, String>
 ) {
+    // TODO: Global cooldown for users?
     fun getUserGeneratorsCooldown(userId: String): Long {
         val now = System.currentTimeMillis()
 

@@ -12,6 +12,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object VariablesManager {
+    private val premiumVariablesRegex = """\{(n|nato|roman|activity_[^\s\\}]+)\}""".toRegex()
+
     private object Alphabets {
         val nateAlphabet = listOf(
             "Alpha", "Bravo", "Charlie", "Delta", "Echo",
@@ -143,6 +145,12 @@ object VariablesManager {
                 formatted += "-".repeat(2)
 
             return formatted
+        }
+    }
+
+    object Checkers {
+        fun containsPremiumVariable(name: String): Boolean {
+            return premiumVariablesRegex.containsMatchIn(name)
         }
     }
 

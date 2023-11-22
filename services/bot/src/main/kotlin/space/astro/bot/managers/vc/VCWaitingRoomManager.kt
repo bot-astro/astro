@@ -4,6 +4,7 @@ import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import org.springframework.stereotype.Component
 import space.astro.bot.extentions.modifyPermissionOverride
 import space.astro.bot.managers.util.PermissionSets
 import space.astro.bot.managers.vc.ctx.VCOperationCTX
@@ -12,7 +13,8 @@ import space.astro.shared.core.models.database.InitialPosition
 import space.astro.shared.core.models.database.PermissionsInherited
 import space.astro.shared.core.models.database.TemporaryVCData
 
-object VCWaitingRoomManager {
+@Component
+class VCWaitingRoomManager {
     suspend fun create(
         owner: Member,
         generatorData: GeneratorData,
@@ -106,19 +108,26 @@ object VCWaitingRoomManager {
         }
     }
 
-    fun VCOperationCTX.performWaitingRoomNameRefresh() {
-        if (waitingRoom != null && waitingRoomManager != null && temporaryVCData.canBeRenamed()) {
-            val newName = VariablesManager.computeWaitingRoomName(
-                template = generatorData.defaultWaitingName,
-                owner = temporaryVCOwner,
-                temporaryVC = temporaryVC,
-                incrementalPosition = temporaryVCData.incrementalPosition
-            )
+    fun performWaitingRoomNameRefresh(
+        vcOperationCTX: VCOperationCTX
+    ) {
+        vcOperationCTX.apply {
+            if (waitingRoom != null &&
+                waitingRoomManager != null &&
+                temporaryVCData.canBeRenamed()
+            ) {
+                val newName = VariablesManager.computeWaitingRoomName(
+                    template = generatorData.defaultWaitingName,
+                    owner = temporaryVCOwner,
+                    temporaryVC = temporaryVC,
+                    incrementalPosition = temporaryVCData.incrementalPosition
+                )
 
-            if (waitingRoom.name != newName) {
-                temporaryVCData.performRenameOperationsOnTemporaryVCData()
-                waitingRoomManager.setName(newName)
-                markWaitingRoomManagerAsUpdated()
+                if (waitingRoom.name != newName) {
+                    temporaryVCData.performRenameOperationsOnTemporaryVCData()
+                    waitingRoomManager.setName(newName)
+                    markWaitingRoomManagerAsUpdated()
+                }
             }
         }
     }

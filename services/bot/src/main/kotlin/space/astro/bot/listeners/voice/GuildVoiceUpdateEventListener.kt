@@ -8,6 +8,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.listeners.voice.handlers.VCEventHandler
 import space.astro.bot.managers.roles.SimpleMemberRolesManager
+import space.astro.bot.managers.vc.*
 import space.astro.bot.managers.vc.events.VCEventData
 import space.astro.bot.managers.vc.events.VCEventDetector
 import space.astro.shared.core.services.dao.GuildDao
@@ -17,10 +18,10 @@ private val log = KotlinLogging.logger {  }
 
 @Component
 class GuildVoiceUpdateEventListener(
-        val guildDao: GuildDao,
-        val temporaryVCDao: TemporaryVCDao,
-        val vcEventDetector: VCEventDetector,
-        val vcEventHandler: VCEventHandler
+    val guildDao: GuildDao,
+    val temporaryVCDao: TemporaryVCDao,
+    val vcEventDetector: VCEventDetector,
+    val vcEventHandler: VCEventHandler
 ) {
 
     @EventListener

@@ -3,23 +3,49 @@ package space.astro.bot.managers.util
 import org.springframework.stereotype.Component
 import space.astro.bot.config.ApplicationFeaturesConfig
 import space.astro.bot.config.DiscordApplicationConfig
+import space.astro.bot.managers.vc.VariablesManager
 import space.astro.shared.core.models.database.GuildData
+import space.astro.shared.core.models.database.GuildEntitlement
 
 @Component
 class PremiumRequirementDetector(
     val discordApplicationConfig: DiscordApplicationConfig,
-    val applicationFeaturesConfig: ApplicationFeaturesConfig
+    val applicationFeaturesConfig: ApplicationFeaturesConfig,
 ) {
-    fun isGuildPremium(guildData: GuildData): Boolean {
-        val now = System.currentTimeMillis()
+    private fun isEntitlementActive(
+        entitlement: GuildEntitlement,
+        currentTimeMillis: Long = System.currentTimeMillis()
+    ): Boolean {
+        return entitlement.endsAt?.takeUnless { it > currentTimeMillis } == null
+    }
 
-        return guildData.upgradedByUserID != null
-                || guildData.entitlements.any { (it.endsAt == null || it.endsAt!! >= now) && it.skuId == discordApplicationConfig.premiumServerSkuId }
+    fun isGuildPremium(guildData: GuildData): Boolean {
+        if (!applicationFeaturesConfig.premiumRestrictions) {
+            return true
+        }
+
+        val currentMillis = System.currentTimeMillis()
+
+        return guildData.entitlements.any {
+            isEntitlementActive(it, currentMillis) && it.skuId == discordApplicationConfig.premiumServerSkuId
+        }
     }
 
     fun exceededMaximumGeneratorAmount(guildData: GuildData): Boolean {
         return applicationFeaturesConfig.premiumRestrictions
                 && guildData.generators.size > 2
                 && !isGuildPremium(guildData)
+    }
+
+    fun canUseVCNameTemplate(guildData: GuildData, vcNameTemplate: String): Boolean {
+        if (isGuildPremium(guildData)) {
+            return true
+        }
+
+        if (VariablesManager.Checkers.containsPremiumVariable(vcNameTemplate)) {
+            return false
+        }
+
+        return true
     }
 }

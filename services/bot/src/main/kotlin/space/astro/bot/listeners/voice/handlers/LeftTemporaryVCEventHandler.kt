@@ -2,9 +2,9 @@ package space.astro.bot.listeners.voice.handlers
 
 import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.Permission
+import space.astro.bot.exceptions.ConfigurationException
 import space.astro.bot.managers.roles.SimpleMemberRolesManager
 import space.astro.bot.managers.util.PermissionSets
-import space.astro.bot.managers.vc.VCOwnershipManager.changeOwner
 import space.astro.bot.managers.vc.ctx.VCOperationCTX
 import space.astro.bot.managers.vc.events.VCEvent
 import space.astro.bot.ui.Emojis
@@ -43,6 +43,7 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
 
         if (generatorData != null && generator != null) {
             val vcOperationCTX = VCOperationCTX(
+                guildData = event.vcEventData.guildData,
                 generator = generator,
                 generatorData = generatorData,
                 temporaryVCOwner = data.member,
@@ -54,13 +55,19 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
                 privateChatManager = privateChat?.manager,
                 waitingRoom = waitingRoom,
                 waitingRoomManager = waitingRoom?.manager,
+                vcOperationOrigin = VCOperationCTX.VCOperationOrigin.OWNER_CHANGE
             )
 
             // Owner role is handled here because it needs the memberRolesManager
             val ownerRole = generatorData.ownerRole?.let { guild.getRoleById(it) }
             ownerRole?.also { memberRolesManager.remove(it) }
 
-            vcOperationCTX.changeOwner(newOwner)
+            try {
+                vcOwnershipManager.changeOwner(vcOperationCTX, newOwner)
+            } catch (e: ConfigurationException) {
+                // TODO: Error
+            }
+
             vcOperationCTX.queueUpdatedManagers(
                 failure = { managerType, throwable ->
                     TODO("Error event")

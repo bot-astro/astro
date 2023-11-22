@@ -22,4 +22,11 @@ dependencies {
     implementation(libs.guava)
 
     implementation(project(":shared:core"))
+
+    testImplementation(libs.junit)
+    testImplementation(kotlin("test"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

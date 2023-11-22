@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager
 import space.astro.shared.core.models.database.GeneratorData
+import space.astro.shared.core.models.database.GuildData
 import space.astro.shared.core.models.database.TemporaryVCData
 
 /**
@@ -15,6 +16,7 @@ import space.astro.shared.core.models.database.TemporaryVCData
  *
  * **You should also save the new [temporaryVCData] once finished with the operations on the temporary vc**
  *
+ * @param guildData
  * @param generator The generator voice channel entity
  * @param generatorData
  * @param temporaryVCOwner
@@ -28,6 +30,7 @@ import space.astro.shared.core.models.database.TemporaryVCData
  * @param waitingRoomManager
  */
 data class VCOperationCTX(
+    val guildData: GuildData,
     val generator: VoiceChannel,
     val generatorData: GeneratorData,
     var temporaryVCOwner: Member,
@@ -38,7 +41,8 @@ data class VCOperationCTX(
     val privateChat: TextChannel?,
     val privateChatManager: TextChannelManager?,
     val waitingRoom: VoiceChannel?,
-    val waitingRoomManager: VoiceChannelManager?
+    val waitingRoomManager: VoiceChannelManager?,
+    val vcOperationOrigin: VCOperationOrigin
 ) {
     private var temporaryVCManagerUpdated = false
     private var privateChatManagerUpdated = false
@@ -116,5 +120,12 @@ data class VCOperationCTX(
 
     enum class ManagerType {
         TEMPORARY_VC, PRIVATE_CHAT, WAITING_ROOM
+    }
+
+    enum class VCOperationOrigin {
+        USER_RENAME,
+        STATE_CHANGE,
+        OWNER_CHANGE,
+        ACTIVITY_CHANGE
     }
 }

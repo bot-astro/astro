@@ -128,13 +128,13 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     // positional data
     val requiresPositionalData = VariablesManager.doesTemplateRequireVCPositionalData(nameTemplate)
     val incrementalPosition = if (requiresPositionalData) {
-        VCPositionManager.getIncrementalPosition(
+        vcPositionManager.getIncrementalPosition(
             generatorId = generatorData.id,
             excludedVCId = null,
             temporaryVCs = data.temporaryVCs
         )
     } else { null }
-    val rawPosition = VCPositionManager.getRawPosition(incrementalPosition, generatorData, generatorVC)
+    val rawPosition = vcPositionManager.getRawPosition(incrementalPosition, generatorData, generatorVC)
 
     // bitrate, userlimit and name
     val bitrate = generatorData.bitrate
@@ -251,7 +251,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     val privateChat = if (generatorData.autoChat) {
         try {
-            VCPrivateChatManager.create(
+            vcPrivateChatManager.create(
                 owner = owner,
                 generatorData = generatorData,
                 temporaryVC = temporaryVC
@@ -264,7 +264,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     val waitingRoom = if (generatorData.autoWaiting) {
         try {
-            VCWaitingRoomManager.create(
+            vcWaitingRoomManager.create(
                 owner = owner,
                 generatorData = generatorData,
                 temporaryVC = temporaryVC,

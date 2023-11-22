@@ -1,17 +1,21 @@
 package space.astro.bot.managers.vc
 
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import org.springframework.stereotype.Component
 import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.InitialPosition
 import space.astro.shared.core.models.database.TemporaryVCData
 
-object VCPositionManager {
-    /**
-     * Minimum distance between two temporary VCs
-     * Set to two because it needs to leave a space for waiting rooms
-     */
-    private const val RAW_POSITIONS_MINIMUM_DISTANCE = 2
-    const val RAW_POSITIONS_WAITING_ROOM_DISTANCE = 1
+@Component
+class VCPositionManager {
+    companion object {
+        /**
+         * Minimum distance between two temporary VCs
+         * Set to two because it needs to leave a space for waiting rooms
+         */
+        private const val RAW_POSITIONS_MINIMUM_DISTANCE = 2
+        const val RAW_POSITIONS_WAITING_ROOM_DISTANCE = 1
+    }
 
     private fun getRawPositionWithoutPositionalData(
         generator: GeneratorData,

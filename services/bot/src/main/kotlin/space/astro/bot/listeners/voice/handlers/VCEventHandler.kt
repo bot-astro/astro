@@ -6,6 +6,7 @@ import space.astro.bot.managers.cooldown.CooldownsManager
 import space.astro.bot.managers.roles.SimpleMemberRolesManager
 import space.astro.bot.managers.util.GuildErrorNotifier
 import space.astro.bot.managers.util.PremiumRequirementDetector
+import space.astro.bot.managers.vc.*
 import space.astro.bot.managers.vc.events.VCEvent
 import space.astro.shared.core.services.dao.TemporaryVCDao
 
@@ -14,7 +15,12 @@ class VCEventHandler(
     val premiumRequirementDetector: PremiumRequirementDetector,
     val cooldownsManager: CooldownsManager,
     val temporaryVCDao: TemporaryVCDao,
-    val guildErrorNotifier: GuildErrorNotifier
+    val guildErrorNotifier: GuildErrorNotifier,
+    val vcOwnershipManager: VCOwnershipManager,
+    val vcNameManager: VCNameManager,
+    val vcPrivateChatManager: VCPrivateChatManager,
+    val vcWaitingRoomManager: VCWaitingRoomManager,
+    val vcPositionManager: VCPositionManager
 ) {
     fun handleEvents(
             events: List<VCEvent>,

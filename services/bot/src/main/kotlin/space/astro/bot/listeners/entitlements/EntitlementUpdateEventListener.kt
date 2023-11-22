@@ -1,5 +1,6 @@
 package space.astro.bot.listeners.entitlements
 
+import net.dv8tion.jda.api.events.entitlement.EntitlementUpdateEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 

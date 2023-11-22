@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import org.springframework.stereotype.Component
 import space.astro.bot.extentions.modifyPermissionOverride
 import space.astro.bot.managers.util.PermissionSets
 import space.astro.bot.managers.vc.ctx.VCOperationCTX
@@ -12,7 +13,8 @@ import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.PermissionsInherited
 import space.astro.shared.core.models.database.TemporaryVCData
 
-object VCPrivateChatManager {
+@Component
+class VCPrivateChatManager {
     suspend fun create(
         owner: Member,
         generatorData: GeneratorData,
@@ -102,18 +104,25 @@ object VCPrivateChatManager {
         }
     }
 
-    fun VCOperationCTX.performPrivateChatNameRefresh() {
-        if (privateChat != null && privateChatManager != null && temporaryVCData.canBeRenamed()) {
-            val newName = VariablesManager.computePrivateChatName(
-                template = generatorData.defaultChatName,
-                owner = temporaryVCOwner,
-                temporaryVC = temporaryVC
-            )
+    fun performPrivateChatNameRefresh(
+        vcOperationCTX: VCOperationCTX
+    ) {
+        vcOperationCTX.apply {
+            if (privateChat != null
+                && privateChatManager != null
+                && temporaryVCData.canBeRenamed()
+            ) {
+                val newName = VariablesManager.computePrivateChatName(
+                    template = generatorData.defaultChatName,
+                    owner = temporaryVCOwner,
+                    temporaryVC = temporaryVC
+                )
 
-            if (privateChat.name != newName) {
-                temporaryVCData.performRenameOperationsOnTemporaryVCData()
-                privateChatManager.setName(newName)
-                markPrivateChatManagerAsUpdated()
+                if (privateChat.name != newName) {
+                    temporaryVCData.performRenameOperationsOnTemporaryVCData()
+                    privateChatManager.setName(newName)
+                    markPrivateChatManagerAsUpdated()
+                }
             }
         }
     }
