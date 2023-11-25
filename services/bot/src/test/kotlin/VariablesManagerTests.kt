@@ -1,4 +1,4 @@
-import space.astro.bot.managers.vc.VariablesManager
+import space.astro.bot.core.managers.vc.VariablesManager
 import kotlin.test.Test
 import kotlin.test.assertFalse
 

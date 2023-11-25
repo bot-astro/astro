@@ -7,7 +7,7 @@ import space.astro.bot.command.AbstractCommand
 import space.astro.bot.command.BaseCommand
 import space.astro.bot.command.Command
 import space.astro.bot.command.CommandContext
-import space.astro.bot.ui.Buttons
+import space.astro.bot.core.ui.Buttons
 import space.astro.shared.core.util.Colors
 import space.astro.shared.core.util.Links
 

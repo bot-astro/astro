@@ -5,7 +5,7 @@ import space.astro.bot.command.AbstractCommand
 import space.astro.bot.command.BaseCommand
 import space.astro.bot.command.Command
 import space.astro.bot.command.CommandContext
-import space.astro.bot.ui.Messages
+import space.astro.bot.core.ui.Messages
 
 @Command(
     name = "connections",
