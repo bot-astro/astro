@@ -9,6 +9,6 @@ class ConfigurationErrorEventListener {
 
     @EventListener
     fun configurationErrorReceived(event: ConfigurationErrorEvent) {
-        TODO("Save to influx")
+        TODO("Save to influx, add id to it?")
     }
 }

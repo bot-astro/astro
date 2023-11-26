@@ -10,6 +10,12 @@ import net.dv8tion.jda.api.requests.restaction.ChannelAction
 
 fun Long.toPermissionList() = Permission.getPermissions(this)
 
+/**
+ * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+ * @throws java.lang.IllegalArgumentException
+ *
+ * @see [IPermissionContainerManager.putPermissionOverride] for exceptions
+ */
 fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
     permissionOverride: PermissionOverride?,
     permissionHolder: IPermissionHolder,
@@ -22,6 +28,12 @@ fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
     deny = Permission.getRaw(deny)
 )
 
+/**
+ * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+ * @throws java.lang.IllegalArgumentException
+ *
+ * @see [ChannelAction.addPermissionOverride] for exceptions
+ */
 fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
     permissionOverride: PermissionOverride?,
     permissionHolder: IPermissionHolder,
@@ -41,6 +53,12 @@ fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
     )
 }
 
+/**
+ * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+ * @throws java.lang.IllegalArgumentException
+ *
+ * @see [IPermissionContainerManager.putPermissionOverride] for exceptions
+ */
 fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionContainerManager<T, M>.modifyPermissionOverride(
     permissionHolder: IPermissionHolder,
     allow: List<Permission> = emptyList(),
@@ -51,6 +69,12 @@ fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionCo
     deny = Permission.getRaw(deny)
 )
 
+/**
+ * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+ * @throws java.lang.IllegalArgumentException
+ *
+ * @see [IPermissionContainerManager.putPermissionOverride] for exceptions
+ */
 fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionContainerManager<T, M>.modifyPermissionOverride(
     permissionHolder: IPermissionHolder,
     allow: Long = 0L,

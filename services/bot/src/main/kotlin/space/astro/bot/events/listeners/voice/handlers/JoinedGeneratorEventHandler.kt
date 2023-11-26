@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import space.astro.bot.components.managers.InterfaceManager
 import space.astro.bot.components.managers.vc.VariablesManager
+import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.modifyPermissionOverride
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.models.discord.PermissionSets
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit
 suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     event: VCEvent.JoinedGenerator,
     memberRolesManager: SimpleMemberRolesManager,
-): Boolean {
+) {
     val data = event.vcEventData
     val guild = data.guild
     val owner = data.member
@@ -42,9 +43,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     /// PREMIUM REQUISITES ///
     //////////////////////////
     if (premiumRequirementDetector.exceededMaximumGeneratorAmount(data.guildData)) {
-        // TODO("Error event")
-
-        return false
+        throw ConfigurationException(configurationErrorService.maximumAmountOfGenerator())
     }
 
     //////////////
@@ -67,7 +66,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
                 TODO("Error event")
             }
 
-            return false
+            return
         }
     }
 
@@ -101,13 +100,15 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
                         TODO("Error event")
                     }
             } else {
-                // TODO: Config error
+                throw ConfigurationException(configurationErrorService.premiumFallbackGenerator())
             }
         } else {
-            TODO("Config error")
+            throw ConfigurationException(configurationErrorService.missingFallbackGenerator(
+                encounteredIn = "${data.joinedChannel.name} generator"
+            ))
         }
 
-        return false
+        return
     }
 
 
@@ -119,7 +120,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         .takeIf { it > 0 }
 
     if (generatorCooldown != null) {
-        return false
+        return
     }
 
     /////////////////////////////
@@ -130,8 +131,9 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     val nameTemplate = VariablesManager.getNameTemplateForCreation(generatorData)
 
     if (!premiumRequirementDetector.canUseVCNameTemplate(guildData, nameTemplate)) {
-        // TODO: Config error
-        return false
+        throw ConfigurationException(configurationErrorService.premiumVariables(
+            encounteredIn = "generating a temporary VC with the name $nameTemplate"
+        ))
     }
 
     // positional data
@@ -154,6 +156,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     val name = VariablesManager.computeVcNameForCreation(nameTemplate, owner, bitrate, userLimit, incrementalPosition)
 
     // channel builder initialization
+    // TODO: Handle exceptions
     val temporaryVCBuilder = generatorVC.createCopy()
         .setName(name)
         .apply {
@@ -186,11 +189,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     // denied permissions based on initial state
     generatorData.initialState.permissionDenied?.also { deniedPermission ->
         val targetRole = guild.getRoleById(generatorData.permissionsTargetRole ?: guild.id)
-
-        if (targetRole == null) {
-            TODO("Error event")
-            return false
-        }
+            ?: throw ConfigurationException(configurationErrorService.missingGeneratorTargetRole(data.joinedChannel.name))
 
         val targetRolePermissionOverride = permissionOverrides.firstOrNull { it.id == targetRole.id }
 
@@ -241,7 +240,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         temporaryVCBuilder.await()
     } catch (e: Exception) {
         TODO("Error event")
-        return false
+
     }
 
     try {
@@ -251,7 +250,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
             TODO("Error event")
         }
         TODO("Error event")
-        return false
+
     }
 
     ///////////////////////////////
@@ -260,38 +259,26 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     val privateChat = if (generatorData.autoChat) {
         if (!premiumRequirementDetector.canCreatePrivateChatOnVCGeneration(guildData)) {
-            // TODO: Config error
-            null
+            throw ConfigurationException(configurationErrorService.premiumRequiredForAutoPrivateChatCreation())
         } else {
-            try {
-                vcPrivateChatManager.create(
-                    owner = owner,
-                    generatorData = generatorData,
-                    temporaryVC = temporaryVC
-                )
-            } catch (e: Exception) {
-                // TODO("Error event")
-                null
-            }
+            vcPrivateChatManager.create(
+                owner = owner,
+                generatorData = generatorData,
+                temporaryVC = temporaryVC
+            )
         }
     } else null
 
     val waitingRoom = if (generatorData.autoWaiting) {
         if (!premiumRequirementDetector.canCreateWaitingRoomOnVCGeneration(guildData)) {
-            // TODO: Config error
-            null
+            throw ConfigurationException(configurationErrorService.premiumRequiredForAutoWaitingRoomCreation())
         } else {
-            try {
-                vcWaitingRoomManager.create(
-                    owner = owner,
-                    generatorData = generatorData,
-                    temporaryVC = temporaryVC,
-                    temporaryVCIncrementalPosition = incrementalPosition
-                )
-            } catch (e: Exception) {
-                // TODO("Error event")
-                null
-            }
+            vcWaitingRoomManager.create(
+                owner = owner,
+                generatorData = generatorData,
+                temporaryVC = temporaryVC,
+                temporaryVCIncrementalPosition = incrementalPosition
+            )
         }
     } else null
 
@@ -307,7 +294,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         }
 
 
-    val interfaceMessage = if (interfaceToSend != null) {
+    val creationChatMessage = if (interfaceToSend != null) {
         InterfaceManager.computeMessage(interfaceToSend)
     } else if (generatorData.defaultChatText != null) {
         val content = VariablesManager.computeChatMessage(generatorData.defaultChatText!!, owner, temporaryVC)
@@ -324,11 +311,11 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     } else
         null
 
-    if (interfaceMessage != null) {
+    if (creationChatMessage != null) {
         if (!premiumRequirementDetector.canSendMessageInVCChatOnVCGeneration(guildData)) {
-            // TODO: Config error
+            throw ConfigurationException(configurationErrorService.premiumRequiredForAutoChatMessageOnCreation())
         } else {
-            chatForMessage.sendMessage(interfaceMessage).queue()
+            chatForMessage.sendMessage(creationChatMessage).queue()
         }
     }
 
@@ -344,7 +331,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
         cooldownsManager.markUserGeneratorsCooldown(data.userId)
 
-        return false
+        return
     }
 
     val temporaryVCData = TemporaryVCData(
@@ -368,7 +355,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         ?.let { guild.getRoleById(it) }
         ?.also {
             if (!premiumRequirementDetector.canAssignTemporaryVCOwnerRole(guildData)) {
-                // TODO: Config error
+                throw ConfigurationException(configurationErrorService.premiumRequiredForOwnerRole())
             } else {
                 memberRolesManager.add(it)
             }
@@ -377,7 +364,5 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     // TODO: BIGQUERY - generator statistics
 
     // TODO: PROPOSAL - first time user created a temporary vc private message
-
-    return true
 }
 

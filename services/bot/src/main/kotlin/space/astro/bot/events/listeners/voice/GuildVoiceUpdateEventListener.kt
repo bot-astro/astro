@@ -6,7 +6,9 @@ import net.dv8tion.jda.api.exceptions.HierarchyException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.events.listeners.voice.handlers.VCEventHandler
+import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEventData
 import space.astro.shared.core.daos.GuildDao
@@ -19,7 +21,8 @@ class GuildVoiceUpdateEventListener(
     val guildDao: GuildDao,
     val temporaryVCDao: TemporaryVCDao,
     val vcEventDetector: VCEventDetector,
-    val vcEventHandler: VCEventHandler
+    val vcEventHandler: VCEventHandler,
+    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher
 ) {
 
     @EventListener
@@ -48,7 +51,14 @@ class GuildVoiceUpdateEventListener(
             return
         }
 
-        vcEventHandler.handleEvents(events, memberRolesManager)
+        try {
+            vcEventHandler.handleEvents(events, memberRolesManager)
+        } catch (e: ConfigurationException) {
+            configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                guildId = event.guild.id,
+                configurationErrorDto = e.configurationErrorDto
+            )
+        }
 
         memberRolesManager.queue {
             when (it) {
