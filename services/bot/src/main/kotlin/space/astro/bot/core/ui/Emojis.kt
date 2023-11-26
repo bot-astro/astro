@@ -8,7 +8,6 @@ object Emojis {
     val party = Emoji.fromCustom("party", 1029823600900972594, false)
 
     val discord = Emoji.fromCustom("discord", 1029823570148339902, false)
-    val topgg = Emoji.fromCustom("topgg", 1029823614322753547, false)
 
     val online = Emoji.fromCustom("online", 1029823596203343963, false)
     val idle = Emoji.fromCustom("idle", 1029823579312902205, false)

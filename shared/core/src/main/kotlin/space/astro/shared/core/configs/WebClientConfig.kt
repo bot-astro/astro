@@ -3,6 +3,14 @@ package space.astro.shared.core.configs
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
+/**
+ * Generic configuration variables for web clients
+ * @property httpMaxConnections
+ * @property httpMaxIdleTime
+ * @property httpMaxLifeTime
+ * @property httpPendingAcquireTimeout
+ * @property httpEvictInBackground
+ */
 @Configuration
 @ConfigurationProperties("web.client")
 class WebClientConfig {

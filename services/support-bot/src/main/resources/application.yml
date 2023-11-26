@@ -1,0 +1,42 @@
+info:
+  app:
+    name: "Support bot with an API"
+    description: "A Discord bot that handles the support server of Astro, includes an API for reacting to various events, mainly premium."
+    version: "1.0.0"
+
+server:
+  port: "${PORT:9000}"
+
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  endpoints:
+    web:
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET, POST
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+          - prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include:
+            - readinessState
+        liveness:
+          include:
+            - livenessState
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}

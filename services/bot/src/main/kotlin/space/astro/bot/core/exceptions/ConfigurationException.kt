@@ -1,7 +1,7 @@
 package space.astro.bot.core.exceptions
 
-import space.astro.bot.models.error.ConfigurationError
+import space.astro.bot.models.error.ConfigurationErrorDto
 
 class ConfigurationException(
-    val configurationError: ConfigurationError
-): Exception(configurationError.toString())
+    val configurationErrorDto: ConfigurationErrorDto
+): Exception(configurationErrorDto.toString())

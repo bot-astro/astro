@@ -18,7 +18,12 @@ fun String.asChannelMention() = "<#$this>"
 /**
  * Returns a markdown link with this String as its name
  */
-fun String.link(url: String) = "[$this]($url)"
+fun String.linkFromName(url: String) = "[$this]($url)"
+
+/**
+ * Returns a markdown link with this String as its link
+ */
+fun String.linkFromLink(name: String) = "[$name][$this]"
 
 /**
  * Returns a relative timestamp from a long: <t:long:style>

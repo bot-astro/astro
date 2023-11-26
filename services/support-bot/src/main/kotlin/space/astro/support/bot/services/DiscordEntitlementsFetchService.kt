@@ -49,6 +49,12 @@ class DiscordEntitlementsFetchService(
         .build()
 
 
+    /**
+     * Fetches the entitlements for the `entitlementsBotId` defined in [discordApplicationConfig]
+     *
+     * @param guildId Optional guild id filter
+     * @param userId Optional user id filter
+     */
     suspend fun fetchEntitlements(
         guildId: String?,
         userId: String?

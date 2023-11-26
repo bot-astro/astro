@@ -3,6 +3,12 @@ package space.astro.shared.core.components.redis
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
+/**
+ * Redis configuration variables
+ *
+ * @property cluster
+ * @property uris
+ */
 @Configuration
 @ConfigurationProperties(prefix = "io.redis")
 class RedisConfig {

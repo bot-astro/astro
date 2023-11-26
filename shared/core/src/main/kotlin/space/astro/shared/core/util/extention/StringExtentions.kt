@@ -10,4 +10,4 @@ fun String.capitalize() = this.replaceFirstChar {
 /**
  * Capitalizes the first char of this String and lowercase the rest of it
  */
-fun String.capitalizeOnlyFirst() = this.lowercase().capitalize()
+fun String.lowercaseAndCapitalize() = this.lowercase().capitalize()

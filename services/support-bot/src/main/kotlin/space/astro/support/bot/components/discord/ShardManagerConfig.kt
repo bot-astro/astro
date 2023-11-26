@@ -3,7 +3,7 @@ package space.astro.support.bot.components.discord
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
-@Configuration()
+@Configuration
 @ConfigurationProperties("shard.manager")
 class ShardManagerConfig {
 

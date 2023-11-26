@@ -2,13 +2,13 @@ package space.astro.bot.events.listeners.voice.handlers
 
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
-import space.astro.bot.core.managers.cooldown.CooldownsManager
-import space.astro.bot.core.managers.roles.SimpleMemberRolesManager
-import space.astro.bot.core.managers.util.GuildErrorNotifier
-import space.astro.bot.core.managers.util.PremiumRequirementDetector
+import space.astro.bot.components.managers.CooldownsManager
+import space.astro.bot.components.managers.PremiumRequirementDetector
+import space.astro.bot.components.managers.vc.*
 import space.astro.bot.core.managers.vc.*
-import space.astro.bot.core.managers.vc.events.VCEvent
-import space.astro.shared.core.services.dao.TemporaryVCDao
+import space.astro.bot.models.discord.SimpleMemberRolesManager
+import space.astro.bot.models.discord.vc.event.VCEvent
+import space.astro.shared.core.daos.TemporaryVCDao
 
 @Component
 class VCEventHandler(

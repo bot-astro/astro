@@ -1,7 +1,7 @@
 package space.astro.bot.events.listeners.voice.handlers
 
-import space.astro.bot.core.managers.roles.SimpleMemberRolesManager
-import space.astro.bot.core.managers.vc.events.VCEvent
+import space.astro.bot.models.discord.SimpleMemberRolesManager
+import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.shared.core.models.database.ConnectionAction
 
 fun VCEventHandler.handleLeftConnectedVCEvent(

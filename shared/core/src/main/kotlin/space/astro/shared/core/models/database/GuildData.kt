@@ -3,11 +3,12 @@ package space.astro.shared.core.models.database
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
-import space.astro.shared.core.util.Colors
-import space.astro.shared.core.util.Links
+import space.astro.shared.core.util.ui.Colors
+import space.astro.shared.core.util.ui.Links
 
 data class GuildData(
     val guildID: String,
+    @Deprecated("Chargebee premium system is deprecated")
     val upgradedByUserID: String? = null,
     val entitlements: MutableList<GuildEntitlement> = mutableListOf(),
     var bannedCommands: MutableList<String> = mutableListOf(),
@@ -119,10 +120,10 @@ data class EmbedStyle(
     var timestamp: Long? = null,
     var color: Int = Colors.purple.rgb,
     var thumbnail: String? = null,
-    var image: String? = Links.interfaceInstructions,
+    var image: String? = Links.INTERFACE_BUTTONS_IMAGE,
     var authorName: String? = "Astro Interface",
     var authorUrl: String? = Links.base,
-    var authorIconUrl: String? = Links.logo,
+    var authorIconUrl: String? = Links.LOGO,
     var footer: String? = "Use the buttons below to manage your voice channel",
     var footerIconUrl: String? = null
 )

@@ -8,9 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @SpringBootApplication(
     scanBasePackages = [
         "space.astro.bot",
-        "space.astro.shared.core.configs",
-        "space.astro.shared.core.services",
-        "space.astro.shared.core.components",
+        "space.astro.shared.core",
     ]
 )
 class Application

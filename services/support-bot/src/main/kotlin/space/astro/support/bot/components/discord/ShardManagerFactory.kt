@@ -24,10 +24,7 @@ class ShardManagerFactory(
     val jdaToSpringEventBridge: JdaToSpringEventBridge
 ) {
 
-    private val intents = listOf(
-//        GatewayIntent.GUILD_MESSAGES,
-        GatewayIntent.DIRECT_MESSAGES
-    )
+    private val intents = emptyList<GatewayIntent>()
 
     @Bean
     fun getDefaultShardManager(

@@ -1,9 +1,9 @@
 package space.astro.api.central.daos
 
-import com.mongodb.client.MongoCollection
-import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.ReplaceOptions
+import com.mongodb.kotlin.client.MongoCollection
+import com.mongodb.kotlin.client.MongoDatabase
 import org.springframework.stereotype.Component
 import space.astro.api.central.models.DiscordAuthedUser
 

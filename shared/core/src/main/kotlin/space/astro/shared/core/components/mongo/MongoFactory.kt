@@ -9,6 +9,9 @@ import org.bson.codecs.pojo.PojoCodecProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 
+/**
+ * Factory for [MongoClient] and [MongoDatabase]
+ */
 @Component
 class MongoFactory {
 

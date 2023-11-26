@@ -4,16 +4,16 @@ import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.events.user.update.UserUpdateActivitiesEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import space.astro.bot.components.managers.CooldownsManager
+import space.astro.bot.components.managers.PremiumRequirementDetector
+import space.astro.bot.components.managers.vc.VCNameManager
+import space.astro.bot.components.managers.vc.VCPrivateChatManager
+import space.astro.bot.components.managers.vc.VCWaitingRoomManager
 import space.astro.bot.core.exceptions.ConfigurationException
-import space.astro.bot.core.managers.cooldown.CooldownsManager
-import space.astro.bot.core.managers.util.PremiumRequirementDetector
-import space.astro.bot.core.managers.vc.VCNameManager
-import space.astro.bot.core.managers.vc.VCPrivateChatManager
-import space.astro.bot.core.managers.vc.VCWaitingRoomManager
-import space.astro.bot.core.managers.vc.ctx.VCOperationCTX
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
-import space.astro.shared.core.services.dao.GuildDao
-import space.astro.shared.core.services.dao.TemporaryVCDao
+import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.shared.core.daos.GuildDao
+import space.astro.shared.core.daos.TemporaryVCDao
 
 @Component
 class MemberUpdateActivitiesEventListener(
@@ -86,7 +86,7 @@ class MemberUpdateActivitiesEventListener(
         } catch (e: ConfigurationException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
                 guildId = guildId,
-                configurationError = e.configurationError
+                configurationErrorDto = e.configurationErrorDto
             )
         }
 

@@ -8,8 +8,8 @@ import space.astro.bot.command.BaseCommand
 import space.astro.bot.command.Command
 import space.astro.bot.command.CommandContext
 import space.astro.bot.core.ui.Buttons
-import space.astro.shared.core.util.Colors
-import space.astro.shared.core.util.Links
+import space.astro.shared.core.util.ui.Colors
+import space.astro.shared.core.util.ui.Links
 
 
 @Command(
@@ -33,9 +33,9 @@ class HelpCommand() : AbstractCommand() {
             color = Colors.purple.rgb,
             authorName = "Help panel",
             authorUrl = Links.base,
-            authorIcon = Links.logo,
+            authorIcon = Links.LOGO,
             description = "Astro can be used to generate temporary voice channels & assign temporary roles to users in voice channels!" +
-                    "\n\nYou can setup the bot or customise it on its [dashboard](${Links.dashboard})" +
+                    "\n\nYou can setup the bot or customise it on its [dashboard](${Links.DASHBOARD})" +
                     "\nUse the buttons below for other useful links!"
         )
     }

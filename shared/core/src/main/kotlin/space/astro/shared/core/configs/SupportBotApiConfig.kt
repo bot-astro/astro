@@ -3,6 +3,13 @@ package space.astro.shared.core.configs
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
+/**
+ * Api configuration variables for the support-bot module
+ *
+ * @property baseUrl
+ * @property originUrl
+ * @property auth
+ */
 @Configuration
 @ConfigurationProperties("premium.api")
 class SupportBotApiConfig {

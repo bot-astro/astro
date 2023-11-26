@@ -3,11 +3,11 @@ package space.astro.bot.events.listeners.voice.handlers
 import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.Permission
 import space.astro.bot.core.exceptions.ConfigurationException
-import space.astro.bot.core.managers.roles.SimpleMemberRolesManager
-import space.astro.bot.core.managers.util.PermissionSets
-import space.astro.bot.core.managers.vc.ctx.VCOperationCTX
-import space.astro.bot.core.managers.vc.events.VCEvent
 import space.astro.bot.core.ui.Emojis
+import space.astro.bot.models.discord.PermissionSets
+import space.astro.bot.models.discord.SimpleMemberRolesManager
+import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.bot.models.discord.vc.event.VCEvent
 
 fun VCEventHandler.handleLeftTemporaryVCEvent(
     event: VCEvent.LeftTemporaryVC,

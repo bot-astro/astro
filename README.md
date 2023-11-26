@@ -2,6 +2,8 @@
 Astro requires the following services:
 - MongoDB
 - Redis
+- InfluxDB
+- BigQuery
 
 A Docker compose file for development purposes is available in `/docker/compose`, named `docker-compose-dev.yml`  
 It creates all the required services and their web dashboards:

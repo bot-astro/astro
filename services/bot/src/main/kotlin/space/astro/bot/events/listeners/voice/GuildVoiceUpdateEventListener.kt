@@ -6,12 +6,11 @@ import net.dv8tion.jda.api.exceptions.HierarchyException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.bot.core.managers.roles.SimpleMemberRolesManager
-import space.astro.bot.core.managers.vc.events.VCEventData
-import space.astro.bot.core.managers.vc.events.VCEventDetector
 import space.astro.bot.events.listeners.voice.handlers.VCEventHandler
-import space.astro.shared.core.services.dao.GuildDao
-import space.astro.shared.core.services.dao.TemporaryVCDao
+import space.astro.bot.models.discord.SimpleMemberRolesManager
+import space.astro.bot.models.discord.vc.event.VCEventData
+import space.astro.shared.core.daos.GuildDao
+import space.astro.shared.core.daos.TemporaryVCDao
 
 private val log = KotlinLogging.logger {  }
 

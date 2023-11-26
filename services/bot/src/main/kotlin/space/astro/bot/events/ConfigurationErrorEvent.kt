@@ -1,8 +1,8 @@
 package space.astro.bot.events
 
-import space.astro.bot.models.error.ConfigurationError
+import space.astro.bot.models.error.ConfigurationErrorDto
 
 class ConfigurationErrorEvent(
     guildId: String,
-    configurationError: ConfigurationError
+    configurationErrorDto: ConfigurationErrorDto
 )

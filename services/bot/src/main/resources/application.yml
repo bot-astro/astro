@@ -1,7 +1,7 @@
 info:
   app:
     name: "Bot"
-    description: "The bot Discord application."
+    description: "The main bot Discord application."
     version: "1.0.0"
 
 management:

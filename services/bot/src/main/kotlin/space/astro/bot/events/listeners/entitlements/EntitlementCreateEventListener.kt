@@ -1,22 +1,31 @@
 package space.astro.bot.events.listeners.entitlements
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import net.dv8tion.jda.api.events.entitlement.EntitlementCreateEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.config.DiscordApplicationConfig
+import space.astro.bot.services.SupportBotApiService
+import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.models.database.GuildEntitlement
-import space.astro.shared.core.services.dao.GuildDao
 
 private val logger = KotlinLogging.logger {  }
 
 @Component
 class EntitlementCreateEventListener(
     val discordApplicationConfig: DiscordApplicationConfig,
-    val guildDao: GuildDao
+    val guildDao: GuildDao,
+    val supportBotApiService: SupportBotApiService,
+    val coroutineScope: CoroutineScope
 ) {
     @EventListener
     fun receiveEntitlementCreateEvent(event: EntitlementCreateEvent) {
+        coroutineScope.launch {
+            supportBotApiService.forwardCreateEntitlementEvent(event.entitlement)
+        }
+
         when (event.entitlement.skuId) {
             discordApplicationConfig.premiumServerSkuId -> {
                 val guildData = guildDao.getOrCreate(event.entitlement.guildId!!)
@@ -39,8 +48,6 @@ class EntitlementCreateEventListener(
 
                     guildDao.save(guildData)
                 }
-
-                // TODO: Send event to microservice
             }
             else -> logger.warn { "Received entitlement with unknown sku id\nData:${event.entitlement}" }
         }

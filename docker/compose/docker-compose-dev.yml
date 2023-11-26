@@ -1,4 +1,6 @@
 version: "3.8"
+name: "astro-development-environment"
+
 services:
   astro-mongo:
     image: mongo:latest

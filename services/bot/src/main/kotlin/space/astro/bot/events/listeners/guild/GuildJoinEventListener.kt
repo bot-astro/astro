@@ -6,11 +6,11 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.bot.core.extentions.toLinkWithName
 import space.astro.bot.core.extentions.toPermissionList
-import space.astro.bot.core.managers.util.PermissionSets
-import space.astro.shared.core.util.Colors
-import space.astro.shared.core.util.Links
+import space.astro.bot.models.discord.PermissionSets
+import space.astro.shared.core.util.extention.linkFromLink
+import space.astro.shared.core.util.ui.Colors
+import space.astro.shared.core.util.ui.Links
 
 @Component
 class GuildJoinEventListener {
@@ -48,14 +48,14 @@ class GuildJoinEventListener {
         return Embed(
             color = Colors.purple.rgb,
             authorName = "Astro just landed in ${guild.name}!",
-            authorUrl = Links.base,
+            authorUrl = Links.WEBSITE,
             authorIcon = guild.selfMember.user.effectiveAvatarUrl,
             description = "Thanks for inviting Astro in this amazing server, let's get started making it better now!",
             thumbnail = guild.iconUrl ?: guild.selfMember.user.effectiveAvatarUrl,
             fields = listOf(
                 MessageEmbed.Field(
                     "Setup",
-                    "Open the ${Links.dashboard.toLinkWithName("dashboard")} and configure Astro!",
+                    "Open the ${Links.DASHBOARD.linkFromLink("dashboard")} and configure Astro!",
                     false
                 ),
                 // TODO: Command mention
@@ -65,7 +65,7 @@ class GuildJoinEventListener {
                     false
                 )
             ),
-            footerText = "Developed by the ${Links.developers.toLinkWithName("Astro team")}",
+            footerText = "Developed by the ${Links.DEVELOPERS.linkFromLink("Astro team")}",
         )
     }
 }

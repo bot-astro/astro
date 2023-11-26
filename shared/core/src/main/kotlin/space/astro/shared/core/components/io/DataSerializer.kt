@@ -4,6 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Component
 
+/**
+ * Component that can be used to serialize and deserialize data
+ *
+ * @param objectMapper
+ */
 @Component
 final class DataSerializer(
     val objectMapper: ObjectMapper
