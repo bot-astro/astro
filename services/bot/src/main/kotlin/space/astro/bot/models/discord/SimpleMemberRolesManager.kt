@@ -32,18 +32,14 @@ class SimpleMemberRolesManager(
      *
      * **See [Guild.modifyMemberRoles] for the possible exceptions**
      */
-    fun queue(failure: Consumer<in Throwable>) {
+    fun queue(failure: Consumer<in Throwable>? = null) {
         if (rolesToAdd.isNotEmpty() || rolesToRemove.isNotEmpty()) {
             rolesToRemove.removeAll { it.id in rolesToAdd.map { it.id } }
 
-            try {
-                guild
-                    .modifyMemberRoles(member, rolesToAdd, rolesToRemove)
-                    .reason("applied the necessary roles based on the generator and connection features settings")
-                    .queue(null, failure)
-            } catch (e: Exception) {
-                throw e
-            }
+            guild
+                .modifyMemberRoles(member, rolesToAdd, rolesToRemove)
+                .reason("applied the necessary roles based on the generator and connection features settings")
+                .queue(null, failure)
         }
     }
 }

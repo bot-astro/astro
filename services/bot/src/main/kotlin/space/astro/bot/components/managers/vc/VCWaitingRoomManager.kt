@@ -4,17 +4,28 @@ import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.requests.ErrorResponse
 import org.springframework.stereotype.Component
+import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.modifyPermissionOverride
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.bot.services.ConfigurationErrorService
 import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.InitialPosition
 import space.astro.shared.core.models.database.PermissionsInherited
 import space.astro.shared.core.models.database.TemporaryVCData
 
 @Component
-class VCWaitingRoomManager {
+class VCWaitingRoomManager(
+    private val configurationErrorService: ConfigurationErrorService
+) {
+    /**
+     * @throws InsufficientPermissionException
+     * @throws ConfigurationException
+     */
     suspend fun create(
         owner: Member,
         generatorData: GeneratorData,
@@ -102,9 +113,17 @@ class VCWaitingRoomManager {
             }
 
             return builder.await()
-        } catch (e: Exception) {
-            TODO("Document error")
-            throw e
+        } catch (e: ErrorResponseException) {
+            val configError = when (e.errorResponse) {
+                ErrorResponse.MAX_CHANNELS -> configurationErrorService.maximumAmountOfChannelsReached(
+                    encounteredIn = "creating the waiting room of a temporary VC"
+                )
+                else -> configurationErrorService.unknownError(
+                    encounteredIn = "creating the waiting room of a temporary VC: ${e.meaning}"
+                )
+            }
+
+            throw ConfigurationException(configError)
         }
     }
 

@@ -5,10 +5,21 @@ import net.dv8tion.jda.api.entities.IPermissionHolder
 import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.attribute.IPermissionContainer
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
+import net.dv8tion.jda.api.exceptions.HierarchyException
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.managers.channel.attribute.IPermissionContainerManager
 import net.dv8tion.jda.api.requests.restaction.ChannelAction
+import space.astro.bot.models.error.ConfigurationErrorDto
 
 fun Long.toPermissionList() = Permission.getPermissions(this)
+
+fun InsufficientPermissionException.toConfigurationErrorDto() = ConfigurationErrorDto(
+    description = "Astro is missing the ${permission.getName()} permission in channel with ID $channelId"
+)
+
+fun HierarchyException.toConfigurationErrorDto() = ConfigurationErrorDto(
+    description = "Astro is not high enough in the server settings roles hierarchy to assign or remove some roles."
+)
 
 /**
  * @throws net.dv8tion.jda.api.exceptions.InsufficientPermissionException

@@ -130,7 +130,9 @@ class VCNameManager(
      */
     private fun VCOperationCTX.validatePremiumRequirements(nameTemplate: String) {
         if (premiumRequirementDetector.canUseVCNameTemplate(guildData, nameTemplate)) {
-            throw ConfigurationException(configurationErrorService.premiumVariables())
+            throw ConfigurationException(configurationErrorService.premiumVariables(
+                encounteredIn = "applying the name $nameTemplate to a temporary VC"
+            ))
         }
     }
 
@@ -202,6 +204,9 @@ class VCNameManager(
         }
     }
 
+    /**
+     * @throws ConfigurationException
+     */
     private fun VCOperationCTX.performNameUpdates(
         name: String
     ) {
@@ -212,7 +217,16 @@ class VCNameManager(
         temporaryVCData.performRenameOperationsOnTemporaryVCData(
             renamedByUser = vcOperationOrigin == VCOperationCTX.VCOperationOrigin.USER_RENAME
         )
-        temporaryVCManager.setName(name)
+        try {
+            temporaryVCManager.setName(name)
+        } catch (e: IllegalArgumentException) {
+            throw ConfigurationException(
+                configurationErrorService.invalidChannelName(
+                    encounteredIn = "temporary vc name: $name"
+                )
+            )
+        }
+
         markTemporaryVCManagerAsUpdated()
     }
 }

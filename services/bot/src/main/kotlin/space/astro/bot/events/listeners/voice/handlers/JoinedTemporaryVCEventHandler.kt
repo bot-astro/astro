@@ -36,23 +36,15 @@ fun VCEventHandler.handleJoinedTemporaryVCEvent(
     temporaryVC.manager.modifyPermissionOverride(
         permissionHolder = member,
         allow = PermissionSets.userTemporaryVCPermissions
-    ).queue({}) {
-        TODO("Do we need to handle permission issues here or globally?")
-    }
+    ).queue()
 
     // allow user to see the private text chat of the temporary VC if existing
     val privateChat = temporaryVCData.chatID
         ?.let { guild.getTextChannelById(it) }
         ?.also {
-            if (premiumRequirementDetector.isGuildPremium(data.guildData)) {
-                it.upsertPermissionOverride(member)
-                    .grant(PermissionSets.userTemporaryVCChatPermissions)
-                    .queue({}) {
-                        TODO("Error event")
-                    }
-            } else {
-                TODO("Error event")
-            }
+            it.upsertPermissionOverride(member)
+                .grant(PermissionSets.userTemporaryVCChatPermissions)
+                .queue()
         }
 
     ////////////////

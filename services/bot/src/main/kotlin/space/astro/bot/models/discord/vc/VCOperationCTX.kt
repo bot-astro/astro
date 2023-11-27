@@ -118,8 +118,12 @@ data class VCOperationCTX(
         }
     }
 
-    enum class ManagerType {
-        TEMPORARY_VC, PRIVATE_CHAT, WAITING_ROOM
+    enum class ManagerType(
+        val readableName: String
+    ) {
+        TEMPORARY_VC("temporary vc"),
+        PRIVATE_CHAT("private chat"),
+        WAITING_ROOM("waiting room")
     }
 
     enum class VCOperationOrigin {

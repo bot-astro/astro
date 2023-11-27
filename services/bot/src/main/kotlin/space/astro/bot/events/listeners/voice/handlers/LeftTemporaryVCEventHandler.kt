@@ -2,7 +2,6 @@ package space.astro.bot.events.listeners.voice.handlers
 
 import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.Permission
-import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.ui.Emojis
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.SimpleMemberRolesManager
@@ -62,15 +61,16 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
             val ownerRole = generatorData.ownerRole?.let { guild.getRoleById(it) }
             ownerRole?.also { memberRolesManager.remove(it) }
 
-            try {
-                vcOwnershipManager.changeOwner(vcOperationCTX, newOwner)
-            } catch (e: ConfigurationException) {
-                // TODO: Error
-            }
+            vcOwnershipManager.changeOwner(vcOperationCTX, newOwner)
 
             vcOperationCTX.queueUpdatedManagers(
-                failure = { managerType, throwable ->
-                    TODO("Error event")
+                failure = { managerType, e ->
+                    configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                        guildId = guild.id,
+                        configurationErrorDto = configurationErrorService.unknownError(
+                            encounteredIn = "updating ${managerType.readableName}: ${e.message ?: ""}"
+                        )
+                    )
                 }
             )
             temporaryVCDao.save(guild.id, vcOperationCTX.temporaryVCData)

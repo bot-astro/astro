@@ -1,5 +1,6 @@
 package space.astro.bot.services
 
+import net.dv8tion.jda.api.Permission
 import org.springframework.stereotype.Service
 import space.astro.bot.models.error.ConfigurationErrorDto
 
@@ -52,26 +53,18 @@ class ConfigurationErrorService {
                 "\nEither upgrade to premium or remove it!"
     )
 
-    ///////////////////
-    /// PERMISSIONS ///
-    ///////////////////
-    fun unknownMissingPermission(requiredFor: String) = ConfigurationErrorDto(
-        description = "Astro is missing some permissions, can't resolve which one!" +
-                "\nRequired for: $requiredFor"
-    )
-
-    fun missingGuildManageChannelPermission(requiredFor: String) = ConfigurationErrorDto(
-        description = "Astro is missing `Manage channels` permission in the server settings!" +
-                "\nRequired for: $requiredFor",
-    )
-
-    fun missingGuildManageRolesPermission(requiredFor: String) = ConfigurationErrorDto(
-        description = "Astro is missing `Manage roles` permission in the server settings!" +
-                "\nRequired for: $requiredFor",
-    )
+    /////////////////
+    /// GENERATOR ///
+    /////////////////
 
     fun missingGeneratorTargetRole(generatorName: String) = ConfigurationErrorDto(
         description = "The generator $generatorName has a target role set but Astro couldn't find that role in your server!"
+    )
+
+    fun missingFallbackGenerator(encounteredIn: String) = ConfigurationErrorDto(
+        description = "Your category for temporary VCs is full and you haven't configured a fallback generator." +
+                "\nThis means Astro could not generate a temporary VC because the category was already full, consider creating a fallback generator." +
+                "\nEncountered in: $encounteredIn"
     )
 
     //////////////////////////
@@ -81,12 +74,6 @@ class ConfigurationErrorService {
     fun maximumAmountOfChannelsReached(encounteredIn: String) = ConfigurationErrorDto(
         description = "Your server has reached the maximum amount of channels" +
                 "\nEncountered in: $encounteredIn",
-    )
-
-    fun missingFallbackGenerator(encounteredIn: String) = ConfigurationErrorDto(
-        description = "Your category for temporary VCs is full and you haven't configured a fallback generator." +
-                "\nThis means Astro could not generate a temporary VC because the category was already full, consider creating a fallback generator." +
-                "\nEncountered in: $encounteredIn"
     )
 
     fun invalidChannelName(encounteredIn: String) = ConfigurationErrorDto(

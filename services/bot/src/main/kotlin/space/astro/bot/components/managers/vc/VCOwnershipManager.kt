@@ -1,22 +1,29 @@
 package space.astro.bot.components.managers.vc
 
 import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
+import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.modifyPermissionOverride
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.bot.services.ConfigurationErrorService
 
 @Component
 class VCOwnershipManager(
     val vcNameManager: VCNameManager,
     val vcPrivateChatManager: VCPrivateChatManager,
-    val vcWaitingRoomManager: VCWaitingRoomManager
+    val vcWaitingRoomManager: VCWaitingRoomManager,
+    val configurationErrorService: ConfigurationErrorService
 ) {
     /**
      * Change the owner of a temporary vc.
      * Updates the vc name properly
      *
      * **This doesn't handle owner roles!**
+     *
+     * @throws ConfigurationException
+     * @throws InsufficientPermissionException
      */
     fun changeOwner(
         vcOperationCTX: VCOperationCTX,
@@ -31,6 +38,7 @@ class VCOwnershipManager(
                 privateChatManager?.removePermissionOverride(it)
                 waitingRoomManager?.removePermissionOverride(it)
             }
+
             markTemporaryVCManagerAsUpdated()
             markPrivateChatManagerAsUpdated()
             markWaitingRoomManagerAsUpdated()
@@ -46,7 +54,6 @@ class VCOwnershipManager(
                 permissionHolder = newOwner,
                 allow = ownerPermissions
             )
-
 
             ///////////////////////
             /// UPDATE CTX DATA ///

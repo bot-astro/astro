@@ -12,6 +12,7 @@ import space.astro.bot.components.managers.vc.VCWaitingRoomManager
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.bot.services.ConfigurationErrorService
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
 
@@ -24,7 +25,8 @@ class MemberUpdateActivitiesEventListener(
     val vcNameManager: VCNameManager,
     val vcPrivateChatManager: VCPrivateChatManager,
     val vcWaitingRoomManager: VCWaitingRoomManager,
-    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher
+    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
+    val configurationErrorService: ConfigurationErrorService
 ) {
 
     @EventListener
@@ -90,8 +92,13 @@ class MemberUpdateActivitiesEventListener(
             )
         }
 
-        vcOperationCTX.queueUpdatedManagers { _, _ ->
-            // TODO: Error
+        vcOperationCTX.queueUpdatedManagers { managerType, e ->
+            configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                guildId = guildId,
+                configurationErrorDto = configurationErrorService.unknownError(
+                    encounteredIn = "updating ${managerType.readableName} name: ${e.message ?: ""}"
+                )
+            )
         }
 
         temporaryVCDao.save(guildId, vcOperationCTX.temporaryVCData)

@@ -1,8 +1,10 @@
 package space.astro.bot.events.listeners.voice.handlers
 
 import dev.minn.jda.ktx.coroutines.await
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.concrete.Category
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import space.astro.bot.components.managers.InterfaceManager
 import space.astro.bot.components.managers.vc.VariablesManager
@@ -59,13 +61,11 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         val availableTemporaryVC = guild.voiceChannelCache.firstOrNull {
             it.id in generatorTemporaryVCsIds
                     && (it.userLimit == 0 || it.members.size < it.userLimit)
+                    && owner.hasPermission(it, Permission.VOICE_CONNECT)
         }
 
         if (availableTemporaryVC != null) {
-            guild.moveVoiceMember(owner, availableTemporaryVC).queue(null) {
-                TODO("Error event")
-            }
-
+            guild.moveVoiceMember(owner, availableTemporaryVC).queue()
             return
         }
     }
@@ -96,9 +96,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         if (fallbackGenerator != null) {
             if (premiumRequirementDetector.canUseFallbackGenerator(guildData)) {
                 guild.moveVoiceMember(owner, fallbackGenerator)
-                    .queueAfter(1, TimeUnit.SECONDS, null) {
-                        TODO("Error event")
-                    }
+                    .queueAfter(1, TimeUnit.SECONDS)
             } else {
                 throw ConfigurationException(configurationErrorService.premiumFallbackGenerator())
             }
@@ -150,13 +148,15 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     // bitrate, userlimit and name
     val bitrate = generatorData.bitrate
         .takeIf { it != 0 }
-        ?.coerceAtMost(guild.maxBitrate)
+        ?.coerceIn(8000, guild.maxBitrate)
         ?: 64000
-    val userLimit = generatorData.userLimit
+    val userLimit = generatorData.userLimit.coerceIn(
+        minimumValue = 0,
+        maximumValue = VoiceChannel.MAX_USERLIMIT
+    )
     val name = VariablesManager.computeVcNameForCreation(nameTemplate, owner, bitrate, userLimit, incrementalPosition)
 
     // channel builder initialization
-    // TODO: Handle exceptions
     val temporaryVCBuilder = generatorVC.createCopy()
         .setName(name)
         .apply {
@@ -239,18 +239,22 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     val temporaryVC = try {
         temporaryVCBuilder.await()
     } catch (e: Exception) {
-        TODO("Error event")
-
+        throw ConfigurationException(
+            configurationErrorService.unknownError(
+                encounteredIn = "creating a temporary VC: ${e.message}"
+            )
+        )
     }
 
     try {
         guild.moveVoiceMember(owner, temporaryVC).await()
     } catch (e: Exception) {
-        temporaryVC.delete().queueAfter(1, TimeUnit.SECONDS, null) {
-            TODO("Error event")
-        }
-        TODO("Error event")
-
+        temporaryVC.delete().queueAfter(1, TimeUnit.SECONDS)
+        throw ConfigurationException(
+            configurationErrorService.unknownError(
+                encounteredIn = "moving a user (${owner.id}) into a temporary VC: ${e.message}"
+            )
+        )
     }
 
     ///////////////////////////////
