@@ -7,9 +7,16 @@ import space.astro.shared.core.util.ui.Colors
 import space.astro.shared.core.util.ui.Links
 
 object Embeds {
-    fun withDescription(description: String): MessageEmbed {
+    fun default(description: String): MessageEmbed {
         return Embed(
             color = Colors.purple.rgb,
+            description = description
+        )
+    }
+
+    fun error(description: String): MessageEmbed {
+        return Embed(
+            color = Colors.red.rgb,
             description = description
         )
     }

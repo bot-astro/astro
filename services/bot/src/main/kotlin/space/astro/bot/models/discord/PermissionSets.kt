@@ -13,9 +13,10 @@ object PermissionSets {
         Permission.MANAGE_CHANNEL,
         Permission.VOICE_CONNECT,
         Permission.VOICE_SPEAK,
+        Permission.CREATE_INSTANT_INVITE,
         Permission.MESSAGE_SEND,
         Permission.MESSAGE_EMBED_LINKS,
-        Permission.MESSAGE_EXT_EMOJI
+        Permission.MESSAGE_EXT_EMOJI,
     )
 
     val astroPrivateChatPermissions = Permission.getRaw(

@@ -3,6 +3,7 @@ package space.astro.bot.command
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import org.springframework.stereotype.Component
+import space.astro.bot.models.discord.vc.VCOperationCTX
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
@@ -11,7 +12,8 @@ annotation class Command(
     val name: String = "",
     val description: String = "N/A",
     val requiredPermissions: Array<Permission> = [],
-    val category: CommandCategory = CommandCategory.ALL
+    val category: CommandCategory = CommandCategory.ALL,
+    val premium: Boolean = false
 )
 
 @Retention(AnnotationRetention.RUNTIME)
@@ -24,7 +26,14 @@ annotation class SubCommand(
     val name: String = "",
     val description: String = "",
     val group: String = "",
-    val groupDescription: String = "N/A"
+    val groupDescription: String = "N/A",
+)
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.VALUE_PARAMETER)
+annotation class VcCommandContextInfo(
+    val ownershipRequired: Boolean,
+    val vcOperationOrigin: VCOperationCTX.VCOperationOrigin
 )
 
 @Retention(AnnotationRetention.RUNTIME)
@@ -37,6 +46,8 @@ annotation class CommandOption(
     vararg val stringChoices: String = [],
     val minValue : Long = 0,
     val maxValue : Long = 0,
+    val minLength : Long = 0,
+    val maxLength : Long = 0,
     val autocomplete: Boolean = false
     // CAN'T USE VARARG TWICE
     //vararg val integerChoices: Int = [],

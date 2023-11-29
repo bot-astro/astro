@@ -2,13 +2,18 @@ package space.astro.bot.command
 
 import mu.KotlinLogging
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.events.Event
+import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.Command.Choice
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
+import kotlin.reflect.full.createType
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.memberFunctions
 
 abstract class AbstractCommand : ICommand {
@@ -90,9 +95,21 @@ abstract class AbstractCommand : ICommand {
     private fun parseOptions(
         function: KFunction<*>
     ): List<OptionData> {
+        if (function.parameters.size < 2) {
+            throw UnsupportedOperationException("Function ${function.name} does not have at least two parameters!")
+        }
+
+        if (function.parameters[0].type != SlashCommandInteractionEvent::class.createType()) {
+            throw UnsupportedOperationException("First parameter of ${function.name} must be a SlashCommandInteractionEvent parameter!")
+        }
+
+        if (!function.parameters[1].type.isSubtypeOf(CommandContext::class.createType())) {
+            throw UnsupportedOperationException("First parameter of ${function.name} must be a subtype of CommandContext!")
+        }
+
         val options = mutableListOf<OptionData>()
         var allowNonOptions = true
-        for (i in 1 until function.parameters.size) {
+        for (i in 2 until function.parameters.size) {
             val parameter = function.parameters[i]
             val type = parameter.type.classifier as KClass<*>
             val commandOptionAnnotation = parameter.findAnnotation<CommandOption>()
@@ -146,6 +163,12 @@ abstract class AbstractCommand : ICommand {
                     }
                     if (commandOptionAnnotation.maxValue != 0L) {
                         optionData.setMaxValue(commandOptionAnnotation.maxValue)
+                    }
+                    if (commandOptionAnnotation.minLength != 0L) {
+                        optionData.setMinValue(commandOptionAnnotation.minLength)
+                    }
+                    if (commandOptionAnnotation.maxLength != 0L) {
+                        optionData.setMaxValue(commandOptionAnnotation.maxLength)
                     }
                     options.add(
                         optionData

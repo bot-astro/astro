@@ -8,6 +8,7 @@ import space.astro.bot.command.BaseCommand
 import space.astro.bot.command.Command
 import space.astro.bot.command.CommandContext
 import space.astro.bot.core.ui.Buttons
+import space.astro.shared.core.util.extention.linkFromLink
 import space.astro.shared.core.util.ui.Colors
 import space.astro.shared.core.util.ui.Links
 
@@ -16,7 +17,7 @@ import space.astro.shared.core.util.ui.Links
     name = "help",
     description = "get started using Astro"
 )
-class HelpCommand() : AbstractCommand() {
+class HelpCommand : AbstractCommand() {
     @BaseCommand
     suspend fun run(
         event: SlashCommandInteractionEvent,
@@ -32,10 +33,10 @@ class HelpCommand() : AbstractCommand() {
         return Embed(
             color = Colors.purple.rgb,
             authorName = "Help panel",
-            authorUrl = Links.base,
+            authorUrl = Links.WEBSITE,
             authorIcon = Links.LOGO,
-            description = "Astro can be used to generate temporary voice channels & assign temporary roles to users in voice channels!" +
-                    "\n\nYou can setup the bot or customise it on its [dashboard](${Links.DASHBOARD})" +
+            description = "Astro can be used to generate temporary voice channels & connect voice channels to roles!" +
+                    "\n\nYou can setup the bot or customise it on its ${Links.DASHBOARD.linkFromLink("dashboard")}" +
                     "\nUse the buttons below for other useful links!"
         )
     }

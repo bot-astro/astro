@@ -44,6 +44,8 @@ data class VCOperationCTX(
     val waitingRoomManager: VoiceChannelManager?,
     val vcOperationOrigin: VCOperationOrigin
 ) {
+    val guild = generator.guild
+
     private var temporaryVCManagerUpdated = false
     private var privateChatManagerUpdated = false
     private var waitingRoomManagerUpdated = false
@@ -130,6 +132,7 @@ data class VCOperationCTX(
         USER_RENAME,
         STATE_CHANGE,
         OWNER_CHANGE,
-        ACTIVITY_CHANGE
+        ACTIVITY_CHANGE,
+        UNKNOWN
     }
 }

@@ -5,10 +5,7 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.CooldownsManager
 import space.astro.bot.components.managers.PremiumRequirementDetector
-import space.astro.bot.components.managers.vc.VCOwnershipManager
-import space.astro.bot.components.managers.vc.VCPositionManager
-import space.astro.bot.components.managers.vc.VCPrivateChatManager
-import space.astro.bot.components.managers.vc.VCWaitingRoomManager
+import space.astro.bot.components.managers.vc.*
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher

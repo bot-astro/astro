@@ -7,6 +7,7 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.services.ConfigurationErrorService
 import space.astro.shared.core.models.database.InitialPosition
 import space.astro.shared.core.models.database.TemporaryVCData
+import space.astro.shared.core.models.database.VCState
 
 @Component
 class VCNameManager(
@@ -17,7 +18,10 @@ class VCNameManager(
     /**
      * Change the name of a temporary vc
      *
+     * TODO: Maybe return a Result or throw exceptions?
+     *
      * @param newNameTemplate
+     *
      * @throws ConfigurationException
      */
     fun performVCRename(
@@ -25,6 +29,7 @@ class VCNameManager(
         newNameTemplate: String
     ) {
         vcOperationCTX.apply {
+            // TODO: Badwords check (premium)
             if (!temporaryVCData.canBeRenamed()) {
                 return
             }
@@ -156,7 +161,13 @@ class VCNameManager(
 
         return when (vcOperationOrigin) {
             VCOperationCTX.VCOperationOrigin.ACTIVITY_CHANGE -> renameConditions.activityChange
-            VCOperationCTX.VCOperationOrigin.STATE_CHANGE -> renameConditions.stateChange
+            VCOperationCTX.VCOperationOrigin.STATE_CHANGE -> {
+                renameConditions.stateChange && when (temporaryVCData.state) {
+                    VCState.LOCKED -> generatorData.defaultLockedName != null
+                    VCState.HIDDEN -> generatorData.defaultHiddenName != null
+                    else -> true
+                }
+            }
             VCOperationCTX.VCOperationOrigin.OWNER_CHANGE -> renameConditions.ownerChange
             else -> true
         }

@@ -306,7 +306,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         MessageCreateBuilder()
             .apply {
                 if (generatorData.defaultChatTextEmbed) {
-                    setEmbeds(Embeds.withDescription(content))
+                    setEmbeds(Embeds.default(content))
                 } else {
                     setContent(content)
                 }

@@ -72,8 +72,8 @@ fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
  */
 fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionContainerManager<T, M>.modifyPermissionOverride(
     permissionHolder: IPermissionHolder,
-    allow: List<Permission> = emptyList(),
-    deny: List<Permission> = emptyList()
+    allow: Collection<Permission> = emptyList(),
+    deny: Collection<Permission> = emptyList()
 ): M = modifyPermissionOverride(
     permissionHolder = permissionHolder,
     allow = Permission.getRaw(allow),

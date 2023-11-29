@@ -4,15 +4,24 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.Channel
+import space.astro.bot.models.discord.vc.VCOperationCTX
 
-data class CommandContext(
+open class CommandContext(
     val commandHandler: CommandHandler,
-    val guild: Guild?,
-    val member: Member?,
+    val guild: Guild,
+    val member: Member,
     val user: User,
     val channel: Channel
 ) {
-    fun getMemberIdLong(): Long = member?.idLong ?: user.idLong
-    fun getChannelIdLong(): Long = channel.idLong
-    fun isFromGuild(): Boolean = guild != null
+    val guildId = guild.id
+    val memberId = member.id
 }
+
+class VcCommandContext(
+    val vcOperationCTX: VCOperationCTX,
+    commandHandler: CommandHandler,
+    guild: Guild,
+    member: Member,
+    user: User,
+    channel: Channel
+) : CommandContext(commandHandler, guild, member, user, channel)

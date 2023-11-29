@@ -94,10 +94,15 @@ enum class InitialPosition {
     BEFORE, AFTER, BOTTOM
 }
 
+/**
+ * @param permissionDenied the permission that should be denied when this state is applied
+ * @param permissionReset the permissions that should be reset when this state is applied
+ */
 enum class VCState(
-    val permissionDenied: Permission? = null
+    val permissionDenied: Permission? = null,
+    val permissionReset: Permission? = null
 ) {
-    UNLOCKED, LOCKED(Permission.VOICE_CONNECT), HIDDEN(Permission.VIEW_CHANNEL)
+    UNLOCKED(null, Permission.VOICE_CONNECT), LOCKED(Permission.VOICE_CONNECT), HIDDEN(Permission.VIEW_CHANNEL), UNHIDDEN(null, Permission.VIEW_CHANNEL)
 }
 
 
