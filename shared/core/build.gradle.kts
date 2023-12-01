@@ -14,4 +14,5 @@ dependencies {
     implementation(libs.jda)
     implementation(libs.lettuce)
     implementation(libs.mongo)
+    implementation(libs.bigquery)
 }

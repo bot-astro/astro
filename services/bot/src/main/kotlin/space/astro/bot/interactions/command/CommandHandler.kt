@@ -1,9 +1,11 @@
 package space.astro.bot.interactions.command
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
@@ -11,7 +13,9 @@ import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.interactions.commands.OptionMapping
 import net.dv8tion.jda.api.sharding.ShardManager
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.config.DiscordApplicationConfig
@@ -24,6 +28,14 @@ import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
+import space.astro.shared.core.models.analytics.AnalyticsEvent
+import space.astro.shared.core.models.analytics.AnalyticsEventReceiver
+import space.astro.shared.core.models.analytics.AnalyticsEventType
+import space.astro.shared.core.models.analytics.SlashCommandInvocationEventData
+import space.astro.shared.core.models.analytics.meta.SlashCommandInvocationOptionsMetaData
+import space.astro.shared.core.models.analytics.meta.structure.OptionPair
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.findAnnotation
@@ -37,7 +49,9 @@ class CommandHandler(
     val discordApplicationConfig: DiscordApplicationConfig,
     val temporaryVCDao: TemporaryVCDao,
     val guildDao: GuildDao,
-    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher
+    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
+    val applicationEventPublisher: ApplicationEventPublisher,
+    val objectMapper: ObjectMapper
 ) {
 
     val commandsMap = HashMap<String, ICommand>()
@@ -150,80 +164,84 @@ class CommandHandler(
 
         val commandContextParameter = command.parameters[1]
 
-        val interactionContext = when (val commandContextArgType = commandContextParameter.type.classifier as KClass<*>) {
-            InteractionContext::class -> interactionContextBase
-            VcInteractionContext::class -> {
-                val vcInteractionContextInfo = commandContextParameter.findAnnotation<VcInteractionContextInfo>()
-                    ?: throw IllegalArgumentException("Found VcCommandContext parameter in command $key without VcCommandContextInfo annotation!")
+        val interactionContext =
+            when (val commandContextArgType = commandContextParameter.type.classifier as KClass<*>) {
+                InteractionContext::class -> interactionContextBase
+                VcInteractionContext::class -> {
+                    val vcInteractionContextInfo = commandContextParameter.findAnnotation<VcInteractionContextInfo>()
+                        ?: throw IllegalArgumentException("Found VcCommandContext parameter in command $key without VcCommandContextInfo annotation!")
 
-                val vc = member.voiceState!!
-                    .channel
-                    ?.takeIf { it.type == ChannelType.VOICE }
-                    ?.asVoiceChannel()
-                    ?: throw IllegalArgumentException("Member is required to be in a VC for $key because the command requires a VcCommandContext, but the member isn't in a voice channel!")
+                    val vc = member.voiceState!!
+                        .channel
+                        ?.takeIf { it.type == ChannelType.VOICE }
+                        ?.asVoiceChannel()
+                        ?: throw IllegalArgumentException("Member is required to be in a VC for $key because the command requires a VcCommandContext, but the member isn't in a voice channel!")
 
-                val temporaryVCsData = temporaryVCDao.getAll(guild.id)
-                val temporaryVCData = temporaryVCsData.firstOrNull { it.id == vc.id }
-                    ?: run {
-                        event.replyEmbeds(Embeds.error("You must be in a temporary VC to use this command!"))
-                            .setEphemeral(true).queue()
+                    val temporaryVCsData = temporaryVCDao.getAll(guild.id)
+                    val temporaryVCData = temporaryVCsData.firstOrNull { it.id == vc.id }
+                        ?: run {
+                            event.replyEmbeds(Embeds.error("You must be in a temporary VC to use this command!"))
+                                .setEphemeral(true).queue()
+                            return
+                        }
+
+                    if (vcInteractionContextInfo.ownershipRequired) {
+                        if (temporaryVCData.ownerId != member.id) {
+                            event.replyEmbeds(Embeds.error("You need to be the owner of the temporary VC to use this command!"))
+                                .setEphemeral(true).queue()
+                        }
+                    }
+
+                    val guildData = guildDao.get(guild.id)
+                        ?: run {
+                            event.replyEmbeds(Embeds.error("Astro is not configured in this server!"))
+                                .setEphemeral(true).queue()
+                            return
+                        }
+
+                    val generatorData = guildData.generators
+                        .firstOrNull { it.id == temporaryVCData.generatorId }
+
+                    val generator = generatorData?.id?.let { guild.getVoiceChannelById(it) }
+
+                    if (generatorData == null || generator == null) {
+                        event.replyEmbeds(Embeds.error("The generator of this temporary VC has been deleted!"))
+                            .queue()
                         return
                     }
 
-                if (vcInteractionContextInfo.ownershipRequired) {
-                    if (temporaryVCData.ownerId != member.id) {
-                        event.replyEmbeds(Embeds.error("You need to be the owner of the temporary VC to use this command!"))
-                            .setEphemeral(true).queue()
-                    }
+                    val privateChat = temporaryVCData.chatID?.let { guild.getTextChannelById(it) }
+                    val waitingRoom = temporaryVCData.waitingID?.let { guild.getVoiceChannelById(it) }
+
+                    val vcOperationCTX = VCOperationCTX(
+                        guildData = guildData,
+                        generator = generator,
+                        generatorData = generatorData,
+                        temporaryVCOwner = member,
+                        temporaryVC = vc,
+                        temporaryVCManager = vc.manager,
+                        temporaryVCData = temporaryVCData,
+                        temporaryVCsData = temporaryVCsData,
+                        privateChat = privateChat,
+                        privateChatManager = privateChat?.manager,
+                        waitingRoom = waitingRoom,
+                        waitingRoomManager = waitingRoom?.manager,
+                        vcOperationOrigin = vcInteractionContextInfo.vcOperationOrigin
+                    )
+
+                    VcInteractionContext(
+                        vcOperationCTX = vcOperationCTX,
+                        guild = guild,
+                        member = member,
+                        user = event.user,
+                        channel = channel
+                    )
                 }
 
-                val guildData = guildDao.get(guild.id)
-                    ?: run {
-                        event.replyEmbeds(Embeds.error("Astro is not configured in this server!"))
-                            .setEphemeral(true).queue()
-                        return
-                    }
-
-                val generatorData = guildData.generators
-                    .firstOrNull { it.id == temporaryVCData.generatorId }
-
-                val generator = generatorData?.id?.let { guild.getVoiceChannelById(it) }
-
-                if (generatorData == null || generator == null) {
-                    event.replyEmbeds(Embeds.error("The generator of this temporary VC has been deleted!"))
-                        .queue()
-                    return
-                }
-
-                val privateChat = temporaryVCData.chatID?.let { guild.getTextChannelById(it) }
-                val waitingRoom = temporaryVCData.waitingID?.let { guild.getVoiceChannelById(it) }
-
-                val vcOperationCTX = VCOperationCTX(
-                    guildData = guildData,
-                    generator = generator,
-                    generatorData = generatorData,
-                    temporaryVCOwner = member,
-                    temporaryVC = vc,
-                    temporaryVCManager = vc.manager,
-                    temporaryVCData = temporaryVCData,
-                    temporaryVCsData = temporaryVCsData,
-                    privateChat = privateChat,
-                    privateChatManager = privateChat?.manager,
-                    waitingRoom = waitingRoom,
-                    waitingRoomManager = waitingRoom?.manager,
-                    vcOperationOrigin = vcInteractionContextInfo.vcOperationOrigin
-                )
-
-                VcInteractionContext(
-                    vcOperationCTX = vcOperationCTX,
-                    guild = guild,
-                    member = member,
-                    user = event.user,
-                    channel = channel
-                )
+                else -> throw IllegalArgumentException("Command context of type $commandContextArgType is not recognized")
             }
-            else -> throw IllegalArgumentException("Command context of type $commandContextArgType is not recognized")
-        }
+
+        trackCommandAnalyticsEvent(key, event, guild, event.options)
 
         GlobalScope.launch {
             try {
@@ -237,14 +255,45 @@ class CommandHandler(
                         guildId = guild.id,
                         configurationErrorDto = e.configurationErrorDto
                     )
+
                     is InsufficientPermissionException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
                         guildId = guild.id,
                         configurationErrorDto = e.toConfigurationErrorDto()
                     )
+
                     else -> throw e
                 }
             }
         }
+    }
+
+    private fun trackCommandAnalyticsEvent(
+        key: String,
+        event: SlashCommandInteractionEvent,
+        guild: Guild,
+        options: MutableList<OptionMapping>
+    ) {
+        val optionsPairs = options.map {
+            OptionPair(it.name, it.asString)
+        }
+
+        val analyticsEventMetaData = SlashCommandInvocationOptionsMetaData(optionsPairs)
+
+        val analyticsEvent = AnalyticsEvent(
+            listOf(AnalyticsEventReceiver.BIGQUERY),
+            AnalyticsEventType.SLASH_COMMAND_INVOCATION,
+            SlashCommandInvocationEventData(
+                key,
+                guild.idLong,
+                event.user.idLong,
+                if (optionsPairs.isNotEmpty()) optionsPairs[0].name else null,
+                if (optionsPairs.isNotEmpty()) optionsPairs[0].value else null,
+                serialize(analyticsEventMetaData),
+                LocalDateTime.now(ZoneOffset.UTC).atOffset(ZoneOffset.UTC).toString(),
+            )
+        )
+
+        applicationEventPublisher.publishEvent(analyticsEvent)
     }
 
     fun getFullKeyFromEvent(event: SlashCommandInteractionEvent): String {
@@ -258,5 +307,12 @@ class CommandHandler(
         } else {
             event.name
         }
+    }
+
+    private fun serialize(metaData: SlashCommandInvocationOptionsMetaData): String? {
+        if (metaData.options.isEmpty()) {
+            return null
+        }
+        return objectMapper.writeValueAsString(metaData)
     }
 }

@@ -34,6 +34,9 @@ lettuce = "6.1.5.RELEASE"
 jda = "5.0.0-beta.17.astro.8_DEV"
 jda-ktx = "9370cb1"
 
+# Analytics
+bigquery = "2.34.2"
+
 # Testing
 junit="5.9.2"
 
@@ -79,6 +82,9 @@ lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce"}
 # JDA
 jda = { module = "net.dv8tion:jda", version.ref = "jda" }
 jda-ktx = { module = "com.github.minndevelopment:jda-ktx", version.ref = "jda-ktx" }
+
+# Analytics
+bigquery = { module = "com.google.cloud:google-cloud-bigquery", version.ref = "bigquery" }
 
 # Testing
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }

@@ -17,6 +17,8 @@ dependencies {
 
     implementation(libs.guava)
 
+    implementation(libs.bigquery)
+
     implementation(project(":shared:core"))
 
     testImplementation(libs.junit)
