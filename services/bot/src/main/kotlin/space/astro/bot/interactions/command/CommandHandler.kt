@@ -285,6 +285,7 @@ class CommandHandler(
             SlashCommandInvocationEventData(
                 key,
                 guild.idLong,
+                event.channelIdLong,
                 event.user.idLong,
                 if (optionsPairs.isNotEmpty()) optionsPairs[0].name else null,
                 if (optionsPairs.isNotEmpty()) optionsPairs[0].value else null,
