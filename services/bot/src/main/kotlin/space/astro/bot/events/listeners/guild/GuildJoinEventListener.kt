@@ -4,22 +4,31 @@ import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.core.extentions.toPermissionList
 import space.astro.bot.models.discord.PermissionSets
+import space.astro.shared.core.models.analytics.AnalyticsEvent
+import space.astro.shared.core.models.analytics.AnalyticsEventReceiver
+import space.astro.shared.core.models.analytics.AnalyticsEventType
+import space.astro.shared.core.models.analytics.GuildEventData
 import space.astro.shared.core.util.extention.linkFromLink
 import space.astro.shared.core.util.ui.Colors
 import space.astro.shared.core.util.ui.Links
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Component
-class GuildJoinEventListener {
+class GuildJoinEventListener(
+    private val applicationEventPublisher: ApplicationEventPublisher
+) {
 
     @EventListener
     fun receiveGuildJoinEvent(event: GuildJoinEvent) {
         val guild = event.guild
 
-        // TODO: BIGQUERY
+        trackGuildJoinAnalyticEvent(guild)
 
         val channel = guild.systemChannel
             ?.takeIf {
@@ -42,6 +51,21 @@ class GuildJoinEventListener {
             )
              */
             ?.queue()
+    }
+
+    private fun trackGuildJoinAnalyticEvent(guild: Guild) {
+        val analyticsEvent = AnalyticsEvent(
+            receivers = listOf(AnalyticsEventReceiver.BIGQUERY),
+            type = AnalyticsEventType.GUILD_EVENT,
+            data = GuildEventData(
+                guildId = guild.idLong,
+                usersCount = guild.memberCount,
+                action = GuildEventData.GuildEventAction.KICKED,
+                timestamp = LocalDateTime.now(ZoneOffset.UTC).atOffset(ZoneOffset.UTC).toString()
+            )
+        )
+
+        applicationEventPublisher.publishEvent(analyticsEvent)
     }
 
     private fun createGuildJoinMessage(guild: Guild): MessageEmbed {
