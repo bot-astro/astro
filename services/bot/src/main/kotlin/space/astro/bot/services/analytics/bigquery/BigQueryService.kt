@@ -5,10 +5,7 @@ import com.google.cloud.bigquery.BigQuery
 import space.astro.shared.core.models.structures.BigQueryBaseClient
 import org.springframework.stereotype.Service
 import space.astro.shared.core.configs.BigQueryConfig
-import space.astro.shared.core.models.analytics.AnalyticsEventType
-import space.astro.shared.core.models.analytics.ConnectionInvocationEventData
-import space.astro.shared.core.models.analytics.SlashCommandInvocationEventData
-import space.astro.shared.core.models.analytics.TemporaryVCGenerationEventData
+import space.astro.shared.core.models.analytics.*
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -28,6 +25,7 @@ class BigQueryService(
         init {
             val tables: Map<KClass<*>, AnalyticsEventType> = HashMap(
                 mapOf(
+                    GuildEventData::class to AnalyticsEventType.GUILD_EVENT,
                     SlashCommandInvocationEventData::class to AnalyticsEventType.SLASH_COMMAND_INVOCATION,
                     TemporaryVCGenerationEventData::class to AnalyticsEventType.TEMPORARY_VC_GENERATION,
                     ConnectionInvocationEventData::class to AnalyticsEventType.CONNECTION_INVOCATION
