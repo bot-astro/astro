@@ -8,7 +8,8 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
 @Command(
     name = "chat",
     description = "Manage the private text chat of your VC",
-    category = CommandCategory.VC
+    category = CommandCategory.VC,
+    premium = true
 )
 class ChatCommand : AbstractCommand() {
     @SubCommand(

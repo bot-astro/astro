@@ -20,6 +20,6 @@ class BanCommand : AbstractCommand() {
         )
         ctx: VcInteractionContext,
     ) {
-
+        TODO()
     }
 }

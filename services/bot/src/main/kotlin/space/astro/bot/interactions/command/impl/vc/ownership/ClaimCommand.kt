@@ -20,6 +20,6 @@ class ClaimCommand : AbstractCommand() {
         )
         ctx: VcInteractionContext,
     ) {
-
+        TODO()
     }
 }

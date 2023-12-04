@@ -18,7 +18,9 @@ import space.astro.shared.core.util.extention.asRoleMention
 @Command(
     name = "ban",
     description = "Ban a user or a role from joining your voice channel",
-    category = CommandCategory.VC
+    category = CommandCategory.VC,
+    premium = true
+    // TODO: Higher cooldown
 )
 class BanCommand(
     val vcPermissionManager: VcPermissionManager

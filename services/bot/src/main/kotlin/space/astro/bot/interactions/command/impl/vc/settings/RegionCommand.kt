@@ -20,6 +20,6 @@ class RegionCommand : AbstractCommand() {
         )
         ctx: VcInteractionContext,
     ) {
-
+        TODO()
     }
 }

@@ -8,7 +8,8 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
 @Command(
     name = "waiting-room",
     description = "Manage the waiting room of your VC",
-    category = CommandCategory.VC
+    category = CommandCategory.VC,
+    premium = true
 )
 class WaitingRoomCommand : AbstractCommand() {
     @SubCommand(
@@ -23,7 +24,7 @@ class WaitingRoomCommand : AbstractCommand() {
         )
         ctx: VcInteractionContext,
     ) {
-
+        TODO()
     }
 
     @SubCommand(
@@ -38,6 +39,6 @@ class WaitingRoomCommand : AbstractCommand() {
         )
         ctx: VcInteractionContext,
     ) {
-
+        TODO()
     }
 }
