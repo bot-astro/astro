@@ -5,8 +5,8 @@ import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import space.astro.bot.core.ui.Embeds
-import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.InteractionComponentBuilder
+import space.astro.bot.interactions.InteractionIds
 import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.command.*
 import space.astro.bot.models.discord.vc.VCOperationCTX
@@ -33,7 +33,7 @@ class RegionCommand(
         val regions = ctx.guild.retrieveRegions(false).await()
 
         val regionSelectMenu = interactionComponentBuilder.selectMenu(
-            action = InteractionAction.VC_REGION,
+            action = InteractionIds.Menu.VC_REGION,
             placeholder = "Set the region for your VC",
             options = regions.map { region ->
                 SelectOption.of(region.getName(), region.key)

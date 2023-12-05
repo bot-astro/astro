@@ -122,10 +122,7 @@ class CommandHandler(
         if (discordApplicationConfig.whitelistedGuilds.isNotEmpty() &&
             !discordApplicationConfig.whitelistedGuilds.contains(guild.idLong)
         ) {
-            log.warn(
-                "Received slash command event outside of whitelisted guilds - guild id: {}",
-                guild.id
-            )
+            log.warn("Received slash command event outside of whitelisted guilds - guild id: ${guild.id}")
             event.reply("This command is not available outside of whitelisted guilds.")
                 .setEphemeral(true).queue()
             return
@@ -162,13 +159,13 @@ class CommandHandler(
             channel = channel
         )
 
-        val commandContextParameter = command.parameters[1]
+        val interactionContextParameter = command.parameters[1]
 
         val interactionContext =
-            when (val commandContextArgType = commandContextParameter.type.classifier as KClass<*>) {
+            when (val commandContextArgType = interactionContextParameter.type.classifier as KClass<*>) {
                 InteractionContext::class -> interactionContextBase
                 VcInteractionContext::class -> {
-                    val vcInteractionContextInfo = commandContextParameter.findAnnotation<VcInteractionContextInfo>()
+                    val vcInteractionContextInfo = interactionContextParameter.findAnnotation<VcInteractionContextInfo>()
                         ?: throw IllegalArgumentException("Found VcCommandContext parameter in command $key without VcCommandContextInfo annotation!")
 
                     val vc = member.voiceState!!
@@ -245,7 +242,8 @@ class CommandHandler(
 
         GlobalScope.launch {
             try {
-                command.callSuspend(commandContainer, event, interactionContext, *optionArgs)
+                // command.callSuspend(commandContainer, event, interactionContext, *optionArgs)
+                command.callSuspend(event, interactionContext, *optionArgs)
             } catch (e: Exception) {
                 // TODO: reply
                 when (e) {

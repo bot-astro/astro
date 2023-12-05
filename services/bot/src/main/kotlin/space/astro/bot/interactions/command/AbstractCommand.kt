@@ -103,7 +103,7 @@ abstract class AbstractCommand : ICommand {
         }
 
         if (!function.parameters[1].type.isSubtypeOf(InteractionContext::class.createType())) {
-            throw UnsupportedOperationException("First parameter of ${function.name} must be a subtype of CommandContext!")
+            throw UnsupportedOperationException("Second parameter of ${function.name} must be a subtype of InteractionContext!")
         }
 
         val options = mutableListOf<OptionData>()
@@ -111,7 +111,7 @@ abstract class AbstractCommand : ICommand {
         for (i in 2 until function.parameters.size) {
             val parameter = function.parameters[i]
             val type = parameter.type.classifier as KClass<*>
-            val commandOptionAnnotation = parameter.findAnnotation<space.astro.bot.interactions.command.CommandOption>()
+            val commandOptionAnnotation = parameter.findAnnotation<CommandOption>()
             if (commandOptionAnnotation == null) {
                 require(allowNonOptions) {
                     "Parameter ${parameter.name} in function " +
