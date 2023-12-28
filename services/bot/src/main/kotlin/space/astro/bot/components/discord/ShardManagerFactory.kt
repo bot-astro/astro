@@ -1,17 +1,25 @@
 package space.astro.bot.components.discord
 
-import space.astro.bot.components.jda.JdaToSpringEventBridge
+import dev.minn.jda.ktx.jdabuilder.injectKTX
 import mu.KotlinLogging
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
+import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.SessionController
+import net.dv8tion.jda.api.utils.cache.CacheFlag
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+import space.astro.bot.components.jda.JdaToSpringEventBridge
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.config.PodConfig
+import space.astro.bot.core.extentions.toConfigurationErrorDto
+import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.RedisSessionController
+import space.astro.bot.services.ConfigurationErrorService
 import space.astro.shared.core.services.redis.RedisClientService
 
 private val log = KotlinLogging.logger { }
@@ -21,12 +29,14 @@ class ShardManagerFactory(
     val shardManagerConfig: ShardManagerConfig,
     val discordApplicationConfig: DiscordApplicationConfig,
     val redisClientService: RedisClientService,
-    val jdaToSpringEventBridge: JdaToSpringEventBridge
+    val jdaToSpringEventBridge: JdaToSpringEventBridge,
+    val configurationErrorService: ConfigurationErrorService,
+    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher
 ) {
 
     private val intents = listOf(
-//        GatewayIntent.GUILD_MESSAGES,
-        GatewayIntent.DIRECT_MESSAGES
+        GatewayIntent.GUILD_PRESENCES,
+        GatewayIntent.GUILD_VOICE_STATES
     )
 
     @Bean
@@ -60,16 +70,31 @@ class ShardManagerFactory(
             "PLAYING" -> Activity.playing(discordApplicationConfig.activityText)
             else -> Activity.watching(discordApplicationConfig.activityText)
         }
+
+        RestAction.setDefaultFailure {
+            when (it) {
+                is InsufficientPermissionException -> {
+                    configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                        guildId = it.guildId.toString(),
+                        configurationErrorDto = it.toConfigurationErrorDto()
+                    )
+                }
+            }
+        }
+
         return DefaultShardManagerBuilder
-            .createDefault(
+            .createLight(
                 discordApplicationConfig.token,
                 intents
             )
+            .setMemberCachePolicy(MemberCachePolicy.VOICE)
+            .enableCache(CacheFlag.VOICE_STATE, CacheFlag.MEMBER_OVERRIDES, CacheFlag.ACTIVITY)
             .setSessionController(sessionController)
             .setShardsTotal(shardManagerConfig.totalShards)
             .setShards(shardList)
             .setActivity(activity)
             .addEventListeners(jdaToSpringEventBridge)
+            .injectKTX()
             .build(false)
     }
 

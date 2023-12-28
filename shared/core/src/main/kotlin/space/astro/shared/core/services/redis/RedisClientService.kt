@@ -16,7 +16,9 @@ import space.astro.shared.core.components.redis.RedisConfig
 import java.time.Duration
 
 @Service
-class RedisClientService(redisConfig: RedisConfig) {
+class RedisClientService(
+    redisConfig: RedisConfig
+) {
 
     private var isCluster = false
     private lateinit var client: RedisClient

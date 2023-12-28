@@ -1,14 +1,14 @@
 package space.astro.bot.models.discord
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder
-import space.astro.shared.core.models.ratelimit.RedisRateLimiter
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.utils.SessionController
 import net.dv8tion.jda.api.utils.SessionController.ShardedGateway
 import net.dv8tion.jda.api.utils.SessionControllerAdapter
 import space.astro.bot.components.discord.ShardManagerConfig
 import space.astro.bot.config.DiscordApplicationConfig
-import space.astro.shared.core.io.caching.redis.RedisKey
+import space.astro.shared.core.models.redis.RedisKey
+import space.astro.shared.core.models.redis.RedisRateLimiter
 import space.astro.shared.core.services.redis.RedisClientService
 import java.time.Duration
 import java.util.concurrent.Executors

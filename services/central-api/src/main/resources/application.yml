@@ -31,10 +31,10 @@ management:
         enabled: true
       group:
         readiness:
-          includes:
+          include:
             - readinessState
         liveness:
-          includes:
+          include:
             - livenessState
 
 logging:

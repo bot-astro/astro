@@ -10,7 +10,7 @@ import io.lettuce.core.GetExArgs
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import org.springframework.stereotype.Service
 import space.astro.api.central.configs.JwtConfig
-import space.astro.shared.core.io.caching.redis.RedisKey
+import space.astro.shared.core.models.redis.RedisKey
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -18,7 +18,8 @@ import javax.crypto.SecretKey
 
 @Service
 class WebSessionService(
-    jwtConfig: JwtConfig, val redis: RedisClusterAsyncCommands<String, String>
+    jwtConfig: JwtConfig,
+    val redis: RedisClusterAsyncCommands<String, String>
 ) {
 
     companion object {

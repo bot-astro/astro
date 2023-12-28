@@ -6,7 +6,7 @@ import space.astro.api.central.daos.AuthedUsersDao
 import space.astro.api.central.models.DiscordAuthedUser
 import space.astro.api.central.models.TokenPayloadDto
 import space.astro.shared.core.components.io.DataSerializer
-import space.astro.shared.core.io.caching.redis.RedisKey
+import space.astro.shared.core.models.redis.RedisKey
 
 @Service
 class DiscordUserTokenPersistenceService(

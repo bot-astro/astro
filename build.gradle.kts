@@ -12,14 +12,27 @@ plugins {
 }
 
 repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/bot-astro/jda")
+        credentials {
+            this.username = property("ghpMavenUser").toString()
+            this.password = property("ghpMavenPat").toString()
+        }
+    }
     mavenCentral()
 }
 
 // TODO: Migrate this to buildSrc or conventional builds when version catalogs are supported
 subprojects {
     repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/bot-astro/jda")
+            credentials {
+                this.username = property("ghpMavenUser").toString()
+                this.password = property("ghpMavenPat").toString()
+            }
+        }
         mavenCentral()
-        maven("https://m2.dv8tion.net/releases")
         maven("https://jitpack.io/")
     }
 

@@ -4,10 +4,6 @@ plugins {
     id("com.google.cloud.tools.jib")
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation(libs.bundles.base)
     implementation(libs.bundles.web)
@@ -21,5 +17,14 @@ dependencies {
 
     implementation(libs.guava)
 
+    implementation(libs.bigquery)
+
     implementation(project(":shared:core"))
+
+    testImplementation(libs.junit)
+    testImplementation(kotlin("test"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

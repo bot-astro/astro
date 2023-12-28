@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Bean
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.stereotype.Component
 
+/**
+ * Factory for [ObjectMapper]
+ */
 @Component
 class ObjectMapperFactory {
 

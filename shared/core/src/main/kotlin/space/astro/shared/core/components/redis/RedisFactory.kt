@@ -12,10 +12,13 @@ import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands
 import org.springframework.context.annotation.Bean
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import java.time.Duration
 
-@Service
+/**
+ * Service for communication with Redis
+ */
+@Component
 class RedisFactory(redisConfig: RedisConfig) {
 
     private var statefulRedisClusterConnection: StatefulRedisClusterConnection<String, String>? =
@@ -56,7 +59,7 @@ class RedisFactory(redisConfig: RedisConfig) {
     @Bean
     fun reactiveCommands(
         redisConfig: RedisConfig
-    ): RedisClusterReactiveCommands<String, String>? {
+    ): RedisClusterReactiveCommands<String, String> {
         return if (redisConfig.cluster) {
             statefulRedisClusterConnection!!.reactive()
         } else {
@@ -67,7 +70,7 @@ class RedisFactory(redisConfig: RedisConfig) {
     @Bean
     fun asyncCommands(
         redisConfig: RedisConfig
-    ): RedisClusterAsyncCommands<String, String>? {
+    ): RedisClusterAsyncCommands<String, String> {
         return if (redisConfig.cluster) {
             statefulRedisClusterConnection!!.async()
         } else {

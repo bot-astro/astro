@@ -1,0 +1,35 @@
+info:
+  app:
+    name: "Bot"
+    description: "The main bot Discord application."
+    version: "1.0.0"
+
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  endpoints:
+    web:
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET, POST
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+          - prometheus
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+
+application:
+  features:
+    premiumRestrictions: false
+
+discord:
+  application:
+    botId: 788708323867885568
+    token: ${BOT_TOKEN}
