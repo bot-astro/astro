@@ -36,7 +36,7 @@ abstract class AbstractMenu : IMenu {
         }
 
         if (!(function.parameters[1].type.classifier as KClass<*>).isSubclassOf(GenericSelectMenuInteractionEvent::class)) {
-            throw UnsupportedOperationException("First parameter of ${function.name} must be a subclass of GenericSelectMenuInteractionEvent parameter!")
+            throw UnsupportedOperationException("First parameter of ${function.name} must be a subclass of GenericSelectMenuInteractionEvent!")
         }
 
         if (!function.parameters[2].type.isSubtypeOf(InteractionContext::class.createType())) {

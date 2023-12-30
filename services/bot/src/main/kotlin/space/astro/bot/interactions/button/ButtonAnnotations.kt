@@ -9,9 +9,11 @@ import space.astro.bot.interactions.command.CommandCategory
 @Target(AnnotationTarget.CLASS)
 @Component
 annotation class Button(
-    val name: String = "",
+    val id: String = "",
     val style: ButtonStyle = ButtonStyle.PRIMARY,
-    val requiredPermissions: Array<Permission> = [],
-    val category: CommandCategory = CommandCategory.ALL,
     val premium: Boolean = false
 )
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
+annotation class ButtonRunnable

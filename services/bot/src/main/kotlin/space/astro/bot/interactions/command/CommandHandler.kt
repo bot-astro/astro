@@ -128,6 +128,8 @@ class CommandHandler(
             return
         }
 
+        // TODO: Premium check + in menus, buttons and modals
+
         val key = getFullKeyFromEvent(event)
 
         val commandContainer = commandsMap[event.name]
@@ -297,7 +299,7 @@ class CommandHandler(
             data = SlashCommandInvocationEventData(
                 name = key,
                 guildId = guild.idLong,
-                channelId = event.channelIdLong,
+                channelId = event.channel.idLong,
                 userId = event.user.idLong,
                 mainOptionName = if (optionsPairs.isNotEmpty()) optionsPairs[0].name else null,
                 mainOptionValue = if (optionsPairs.isNotEmpty()) optionsPairs[0].value else null,

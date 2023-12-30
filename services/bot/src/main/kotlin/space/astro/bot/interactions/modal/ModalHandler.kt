@@ -1,11 +1,11 @@
-package space.astro.bot.interactions.button
+package space.astro.bot.interactions.modal
 
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import net.dv8tion.jda.api.entities.channel.ChannelType
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -27,33 +27,33 @@ import kotlin.reflect.full.findAnnotation
 private val log = KotlinLogging.logger {  }
 
 @Component
-class ButtonHandler(
-    buttons: List<IButton>,
+class ModalHandler(
+    modals: List<IModal>,
     val discordApplicationConfig: DiscordApplicationConfig,
     val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
     val temporaryVCDao: TemporaryVCDao,
     val guildDao: GuildDao
 ) {
-    val buttonMap = HashMap<String, IButton>()
+    val modalMap = HashMap<String, IModal>()
 
     init {
-        buttons.forEach { menu ->
+        modals.forEach { menu ->
             val key = menu.id
-            if (buttonMap.containsKey(key)) {
-                throw IllegalStateException("Found duplicate button id: $key")
+            if (modalMap.containsKey(key)) {
+                throw IllegalStateException("Found duplicate modal id: $key")
             } else {
-                buttonMap[key] = menu
+                modalMap[key] = menu
             }
         }
     }
 
     @OptIn(DelicateCoroutinesApi::class)
     @EventListener
-    fun receiveButton(event: ButtonInteractionEvent) {
+    fun receiveModal(event: ModalInteractionEvent) {
         val guild = event.guild
 
         if (guild == null) {
-            log.warn("Received menu event without guild")
+            log.warn("Received modal event without guild")
             event.hook.editOriginalEmbeds(Embeds.error("This bot cannot be used outside servers!"))
                 .setComponents()
                 .queue()
@@ -62,7 +62,7 @@ class ButtonHandler(
 
         val member = event.member
         if (member == null) {
-            log.warn("Received button event from guild ${guild.id} without member")
+            log.warn("Received modal event from guild ${guild.id} without member")
             return
         }
 
@@ -71,19 +71,18 @@ class ButtonHandler(
         if (discordApplicationConfig.whitelistedGuilds.isNotEmpty() &&
             !discordApplicationConfig.whitelistedGuilds.contains(guild.idLong)
         ) {
-            log.warn("Received button event outside of whitelisted guilds - guild id: ${guild.id}")
+            log.warn("Received modal event outside of whitelisted guilds - guild id: ${guild.id}")
             event.hook.editOriginalEmbeds(Embeds.error("This command is not available outside of whitelisted guilds."))
                 .setComponents()
                 .queue()
             return
         }
 
-        val key = event.componentId
-        // TODO: Add support for old interface button ids
-        val buttonContainer = buttonMap[key]
-            ?: throw IllegalArgumentException("Couldn't find button container with id ${key}!")
-        val buttonRunnable = buttonContainer.runnable
-            ?: throw IllegalArgumentException("Couldn't find button runnable with id ${key}!")
+        val key = event.modalId
+        val modalContainer = modalMap[key]
+            ?: throw IllegalArgumentException("Couldn't find modal container with id ${key}!")
+        val modalRunnable = modalContainer.runnable
+            ?: throw IllegalArgumentException("Couldn't find modal runnable with id ${key}!")
 
         val interactionContextBase = InteractionContext(
             guild = guild,
@@ -92,14 +91,14 @@ class ButtonHandler(
             channel = channel
         )
 
-        val interactionContextParameter = buttonRunnable.parameters[2]
+        val interactionContextParameter = modalRunnable.parameters[2]
 
         val interactionContext =
             when (val commandContextArgType = interactionContextParameter.type.classifier as KClass<*>) {
                 InteractionContext::class -> interactionContextBase
                 VcInteractionContext::class -> {
                     val vcInteractionContextInfo = interactionContextParameter.findAnnotation<VcInteractionContextInfo>()
-                        ?: throw IllegalArgumentException("Found VcCommandContext parameter in button $key without VcCommandContextInfo annotation!")
+                        ?: throw IllegalArgumentException("Found VcCommandContext parameter in modal $key without VcCommandContextInfo annotation!")
 
                     val vc = member.voiceState!!
                         .channel
@@ -184,7 +183,7 @@ class ButtonHandler(
 
         GlobalScope.launch {
             try {
-                buttonRunnable.callSuspend(buttonContainer, event, interactionContext)
+                modalRunnable.callSuspend(modalContainer, event, interactionContext)
             } catch (e: Exception) {
                 // TODO: reply
                 when (e) {
