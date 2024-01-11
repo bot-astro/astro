@@ -116,8 +116,6 @@ class CommandHandler(
             return
         }
 
-        val channel = event.channel
-
         if (discordApplicationConfig.whitelistedGuilds.isNotEmpty() &&
             !discordApplicationConfig.whitelistedGuilds.contains(guild.idLong)
         ) {
