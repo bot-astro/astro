@@ -1,9 +1,7 @@
 package space.astro.bot.interactions.button
 
-import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.springframework.stereotype.Component
-import space.astro.bot.interactions.command.CommandCategory
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)

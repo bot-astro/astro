@@ -5,8 +5,8 @@ import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.support.bot.config.DiscordApplicationConfig
 import space.astro.shared.core.services.discord.DiscordEntitlementsFetchService
+import space.astro.support.bot.config.DiscordApplicationConfig
 
 @Component
 class GuildMemberJoinEventListener(

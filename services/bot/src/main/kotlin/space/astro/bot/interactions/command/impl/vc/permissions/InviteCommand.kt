@@ -5,10 +5,10 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import space.astro.bot.interactions.command.*
 import space.astro.bot.core.extentions.modifyPermissionOverride
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.interactions.VcInteractionContext
+import space.astro.bot.interactions.command.*
 import space.astro.bot.models.discord.vc.VCOperationCTX
 
 @Command(

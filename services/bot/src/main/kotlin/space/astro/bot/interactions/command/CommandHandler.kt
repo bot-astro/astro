@@ -26,7 +26,6 @@ import space.astro.bot.interactions.InteractionContext
 import space.astro.bot.interactions.InteractionContextBuilder
 import space.astro.bot.interactions.InteractionContextBuilderException
 import space.astro.bot.interactions.VcInteractionContext
-import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
 import space.astro.shared.core.models.analytics.AnalyticsEvent
 import space.astro.shared.core.models.analytics.AnalyticsEventReceiver

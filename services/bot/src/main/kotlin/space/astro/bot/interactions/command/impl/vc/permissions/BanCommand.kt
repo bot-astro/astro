@@ -6,10 +6,10 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import space.astro.bot.components.managers.vc.VCPermissionManager
 import space.astro.bot.core.exceptions.VcOperationException
-import space.astro.bot.interactions.command.*
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.core.ui.Emojis
 import space.astro.bot.interactions.VcInteractionContext
+import space.astro.bot.interactions.command.*
 import space.astro.bot.models.discord.vc.VCOperationCTX
 
 @Command(

@@ -2,10 +2,10 @@ package space.astro.bot.services.analytics.bigquery
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.cloud.bigquery.BigQuery
-import space.astro.shared.core.models.structures.BigQueryBaseClient
 import org.springframework.stereotype.Service
 import space.astro.shared.core.configs.BigQueryConfig
 import space.astro.shared.core.models.analytics.*
+import space.astro.shared.core.models.structures.BigQueryBaseClient
 import java.util.*
 import kotlin.reflect.KClass
 

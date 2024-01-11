@@ -1,7 +1,6 @@
 package space.astro.bot.interactions.modal
 
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import space.astro.bot.interactions.InteractionContext
 import space.astro.bot.interactions.button.Button
 import space.astro.bot.interactions.button.ButtonRunnable

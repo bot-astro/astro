@@ -4,7 +4,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.context.event.EventListener
@@ -19,8 +18,6 @@ import space.astro.bot.interactions.InteractionContextBuilder
 import space.astro.bot.interactions.InteractionContextBuilderException
 import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.command.VcInteractionContextInfo
-import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
 import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
