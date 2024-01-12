@@ -1,7 +1,7 @@
 package space.astro.bot.services
 
 import org.springframework.stereotype.Service
-import space.astro.bot.models.error.ConfigurationErrorDto
+import space.astro.shared.core.models.influx.ConfigurationErrorDto
 
 @Service
 class ConfigurationErrorService {

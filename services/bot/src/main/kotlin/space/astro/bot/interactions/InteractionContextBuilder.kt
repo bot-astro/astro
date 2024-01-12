@@ -8,10 +8,10 @@ import space.astro.bot.interactions.command.VcInteractionContextInfo
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
+import space.astro.shared.core.models.database.GuildData
 
 @Component
 class InteractionContextBuilder(
-    private val guildDao: GuildDao,
     private val temporaryVCDao: TemporaryVCDao
 ) {
 
@@ -20,7 +20,9 @@ class InteractionContextBuilder(
      */
     fun buildVcInteractionContext(
         interactionCreateEvent: GenericInteractionCreateEvent,
-        vcInteractionContextInfo: VcInteractionContextInfo
+        vcInteractionContextInfo: VcInteractionContextInfo,
+        guildData: GuildData,
+        usedInterfaceComponent: Boolean
     ) : VcInteractionContext {
         val guild = interactionCreateEvent.guild
             ?: throw IllegalStateException("Received a interaction create event not from a guild in a vc context interaction")
@@ -42,9 +44,6 @@ class InteractionContextBuilder(
                 throw InteractionContextBuilderException(Embeds.error("You need to be the owner of the temporary VC to use this button!"))
             }
         }
-
-        val guildData = guildDao.get(guild.id)
-            ?: throw InteractionContextBuilderException(Embeds.error("Astro is not configured in this server!"))
 
         val generatorData = guildData.generators
             .firstOrNull { it.id == temporaryVCData.generatorId }
@@ -78,7 +77,8 @@ class InteractionContextBuilder(
             vcOperationCTX = vcOperationCTX,
             guild = guild,
             member = member,
-            user = interactionCreateEvent.user
+            user = interactionCreateEvent.user,
+            usedInterfaceComponent = usedInterfaceComponent
         )
     }
 }

@@ -12,7 +12,7 @@ val log = KotlinLogging.logger { }
 
 @Service
 class AnalyticsService(
-    val bigQueryService: BigQueryService
+    private val bigQueryService: BigQueryService
 ) {
 
     @EventListener

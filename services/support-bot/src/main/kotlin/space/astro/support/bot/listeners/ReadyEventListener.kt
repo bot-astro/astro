@@ -8,9 +8,7 @@ import org.springframework.stereotype.Component
 private val log = KotlinLogging.logger {  }
 
 @Component
-class ReadyEventListener(
-
-) {
+class ReadyEventListener {
 
     @EventListener
     fun receiveReadyEvent(event: ReadyEvent) {

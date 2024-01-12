@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import space.astro.bot.components.managers.PremiumRequirementDetector
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
@@ -26,6 +27,7 @@ import space.astro.bot.interactions.InteractionContext
 import space.astro.bot.interactions.InteractionContextBuilder
 import space.astro.bot.interactions.InteractionContextBuilderException
 import space.astro.bot.interactions.VcInteractionContext
+import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
 import space.astro.shared.core.models.analytics.AnalyticsEvent
 import space.astro.shared.core.models.analytics.AnalyticsEventReceiver
@@ -33,6 +35,7 @@ import space.astro.shared.core.models.analytics.AnalyticsEventType
 import space.astro.shared.core.models.analytics.SlashCommandInvocationEventData
 import space.astro.shared.core.models.analytics.meta.SlashCommandInvocationOptionsMetaData
 import space.astro.shared.core.models.analytics.meta.structure.OptionPair
+import space.astro.shared.core.util.ui.Links
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.reflect.KClass
@@ -44,13 +47,14 @@ private val log = KotlinLogging.logger {}
 @Component
 class CommandHandler(
     commands: List<ICommand>,
-    val shardManager: ShardManager,
-    val discordApplicationConfig: DiscordApplicationConfig,
-    val temporaryVCDao: TemporaryVCDao,
-    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
-    val applicationEventPublisher: ApplicationEventPublisher,
-    val objectMapper: ObjectMapper,
-    val interactionContextBuilder: InteractionContextBuilder
+    private val shardManager: ShardManager,
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
+    private val applicationEventPublisher: ApplicationEventPublisher,
+    private val objectMapper: ObjectMapper,
+    private val interactionContextBuilder: InteractionContextBuilder,
+    private val premiumRequirementDetector: PremiumRequirementDetector,
+    private val guildDao: GuildDao
 ) {
 
     val commandsMap = HashMap<String, ICommand>()
@@ -116,6 +120,9 @@ class CommandHandler(
             return
         }
 
+        ////////////////////
+        /// WHITELISTING ///
+        ////////////////////
         if (discordApplicationConfig.whitelistedGuilds.isNotEmpty() &&
             !discordApplicationConfig.whitelistedGuilds.contains(guild.idLong)
         ) {
@@ -125,8 +132,9 @@ class CommandHandler(
             return
         }
 
-        // TODO: Premium check + in menus, buttons and modals
-
+        /////////////////////////////
+        /// RETRIEVE COMMAND DATA ///
+        /////////////////////////////
         val key = getFullKeyFromEvent(event)
 
         val commandContainer = commandsMap[event.name]
@@ -163,6 +171,22 @@ class CommandHandler(
             }
         }
 
+        /////////////////////
+        /// PREMIUM CHECK ///
+        /////////////////////
+        val guildData = guildDao.get(guild.id)
+
+        if (commandContainer.premium && guildData == null || !premiumRequirementDetector.isGuildPremium(guildData!!)) {
+            event.replyEmbeds(Embeds.error("Premium is required to use this command!"))
+                .setEphemeral(true)
+                .queue()
+
+            return
+        }
+
+        /////////////////////////////////
+        /// BUILD INTERACTION CONTEXT ///
+        /////////////////////////////////
         val interactionContextBase = InteractionContext(
             guild = guild,
             member = member,
@@ -178,10 +202,20 @@ class CommandHandler(
                     val vcInteractionContextInfo = interactionContextParameter.findAnnotation<VcInteractionContextInfo>()
                         ?: throw IllegalArgumentException("Found VcCommandContext parameter in command $key without VcCommandContextInfo annotation!")
 
+                    if (guildData == null) {
+                        event.replyEmbeds(Embeds.error("Astro is not configured in this server!"))
+                            .setEphemeral(true)
+                            .queue()
+
+                        return
+                    }
+
                     try {
                         interactionContextBuilder.buildVcInteractionContext(
                             interactionCreateEvent = event,
-                            vcInteractionContextInfo = vcInteractionContextInfo
+                            vcInteractionContextInfo = vcInteractionContextInfo,
+                            usedInterfaceComponent = false,
+                            guildData = guildData
                         )
                     } catch (e: InteractionContextBuilderException) {
                         event.replyEmbeds(e.errorEmbed)
@@ -195,25 +229,49 @@ class CommandHandler(
                 else -> throw IllegalArgumentException("Command context of type $commandContextArgType is not recognized")
             }
 
+        /////////////////
+        /// ANALYTICS ///
+        /////////////////
         trackCommandAnalyticsEvent(key, event, guild, event.options)
 
+        /////////////////////////////////////
+        /// RUN COMMAND AND HANDLE ERRORS ///
+        /////////////////////////////////////
         GlobalScope.launch {
             try {
                 command.callSuspend(commandContainer, event, interactionContext, *optionArgs)
             } catch (e: Exception) {
-                // TODO: reply
                 when (e) {
-                    is ConfigurationException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = guild.id,
-                        configurationErrorDto = e.configurationErrorDto
-                    )
+                    is ConfigurationException -> {
+                        configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                            guildId = guild.id,
+                            configurationErrorDto = e.configurationErrorDto
+                        )
 
-                    is InsufficientPermissionException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = guild.id,
-                        configurationErrorDto = e.toConfigurationErrorDto()
-                    )
+                        event.replyEmbeds(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorDto.description}"))
+                            .setEphemeral(true)
+                            .queue()
+                    }
 
-                    else -> throw e
+                    is InsufficientPermissionException -> {
+                        val configurationError = e.toConfigurationErrorDto()
+
+                        configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                            guildId = guild.id,
+                            configurationErrorDto = configurationError
+                        )
+
+                        event.replyEmbeds(Embeds.error("An error occurred because of missing permissions:\n> ${configurationError.description}"))
+                    }
+
+                    else -> {
+                        event.replyEmbeds(Embeds.error("An unknown error occurred, the developers are aware of it and will investigate it.\nIf you need support join the [support server](${Links.SUPPORT_SERVER})."))
+                            .setEphemeral(true)
+                            .queue()
+
+                        // TODO: Use sentry?
+                        throw e
+                    }
                 }
             }
         }

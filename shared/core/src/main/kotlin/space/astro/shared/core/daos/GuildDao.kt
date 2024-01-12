@@ -5,15 +5,27 @@ import com.mongodb.client.model.Indexes
 import com.mongodb.client.model.ReplaceOptions
 import com.mongodb.kotlin.client.MongoCollection
 import com.mongodb.kotlin.client.MongoDatabase
+import io.lettuce.core.cluster.api.sync.RedisClusterCommands
 import org.springframework.stereotype.Repository
+import space.astro.shared.core.components.io.DataSerializer
 import space.astro.shared.core.models.database.GuildData
+import space.astro.shared.core.models.redis.RedisDynamicHashCacheDao
+import space.astro.shared.core.models.redis.RedisHashCacheDao
+import space.astro.shared.core.models.redis.RedisKey
 
-// TODO: Redis cache on top?
 @Repository
 class GuildDao(
-    mongoDatabase: MongoDatabase
+    mongoDatabase: MongoDatabase,
+    redisClusterCommands: RedisClusterCommands<String, String>,
+    dataSerializer: DataSerializer
 ) {
     private final var collection: MongoCollection<GuildData>
+
+    private val cacheManager = RedisHashCacheDao(
+        keyBase = RedisKey.GUILD_DATA.key,
+        redis = redisClusterCommands,
+        dataSerializer = dataSerializer
+    )
 
     init {
         collection = mongoDatabase.getCollection("guilds", GuildData::class.java)
@@ -21,7 +33,12 @@ class GuildDao(
     }
 
     fun get(id: String): GuildData? {
-        return collection.find(eq(GuildData::guildID.name, id)).firstOrNull()
+        return cacheManager.get(id)
+            ?: collection.find(eq(GuildData::guildID.name, id))
+                .firstOrNull()
+                ?.also {
+                    cacheManager.cache(id, it)
+                }
     }
 
     fun getOrCreate(id: String): GuildData {
@@ -35,5 +52,7 @@ class GuildDao(
             replacement = guildData,
             options = ReplaceOptions().upsert(true)
         )
+
+        cacheManager.cache(guildData.guildID, guildData)
     }
 }

@@ -7,8 +7,8 @@ import space.astro.shared.core.models.redis.RedisKey
 
 @Component
 class CooldownsManager(
-    val applicationFeaturesConfig: ApplicationFeaturesConfig,
-    val redis: RedisClusterCommands<String, String>
+    private val applicationFeaturesConfig: ApplicationFeaturesConfig,
+    private val redis: RedisClusterCommands<String, String>
 ) {
     // TODO: Global cooldown for users?
     fun getUserGeneratorsCooldown(userId: String): Long {

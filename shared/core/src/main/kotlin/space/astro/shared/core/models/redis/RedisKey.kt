@@ -26,8 +26,7 @@ enum class RedisKey(val key: String) {
      */
     WEB_SESSION_TOKENS("WST:%s:*"),
 
-    /**
-     * Format with: GUILD_ID
-     */
-    TEMPORARY_VCS("TEMP_VCS")
+    TEMPORARY_VCS("TEMP_VCS"),
+
+    GUILD_DATA("GD")
 }

@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import space.astro.bot.components.managers.PremiumRequirementDetector
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
@@ -18,7 +19,9 @@ import space.astro.bot.interactions.InteractionContextBuilder
 import space.astro.bot.interactions.InteractionContextBuilderException
 import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.command.VcInteractionContextInfo
+import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
+import space.astro.shared.core.util.ui.Links
 import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.findAnnotation
@@ -28,10 +31,11 @@ private val log = KotlinLogging.logger {  }
 @Component
 class ButtonHandler(
     buttons: List<IButton>,
-    val discordApplicationConfig: DiscordApplicationConfig,
-    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
-    val temporaryVCDao: TemporaryVCDao,
-    val interactionContextBuilder: InteractionContextBuilder
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
+    private val interactionContextBuilder: InteractionContextBuilder,
+    private val guildDao: GuildDao,
+    private val premiumRequirementDetector: PremiumRequirementDetector
 ) {
     val buttonMap = HashMap<String, IButton>()
 
@@ -75,8 +79,11 @@ class ButtonHandler(
             return
         }
 
-        val key = event.componentId
-        // TODO: Add support for old interface button ids
+        val keyParts = event.componentId.split("?")
+        val key = keyParts.first()
+        val usedInterfaceComponent = keyParts.lastOrNull()?.contains("interface=true") ?: false
+
+        // TODO: Add support for old interface button ids: simple equality and replace
         val buttonContainer = buttonMap[key]
             ?: throw IllegalArgumentException("Couldn't find button container with id ${key}!")
         val buttonRunnable = buttonContainer.runnable
@@ -88,6 +95,19 @@ class ButtonHandler(
             user = event.user
         )
 
+        /////////////////////
+        /// PREMIUM CHECK ///
+        /////////////////////
+        val guildData = guildDao.get(guild.id)
+
+        if (buttonContainer.premium && guildData == null || !premiumRequirementDetector.isGuildPremium(guildData!!)) {
+            event.replyEmbeds(Embeds.error("Premium is required to use this command!"))
+                .setEphemeral(true)
+                .queue()
+
+            return
+        }
+
         val interactionContextParameter = buttonRunnable.parameters[2]
 
         val interactionContext =
@@ -97,10 +117,20 @@ class ButtonHandler(
                     val vcInteractionContextInfo = interactionContextParameter.findAnnotation<VcInteractionContextInfo>()
                         ?: throw IllegalArgumentException("Found VcCommandContext parameter in button $key without VcCommandContextInfo annotation!")
 
+                    if (guildData == null) {
+                        event.replyEmbeds(Embeds.error("Astro is not configured in this server!"))
+                            .setEphemeral(true)
+                            .queue()
+
+                        return
+                    }
+
                     try {
                         interactionContextBuilder.buildVcInteractionContext(
                             interactionCreateEvent = event,
-                            vcInteractionContextInfo = vcInteractionContextInfo
+                            vcInteractionContextInfo = vcInteractionContextInfo,
+                            usedInterfaceComponent = usedInterfaceComponent,
+                            guildData = guildData
                         )
                     } catch (e: InteractionContextBuilderException) {
                         event.replyEmbeds(e.errorEmbed)
@@ -118,19 +148,36 @@ class ButtonHandler(
             try {
                 buttonRunnable.callSuspend(buttonContainer, event, interactionContext)
             } catch (e: Exception) {
-                // TODO: reply
                 when (e) {
-                    is ConfigurationException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = guild.id,
-                        configurationErrorDto = e.configurationErrorDto
-                    )
+                    is ConfigurationException -> {
+                        configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                            guildId = guild.id,
+                            configurationErrorDto = e.configurationErrorDto
+                        )
 
-                    is InsufficientPermissionException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = guild.id,
-                        configurationErrorDto = e.toConfigurationErrorDto()
-                    )
+                        event.replyEmbeds(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorDto.description}"))
+                            .setEphemeral(true)
+                            .queue()
+                    }
 
-                    else -> throw e
+                    is InsufficientPermissionException -> {
+                        val configurationError = e.toConfigurationErrorDto()
+
+                        configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                            guildId = guild.id,
+                            configurationErrorDto = configurationError
+                        )
+
+                        event.replyEmbeds(Embeds.error("An error occurred because of missing permissions:\n> ${configurationError.description}"))
+                    }
+
+                    else -> {
+                        event.replyEmbeds(Embeds.error("An unknown error occurred, the developers are aware of it and will investigate it.\nIf you need support join the [support server](${Links.SUPPORT_SERVER})."))
+                            .setEphemeral(true)
+                            .queue()
+
+                        throw e
+                    }
                 }
             }
         }

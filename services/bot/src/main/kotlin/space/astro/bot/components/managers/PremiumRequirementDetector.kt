@@ -9,8 +9,8 @@ import space.astro.shared.core.models.database.GuildEntitlement
 
 @Component
 class PremiumRequirementDetector(
-    val discordApplicationConfig: DiscordApplicationConfig,
-    val applicationFeaturesConfig: ApplicationFeaturesConfig,
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val applicationFeaturesConfig: ApplicationFeaturesConfig,
 ) {
     private fun isEntitlementActive(
         entitlement: GuildEntitlement,

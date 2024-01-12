@@ -22,7 +22,7 @@ repositories {
     mavenCentral()
 }
 
-// TODO: Migrate this to buildSrc or conventional builds when version catalogs are supported
+// Migrate this to buildSrc or conventional builds when version catalogs are supported
 subprojects {
     repositories {
         maven {

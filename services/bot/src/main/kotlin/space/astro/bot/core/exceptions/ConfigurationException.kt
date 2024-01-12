@@ -1,6 +1,6 @@
 package space.astro.bot.core.exceptions
 
-import space.astro.bot.models.error.ConfigurationErrorDto
+import space.astro.shared.core.models.influx.ConfigurationErrorDto
 
 class ConfigurationException(
     val configurationErrorDto: ConfigurationErrorDto

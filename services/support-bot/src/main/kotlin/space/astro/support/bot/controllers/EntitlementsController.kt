@@ -11,8 +11,8 @@ import space.astro.support.bot.config.DiscordApplicationConfig
 @RestController
 @RequestMapping("/entitlements")
 class EntitlementsController(
-    val discordApplicationConfig: DiscordApplicationConfig,
-    val shardManager: ShardManager
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val shardManager: ShardManager
 ) {
 
     @PostMapping("/create")

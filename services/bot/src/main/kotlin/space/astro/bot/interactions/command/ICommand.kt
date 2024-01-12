@@ -12,4 +12,5 @@ interface ICommand {
     val commands: MutableMap<String, Pair<KFunction<*>, List<String>>>
     val category: CommandCategory
     var id: Long?
+    val premium: Boolean
 }

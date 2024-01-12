@@ -18,5 +18,6 @@ class VcInteractionContext(
     val vcOperationCTX: VCOperationCTX,
     guild: Guild,
     member: Member,
-    user: User
+    user: User,
+    usedInterfaceComponent: Boolean
 ) : InteractionContext(guild, member, user)

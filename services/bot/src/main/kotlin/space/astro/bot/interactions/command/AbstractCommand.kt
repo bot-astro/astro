@@ -24,6 +24,8 @@ abstract class AbstractCommand : ICommand {
         mutableMapOf()
 
     final override val category: CommandCategory
+    final override val premium: Boolean
+
 
     init {
         val reflectedClass = this::class
@@ -38,6 +40,7 @@ abstract class AbstractCommand : ICommand {
         val commandDescription = commandAnnotation.description
         data = Commands.slash(commandName, commandDescription)
         category = commandAnnotation.category
+        premium = commandAnnotation.premium
 
         reflectedClass.memberFunctions.forEach { function ->
             val functionBaseCommandAnnotation = function.findAnnotation<BaseCommand>()

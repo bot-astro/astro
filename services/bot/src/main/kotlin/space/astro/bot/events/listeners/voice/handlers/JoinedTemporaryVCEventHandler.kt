@@ -57,11 +57,9 @@ fun VCEventHandler.handleJoinedTemporaryVCEvent(
             color = guild.selfMember.colorRaw
             title = "${Emojis.logs.formatted} Voice channel logs"
             description = "*${data.member.asMention} just joined the VC!*"
-            /* TODO
             footer {
-                name = "You can disable these logs with /${VcLogsSC().path}"
+                name = "You can disable these logs with `/chat logs`"
             }
-             */
         }
 
         logChat.sendMessageEmbeds(userJoinedEmbed).queue()

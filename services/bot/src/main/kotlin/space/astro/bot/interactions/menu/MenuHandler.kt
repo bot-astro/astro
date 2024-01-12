@@ -18,7 +18,9 @@ import space.astro.bot.interactions.InteractionContextBuilder
 import space.astro.bot.interactions.InteractionContextBuilderException
 import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.command.VcInteractionContextInfo
+import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
+import space.astro.shared.core.util.ui.Links
 import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.findAnnotation
@@ -28,10 +30,10 @@ private val log = KotlinLogging.logger {  }
 @Component
 class MenuHandler(
     menus: List<IMenu>,
-    val discordApplicationConfig: DiscordApplicationConfig,
-    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
-    val temporaryVCDao: TemporaryVCDao,
-    val interactionContextBuilder: InteractionContextBuilder
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
+    private val interactionContextBuilder: InteractionContextBuilder,
+    private val guildDao: GuildDao
 ) {
     val menuMap = HashMap<String, IMenu>()
 
@@ -96,10 +98,21 @@ class MenuHandler(
                     val vcInteractionContextInfo = interactionContextParameter.findAnnotation<VcInteractionContextInfo>()
                         ?: throw IllegalArgumentException("Found VcCommandContext parameter in menu $key without VcCommandContextInfo annotation!")
 
+                    val guildData = guildDao.get(guild.id)
+                        ?: run {
+                            event.replyEmbeds(Embeds.error("Astro is not configured in this server!"))
+                                .setEphemeral(true)
+                                .queue()
+
+                            return
+                        }
+
                     try {
                         interactionContextBuilder.buildVcInteractionContext(
                             interactionCreateEvent = event,
-                            vcInteractionContextInfo = vcInteractionContextInfo
+                            vcInteractionContextInfo = vcInteractionContextInfo,
+                            usedInterfaceComponent = false,
+                            guildData = guildData
                         )
                     } catch (e: InteractionContextBuilderException) {
                         event.replyEmbeds(e.errorEmbed)
@@ -117,19 +130,36 @@ class MenuHandler(
             try {
                 menuRunnable.callSuspend(menuContainer, event, interactionContext)
             } catch (e: Exception) {
-                // TODO: reply
                 when (e) {
-                    is ConfigurationException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = guild.id,
-                        configurationErrorDto = e.configurationErrorDto
-                    )
+                    is ConfigurationException -> {
+                        configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                            guildId = guild.id,
+                            configurationErrorDto = e.configurationErrorDto
+                        )
 
-                    is InsufficientPermissionException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = guild.id,
-                        configurationErrorDto = e.toConfigurationErrorDto()
-                    )
+                        event.replyEmbeds(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorDto.description}"))
+                            .setEphemeral(true)
+                            .queue()
+                    }
 
-                    else -> throw e
+                    is InsufficientPermissionException -> {
+                        val configurationError = e.toConfigurationErrorDto()
+
+                        configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                            guildId = guild.id,
+                            configurationErrorDto = configurationError
+                        )
+
+                        event.replyEmbeds(Embeds.error("An error occurred because of missing permissions:\n> ${configurationError.description}"))
+                    }
+
+                    else -> {
+                        event.replyEmbeds(Embeds.error("An unknown error occurred, the developers are aware of it and will investigate it.\nIf you need support join the [support server](${Links.SUPPORT_SERVER})."))
+                            .setEphemeral(true)
+                            .queue()
+
+                        throw e
+                    }
                 }
             }
         }

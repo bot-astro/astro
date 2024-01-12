@@ -364,6 +364,4 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
                 memberRolesManager.add(it)
             }
         }
-
-    // TODO: PROPOSAL - first time user created a temporary vc private message
 }
