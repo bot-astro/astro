@@ -6,10 +6,9 @@ enum class RedisKey(val key: String) {
      */
     GLOBAL_RATELIMIT("GR:%s"),
 
-    /**
-     * Format with: USER_ID
-     */
-    GENERATOR_RATELIMIT_FOR_USER("GENERATOR_RATELIMIT:%s"),
+    GENERATOR_RATELIMIT_FOR_USER("GENR"),
+
+    COMMAND_RATELIMIT_FOR_USER("CMDR"),
 
     /**
      * Format with: USER_ID
@@ -26,8 +25,7 @@ enum class RedisKey(val key: String) {
      */
     WEB_SESSION_TOKENS("WST:%s:*"),
 
-    /**
-     * Format with: GUILD_ID
-     */
-    TEMPORARY_VCS("TEMP_VCS")
+    TEMPORARY_VCS("TEMP_VCS"),
+
+    GUILD_DATA("GD")
 }

@@ -17,11 +17,11 @@ private val log = KotlinLogging.logger {  }
 
 @Component
 class GuildVoiceUpdateEventListener(
-    val guildDao: GuildDao,
-    val temporaryVCDao: TemporaryVCDao,
-    val vcEventDetector: VCEventDetector,
-    val vcEventHandler: VCEventHandler,
-    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher
+    private val guildDao: GuildDao,
+    private val temporaryVCDao: TemporaryVCDao,
+    private val vcEventDetector: VCEventDetector,
+    private val vcEventHandler: VCEventHandler,
+    private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher
 ) {
 
     @EventListener

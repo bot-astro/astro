@@ -10,7 +10,7 @@ private val log = KotlinLogging.logger {  }
 
 @Component
 class ReadyEventListener(
-    val commandHandler: CommandHandler
+    private val commandHandler: CommandHandler
 ) {
 
     @EventListener

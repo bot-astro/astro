@@ -5,8 +5,12 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.CooldownsManager
+import space.astro.bot.components.managers.InterfaceManager
 import space.astro.bot.components.managers.PremiumRequirementDetector
-import space.astro.bot.components.managers.vc.*
+import space.astro.bot.components.managers.vc.VCOwnershipManager
+import space.astro.bot.components.managers.vc.VCPositionManager
+import space.astro.bot.components.managers.vc.VCPrivateChatManager
+import space.astro.bot.components.managers.vc.VCWaitingRoomManager
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
@@ -29,7 +33,8 @@ class VCEventHandler(
     val vcOwnershipManager: VCOwnershipManager,
     val vcPrivateChatManager: VCPrivateChatManager,
     val vcWaitingRoomManager: VCWaitingRoomManager,
-    val vcPositionManager: VCPositionManager
+    val vcPositionManager: VCPositionManager,
+    val interfaceManager: InterfaceManager
 ) {
     fun handleEvents(
         events: List<VCEvent>,

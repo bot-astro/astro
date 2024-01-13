@@ -9,8 +9,8 @@ import space.astro.shared.core.models.database.GuildEntitlement
 
 @Component
 class PremiumRequirementDetector(
-    val discordApplicationConfig: DiscordApplicationConfig,
-    val applicationFeaturesConfig: ApplicationFeaturesConfig,
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val applicationFeaturesConfig: ApplicationFeaturesConfig,
 ) {
     private fun isEntitlementActive(
         entitlement: GuildEntitlement,
@@ -29,6 +29,36 @@ class PremiumRequirementDetector(
         return guildData.entitlements.any {
             isEntitlementActive(it, currentMillis) && it.skuId == discordApplicationConfig.premiumServerSkuId
         }
+    }
+
+    fun canCreateConnection(guildData: GuildData): Boolean {
+        if (isGuildPremium(guildData) || !applicationFeaturesConfig.premiumRestrictions) {
+            return true
+        }
+
+        return guildData.connections.size < 1
+    }
+
+    fun canCreateGenerator(guildData: GuildData): Boolean {
+        if (isGuildPremium(guildData) || !applicationFeaturesConfig.premiumRestrictions) {
+            return true
+        }
+
+        return guildData.connections.size < 2
+    }
+
+    fun canCreateInterface(guildData: GuildData): Boolean {
+        if (isGuildPremium(guildData) || !applicationFeaturesConfig.premiumRestrictions) {
+            return true
+        }
+
+        return guildData.connections.size < 1
+    }
+
+    fun exceededMaximumConnectionsAmount(guildData: GuildData): Boolean {
+        return applicationFeaturesConfig.premiumRestrictions
+                && guildData.connections.size > 1
+                && !isGuildPremium(guildData)
     }
 
     fun exceededMaximumGeneratorAmount(guildData: GuildData): Boolean {

@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.Command.Choice
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.*
+import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.InteractionContext
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -24,6 +25,8 @@ abstract class AbstractCommand : ICommand {
         mutableMapOf()
 
     final override val category: CommandCategory
+    final override val action: InteractionAction
+
 
     init {
         val reflectedClass = this::class
@@ -38,6 +41,7 @@ abstract class AbstractCommand : ICommand {
         val commandDescription = commandAnnotation.description
         data = Commands.slash(commandName, commandDescription)
         category = commandAnnotation.category
+        action = commandAnnotation.action
 
         reflectedClass.memberFunctions.forEach { function ->
             val functionBaseCommandAnnotation = function.findAnnotation<BaseCommand>()
@@ -122,7 +126,7 @@ abstract class AbstractCommand : ICommand {
                         type.java.enumConstants.map {
                             Choice(
                                 it.toString(),
-                                (it as Enum<*>).name
+                                (it as Enum<*>).name.lowercase()
                             )
                         }
                     } else {
@@ -154,6 +158,12 @@ abstract class AbstractCommand : ICommand {
                         !parameter.type.isMarkedNullable,
                         commandOptionAnnotation.autocomplete
                     )
+                    if (commandOptionAnnotation.channelTypes.isNotEmpty()) {
+                        if (commandOptionAnnotation.type != OptionType.CHANNEL) {
+                            throw IllegalArgumentException("Command option with channel types must be of type CHANNEL")
+                        }
+                        optionData.setChannelTypes(commandOptionAnnotation.channelTypes.toList())
+                    }
                     if (commandOptionAnnotation.minValue != 0L) {
                         optionData.setMinValue(commandOptionAnnotation.minValue)
                     }

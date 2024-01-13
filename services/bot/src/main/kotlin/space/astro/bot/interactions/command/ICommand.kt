@@ -2,6 +2,7 @@ package space.astro.bot.interactions.command
 
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import space.astro.bot.interactions.InteractionAction
 import kotlin.reflect.KFunction
 
 interface ICommand {
@@ -12,4 +13,5 @@ interface ICommand {
     val commands: MutableMap<String, Pair<KFunction<*>, List<String>>>
     val category: CommandCategory
     var id: Long?
+    val action: InteractionAction
 }

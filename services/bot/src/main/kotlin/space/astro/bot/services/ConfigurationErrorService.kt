@@ -1,7 +1,9 @@
 package space.astro.bot.services
 
+import net.dv8tion.jda.api.Permission
 import org.springframework.stereotype.Service
-import space.astro.bot.models.error.ConfigurationErrorDto
+import space.astro.shared.core.models.influx.ConfigurationErrorDto
+import space.astro.shared.core.util.extention.asChannelMention
 
 @Service
 class ConfigurationErrorService {
@@ -10,8 +12,16 @@ class ConfigurationErrorService {
     ///////////////
 
     fun unknownError(encounteredIn: String) = ConfigurationErrorDto(
-        description = "An unknown error occured!" +
+        description = "An unknown error occurred!" +
                 "\nEncountered in: $encounteredIn"
+    )
+
+    ///////////////////
+    /// PERMISSIONS ///
+    ///////////////////
+    fun missingBotPermissions(permissions: List<Permission>, requiredFor: String) = ConfigurationErrorDto(
+        description = "Astro is missing the following permissions: ${permissions.joinToString(", ") { it.getName() }}" +
+                "\nRequired for: $requiredFor"
     )
 
     ///////////////
@@ -25,6 +35,11 @@ class ConfigurationErrorService {
     fun premiumRequiredForBadwordsValidation() = ConfigurationErrorDto(
         description = "Your generator has badwords validation enabled, but premium is required to use it." +
                 "\nEither upgrade to premium or disable badwords validation!"
+    )
+
+    fun maximumAmountOfConnections() = ConfigurationErrorDto(
+        description = "Your server has exceeded the maximum amount of connections." +
+                "\nEither upgrade to premium or delete one or more connection!"
     )
 
     fun maximumAmountOfGenerator() = ConfigurationErrorDto(
@@ -88,5 +103,13 @@ class ConfigurationErrorService {
     fun missingChannelParent(requiredFor: String) = ConfigurationErrorDto(
         description = "A category is misconfigured or missing" +
                 "\nRequired for: $requiredFor",
+    )
+
+    /////////////////
+    /// INTERFACE ///
+    /////////////////
+    fun invalidOldInterface(channelId: String) = ConfigurationErrorDto(
+        description = "This server has an old interface in ${channelId.asChannelMention()}." +
+                "\nDelete it and create a new one to avoid issues."
     )
 }

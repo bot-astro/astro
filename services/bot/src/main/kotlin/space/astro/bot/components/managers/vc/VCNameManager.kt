@@ -12,9 +12,9 @@ import space.astro.shared.core.models.database.VCState
 
 @Component
 class VCNameManager(
-    val premiumRequirementDetector: PremiumRequirementDetector,
-    val vcPositionManager: VCPositionManager,
-    val configurationErrorService: ConfigurationErrorService
+    private val premiumRequirementDetector: PremiumRequirementDetector,
+    private val vcPositionManager: VCPositionManager,
+    private val configurationErrorService: ConfigurationErrorService
 ) {
     /**
      * Change the name of a temporary vc

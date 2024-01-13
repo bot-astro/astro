@@ -54,17 +54,17 @@ object VariablesManager {
     }
 
     private object Parsers {
-        fun owner(template: String, owner: Member): String {
+        fun owner(template: String, owner: Member?): String {
             return template
-                .replace("{nickname}", owner.effectiveName, true)
-                .replace("{username}", owner.user.name, true)
-                .replace("{tag}", owner.user.name, true)
-                .replace("{mention}", owner.asMention, true)
-                .replace("{id}", owner.id, true)
+                .replace("{nickname}", owner?.effectiveName ?: "", true)
+                .replace("{username}", owner?.user?.name ?: "", true)
+                .replace("{tag}", owner?.user?.name ?: "", true)
+                .replace("{mention}", owner?.asMention ?: "", true)
+                .replace("{id}", owner?.id ?: "", true)
         }
 
-        fun activity(template: String, owner: Member): String {
-            val activity = owner.activities.firstOrNull { it.type != Activity.ActivityType.CUSTOM_STATUS }
+        fun activity(template: String, owner: Member?): String {
+            val activity = owner?.activities?.firstOrNull { it.type != Activity.ActivityType.CUSTOM_STATUS }
 
             return if (activity == null) {
                 template
@@ -197,7 +197,7 @@ object VariablesManager {
 
     fun computeVcNameForExisting(
         template: String,
-        owner: Member,
+        owner: Member?,
         temporaryVC: VoiceChannel,
         incrementalPosition: Int?
     ): String {
@@ -215,7 +215,7 @@ object VariablesManager {
 
     fun computePrivateChatName(
         template: String,
-        owner: Member,
+        owner: Member?,
         temporaryVC: VoiceChannel
     ): String {
         return Parsers.owner(template, owner)
@@ -228,7 +228,7 @@ object VariablesManager {
 
     fun computeWaitingRoomName(
         template: String,
-        owner: Member,
+        owner: Member?,
         temporaryVC: VoiceChannel,
         incrementalPosition: Int?
     ): String {

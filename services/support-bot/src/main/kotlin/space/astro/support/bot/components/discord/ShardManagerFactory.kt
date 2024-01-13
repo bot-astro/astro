@@ -18,10 +18,10 @@ private val log = KotlinLogging.logger { }
 
 @Component
 class ShardManagerFactory(
-    val shardManagerConfig: ShardManagerConfig,
-    val discordApplicationConfig: DiscordApplicationConfig,
-    val redisClientService: RedisClientService,
-    val jdaToSpringEventBridge: JdaToSpringEventBridge
+    private val shardManagerConfig: ShardManagerConfig,
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val redisClientService: RedisClientService,
+    private val jdaToSpringEventBridge: JdaToSpringEventBridge
 ) {
 
     private val intents = emptyList<GatewayIntent>()

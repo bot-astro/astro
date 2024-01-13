@@ -6,7 +6,6 @@ import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.concrete.Category
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
-import space.astro.bot.components.managers.InterfaceManager
 import space.astro.bot.components.managers.vc.VariablesManager
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.modifyPermissionOverride
@@ -14,11 +13,8 @@ import space.astro.bot.core.ui.Embeds
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
-import space.astro.shared.core.models.analytics.*
 import space.astro.shared.core.models.database.PermissionsInherited
 import space.astro.shared.core.models.database.TemporaryVCData
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 
 /**
@@ -302,7 +298,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
 
     val creationChatMessage = if (interfaceToSend != null) {
-        InterfaceManager.computeMessage(interfaceToSend)
+        interfaceManager.computeMessage(interfaceToSend)
     } else if (generatorData.defaultChatText != null) {
         val content = VariablesManager.computeChatMessage(generatorData.defaultChatText!!, owner, temporaryVC)
 
@@ -368,5 +364,5 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
             }
         }
 
-    // TODO: PROPOSAL - first time user created a temporary vc private message
+    /// TODO: Counter? ///
 }

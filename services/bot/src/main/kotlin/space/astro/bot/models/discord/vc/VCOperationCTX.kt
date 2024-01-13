@@ -33,7 +33,7 @@ data class VCOperationCTX(
     val guildData: GuildData,
     val generator: VoiceChannel,
     val generatorData: GeneratorData,
-    var temporaryVCOwner: Member,
+    var temporaryVCOwner: Member?,
     val temporaryVC: VoiceChannel,
     val temporaryVCManager: VoiceChannelManager,
     val temporaryVCData: TemporaryVCData,

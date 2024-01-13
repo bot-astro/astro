@@ -4,6 +4,7 @@ import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import space.astro.bot.components.managers.vc.VCWaitingRoomManager
 import space.astro.bot.core.ui.Embeds
+import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.command.*
 import space.astro.bot.models.discord.vc.VCOperationCTX
@@ -13,7 +14,7 @@ import space.astro.shared.core.daos.TemporaryVCDao
     name = "waiting-room",
     description = "Manage the waiting room of your VC",
     category = CommandCategory.VC,
-    premium = true
+    action = InteractionAction.VC_WAITING_ROOM
 )
 class WaitingRoomCommand(
     private val temporaryVCDao: TemporaryVCDao,

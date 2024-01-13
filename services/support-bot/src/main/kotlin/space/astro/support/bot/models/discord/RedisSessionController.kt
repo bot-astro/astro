@@ -77,7 +77,6 @@ class RedisSessionController(
         return listOf(botId.toString(), ratelimitShard.toString()).joinToString(":")
     }
 
-    // TODO: Ok?
     private fun getRedisGlobalRatelimitKey(botId: Long): String {
         return RedisKey.GLOBAL_RATELIMIT.key.format(botId)
     }

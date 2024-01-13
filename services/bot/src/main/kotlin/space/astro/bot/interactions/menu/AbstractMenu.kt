@@ -1,6 +1,7 @@
 package space.astro.bot.interactions.menu
 
 import net.dv8tion.jda.api.events.interaction.component.GenericSelectMenuInteractionEvent
+import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.InteractionContext
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -10,6 +11,7 @@ abstract class AbstractMenu : IMenu {
 
     final override var id: String
     final override var runnable: KFunction<*>?
+    final override val action: InteractionAction
 
     init {
         val reflectedClass = this::class
@@ -18,6 +20,7 @@ abstract class AbstractMenu : IMenu {
             ?: throw UnsupportedOperationException("Missing menu annotation on class extending AbstractMenu!")
 
         id = menuAnnotation.id
+        action = menuAnnotation.action
 
         val menuRunnable = reflectedClass.memberFunctions.firstOrNull { it.hasAnnotation<MenuRunnable>() }
             ?: throw UnsupportedOperationException("Missing MenuRunnable annotated function in class extending AbstractMenu")
@@ -36,7 +39,7 @@ abstract class AbstractMenu : IMenu {
         }
 
         if (!(function.parameters[1].type.classifier as KClass<*>).isSubclassOf(GenericSelectMenuInteractionEvent::class)) {
-            throw UnsupportedOperationException("First parameter of ${function.name} must be a subclass of GenericSelectMenuInteractionEvent parameter!")
+            throw UnsupportedOperationException("First parameter of ${function.name} must be a subclass of GenericSelectMenuInteractionEvent!")
         }
 
         if (!function.parameters[2].type.isSubtypeOf(InteractionContext::class.createType())) {

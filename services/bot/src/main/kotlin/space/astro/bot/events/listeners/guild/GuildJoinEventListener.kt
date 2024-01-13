@@ -82,10 +82,9 @@ class GuildJoinEventListener(
                     "Open the ${Links.DASHBOARD.linkFromLink("dashboard")} and configure Astro!",
                     false
                 ),
-                // TODO: Command mention
                 MessageEmbed.Field(
                     "Help & other resources",
-                    "You can find some general information about Astro in the", // ${HelpSC().asMention()} command.",
+                    "You can find some general information about Astro with `/help`.",
                     false
                 )
             ),

@@ -19,19 +19,17 @@ import space.astro.bot.config.PodConfig
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.RedisSessionController
-import space.astro.bot.services.ConfigurationErrorService
 import space.astro.shared.core.services.redis.RedisClientService
 
 private val log = KotlinLogging.logger { }
 
 @Component
 class ShardManagerFactory(
-    val shardManagerConfig: ShardManagerConfig,
-    val discordApplicationConfig: DiscordApplicationConfig,
-    val redisClientService: RedisClientService,
-    val jdaToSpringEventBridge: JdaToSpringEventBridge,
-    val configurationErrorService: ConfigurationErrorService,
-    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher
+    private val shardManagerConfig: ShardManagerConfig,
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val redisClientService: RedisClientService,
+    private val jdaToSpringEventBridge: JdaToSpringEventBridge,
+    private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher
 ) {
 
     private val intents = listOf(

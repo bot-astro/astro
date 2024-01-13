@@ -1,9 +1,7 @@
 package space.astro.bot.components.managers.vc
 
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.PermissionOverride
-import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
 import space.astro.bot.core.exceptions.ConfigurationException
@@ -72,29 +70,80 @@ class VCPermissionManager(
     }
 
     /**
-     * Kicks a user from a VC and denies [Permission.VOICE_CONNECT]
+     * Gives all [entities] [Permission.VIEW_CHANNEL] and [Permission.VOICE_CONNECT]
+     */
+    fun permit(
+        vcOperationCTX: VCOperationCTX,
+        entities: List<IPermissionHolder>
+    ) {
+        entities.forEach { entity ->
+            vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
+                entity,
+                Permission.getRaw(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT),
+                0
+            )
+        }
+
+        vcOperationCTX.temporaryVC.manager.queue()
+    }
+
+    /**
+     * Kicks a member from a VC and denies [Permission.VOICE_CONNECT]
      *
      * @throws VcOperationException
      */
-    fun kickAndBanUser(
+    fun kickAndBanMember(
         vcOperationCTX: VCOperationCTX,
-        user: Member
+        member: Member
     ) {
         val immuneRoleId = vcOperationCTX.generatorData.permissionsImmuneRole
 
-        if (immuneRoleId != null && user.roles.any { it.id == immuneRoleId }) {
+        if (immuneRoleId != null && member.roles.any { it.id == immuneRoleId }) {
             throw VcOperationException(VcOperationException.Reason.CANNOT_BAN_IMMUNE_ROLE)
         }
 
-        if (user.voiceState!!.channel?.id == vcOperationCTX.temporaryVC.id) {
-            vcOperationCTX.guild.kickVoiceMember(user).queue()
+        if (member.voiceState!!.channel?.id == vcOperationCTX.temporaryVC.id) {
+            vcOperationCTX.guild.kickVoiceMember(member).queue()
         }
 
         vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
-            user,
+            member,
             0,
             Permission.VOICE_CONNECT.rawValue
         ).queue()
+    }
+
+    /**
+     * Kicks multiple members from a VC and denies [Permission.VOICE_CONNECT]
+     *
+     * @return the list of banned [Member]
+     */
+    fun kickAndBanMultipleMembers(
+        vcOperationCTX: VCOperationCTX,
+        members: List<Member>
+    ): List<Member> {
+        val banned = mutableListOf<Member>()
+        val immuneRoleId = vcOperationCTX.generatorData.permissionsImmuneRole
+
+        members.forEach { member ->
+            if (member.roles.none { it.id == immuneRoleId }) {
+                banned.add(member)
+
+                vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
+                    member,
+                    0,
+                    Permission.VOICE_CONNECT.rawValue
+                )
+            }
+
+            if (member.voiceState!!.channel?.id == vcOperationCTX.temporaryVC.id) {
+                vcOperationCTX.guild.kickVoiceMember(member).queue()
+            }
+        }
+
+        vcOperationCTX.temporaryVC.manager.queue()
+
+        return banned
     }
 
     /**
@@ -117,6 +166,80 @@ class VCPermissionManager(
             0,
             Permission.VOICE_CONNECT.rawValue
         ).queue()
+    }
+
+    /**
+     * Denies [Permission.VOICE_CONNECT] to multiple roles
+     *
+     * @return the list of banned [Role]
+     */
+    fun banMultipleRoles(
+        vcOperationCTX: VCOperationCTX,
+        roles: List<Role>
+    ): List<Role> {
+        val banned = mutableListOf<Role>()
+
+        val immuneRoleId = vcOperationCTX.generatorData.permissionsImmuneRole
+
+        roles.forEach { role ->
+            if (immuneRoleId != role.id) {
+                banned.add(role)
+                vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
+                    role,
+                    0,
+                    Permission.VOICE_CONNECT.rawValue
+                )
+            }
+        }
+
+        vcOperationCTX.temporaryVC.manager.queue()
+
+        return banned
+    }
+
+    /**
+     * Kicks multiple member from a VC and denies [Permission.VOICE_CONNECT] to the members and roles
+     *
+     * @return the list of effectively banned members and roles as [IMentionable]
+     */
+    fun kickAndBanMultipleMembersAndRoles(
+        vcOperationCTX: VCOperationCTX,
+        users: List<Member>,
+        roles: List<Role>
+    ): List<IMentionable> {
+        val banned = mutableListOf<IMentionable>()
+        val immuneRoleId = vcOperationCTX.generatorData.permissionsImmuneRole
+
+        users.forEach { user ->
+            if (user.roles.none { it.id == immuneRoleId }) {
+                banned.add(user)
+
+                vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
+                    user,
+                    0,
+                    Permission.VOICE_CONNECT.rawValue
+                )
+            }
+
+            if (user.voiceState!!.channel?.id == vcOperationCTX.temporaryVC.id) {
+                vcOperationCTX.guild.kickVoiceMember(user).queue()
+            }
+        }
+
+        roles.forEach { role ->
+            if (immuneRoleId != role.id) {
+                banned.add(role)
+                vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
+                    role,
+                    0,
+                    Permission.VOICE_CONNECT.rawValue
+                )
+            }
+        }
+
+        vcOperationCTX.temporaryVC.manager.queue()
+
+        return banned
     }
 
     private fun VCOperationCTX.calculateInheritedPermissions(): List<PermissionOverride> {

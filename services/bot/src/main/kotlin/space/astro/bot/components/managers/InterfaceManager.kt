@@ -15,8 +15,9 @@ import space.astro.shared.core.models.database.InterfaceButton
 import space.astro.shared.core.models.database.InterfaceData
 import java.time.Instant
 
-object InterfaceManager {
-    private const val MAX_COMPONENTS = Message.MAX_COMPONENT_COUNT
+@org.springframework.stereotype.Component
+class InterfaceManager {
+    private val MAX_COMPONENTS = Message.MAX_COMPONENT_COUNT
     private val MAX_BUTTONS_PER_COMPONENT = Component.Type.BUTTON.maxPerRow
 
     fun computeMessage(interfaceData: InterfaceData): MessageCreateData {
@@ -29,9 +30,7 @@ object InterfaceManager {
     private fun computeEmbed(interfaceData: InterfaceData): MessageEmbed {
         val embedStyle = interfaceData.embedStyle
 
-        return Embed(
-            // TODO: fields = formatEmbedFieldsFromButtons(interfaceDto)
-        ) {
+        return Embed {
             color = embedStyle.color
 
             author {

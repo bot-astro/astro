@@ -16,8 +16,8 @@ dependencies {
     }
 
     implementation(libs.guava)
-
     implementation(libs.bigquery)
+    implementation(libs.nanoid)
 
     implementation(project(":shared:core"))
 

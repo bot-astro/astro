@@ -3,6 +3,7 @@ package space.astro.shared.core.models.database
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
+import space.astro.shared.core.util.extention.*
 import space.astro.shared.core.util.ui.Colors
 import space.astro.shared.core.util.ui.Links
 
@@ -159,12 +160,41 @@ data class ConnectionData(
     var id: String,
     var roleID: String,
     var action: ConnectionAction = ConnectionAction.ASSIGN
-)
+) {
+    override fun toString(): String {
+        val joinActionName = when (action) {
+            ConnectionAction.ASSIGN -> "receive"
+            ConnectionAction.REMOVE -> "loose"
+            ConnectionAction.TOGGLE -> "get toggled"
+        }
+        val leaveActionName = when (action) {
+            ConnectionAction.ASSIGN -> "removed"
+            ConnectionAction.REMOVE -> "back"
+            ConnectionAction.TOGGLE -> "toggled back"
+        }
+
+        return "Users will $joinActionName the ${roleID.asRoleMention()} role when joining ${id.asChannelMention()}" +
+                " and they will ${if (action.permanent) "__not__ " else ""}get that role $leaveActionName" +
+                " when they leave the channel." +
+                "\n" +
+                "\n**Summary**" +
+                "\n> **Channel** > ${id.asChannelMention()}" +
+                "\n> **Role** > ${roleID.asRoleMention()}" +
+                "\n> **Action** > ${action.name.lowercaseAndCapitalize()}" +
+                "\n> **Permanent** > ${action.permanent.asTrueOrFalse()}"
+    }
+}
 
 enum class ConnectionAction(
     var permanent: Boolean = false
 ) {
-    ASSIGN, REMOVE, TOGGLE
+    ASSIGN, REMOVE, TOGGLE;
+
+    override fun toString(): String = when (this) {
+        ASSIGN -> "Assign the role"
+        REMOVE -> "Remove the role"
+        TOGGLE -> "Toggle the role (assign if missing, remove if present)"
+    }
 }
 
 data class CommandsSettings(

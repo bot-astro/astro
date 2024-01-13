@@ -1,15 +1,13 @@
 package space.astro.bot.interactions.command
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
@@ -18,40 +16,46 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import space.astro.bot.components.managers.CooldownsManager
+import space.astro.bot.components.managers.PremiumRequirementDetector
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.interactions.InteractionContext
-import space.astro.bot.interactions.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.bot.interactions.InteractionContextBuilder
+import space.astro.bot.interactions.InteractionContextBuilderException
+import space.astro.bot.interactions.InteractionReplyManager
 import space.astro.shared.core.daos.GuildDao
-import space.astro.shared.core.daos.TemporaryVCDao
 import space.astro.shared.core.models.analytics.AnalyticsEvent
 import space.astro.shared.core.models.analytics.AnalyticsEventReceiver
 import space.astro.shared.core.models.analytics.AnalyticsEventType
 import space.astro.shared.core.models.analytics.SlashCommandInvocationEventData
 import space.astro.shared.core.models.analytics.meta.SlashCommandInvocationOptionsMetaData
 import space.astro.shared.core.models.analytics.meta.structure.OptionPair
+import space.astro.shared.core.util.extention.asRelativeTimestampFromNow
+import space.astro.shared.core.util.ui.Links
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
-import kotlin.reflect.full.findAnnotation
 
 private val log = KotlinLogging.logger {}
 
 @Component
 class CommandHandler(
     commands: List<ICommand>,
-    val shardManager: ShardManager,
-    val discordApplicationConfig: DiscordApplicationConfig,
-    val temporaryVCDao: TemporaryVCDao,
-    val guildDao: GuildDao,
-    val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
-    val applicationEventPublisher: ApplicationEventPublisher,
-    val objectMapper: ObjectMapper
+    private val shardManager: ShardManager,
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
+    private val applicationEventPublisher: ApplicationEventPublisher,
+    private val objectMapper: ObjectMapper,
+    private val interactionContextBuilder: InteractionContextBuilder,
+    private val premiumRequirementDetector: PremiumRequirementDetector,
+    private val guildDao: GuildDao,
+    private val cooldownsManager: CooldownsManager,
+    private val coroutineScope: CoroutineScope
 ) {
 
     val commandsMap = HashMap<String, ICommand>()
@@ -100,180 +104,188 @@ class CommandHandler(
         }
     }
 
-    @DelicateCoroutinesApi
     @EventListener
     fun receiveSlashCommand(event: SlashCommandInteractionEvent) {
-        val guild = event.guild
+        coroutineScope.launch {
+            val guild = event.guild
 
-        if (guild == null) {
-            log.warn("Received slash command event without guild")
-            event.replyEmbeds(Embeds.error("This bot cannot be used outside servers!")).queue()
-            return
-        }
-
-        val member = event.member
-        if (member == null) {
-            log.warn("Received slash command event from guild ${guild.id} without member")
-            return
-        }
-
-        val channel = event.channel
-
-        if (discordApplicationConfig.whitelistedGuilds.isNotEmpty() &&
-            !discordApplicationConfig.whitelistedGuilds.contains(guild.idLong)
-        ) {
-            log.warn("Received slash command event outside of whitelisted guilds - guild id: ${guild.id}")
-            event.reply("This command is not available outside of whitelisted guilds.")
-                .setEphemeral(true).queue()
-            return
-        }
-
-        val key = getFullKeyFromEvent(event)
-
-        val commandContainer = commandsMap[event.name]
-            ?: throw IllegalArgumentException("Couldn't find command container with name ${event.name}!")
-
-        val (command, options) = commandContainer.commands[key]
-            ?: throw IllegalArgumentException("Couldn't find matching function name for $key!")
-
-        val optionArgs = Array(options.size) { index ->
-            val type = command.parameters[3 + index].type.classifier as KClass<*>
-            val name = options[index]
-            when (type) {
-                String::class -> event.getOption(name)?.asString
-                Long::class -> event.getOption(name)?.asLong
-                Int::class -> event.getOption(name)?.asLong?.toInt()
-                Boolean::class -> event.getOption(name)?.asBoolean
-                User::class -> event.getOption(name)?.asUser
-                Member::class -> {
-                    val option = event.getOption(name)
-
-                    if (option != null) {
-                        option.asMember
-                            ?: run {
-                                event.replyEmbeds(Embeds.error("You must provide a user from this server for `$name`"))
-                                    .setEphemeral(true).queue()
-
-                                return
-                            }
-                    } else null
-                }
-                GuildChannel::class -> event.getOption(name)?.asChannel
-                Role::class -> event.getOption(name)?.asRole
-                else -> throw UnsupportedOperationException("Unable to handle option $name!")
-            }
-        }
-
-        val interactionContextBase = InteractionContext(
-            guild = guild,
-            member = member,
-            user = event.user,
-            channel = channel
-        )
-
-        val interactionContextParameter = command.parameters[2]
-
-        val interactionContext =
-            when (val commandContextArgType = interactionContextParameter.type.classifier as KClass<*>) {
-                InteractionContext::class -> interactionContextBase
-                VcInteractionContext::class -> {
-                    val vcInteractionContextInfo = interactionContextParameter.findAnnotation<VcInteractionContextInfo>()
-                        ?: throw IllegalArgumentException("Found VcCommandContext parameter in command $key without VcCommandContextInfo annotation!")
-
-                    val vc = member.voiceState!!
-                        .channel
-                        ?.takeIf { it.type == ChannelType.VOICE }
-                        ?.asVoiceChannel()
-                        ?: run {
-                            event.replyEmbeds(Embeds.error("You need to be in a VC to use this command!"))
-                                .setEphemeral(true).queue()
-
-                            return
-                        }
-
-                    val temporaryVCsData = temporaryVCDao.getAll(guild.id)
-                    val temporaryVCData = temporaryVCsData.firstOrNull { it.id == vc.id }
-                        ?: run {
-                            event.replyEmbeds(Embeds.error("You must be in a temporary VC to use this command!"))
-                                .setEphemeral(true).queue()
-                            return
-                        }
-
-                    if (vcInteractionContextInfo.ownershipRequired) {
-                        if (temporaryVCData.ownerId != member.id) {
-                            event.replyEmbeds(Embeds.error("You need to be the owner of the temporary VC to use this command!"))
-                                .setEphemeral(true).queue()
-                        }
-                    }
-
-                    val guildData = guildDao.get(guild.id)
-                        ?: run {
-                            event.replyEmbeds(Embeds.error("Astro is not configured in this server!"))
-                                .setEphemeral(true).queue()
-                            return
-                        }
-
-                    val generatorData = guildData.generators
-                        .firstOrNull { it.id == temporaryVCData.generatorId }
-
-                    val generator = generatorData?.id?.let { guild.getVoiceChannelById(it) }
-
-                    if (generatorData == null || generator == null) {
-                        event.replyEmbeds(Embeds.error("The generator of this temporary VC has been deleted!"))
-                            .queue()
-                        return
-                    }
-
-                    val privateChat = temporaryVCData.chatID?.let { guild.getTextChannelById(it) }
-                    val waitingRoom = temporaryVCData.waitingID?.let { guild.getVoiceChannelById(it) }
-
-                    val vcOperationCTX = VCOperationCTX(
-                        guildData = guildData,
-                        generator = generator,
-                        generatorData = generatorData,
-                        temporaryVCOwner = member,
-                        temporaryVC = vc,
-                        temporaryVCManager = vc.manager,
-                        temporaryVCData = temporaryVCData,
-                        temporaryVCsData = temporaryVCsData,
-                        privateChat = privateChat,
-                        privateChatManager = privateChat?.manager,
-                        waitingRoom = waitingRoom,
-                        waitingRoomManager = waitingRoom?.manager,
-                        vcOperationOrigin = vcInteractionContextInfo.vcOperationOrigin
-                    )
-
-                    VcInteractionContext(
-                        vcOperationCTX = vcOperationCTX,
-                        guild = guild,
-                        member = member,
-                        user = event.user,
-                        channel = channel
-                    )
-                }
-
-                else -> throw IllegalArgumentException("Command context of type $commandContextArgType is not recognized")
+            if (guild == null) {
+                log.warn("Received slash command event without guild")
+                event.replyEmbeds(Embeds.error("This bot cannot be used outside servers!")).queue()
+                return@launch
             }
 
-        trackCommandAnalyticsEvent(key, event, guild, event.options)
+            val member = event.member
+            if (member == null) {
+                log.warn("Received slash command event from guild ${guild.id} without member")
+                return@launch
+            }
 
-        GlobalScope.launch {
+            ////////////////////
+            /// WHITELISTING ///
+            ////////////////////
+            if (discordApplicationConfig.whitelistedGuilds.isNotEmpty() &&
+                !discordApplicationConfig.whitelistedGuilds.contains(guild.idLong)
+            ) {
+                log.warn("Received slash command event outside of whitelisted guilds - guild id: ${guild.id}")
+                event.reply("This command is not available outside of whitelisted guilds.")
+                    .setEphemeral(true).queue()
+                return@launch
+            }
+
+            /////////////////////////////
+            /// RETRIEVE COMMAND DATA ///
+            /////////////////////////////
+            val key = getFullKeyFromEvent(event)
+
+            val commandContainer = commandsMap[event.name]
+                ?: throw IllegalArgumentException("Couldn't find command container with name ${event.name}!")
+
+            val (command, options) = commandContainer.commands[key]
+                ?: throw IllegalArgumentException("Couldn't find matching function name for $key!")
+
+            val optionArgs = Array(options.size) { index ->
+                val type = command.parameters[3 + index].type.classifier as KClass<*>
+                val name = options[index]
+                when (type) {
+                    String::class -> event.getOption(name)?.asString
+                    Long::class -> event.getOption(name)?.asLong
+                    Int::class -> event.getOption(name)?.asLong?.toInt()
+                    Boolean::class -> event.getOption(name)?.asBoolean
+                    User::class -> event.getOption(name)?.asUser
+                    Member::class -> {
+                        val option = event.getOption(name)
+
+                        if (option != null) {
+                            option.asMember
+                                ?: run {
+                                    event.replyEmbeds(Embeds.error("You must provide a user from this server for `$name`"))
+                                        .setEphemeral(true).queue()
+
+                                    return@launch
+                                }
+                        } else null
+                    }
+
+                    GuildChannel::class -> event.getOption(name)?.asChannel
+                    Role::class -> event.getOption(name)?.asRole
+                    else -> throw UnsupportedOperationException("Unable to handle option $name!")
+                }
+            }
+
+            ////////////////
+            /// COOLDOWN ///
+            ////////////////
+            val cooldown = cooldownsManager.getUserActionCooldown(member.id, commandContainer.action)
+            if (cooldown > 0) {
+                event.replyEmbeds(Embeds.error("This command is on cooldown, you will be able to use it again in ${cooldown.asRelativeTimestampFromNow()}"))
+                    .setEphemeral(true)
+                    .queue()
+
+                return@launch
+            }
+
+            /////////////////////
+            /// PREMIUM CHECK ///
+            /////////////////////
+            val guildData = guildDao.get(guild.id)
+
+            if (commandContainer.action.premium && (guildData == null || !premiumRequirementDetector.isGuildPremium(
+                    guildData
+                ))
+            ) {
+                event.replyEmbeds(Embeds.error("Premium is required to use this command!"))
+                    .setEphemeral(true)
+                    .queue()
+
+                return@launch
+            }
+
+            ///////////////////////
+            /// BOT PERMISSIONS ///
+            ///////////////////////
+            val botPermissions = commandContainer.action.botPermissions
+
+            if (botPermissions.isNotEmpty()) {
+                if (!guild.selfMember.hasPermission(botPermissions) && guildData?.allowMissingAdminPerm != true) {
+                    event.replyEmbeds(
+                        Embeds.error(
+                            "Astro needs to following permissions to run this command: ${
+                                botPermissions.joinToString(
+                                    ", "
+                                ) { it.getName() }
+                            }"
+                        )
+                    )
+                        .setEphemeral(true)
+                        .queue()
+
+                    return@launch
+                }
+            }
+
+            /////////////////////////////////
+            /// BUILD INTERACTION CONTEXT ///
+            /////////////////////////////////
+            val interactionContextBase = InteractionContext(
+                guild = guild,
+                member = member,
+                interactionReplyManager = InteractionReplyManager(
+                    originatedFromInterface = false,
+                    originatedFromExistingMessage = false,
+                    replyCallback = event
+                )
+            )
+
+            val interactionContextParameter = command.parameters[2]
+
+            val interactionContext = try {
+                interactionContextBuilder.buildInteractionContext(
+                    interactionContextParameter = interactionContextParameter,
+                    interactionContextBase = interactionContextBase,
+                    guildData = guildData
+                )
+            } catch (e: InteractionContextBuilderException) {
+                interactionContextBase.interactionReplyManager.replyEmbed(e.errorEmbed)
+                return@launch
+            }
+
+            /////////////////
+            /// ANALYTICS ///
+            /////////////////
+            trackCommandAnalyticsEvent(key, event, guild, event.options)
+
+            /////////////////////////////////////
+            /// RUN COMMAND AND HANDLE ERRORS ///
+            /////////////////////////////////////
             try {
                 command.callSuspend(commandContainer, event, interactionContext, *optionArgs)
             } catch (e: Exception) {
-                // TODO: reply
                 when (e) {
-                    is ConfigurationException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = guild.id,
-                        configurationErrorDto = e.configurationErrorDto
-                    )
+                    is ConfigurationException -> {
+                        configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                            guildId = guild.id,
+                            configurationErrorDto = e.configurationErrorDto
+                        )
 
-                    is InsufficientPermissionException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = guild.id,
-                        configurationErrorDto = e.toConfigurationErrorDto()
-                    )
+                        interactionContext.interactionReplyManager.replyEmbed(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorDto.description}"))
+                    }
 
-                    else -> throw e
+                    is InsufficientPermissionException -> {
+                        val configurationError = e.toConfigurationErrorDto()
+
+                        configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                            guildId = guild.id,
+                            configurationErrorDto = configurationError
+                        )
+
+                        interactionContext.interactionReplyManager.replyEmbed(Embeds.error("An error occurred because of missing permissions:\n> ${configurationError.description}"))
+                    }
+
+                    else -> {
+                        interactionContext.interactionReplyManager.replyEmbed(Embeds.error("An unknown error occurred, the developers are aware of it and will investigate it.\nIf you need support join the [support server](${Links.SUPPORT_SERVER})."))
+                        throw e
+                    }
                 }
             }
         }
@@ -297,7 +309,7 @@ class CommandHandler(
             data = SlashCommandInvocationEventData(
                 name = key,
                 guildId = guild.idLong,
-                channelId = event.channelIdLong,
+                channelId = event.channel.idLong,
                 userId = event.user.idLong,
                 mainOptionName = if (optionsPairs.isNotEmpty()) optionsPairs[0].name else null,
                 mainOptionValue = if (optionsPairs.isNotEmpty()) optionsPairs[0].value else null,

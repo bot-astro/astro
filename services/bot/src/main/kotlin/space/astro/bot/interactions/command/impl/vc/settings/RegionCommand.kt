@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import space.astro.bot.core.ui.Embeds
+import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.InteractionComponentBuilder
 import space.astro.bot.interactions.InteractionIds
 import space.astro.bot.interactions.VcInteractionContext
@@ -14,7 +15,8 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
 @Command(
     name = "region",
     description = "Set the region for your VC",
-    category = CommandCategory.VC
+    category = CommandCategory.VC,
+    action = InteractionAction.VC_REGION
 )
 class RegionCommand(
     val interactionComponentBuilder: InteractionComponentBuilder
