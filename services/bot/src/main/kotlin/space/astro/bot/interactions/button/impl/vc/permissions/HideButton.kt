@@ -10,7 +10,7 @@ import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.button.AbstractButton
 import space.astro.bot.interactions.button.Button
 import space.astro.bot.interactions.button.ButtonRunnable
-import space.astro.bot.interactions.command.*
+import space.astro.bot.interactions.command.VcInteractionContextInfo
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.shared.core.daos.TemporaryVCDao
 import space.astro.shared.core.models.database.VCState

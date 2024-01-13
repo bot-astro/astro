@@ -1,12 +1,8 @@
 package space.astro.bot.interactions.button.impl.vc.settings
 
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
-import space.astro.bot.core.ui.Embeds
-import space.astro.bot.core.ui.Emojis
 import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.InteractionComponentBuilder
 import space.astro.bot.interactions.InteractionIds
@@ -14,7 +10,7 @@ import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.button.AbstractButton
 import space.astro.bot.interactions.button.Button
 import space.astro.bot.interactions.button.ButtonRunnable
-import space.astro.bot.interactions.command.*
+import space.astro.bot.interactions.command.VcInteractionContextInfo
 import space.astro.bot.interactions.modal.impl.vc.BitrateModal
 import space.astro.bot.models.discord.vc.VCOperationCTX
 

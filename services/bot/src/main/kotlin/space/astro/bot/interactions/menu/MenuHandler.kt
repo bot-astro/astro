@@ -1,7 +1,6 @@
 package space.astro.bot.interactions.menu
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import net.dv8tion.jda.api.events.interaction.component.GenericSelectMenuInteractionEvent
@@ -15,15 +14,14 @@ import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
-import space.astro.bot.interactions.*
-import space.astro.bot.interactions.command.VcInteractionContextInfo
+import space.astro.bot.interactions.InteractionContext
+import space.astro.bot.interactions.InteractionContextBuilder
+import space.astro.bot.interactions.InteractionContextBuilderException
+import space.astro.bot.interactions.InteractionReplyManager
 import space.astro.shared.core.daos.GuildDao
-import space.astro.shared.core.daos.TemporaryVCDao
 import space.astro.shared.core.util.extention.asRelativeTimestampFromNow
 import space.astro.shared.core.util.ui.Links
-import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
-import kotlin.reflect.full.findAnnotation
 
 private val log = KotlinLogging.logger {  }
 
@@ -35,7 +33,8 @@ class MenuHandler(
     private val interactionContextBuilder: InteractionContextBuilder,
     private val guildDao: GuildDao,
     private val cooldownsManager: CooldownsManager,
-    private val premiumRequirementDetector: PremiumRequirementDetector
+    private val premiumRequirementDetector: PremiumRequirementDetector,
+    private val coroutineScope: CoroutineScope
 ) {
     val menuMap = HashMap<String, IMenu>()
 
@@ -50,109 +49,120 @@ class MenuHandler(
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     @EventListener
-    suspend fun receiveMenu(event: GenericSelectMenuInteractionEvent<*, *>) {
-        val guild = event.guild
+    fun receiveMenu(event: GenericSelectMenuInteractionEvent<*, *>) {
+        coroutineScope.launch {
+            val guild = event.guild
 
-        if (guild == null) {
-            log.warn("Received menu event without guild")
-            event.hook.editOriginalEmbeds(Embeds.error("This bot cannot be used outside servers!"))
-                .setComponents()
-                .queue()
-            return
-        }
+            if (guild == null) {
+                log.warn("Received menu event without guild")
+                event.hook.editOriginalEmbeds(Embeds.error("This bot cannot be used outside servers!"))
+                    .setComponents()
+                    .queue()
+                return@launch
+            }
 
-        val member = event.member
-        if (member == null) {
-            log.warn("Received menu event from guild ${guild.id} without member")
-            return
-        }
+            val member = event.member
+            if (member == null) {
+                log.warn("Received menu event from guild ${guild.id} without member")
+                return@launch
+            }
 
-        if (discordApplicationConfig.whitelistedGuilds.isNotEmpty() &&
-            !discordApplicationConfig.whitelistedGuilds.contains(guild.idLong)
-        ) {
-            log.warn("Received menu event outside of whitelisted guilds - guild id: ${guild.id}")
-            event.hook.editOriginalEmbeds(Embeds.error("This command is not available outside of whitelisted guilds."))
-                .setComponents()
-                .queue()
-            return
-        }
+            if (discordApplicationConfig.whitelistedGuilds.isNotEmpty() &&
+                !discordApplicationConfig.whitelistedGuilds.contains(guild.idLong)
+            ) {
+                log.warn("Received menu event outside of whitelisted guilds - guild id: ${guild.id}")
+                event.hook.editOriginalEmbeds(Embeds.error("This command is not available outside of whitelisted guilds."))
+                    .setComponents()
+                    .queue()
+                return@launch
+            }
 
-        val keyParts = event.componentId.split("?")
-        val key = keyParts.first()
-        val menuContainer = menuMap[key]
-            ?: throw IllegalArgumentException("Couldn't find menu container with id ${key}!")
-        val menuRunnable = menuContainer.runnable
-            ?: throw IllegalArgumentException("Couldn't find menu runnable with id ${key}!")
+            val keyParts = event.componentId.split("?")
+            val key = keyParts.first()
+            val menuContainer = menuMap[key]
+                ?: throw IllegalArgumentException("Couldn't find menu container with id ${key}!")
+            val menuRunnable = menuContainer.runnable
+                ?: throw IllegalArgumentException("Couldn't find menu runnable with id ${key}!")
 
-        ////////////////
-        /// COOLDOWN ///
-        ////////////////
-        val cooldown = cooldownsManager.getUserActionCooldown(member.id, menuContainer.action)
-        if (cooldown > 0) {
-            event.replyEmbeds(Embeds.error("This action is on cooldown, you will be able to use it again in ${cooldown.asRelativeTimestampFromNow()}"))
-                .setEphemeral(true)
-                .queue()
-
-            return
-        }
-
-        /////////////////////
-        /// PREMIUM CHECK ///
-        /////////////////////
-        val guildData = guildDao.get(guild.id)
-
-        if (menuContainer.action.premium && (guildData == null || !premiumRequirementDetector.isGuildPremium(guildData))) {
-            event.replyEmbeds(Embeds.error("Premium is required to use this menu!"))
-                .setEphemeral(true)
-                .queue()
-
-            return
-        }
-
-        ///////////////////////
-        /// BOT PERMISSIONS ///
-        ///////////////////////
-        val botPermissions = menuContainer.action.botPermissions
-
-        if (botPermissions.isNotEmpty()) {
-            if (!guild.selfMember.hasPermission(botPermissions) && guildData?.allowMissingAdminPerm != true) {
-                event.replyEmbeds(Embeds.error("Astro needs to following permissions to run this command: ${botPermissions.joinToString(", ") { it.getName() }}"))
+            ////////////////
+            /// COOLDOWN ///
+            ////////////////
+            val cooldown = cooldownsManager.getUserActionCooldown(member.id, menuContainer.action)
+            if (cooldown > 0) {
+                event.replyEmbeds(Embeds.error("This action is on cooldown, you will be able to use it again in ${cooldown.asRelativeTimestampFromNow()}"))
                     .setEphemeral(true)
                     .queue()
 
-                return
+                return@launch
             }
-        }
 
-        /////////////////////////////////
-        /// BUILD INTERACTION CONTEXT ///
-        /////////////////////////////////
-        val originatedFromInterface = keyParts.lastOrNull()?.contains("interface=true") ?: false
-        val interactionContextBase = InteractionContext(
-            guild = guild,
-            member = member,
-            interactionReplyManager = InteractionReplyManager(
-                originatedFromInterface = originatedFromInterface,
-                originatedFromExistingMessage = true,
-                replyCallback = event
+            /////////////////////
+            /// PREMIUM CHECK ///
+            /////////////////////
+            val guildData = guildDao.get(guild.id)
+
+            if (menuContainer.action.premium && (guildData == null || !premiumRequirementDetector.isGuildPremium(
+                    guildData
+                ))
+            ) {
+                event.replyEmbeds(Embeds.error("Premium is required to use this menu!"))
+                    .setEphemeral(true)
+                    .queue()
+
+                return@launch
+            }
+
+            ///////////////////////
+            /// BOT PERMISSIONS ///
+            ///////////////////////
+            val botPermissions = menuContainer.action.botPermissions
+
+            if (botPermissions.isNotEmpty()) {
+                if (!guild.selfMember.hasPermission(botPermissions) && guildData?.allowMissingAdminPerm != true) {
+                    event.replyEmbeds(
+                        Embeds.error(
+                            "Astro needs to following permissions to run this command: ${
+                                botPermissions.joinToString(
+                                    ", "
+                                ) { it.getName() }
+                            }"
+                        )
+                    )
+                        .setEphemeral(true)
+                        .queue()
+
+                    return@launch
+                }
+            }
+
+            /////////////////////////////////
+            /// BUILD INTERACTION CONTEXT ///
+            /////////////////////////////////
+            val originatedFromInterface = keyParts.lastOrNull()?.contains("interface=true") ?: false
+            val interactionContextBase = InteractionContext(
+                guild = guild,
+                member = member,
+                interactionReplyManager = InteractionReplyManager(
+                    originatedFromInterface = originatedFromInterface,
+                    originatedFromExistingMessage = true,
+                    replyCallback = event
+                )
             )
-        )
 
-        val interactionContextParameter = menuRunnable.parameters[2]
+            val interactionContextParameter = menuRunnable.parameters[2]
 
-        val interactionContext = try {
-            interactionContextBuilder.buildInteractionContext(
-                interactionContextParameter = interactionContextParameter,
-                interactionContextBase = interactionContextBase,
-                guildData = guildData
-            )
-        } catch (e: InteractionContextBuilderException) {
-            interactionContextBase.interactionReplyManager.replyEmbed(e.errorEmbed)
-            return
-        }
-        GlobalScope.launch {
+            val interactionContext = try {
+                interactionContextBuilder.buildInteractionContext(
+                    interactionContextParameter = interactionContextParameter,
+                    interactionContextBase = interactionContextBase,
+                    guildData = guildData
+                )
+            } catch (e: InteractionContextBuilderException) {
+                interactionContextBase.interactionReplyManager.replyEmbed(e.errorEmbed)
+                return@launch
+            }
+
             try {
                 menuRunnable.callSuspend(menuContainer, event, interactionContext)
             } catch (e: Exception) {
@@ -163,9 +173,7 @@ class MenuHandler(
                             configurationErrorDto = e.configurationErrorDto
                         )
 
-                        event.replyEmbeds(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorDto.description}"))
-                            .setEphemeral(true)
-                            .queue()
+                        interactionContext.interactionReplyManager.replyEmbed(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorDto.description}"))
                     }
 
                     is InsufficientPermissionException -> {
@@ -176,14 +184,11 @@ class MenuHandler(
                             configurationErrorDto = configurationError
                         )
 
-                        event.replyEmbeds(Embeds.error("An error occurred because of missing permissions:\n> ${configurationError.description}"))
+                        interactionContext.interactionReplyManager.replyEmbed(Embeds.error("An error occurred because of missing permissions:\n> ${configurationError.description}"))
                     }
 
                     else -> {
-                        event.replyEmbeds(Embeds.error("An unknown error occurred, the developers are aware of it and will investigate it.\nIf you need support join the [support server](${Links.SUPPORT_SERVER})."))
-                            .setEphemeral(true)
-                            .queue()
-
+                        interactionContext.interactionReplyManager.replyEmbed(Embeds.error("An unknown error occurred, the developers are aware of it and will investigate it.\nIf you need support join the [support server](${Links.SUPPORT_SERVER})."))
                         throw e
                     }
                 }

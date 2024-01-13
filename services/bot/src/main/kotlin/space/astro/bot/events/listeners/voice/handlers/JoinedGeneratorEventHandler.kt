@@ -6,7 +6,6 @@ import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.concrete.Category
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
-import space.astro.bot.components.managers.InterfaceManager
 import space.astro.bot.components.managers.vc.VariablesManager
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.modifyPermissionOverride

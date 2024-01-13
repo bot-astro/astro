@@ -1,12 +1,10 @@
 package space.astro.bot.interactions.command.impl.vc.permissions
 
-import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import space.astro.bot.components.managers.vc.VCPermissionManager
-import space.astro.bot.core.extentions.modifyPermissionOverride
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.VcInteractionContext

@@ -8,7 +8,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.core.extentions.toPermissionList
-import space.astro.bot.interactions.command.impl.info.HelpCommand
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.shared.core.models.analytics.AnalyticsEvent
 import space.astro.shared.core.models.analytics.AnalyticsEventReceiver

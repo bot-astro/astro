@@ -4,7 +4,6 @@ import dev.minn.jda.ktx.events.await
 import dev.minn.jda.ktx.messages.Embed
 import kotlinx.coroutines.withTimeoutOrNull
 import net.dv8tion.jda.api.entities.channel.ChannelType
-import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
@@ -14,7 +13,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.sharding.ShardManager
-import org.springframework.cglib.proxy.Mixin.Generator
 import org.springframework.stereotype.Component
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.interactions.command.VcInteractionContextInfo
@@ -34,6 +32,15 @@ class InteractionContextBuilder(
     private val guildDao: GuildDao
 ) {
 
+    /**
+     * Builds and validates the interaction context
+     *
+     * @param interactionContextParameter the actual context parameter as declared in the command / button / menu / modal function
+     * @param interactionContextBase
+     * @param guildData
+     * @return [InteractionContext]
+     * @throws InteractionContextBuilderException if something goes wrong
+     */
     suspend fun buildInteractionContext(
         interactionContextParameter: KParameter,
         interactionContextBase: InteractionContext,
@@ -52,7 +59,6 @@ class InteractionContextBuilder(
                 buildVcInteractionContext(
                     interactionContextBase = interactionContextBase,
                     vcInteractionContextInfo = vcInteractionContextInfo,
-                    usedInterfaceComponent = false,
                     guildData = guildData
                 )
             }
@@ -119,8 +125,7 @@ class InteractionContextBuilder(
     private fun buildVcInteractionContext(
         interactionContextBase: InteractionContext,
         vcInteractionContextInfo: VcInteractionContextInfo,
-        guildData: GuildData,
-        usedInterfaceComponent: Boolean
+        guildData: GuildData
     ) : VcInteractionContext {
         val guild = interactionContextBase.guild
         val member = interactionContextBase.member
@@ -173,7 +178,6 @@ class InteractionContextBuilder(
             vcOperationCTX = vcOperationCTX,
             guild = guild,
             member = member,
-            usedInterfaceComponent = usedInterfaceComponent,
             interactionReplyManager = interactionContextBase.interactionReplyManager
         )
     }

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.services.SupportBotApiService
 import space.astro.shared.core.daos.GuildDao
-import space.astro.shared.core.models.database.GuildEntitlement
 
 private val logger = KotlinLogging.logger {  }
 

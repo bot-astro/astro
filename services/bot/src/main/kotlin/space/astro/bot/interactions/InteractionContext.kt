@@ -2,7 +2,6 @@ package space.astro.bot.interactions
 
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.User
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.shared.core.models.database.*
 
@@ -20,7 +19,6 @@ class VcInteractionContext(
     val vcOperationCTX: VCOperationCTX,
     guild: Guild,
     member: Member,
-    usedInterfaceComponent: Boolean,
     interactionReplyManager: InteractionReplyManager
 ) : InteractionContext(guild, member, interactionReplyManager)
 
