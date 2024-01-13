@@ -11,6 +11,10 @@ object Buttons {
     val support = Button.link(Links.SUPPORT_SERVER, "Support")
     val premium = Button.link(Links.APP_DIRECTORY_PREMIUM, "Premium")
 
+    object Docs {
+        val generator = Button.link(Links.Documentation.GENERATOR, "Generator docs")
+    }
+
     object Bundles {
         val help = listOf(invite, website, docs, support, premium)
     }

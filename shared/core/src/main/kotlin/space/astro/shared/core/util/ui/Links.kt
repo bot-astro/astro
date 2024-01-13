@@ -29,6 +29,7 @@ object Links {
 
     object Documentation {
         const val DOCUMENTATION = "https://docs.astro-bot.space"
+        const val GENERATOR = "https://docs.astro-bot.space/temporary-voice-channels/generators/"
     }
 
     object ExternalGuides {

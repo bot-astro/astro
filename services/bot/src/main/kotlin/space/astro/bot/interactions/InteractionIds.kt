@@ -30,6 +30,10 @@ object InteractionIds {
     }
 
     object Button {
+        const val HELP = "button/info/help"
+
+        const val SETUP = "button/settings/setup"
+
         const val VC_NAME = "button/vc/name"
         const val VC_LIMIT = "button/vc/limit"
         const val VC_BITRATE = "button/vc/bitrate"
