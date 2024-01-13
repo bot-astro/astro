@@ -14,7 +14,7 @@ import space.astro.shared.core.daos.TemporaryVCDao
     name = "waiting-room",
     description = "Manage the waiting room of your VC",
     category = CommandCategory.VC,
-    action = InteractionAction.WAITING_ROOM
+    action = InteractionAction.VC_WAITING_ROOM
 )
 class WaitingRoomCommand(
     private val temporaryVCDao: TemporaryVCDao,

@@ -15,7 +15,7 @@ import space.astro.shared.core.models.database.VCState
     name = "hide",
     description = "Hide your VC to make it invisible",
     category = CommandCategory.VC,
-    action = InteractionAction.INVITE
+    action = InteractionAction.VC_HIDE
 )
 class HideCommand(
     val vcPermissionManager: VCPermissionManager,

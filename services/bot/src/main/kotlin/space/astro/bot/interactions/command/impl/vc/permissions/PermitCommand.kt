@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
+import space.astro.bot.components.managers.vc.VCPermissionManager
 import space.astro.bot.core.extentions.modifyPermissionOverride
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.interactions.InteractionAction
@@ -16,9 +17,11 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
     name = "permit",
     description = "Permit a user or role to join your VC",
     category = CommandCategory.VC,
-    action = InteractionAction.PERMIT
+    action = InteractionAction.VC_PERMIT
 )
-class PermitCommand : AbstractCommand() {
+class PermitCommand(
+    private val vcPermissionManager: VCPermissionManager
+) : AbstractCommand() {
     @SubCommand(
         name = "user",
         description = "Permit a user to join your VC"
@@ -36,11 +39,7 @@ class PermitCommand : AbstractCommand() {
             description = "The user to permit in your channel"
         ) member: Member,
     ) {
-        ctx.vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
-            member,
-            Permission.getRaw(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT),
-            0
-        ).queue()
+        vcPermissionManager.permit(ctx.vcOperationCTX, listOf(member))
 
         event.replyEmbeds(Embeds.default("${member.asMention} can now join your VC!"))
             .setEphemeral(true).queue()
@@ -63,12 +62,7 @@ class PermitCommand : AbstractCommand() {
             description = "The role to ban from your channel"
         ) role: Role,
     ) {
-
-        ctx.vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
-            role,
-            Permission.getRaw(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT),
-            0
-        ).queue()
+        vcPermissionManager.permit(ctx.vcOperationCTX, listOf(role))
 
         event.replyEmbeds(Embeds.default("${role.asMention} role can now join your temporary VC!"))
             .setEphemeral(true).queue()

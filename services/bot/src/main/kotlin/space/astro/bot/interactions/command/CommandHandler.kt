@@ -284,7 +284,6 @@ class CommandHandler(
                             .setEphemeral(true)
                             .queue()
 
-                        // TODO: Use sentry?
                         throw e
                     }
                 }

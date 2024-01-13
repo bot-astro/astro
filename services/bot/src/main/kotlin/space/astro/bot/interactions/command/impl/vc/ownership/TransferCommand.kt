@@ -4,27 +4,22 @@ import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import space.astro.bot.components.managers.PremiumRequirementDetector
 import space.astro.bot.components.managers.vc.VCOwnershipManager
-import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.command.*
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.services.ConfigurationErrorService
 import space.astro.shared.core.daos.TemporaryVCDao
 
 @Command(
     name = "transfer",
     description = "Transfer the ownership of your VC to someone else",
     category = CommandCategory.VC,
-    action = InteractionAction.TRANSFER
+    action = InteractionAction.VC_TRANSFER
 )
 class TransferCommand(
     private val vcOwnershipManager: VCOwnershipManager,
-    private val premiumRequirementDetector: PremiumRequirementDetector,
-    private val configurationErrorService: ConfigurationErrorService,
     private val temporaryVCDao: TemporaryVCDao
 ) : AbstractCommand() {
     @BaseCommand
@@ -71,19 +66,7 @@ class TransferCommand(
         vcOwnershipManager.changeOwner(ctx.vcOperationCTX, member)
         ctx.vcOperationCTX.queueUpdatedManagers()
         temporaryVCDao.save(ctx.guildId, ctx.vcOperationCTX.temporaryVCData)
-
-        ctx.vcOperationCTX.generatorData.ownerRole?.let { ownerRoleId ->
-            ctx.guild.getRoleById(ownerRoleId)?.let { ownerRole ->
-                if (premiumRequirementDetector.canAssignTemporaryVCOwnerRole(ctx.vcOperationCTX.guildData)) {
-                    if (ctx.member.roles.any { it.id == ownerRole.id }) {
-                        ctx.guild.removeRoleFromMember(ctx.user, ownerRole).queue()
-                        ctx.guild.addRoleToMember(member.user, ownerRole).queue()
-                    }
-                } else {
-                    throw ConfigurationException(configurationErrorService.premiumRequiredForOwnerRole())
-                }
-            }
-        }
+        vcOwnershipManager.handleOwnerRoleMigration(ctx.vcOperationCTX, ctx.member, member)
 
         event.hook.editOriginalEmbeds(Embeds.default("Ownership transferred to ${member.asMention}"))
             .queue()

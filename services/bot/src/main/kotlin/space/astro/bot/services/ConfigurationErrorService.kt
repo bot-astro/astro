@@ -2,6 +2,7 @@ package space.astro.bot.services
 
 import org.springframework.stereotype.Service
 import space.astro.shared.core.models.influx.ConfigurationErrorDto
+import space.astro.shared.core.util.extention.asChannelMention
 
 @Service
 class ConfigurationErrorService {
@@ -88,5 +89,13 @@ class ConfigurationErrorService {
     fun missingChannelParent(requiredFor: String) = ConfigurationErrorDto(
         description = "A category is misconfigured or missing" +
                 "\nRequired for: $requiredFor",
+    )
+
+    /////////////////
+    /// INTERFACE ///
+    /////////////////
+    fun invalidOldInterface(channelId: String) = ConfigurationErrorDto(
+        description = "This server has an old interface in ${channelId.asChannelMention()}." +
+                "\nDelete it and create a new one to avoid issues."
     )
 }

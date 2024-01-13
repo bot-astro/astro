@@ -23,6 +23,8 @@ class VCPrivateChatManager(
     private val configurationErrorService: ConfigurationErrorService
 ) {
     /**
+     * Remember to update the [TemporaryVCData] chat info
+     *
      * @throws InsufficientPermissionException
      * @throws ConfigurationException
      */

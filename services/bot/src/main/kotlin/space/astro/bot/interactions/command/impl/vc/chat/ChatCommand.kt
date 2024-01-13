@@ -15,7 +15,7 @@ import space.astro.shared.core.util.extention.asEnabledOrDisabled
     name = "chat",
     description = "Manage the private text chat of your VC",
     category = CommandCategory.VC,
-    action = InteractionAction.CHAT
+    action = InteractionAction.VC_CHAT
 )
 class ChatCommand(
     private val temporaryVCDao: TemporaryVCDao,

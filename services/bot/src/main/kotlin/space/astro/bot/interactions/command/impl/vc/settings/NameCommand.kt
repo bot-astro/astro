@@ -15,7 +15,7 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
     name = "name",
     description = "Set the name for your VC",
     category = CommandCategory.VC,
-    action = InteractionAction.NAME
+    action = InteractionAction.VC_NAME
 )
 class NameCommand(
     val vcNameManager: VCNameManager

@@ -16,7 +16,7 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
     name = "region",
     description = "Set the region for your VC",
     category = CommandCategory.VC,
-    action = InteractionAction.REGION
+    action = InteractionAction.VC_REGION
 )
 class RegionCommand(
     val interactionComponentBuilder: InteractionComponentBuilder

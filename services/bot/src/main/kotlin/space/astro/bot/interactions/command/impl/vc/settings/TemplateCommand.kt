@@ -3,9 +3,13 @@ package space.astro.bot.interactions.command.impl.vc.settings
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import space.astro.bot.components.managers.vc.VCTemplateManager
 import space.astro.bot.core.ui.Embeds
+import space.astro.bot.core.ui.Emojis
 import space.astro.bot.interactions.InteractionAction
+import space.astro.bot.interactions.InteractionComponentBuilder
+import space.astro.bot.interactions.InteractionIds
 import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.command.*
 import space.astro.bot.models.discord.vc.VCOperationCTX
@@ -16,12 +20,13 @@ import space.astro.shared.core.daos.TemporaryVCDao
     name = "template",
     description = "Apply a template to your VC",
     category = CommandCategory.VC,
-    action = InteractionAction.TEMPLATE
+    action = InteractionAction.VC_TEMPLATE
 )
 class TemplateCommand(
     private val guildDao: GuildDao,
     private val vcTemplateManager: VCTemplateManager,
-    private val temporaryVCDao: TemporaryVCDao
+    private val temporaryVCDao: TemporaryVCDao,
+    private val interactionComponentBuilder: InteractionComponentBuilder
 ): AbstractCommand() {
     override fun handleAutoComplete(event: CommandAutoCompleteInteractionEvent) {
         if (!event.isFromGuild) {
@@ -80,7 +85,18 @@ class TemplateCommand(
                     .queue()
             }
         } else {
-            TODO("Reply with template button")
+            val templateSelectMenu = interactionComponentBuilder.selectMenu(
+                id = InteractionIds.Menu.VC_TEMPLATE,
+                placeholder = "Use a template for your VC",
+                options = availableTemplates.map { template ->
+                    SelectOption.of(template.name, template.id)
+                        .withEmoji(Emojis.template)
+                },
+            )
+
+            event.replyEmbeds(Embeds.default("Choose a template with the menu below"))
+                .setActionRow(templateSelectMenu)
+                .queue()
         }
     }
 }

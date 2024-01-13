@@ -13,7 +13,7 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
     name = "limit",
     description = "Set the user limit for your VC",
     category = CommandCategory.VC,
-    action = InteractionAction.LIMIT
+    action = InteractionAction.VC_LIMIT
 )
 class LimitCommand : AbstractCommand() {
     @BaseCommand

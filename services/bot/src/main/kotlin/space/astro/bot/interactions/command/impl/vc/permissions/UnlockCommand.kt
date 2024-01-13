@@ -15,7 +15,7 @@ import space.astro.shared.core.models.database.VCState
     name = "unlock",
     description = "Unlock your voice channel allowing everyone to join it",
     category = CommandCategory.VC,
-    action = InteractionAction.UNLOCK
+    action = InteractionAction.VC_UNLOCK
 )
 class UnlockCommand(
     val vcPermissionManager: VCPermissionManager,

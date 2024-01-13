@@ -61,7 +61,7 @@ class InteractionContextBuilder(
             guildData = guildData,
             generator = generator,
             generatorData = generatorData,
-            temporaryVCOwner = member,
+            temporaryVCOwner = guild.getMemberById(temporaryVCData.ownerId),
             temporaryVC = vc,
             temporaryVCManager = vc.manager,
             temporaryVCData = temporaryVCData,

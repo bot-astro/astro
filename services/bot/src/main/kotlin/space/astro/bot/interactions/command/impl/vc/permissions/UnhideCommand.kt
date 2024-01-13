@@ -15,7 +15,7 @@ import space.astro.shared.core.models.database.VCState
     name = "unhide",
     description = "Un-hide your voice channel making it visible to everyone",
     category = CommandCategory.VC,
-    action = InteractionAction.UNHIDE
+    action = InteractionAction.VC_UNHIDE
 )
 class UnhideCommand(
     val vcPermissionManager: VCPermissionManager,

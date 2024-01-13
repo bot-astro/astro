@@ -15,11 +15,9 @@ import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
-import space.astro.bot.interactions.InteractionContext
-import space.astro.bot.interactions.InteractionContextBuilder
-import space.astro.bot.interactions.InteractionContextBuilderException
-import space.astro.bot.interactions.VcInteractionContext
+import space.astro.bot.interactions.*
 import space.astro.bot.interactions.command.VcInteractionContextInfo
+import space.astro.bot.services.ConfigurationErrorService
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
 import space.astro.shared.core.util.extention.asRelativeTimestampFromNow
@@ -38,7 +36,8 @@ class ButtonHandler(
     private val interactionContextBuilder: InteractionContextBuilder,
     private val guildDao: GuildDao,
     private val premiumRequirementDetector: PremiumRequirementDetector,
-    private val cooldownsManager: CooldownsManager
+    private val cooldownsManager: CooldownsManager,
+    private val configurationErrorService: ConfigurationErrorService
 ) {
     val buttonMap = HashMap<String, IButton>()
 
@@ -83,10 +82,15 @@ class ButtonHandler(
         }
 
         val keyParts = event.componentId.split("?")
-        val key = keyParts.first()
+        var key = keyParts.first()
         val usedInterfaceComponent = keyParts.lastOrNull()?.contains("interface=true") ?: false
 
-        // TODO: Add support for old interface button ids: simple equality and replace
+
+        if (key.startsWith("cmd>")) {
+            key = mapOldIdToNewId(key.substring(4))
+                ?: throw ConfigurationException(configurationErrorService.invalidOldInterface(event.channel.id))
+        }
+
         val buttonContainer = buttonMap[key]
             ?: throw IllegalArgumentException("Couldn't find button container with id ${key}!")
         val buttonRunnable = buttonContainer.runnable
@@ -195,6 +199,34 @@ class ButtonHandler(
                     }
                 }
             }
+        }
+    }
+
+    fun mapOldIdToNewId(oldId: String): String? {
+        return when(oldId) {
+            "vc-name" -> InteractionIds.Button.VC_NAME
+            "vc-limit" -> InteractionIds.Button.VC_LIMIT
+            "vc-bitrate" -> InteractionIds.Button.VC_BITRATE
+            "vc-region" -> InteractionIds.Button.VC_REGION
+            "vc-template" -> InteractionIds.Button.VC_TEMPLATE
+
+            "vc-unlock" -> InteractionIds.Button.VC_UNLOCK
+            "vc-lock" -> InteractionIds.Button.VC_LOCK
+            "vc-hide" -> InteractionIds.Button.VC_HIDE
+            "vc-unhide" -> InteractionIds.Button.VC_UNHIDE
+            "vc-ban" -> InteractionIds.Button.VC_BAN
+            "vc-permit" -> InteractionIds.Button.VC_PERMIT
+            "vc-invite" -> InteractionIds.Button.VC_INVITE
+            "vc-reset" -> InteractionIds.Button.VC_RESET
+
+            "vc-claim" -> InteractionIds.Button.VC_CLAIM
+            "vc-transfer" -> InteractionIds.Button.VC_TRANSFER
+
+            "vc-chat" -> InteractionIds.Button.VC_CHAT
+            "vc-logs" -> InteractionIds.Button.VC_LOGS
+
+            "vc-waiting" -> InteractionIds.Button.VC_WAITING_ROOM
+            else -> null
         }
     }
 }

@@ -16,7 +16,7 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
     name = "invite",
     description = "Invite up to three users to join your VC by sending a DM with an invite link",
     category = CommandCategory.VC,
-    action = InteractionAction.INVITE
+    action = InteractionAction.VC_INVITE
 )
 class InviteCommand: AbstractCommand() {
     @BaseCommand

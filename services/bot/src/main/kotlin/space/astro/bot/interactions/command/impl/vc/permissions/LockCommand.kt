@@ -15,7 +15,7 @@ import space.astro.shared.core.models.database.VCState
     name = "lock",
     description = "Lock your channel so that no one can join it",
     category = CommandCategory.VC,
-    action = InteractionAction.LOCK
+    action = InteractionAction.VC_LOCK
 )
 class LockCommand(
     val vcPermissionManager: VCPermissionManager,

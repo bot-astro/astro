@@ -13,7 +13,7 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
     name = "bitrate",
     description = "Set the bitrate for your VC",
     category = CommandCategory.VC,
-    action = InteractionAction.BITRATE
+    action = InteractionAction.VC_BITRATE
 )
 class BitrateCommand : AbstractCommand() {
     @SubCommand(

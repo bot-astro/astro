@@ -17,7 +17,7 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
     name = "ban",
     description = "Ban a user or a role from joining your voice channel",
     category = CommandCategory.VC,
-    action = InteractionAction.BAN
+    action = InteractionAction.VC_BAN
 )
 class BanCommand(
     val vcPermissionManager: VCPermissionManager
@@ -40,7 +40,7 @@ class BanCommand(
         ) member: Member,
     ) {
         try {
-            vcPermissionManager.kickAndBanUser(ctx.vcOperationCTX, member)
+            vcPermissionManager.kickAndBanMember(ctx.vcOperationCTX, member)
 
             event.replyEmbeds(Embeds.default(
                 "${member.asMention} has been banned from your temporary VC!"

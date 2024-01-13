@@ -1,7 +1,9 @@
-package space.astro.bot.interactions.menu.impl.vc
+package space.astro.bot.interactions.menu.impl.vc.settings
 
+import net.dv8tion.jda.api.Region
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import space.astro.bot.core.ui.Embeds
+import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.InteractionIds
 import space.astro.bot.interactions.VcInteractionContext
 import space.astro.bot.interactions.command.VcInteractionContextInfo
@@ -10,7 +12,10 @@ import space.astro.bot.interactions.menu.Menu
 import space.astro.bot.interactions.menu.MenuRunnable
 import space.astro.bot.models.discord.vc.VCOperationCTX
 
-@Menu(id = InteractionIds.Menu.VC_REGION)
+@Menu(
+    id = InteractionIds.Menu.VC_REGION,
+    action = InteractionAction.VC_REGION
+)
 class RegionMenu : AbstractMenu() {
 
     @MenuRunnable
@@ -22,8 +27,12 @@ class RegionMenu : AbstractMenu() {
         )
         ctx: VcInteractionContext,
     ) {
-        event.hook.editOriginalEmbeds(Embeds.default("nice!"))
-            .setComponents()
+        val region = Region.fromKey(event.values.firstOrNull())
+        if (region != Region.UNKNOWN && ctx.vcOperationCTX.temporaryVC.region.key != region.key) {
+            ctx.vcOperationCTX.temporaryVCManager.setRegion(region).queue()
+        }
+
+        event.hook.editOriginalEmbeds(Embeds.default("Region set to ${region.emoji?.plus(" ")}${region.name}"))
             .queue()
     }
 }
