@@ -1,7 +1,5 @@
 group = "space.astro"
 
-// Needed for version catalogs with gradle versions before 8.1.0
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     base
     java
@@ -45,4 +43,16 @@ subprojects {
     }
 
     group = "${parent?.group}.${parent?.name}"
+
+    kotlin {
+        jvmToolchain {
+            this.languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
+
+//    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+//        kotlinOptions {
+//            jvmTarget = "17"
+//        }
+//    }
 }

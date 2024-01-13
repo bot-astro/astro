@@ -228,7 +228,7 @@ object VariablesManager {
 
     fun computeWaitingRoomName(
         template: String,
-        owner: Member,
+        owner: Member?,
         temporaryVC: VoiceChannel,
         incrementalPosition: Int?
     ): String {
