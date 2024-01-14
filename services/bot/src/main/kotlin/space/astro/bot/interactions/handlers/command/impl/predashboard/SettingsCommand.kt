@@ -10,6 +10,7 @@ import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.context.SettingsInteractionContext
 import space.astro.bot.interactions.handlers.command.*
 import space.astro.shared.core.daos.ConfigurationErrorDao
+import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
 import java.text.SimpleDateFormat
 import java.util.*
@@ -23,8 +24,37 @@ import java.util.*
 )
 class SettingsCommand(
     private val configurationErrorDao: ConfigurationErrorDao,
-    private val temporaryVCDao: TemporaryVCDao
+    private val temporaryVCDao: TemporaryVCDao,
+    private val guildDao: GuildDao
 ) : AbstractCommand() {
+    @SubCommand(
+        name = "admin-permission",
+        description = "Whether Astro should enforce Administrator permission or not"
+    )
+    suspend fun adminPermission(
+        event: SlashCommandInteractionEvent,
+        ctx: SettingsInteractionContext,
+        @CommandOption(
+            description = "True if Astro should require Administrator permissions, false otherwise",
+            type = OptionType.BOOLEAN
+        )
+        required: Boolean
+    ) {
+        ctx.guildData.allowMissingAdminPerm = !required
+        guildDao.save(ctx.guildData)
+
+        ctx.replyHandler.replyEmbed(
+            Embeds.default(
+                if (required)
+                    "Astro will now require Administrator permissions to work"
+                else
+                    "Astro will not require Administrator permissions to work." +
+                            "\nYou can always see encountered errors using `/settings errors`"
+            )
+        )
+    }
+
+
     @SubCommand(
         name = "errors",
         description = "Shows configuration errors detected by Astro"
