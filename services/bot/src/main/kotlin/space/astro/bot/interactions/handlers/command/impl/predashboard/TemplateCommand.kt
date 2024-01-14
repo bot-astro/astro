@@ -141,11 +141,11 @@ class TemplateCommand(
                 (it is StringSelectInteractionEvent && it.componentId == selectMenu.id)
                         || (it is ButtonInteractionEvent && it.componentId == allGenButton.id!!)
             }
-        }?.let { event ->
-            ctx.replyHandler.setCallbacks(event, event, event)
+        }?.let { newEvent ->
+            ctx.replyHandler.setCallbacks(newEvent, newEvent, newEvent)
 
-            if (event is StringSelectInteractionEvent) {
-                val selectedIndexes = event.values.map { it.toInt() }
+            if (newEvent is StringSelectInteractionEvent) {
+                val selectedIndexes = newEvent.values.map { it.toInt() }
                 val generatorIdsSelected = generators.filterIndexed { index, _ -> index in selectedIndexes }.map { it.id }
 
                 ctx.guildData.templates[ctx.templateIndex].enabledGeneratorIds = generatorIdsSelected.toMutableList()

@@ -1,6 +1,5 @@
 package space.astro.bot.interactions.handlers.command.impl.predashboard
 
-import dev.minn.jda.ktx.interactions.components.replyPaginator
 import kotlinx.coroutines.delay
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.MessageEmbed

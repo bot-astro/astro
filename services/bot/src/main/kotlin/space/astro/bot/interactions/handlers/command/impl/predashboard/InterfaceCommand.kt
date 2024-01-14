@@ -1,6 +1,5 @@
 package space.astro.bot.interactions.handlers.command.impl.predashboard
 
-import com.google.protobuf.Descriptors.Descriptor
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.await
 import kotlinx.coroutines.delay
@@ -337,26 +336,26 @@ class InterfaceCommand(
                     )
                 )
 
-                val event = withTimeoutOrNull(60000) {
+                val newEvent = withTimeoutOrNull(60000) {
                     shardManager.await<GenericComponentInteractionCreateEvent> {
                         (it is StringSelectInteractionEvent && it.componentId == selectMenu.id)
                                 || (it is ButtonInteractionEvent && it.componentId == cancelButton.id)
                     }
                 }
 
-                if (event == null) {
+                if (newEvent == null) {
                     ctx.replyHandler.replyEmbed(Embeds.canceled)
                     return
                 }
 
-                ctx.replyHandler.setCallbacks(event, event, event)
+                ctx.replyHandler.setCallbacks(newEvent, newEvent, newEvent)
 
-                if (event is ButtonInteractionEvent) {
+                if (newEvent is ButtonInteractionEvent) {
                     ctx.replyHandler.replyEmbed(Embeds.canceled)
                     return
                 }
 
-                val buttonIndexes = (event as StringSelectInteractionEvent).values.map { it.toInt() }
+                val buttonIndexes = (newEvent as StringSelectInteractionEvent).values.map { it.toInt() }
 
                 val buttons = mutableListOf<Button>()
                 for (aIndex in buttonIndexes) {
