@@ -265,10 +265,10 @@ class CommandHandler(
                     is ConfigurationException -> {
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
                             guildId = guild.id,
-                            configurationErrorDto = e.configurationErrorDto
+                            configurationErrorData = e.configurationErrorData
                         )
 
-                        interactionContext.replyHandler.replyEmbed(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorDto.description}"))
+                        interactionContext.replyHandler.replyEmbed(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorData.description}"))
                     }
 
                     is InsufficientPermissionException -> {
@@ -276,7 +276,7 @@ class CommandHandler(
 
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
                             guildId = guild.id,
-                            configurationErrorDto = configurationError
+                            configurationErrorData = configurationError
                         )
 
                         interactionContext.replyHandler.replyEmbed(Embeds.error("An error occurred because of missing permissions:\n> ${configurationError.description}"))

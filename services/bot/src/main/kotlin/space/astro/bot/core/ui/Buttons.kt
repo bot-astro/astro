@@ -7,7 +7,7 @@ import space.astro.shared.core.util.ui.Links
 
 object Buttons {
     val website = Button.link(Links.WEBSITE, "Website")
-    val dashboard = Button.link(Links.DASHBOARD, "Dashboard")
+    // val dashboard = Button.link(Links.DASHBOARD, "Dashboard")
     val invite = Button.link(Links.INVITE, "Invite")
     val docs = Button.link(Links.Documentation.DOCUMENTATION, "Docs")
     val support = Button.link(Links.SUPPORT_SERVER, "Support")

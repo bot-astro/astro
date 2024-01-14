@@ -21,9 +21,6 @@ import space.astro.shared.core.daos.TemporaryVCDao
     action = InteractionAction.VC_TEMPLATE
 )
 class TemplateButton(
-    private val guildDao: GuildDao,
-    private val vcTemplateManager: VCTemplateManager,
-    private val temporaryVCDao: TemporaryVCDao,
     private val interactionComponentBuilder: InteractionComponentBuilder
 ): space.astro.bot.interactions.handlers.button.AbstractButton() {
     @ButtonRunnable

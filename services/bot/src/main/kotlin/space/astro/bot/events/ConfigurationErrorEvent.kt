@@ -1,8 +1,8 @@
 package space.astro.bot.events
 
-import space.astro.shared.core.models.influx.ConfigurationErrorDto
+import space.astro.shared.core.models.influx.ConfigurationErrorData
 
 class ConfigurationErrorEvent(
     val guildId: String,
-    val configurationErrorDto: ConfigurationErrorDto
+    val configurationErrorData: ConfigurationErrorData
 )

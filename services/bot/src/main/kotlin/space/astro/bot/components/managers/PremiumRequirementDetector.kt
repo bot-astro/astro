@@ -55,6 +55,14 @@ class PremiumRequirementDetector(
         return guildData.connections.size < 1
     }
 
+    fun canCreateTemplate(guildData: GuildData): Boolean {
+        if (isGuildPremium(guildData) || !applicationFeaturesConfig.premiumRestrictions) {
+            return true
+        }
+
+        return guildData.templates.size < 3
+    }
+
     fun exceededMaximumConnectionsAmount(guildData: GuildData): Boolean {
         return applicationFeaturesConfig.premiumRestrictions
                 && guildData.connections.size > 1
@@ -88,4 +96,7 @@ class PremiumRequirementDetector(
     fun canCreateWaitingRoomOnVCGeneration(guildData: GuildData) = isGuildPremium(guildData)
     fun canSendMessageInVCChatOnVCGeneration(guildData: GuildData) = isGuildPremium(guildData)
     fun canAssignTemporaryVCOwnerRole(guildData: GuildData) = isGuildPremium(guildData)
+
+    fun canEditInterfaceMessage(guildData: GuildData) = isGuildPremium(guildData)
+    fun canEditInterfaceButtonOrder(guildData: GuildData) = isGuildPremium(guildData)
 }

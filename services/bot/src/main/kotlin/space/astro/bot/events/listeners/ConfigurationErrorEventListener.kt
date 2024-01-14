@@ -12,6 +12,6 @@ class ConfigurationErrorEventListener(
 
     @EventListener
     fun configurationErrorReceived(event: ConfigurationErrorEvent) {
-        configurationErrorDao.save(event.guildId, event.configurationErrorDto)
+        configurationErrorDao.save(event.guildId, event.configurationErrorData)
     }
 }

@@ -5,7 +5,7 @@ package space.astro.shared.core.util.ui
  */
 object Links {
     const val WEBSITE = "https://astro-bot.space"
-    const val DASHBOARD = "$WEBSITE/dashboard"
+    // const val DASHBOARD = "$WEBSITE/dashboard"
     const val INVITE = "https://discord.com/oauth2/authorize?client_id=715621848489918495&scope=bot+applications.commands&permissions=8"
     const val SUPPORT_SERVER = "https://discord.gg/yeXwVhg"
     const val APP_DIRECTORY_PREMIUM = "https://discord.com/application-directory/715621848489918495/premium"

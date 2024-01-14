@@ -25,6 +25,7 @@ class VcInteractionContext(
 
 class SettingsInteractionContext(
     val guildData: GuildData,
+    val userData: UserData,
     guild: Guild,
     member: Member,
     replyHandler: IInteractionReplyHandler

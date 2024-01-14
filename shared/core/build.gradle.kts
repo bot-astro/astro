@@ -14,6 +14,7 @@ dependencies {
 
     implementation(libs.nanoid)
     implementation(libs.jda)
+    implementation(libs.chargebee)
     implementation(libs.lettuce)
     implementation(libs.mongo)
     implementation(libs.influx)

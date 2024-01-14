@@ -33,7 +33,7 @@ object Embeds {
         authorUrl = Links.WEBSITE,
         authorIcon = Links.LOGO,
         description = "Astro can be used to generate temporary voice channels & connect voice channels to roles!" +
-                "\n\nYou can setup the bot or customise it on its ${Links.DASHBOARD.linkFromLink("dashboard")}" +
+                "\n\nTake a look at the ${Links.Documentation.DOCUMENTATION.linkFromLink("documentation")} for learning how to use Astro." +
                 "\nUse the buttons below for other useful links!"
     )
 

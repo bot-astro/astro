@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.bigquery)
     implementation(libs.nanoid)
+    implementation(libs.chargebee)
 
     implementation(project(":shared:core"))
 

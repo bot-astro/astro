@@ -300,6 +300,11 @@ class InterfaceCommand(
         )
         auto: Boolean?
     ) {
+        if (!premiumRequirementDetector.canEditInterfaceButtonOrder(ctx.guildData)) {
+            ctx.replyHandler.replyPremiumRequired()
+            return
+        }
+
         val interfaceButtons = ctx.interfaceData.buttons
 
         val orderedButtons = if (auto == true) {
@@ -651,6 +656,11 @@ class InterfaceCommand(
         )
         footerImage: String?
     ) {
+        if (!premiumRequirementDetector.canEditInterfaceMessage(ctx.guildData)) {
+            ctx.replyHandler.replyPremiumRequired()
+            return
+        }
+
         val defaultEmbedStyle = EmbedStyle()
 
         if (remove != null) {

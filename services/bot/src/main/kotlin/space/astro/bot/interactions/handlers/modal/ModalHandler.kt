@@ -5,6 +5,7 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.CooldownsManager
@@ -34,7 +35,8 @@ class ModalHandler(
     private val guildDao: GuildDao,
     private val cooldownsManager: CooldownsManager,
     private val premiumRequirementDetector: PremiumRequirementDetector,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val shardManager: ShardManager
 ) {
     val modalMap = HashMap<String, IModal>()
 
@@ -146,7 +148,8 @@ class ModalHandler(
                     originatedFromExistingMessage = false,
                     replyCallback = event,
                     modalCallback = null,
-                    premiumReplyCallback = null
+                    premiumReplyCallback = null,
+                    shardManager = shardManager
                 )
             )
 
@@ -170,10 +173,10 @@ class ModalHandler(
                     is ConfigurationException -> {
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
                             guildId = guild.id,
-                            configurationErrorDto = e.configurationErrorDto
+                            configurationErrorData = e.configurationErrorData
                         )
 
-                        interactionContext.replyHandler.replyEmbed(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorDto.description}"))
+                        interactionContext.replyHandler.replyEmbed(Embeds.error("An error occurred because of an invalid configuration:\n> ${e.configurationErrorData.description}"))
                     }
 
                     is InsufficientPermissionException -> {
@@ -181,7 +184,7 @@ class ModalHandler(
 
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
                             guildId = guild.id,
-                            configurationErrorDto = configurationError
+                            configurationErrorData = configurationError
                         )
 
                         interactionContext.replyHandler.replyEmbed(Embeds.error("An error occurred because of missing permissions:\n> ${configurationError.description}"))

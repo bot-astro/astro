@@ -89,14 +89,14 @@ class MemberUpdateActivitiesEventListener(
         } catch (e: ConfigurationException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
                 guildId = guildId,
-                configurationErrorDto = e.configurationErrorDto
+                configurationErrorData = e.configurationErrorData
             )
         } catch (_: VcOperationException) {}
 
         vcOperationCTX.queueUpdatedManagers { managerType, e ->
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
                 guildId = guildId,
-                configurationErrorDto = configurationErrorService.unknownError(
+                configurationErrorData = configurationErrorService.unknownError(
                     encounteredIn = "updating ${managerType.readableName} name: ${e.message ?: ""}"
                 )
             )

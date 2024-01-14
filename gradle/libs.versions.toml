@@ -31,9 +31,10 @@ caffeine = "3.0.5"
 lettuce = "6.1.5.RELEASE"
 
 # JDA
-# jda = "5.0.0-beta.13"
 jda = "5.0.0-beta.17.astro.8_DEV"
-jda-ktx = "9370cb1"
+jda-ktx = "0.11.0-beta.19"
+
+chargebee = "3.13.0"
 
 # Analytics
 bigquery = "2.34.2"
@@ -83,7 +84,9 @@ lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce"}
 
 # JDA
 jda = { module = "net.dv8tion:jda", version.ref = "jda" }
-jda-ktx = { module = "com.github.minndevelopment:jda-ktx", version.ref = "jda-ktx" }
+jda-ktx = { module = "club.minnced:jda-ktx", version.ref = "jda-ktx" }
+
+chargebee = { module = "com.chargebee:chargebee-java", version.ref = "chargebee"}
 
 # Analytics
 bigquery = { module = "com.google.cloud:google-cloud-bigquery", version.ref = "bigquery" }

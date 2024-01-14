@@ -133,6 +133,4 @@ interface IInteractionReplyHandler {
         modal: Modal,
         onFill: suspend (event: ModalInteractionEvent) -> Unit
     )
-
-
 }

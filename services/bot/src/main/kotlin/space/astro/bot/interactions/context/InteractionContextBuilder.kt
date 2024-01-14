@@ -19,6 +19,7 @@ import space.astro.bot.interactions.InteractionIds
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
+import space.astro.shared.core.daos.UserDao
 import space.astro.shared.core.models.database.GuildData
 import space.astro.shared.core.util.ui.Colors
 import kotlin.reflect.KClass
@@ -29,7 +30,8 @@ import kotlin.reflect.full.findAnnotation
 class InteractionContextBuilder(
     private val temporaryVCDao: TemporaryVCDao,
     private val shardManager: ShardManager,
-    private val guildDao: GuildDao
+    private val guildDao: GuildDao,
+    private val userDao: UserDao
 ) {
 
     /**
@@ -67,8 +69,11 @@ class InteractionContextBuilder(
                 val finalGuildData = guildData
                     ?: GuildData(guildID = interactionContextBase.guildId).also { guildDao.save(it) }
 
+                val userData = userDao.getOrCreate(interactionContextBase.memberId)
+
                 SettingsInteractionContext(
                     guildData = finalGuildData,
+                    userData = userData,
                     guild = interactionContextBase.guild,
                     member = interactionContextBase.member,
                     replyHandler = interactionContextBase.replyHandler

@@ -57,7 +57,7 @@ class GuildVoiceUpdateEventListener(
         } catch (e: HierarchyException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
                 guildId = event.guild.id,
-                configurationErrorDto = e.toConfigurationErrorDto()
+                configurationErrorData = e.toConfigurationErrorDto()
             )
         }
     }

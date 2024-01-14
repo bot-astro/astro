@@ -3,7 +3,7 @@ package space.astro.bot.events.publishers
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import space.astro.bot.events.ConfigurationErrorEvent
-import space.astro.shared.core.models.influx.ConfigurationErrorDto
+import space.astro.shared.core.models.influx.ConfigurationErrorData
 
 @Component
 class ConfigurationErrorEventPublisher(
@@ -11,8 +11,8 @@ class ConfigurationErrorEventPublisher(
 ) {
     fun publishConfigurationErrorEvent(
         guildId:String,
-        configurationErrorDto: ConfigurationErrorDto
+        configurationErrorData: ConfigurationErrorData
     ) {
-        applicationEventPublisher.publishEvent(ConfigurationErrorEvent(guildId, configurationErrorDto))
+        applicationEventPublisher.publishEvent(ConfigurationErrorEvent(guildId, configurationErrorData))
     }
 }

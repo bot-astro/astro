@@ -22,6 +22,10 @@ class TemporaryVCDao(
         cacheManager.cache(guildId, temporaryVCData.id, temporaryVCData)
     }
 
+    fun saveAll(guildId: String, temporaryVCData: List<TemporaryVCData>) {
+        cacheManager.cacheAll(guildId, temporaryVCData.associateBy { it.id })
+    }
+
     fun get(guildId: String, temporaryVCId: String): TemporaryVCData? {
         return cacheManager.get(guildId, temporaryVCId)
     }
@@ -32,5 +36,9 @@ class TemporaryVCDao(
 
     fun delete(guildId: String, vcId: String) {
         cacheManager.delete(guildId, vcId)
+    }
+
+    fun deleteAll(guildId: String) {
+        cacheManager.deleteAll(guildId)
     }
 }

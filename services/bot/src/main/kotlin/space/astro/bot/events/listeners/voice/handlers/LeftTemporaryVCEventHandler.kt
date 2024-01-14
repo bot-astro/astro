@@ -67,7 +67,7 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
                 failure = { managerType, e ->
                     configurationErrorEventPublisher.publishConfigurationErrorEvent(
                         guildId = guild.id,
-                        configurationErrorDto = configurationErrorService.unknownError(
+                        configurationErrorData = configurationErrorService.unknownError(
                             encounteredIn = "updating ${managerType.readableName}: ${e.message ?: ""}"
                         )
                     )

@@ -27,5 +27,7 @@ enum class RedisKey(val key: String) {
 
     TEMPORARY_VCS("TEMP_VCS"),
 
-    GUILD_DATA("GD")
+    GUILD_DATA("GD"),
+
+    USER_DATA("UD")
 }

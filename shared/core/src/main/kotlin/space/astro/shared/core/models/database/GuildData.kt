@@ -11,7 +11,7 @@ import space.astro.shared.core.util.ui.Links
 data class GuildData(
     val guildID: String,
     @Deprecated("Chargebee premium system is deprecated")
-    val upgradedByUserID: String? = null,
+    var upgradedByUserID: String? = null,
     val entitlements: MutableList<GuildEntitlement> = mutableListOf(),
     var bannedCommands: MutableList<String> = mutableListOf(),
     val templates: MutableList<TemplateData> = mutableListOf(),
@@ -37,12 +37,12 @@ data class GuildEntitlement(
 
 data class TemplateData(
     val id: String = NanoIdUtils.randomNanoId(),
-    val name: String,
-    val enabledGeneratorIds: MutableList<String>? = null,
-    val vcName: String? = null,
-    val vcLimit: Int? = null,
-    val vcBitrate: Int? = null,
-    val vcRegion: String? = null
+    var name: String,
+    var enabledGeneratorIds: MutableList<String>? = null,
+    var vcName: String? = null,
+    var vcLimit: Int? = null,
+    var vcBitrate: Int? = null,
+    var vcRegion: String? = null
 )
 
 data class GeneratorData(
