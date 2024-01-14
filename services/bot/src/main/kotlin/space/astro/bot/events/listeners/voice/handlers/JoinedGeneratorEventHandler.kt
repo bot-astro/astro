@@ -363,6 +363,4 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
                 memberRolesManager.add(it)
             }
         }
-
-    // TODO: Counter?
 }
