@@ -47,8 +47,6 @@ class AuthController(
         return ResponseEntity.ok(response)
     }
 
-    // TODO: Authenticate the followings with sessionToken (in the "authorization" header)
-
     @GetMapping("/user/{id}")
     suspend fun getAuthenticatedDiscordUser(@PathVariable id: String): ResponseEntity<*> {
         val authedUser = authedUsersDao.getAuthedUser(id)
