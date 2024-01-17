@@ -24,7 +24,6 @@ import space.astro.shared.core.util.ui.Links
     description = "Get info about premium",
 )
 class PremiumCommand(
-    private val shardManager: ShardManager,
     private val chargebeeClientService: ChargebeeClientService,
     private val userDao: UserDao,
     private val guildDao: GuildDao
@@ -41,7 +40,7 @@ class PremiumCommand(
         ctx: SettingsInteractionContext
     ) {
         ctx.replyHandler.replyEmbedAndComponent(
-            embed = Embeds.default("See [this section of the documentation](${Links.Documentation.PREMIUM}) to learn more about premium or use the button below to see it in the app directory"),
+            embed = Embeds.helpPremium,
             component = Buttons.premium
         )
     }

@@ -98,7 +98,7 @@ class InterfaceCommand(
             embed = Embeds.success(
             "Interface created in ${channel.asMention} (${"message".asMessageMarkdownLink(ctx.guildId, channel.id, interfaceData.messageID)})"
             ),
-            component = Buttons.Docs.interfaces
+            component = Buttons.Help.interfaces
         )
     }
 

@@ -56,13 +56,14 @@ class GuildJoinEventListener(
                         emoji = Emojis.setup
                     ),
                     interactionComponentBuilder.buttonWithLabelAndEmoji(
-                        id = InteractionIds.Button.HELP,
+                        id = InteractionIds.Button.HELP_GENERAL,
                         buttonStyle = ButtonStyle.PRIMARY,
                         label = "Help",
                         emoji = Emojis.help
                     ),
-                ),
-                ActionRow.of(Buttons.Bundles.help)
+                    Buttons.support,
+                    Buttons.premium
+                )
             )
             ?.queue()
     }

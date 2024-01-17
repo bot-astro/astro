@@ -88,7 +88,7 @@ class GeneratorCommand(
 
         ctx.replyHandler.replyEmbedAndComponent(
             embed = Embeds.default("Now users can join ${generator.asMention} to create temporary voice channels."),
-            component = Buttons.Docs.generator
+            component = Buttons.Help.generators
         )
     }
 
@@ -413,7 +413,7 @@ class GeneratorCommand(
             ctx.replyHandler.replyEmbedAndComponent(
                 embed = Embeds.error("Some variables you used in the name can only be used in premium servers." +
                     "\nSee documentation for variables with the button below."),
-                component = Buttons.Docs.variables
+                component = Buttons.Help.variables
             )
             return
         }
@@ -438,7 +438,7 @@ class GeneratorCommand(
                         "\n`$name`" +
                 "\n\nYou can mix variables in the name to further personalize it, use the button below for documentation!"
             ),
-            Buttons.Docs.variables
+            Buttons.Help.variables
         )
     }
 
@@ -946,7 +946,7 @@ class GeneratorCommand(
             ctx.replyHandler.replyEmbedAndComponent(
                 embed = Embeds.error("Some variables you used in the name can only be used in premium servers." +
                         "\nSee documentation for variables with the button below."),
-                component = Buttons.Docs.variables
+                component = Buttons.Help.variables
             )
             return
         }
@@ -960,7 +960,7 @@ class GeneratorCommand(
                     "\n> *$name*" +
                     "\n\nYou can use ${Emojis.variables.formatted} variables to customize the name." +
                     "\nUse the button below to see the documentation"),
-            component = Buttons.Docs.variables
+            component = Buttons.Help.variables
         )
     }
 

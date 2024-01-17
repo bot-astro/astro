@@ -26,7 +26,11 @@ object Embeds {
         )
     }
 
-    val help = Embed(
+    ////////////
+    /// HELP ///
+    ////////////
+
+    val helpGeneral = Embed(
         color = Colors.purple.rgb,
         authorName = "Help panel",
         authorUrl = Links.WEBSITE,
@@ -34,6 +38,34 @@ object Embeds {
         description = "Astro can be used to generate temporary voice channels & connect voice channels to roles!" +
                 "\n\nTake a look at the ${Links.Documentation.DOCUMENTATION.linkFromLink("documentation")} for learning how to use Astro." +
                 "\nUse the buttons below for other useful links!"
+    )
+
+    val helpPremium = Embed(
+
+    )
+
+    val helpVariables = Embed(
+
+    )
+
+    val helpTemporaryVoiceChannels = Embed(
+
+    )
+
+    val helpGenerators = Embed(
+
+    )
+
+    val helpInterfaces = Embed(
+
+    )
+
+    val helpTemplates = Embed(
+
+    )
+
+    val helpConnections = Embed(
+
     )
 
     /*
@@ -87,7 +119,7 @@ object Embeds {
         .setColor(Colors.red)
         .setTitle("Cannot manage the role $roleName")
         .setDescription(
-            "Make sure that the role you selected is below the Astro role in the *Server settings > Roles*" +
+             "Make sure that the role you selected is below the Astro role in the *Server settings > Roles*" +
                     "\nFind out more about roles hierarchy [here](${Links.ExternalGuides.ROLE_HIERARCHY})."
         )
         .setFooter(footer)

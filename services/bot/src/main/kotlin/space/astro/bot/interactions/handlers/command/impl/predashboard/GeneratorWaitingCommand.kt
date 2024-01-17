@@ -167,7 +167,7 @@ class GeneratorWaitingCommand(
                         "\n\nYou can use ${Emojis.variables.formatted} variables to customize the name." +
                         "\nSee the available variables with the button below"
             ),
-            component = Buttons.Docs.variables
+            component = Buttons.Help.variables
         )
     }
 

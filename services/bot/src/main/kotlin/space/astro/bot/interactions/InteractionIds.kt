@@ -30,7 +30,13 @@ object InteractionIds {
     }
 
     object Button {
-        const val HELP = "button/info/help"
+        const val HELP_GENERAL = "button/info/help/general"
+        const val HELP_PREMIUM = "button/info/help/premium"
+        const val HELP_VARIABLES = "button/info/help/variables"
+        const val HELP_GENERATORS = "button/info/help/generators"
+        const val HELP_INTERFACES = "button/info/help/interfaces"
+        const val HELP_TEMPLATES = "button/info/help/templates"
+        const val HELP_CONNECTIONS = "button/info/help/connections"
 
         const val SETUP = "button/settings/setup"
 
