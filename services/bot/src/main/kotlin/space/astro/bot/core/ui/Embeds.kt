@@ -38,7 +38,7 @@ object Embeds {
                 "\n> • You need the `Manage channels` permission to configure Astro for your server" +
                 "\n\n**Bot permissions**" +
                 "\n> Astro requires `Administrator` permissions by default to work and ensure a great user experience for the average Discord users." +
-                "\n> /" +
+                "\n> " +
                 "\n> If you own a professional server and cannot give that permission to Astro for security reasons, you can disable this requirement via the command `/settings admin-permission`." +
                 "\n> You may ask for guidelines in the [Support Server](${Links.SUPPORT_SERVER}) regarding the permissions that Astro needs in order to work, but in depth support is not provided for that." +
                 "\n\n**Command permissions**" +
@@ -135,7 +135,55 @@ object Embeds {
     val helpGenerators = Embed {
         color = Colors.purple.rgb
         title = "${Emojis.generator.formatted} Help - Generators"
-        description = ""
+        description = "A generator is a voice channel that when joined by a user creates a temporary voice channel for that user." +
+                "\nThe temporary voice channel will then be deleted when empty or filled only with bots." +
+                "\n\n**Creating a generator**" +
+                "\n> Create a generator via `/generator create`." +
+                "\n> You can edit anything you need in the generator, the name, the category, etc..." +
+                "\n\n**Voice channel settings**" +
+                "\n> Here is the list of commands that you can use to change the settings of the generated temporary voice channels:" +
+                "\n> `/generator vc category`" +
+                "\n> `/generator vc position`" +
+                "\n> `/generator vc limit`" +
+                "\n> `/generator vc bitrate`" +
+                "\n> `/generator vc region`" +
+                "\n\n**Voice channel name**" +
+                "\n> Use `/generator vc name` to change the default name for voice channels." +
+                "\n> See `/help variables` for dynamic names." +
+                "\n> That command also accepts a `state`, meaning you can have different names depending on the state (default, locked or hidden)." +
+                "\n> " +
+                "\n> You can also configure when a channel should be renamed with the command `/generator vc rename-conditions`." +
+                "\n> These are the available options:" +
+                "\n> • `state-change` • update when the channel gets unlocked, locked or hidden" +
+                "\n> • `owner-change` • update when the owner of the channel changes" +
+                "\n> • `renamed` • update even if it has already been manually renamed by the owner with `/name`" +
+                "\n> • `activity-change` • update when the activity of the owner of the channel changes" +
+                "\n\n**Voice channel permissions**" +
+                "\n> Voice channel inherit all permissions by the generator by default. You can change this behaviour using `/generator vc permissions`." +
+                "\n> " +
+                "\n> That command also asks for a `target role`, which can be considered the main role of your server. It will be the role that gets modified when the channel gets locked, hidden, etc..." +
+                "\n> " +
+                "\n> You can also provide a `moderator role` which will be immune to all commands (`/ban` and `/lock` for example) and will always be able to claim ownership of the channels (`/claim`)." +
+                "\n\n**Text chat settings**" +
+                "\n> Astro can send a message in the integrated text chat of the temporary voice channels automatically when they get created." +
+                "\n> You can configure the message with `/generator chat message`, it can include variables and you can even send an Interface in them!" +
+                "\n> " +
+                "\n> Astro can also create a separate text channel for each temporary voice channel created. Those separate channels are only visible to the users inside the related voice channel and will get deleted when the voice channel gets deleted." +
+                "\n> Here are the commands to customise those text channels:" +
+                "\n> `/generator chat category`" +
+                "\n> `/generator chat name` • See `/help variables` for dynamic names" +
+                "\n> `/generator chat nsfw`" +
+                "\n> `/generator chat slowmode`" +
+                "\n> `/generator chat topic`" +
+                "\n> `/generator chat permissions`" +
+                "\n\n**Ownership settings**" +
+                "\n> `/generator owner permissions` • specify permissions for voice channel owners" +
+                "\n> `/generator owner role` • configure a role that gets given to all voice channel owners" +
+                "\n\n**Queue mode**" +
+                "\n> With `/generator vc queue` enabled, Astro will try to fill existing channels before creating new ones." +
+                "\n> Useful feature when channels have a user limit set and you need to make sure that channels are all filled with the maximum amount of users." +
+                "\n\n**Fallback generator**" +
+                "\n> When the generator category fills up (gets to 50 channels) users that join the generator will be moved to the fallback generator set with `/generator fallback-generator`."
         footer {
             name = "For help regarding other features of Astro see the buttons below or /help commands"
         }
