@@ -62,7 +62,7 @@ class GuildJoinEventListener(
                         emoji = Emojis.help
                     ),
                     Buttons.support,
-                    Buttons.premium
+                    Buttons.premium,
                 )
             )
             ?.queue()

@@ -47,7 +47,7 @@ object VariablesManager {
 
     @Suppress("UNUSED")
     private object Variables {
-        val owner = listOf("{nickname}", "{username}", "{tag}", "{mention}", "{id}")
+        val owner = listOf("{nickname}", "{username}", "{mention}", "{id}")
         val activity = listOf("{activity_name}", "{activity_emoji}", "{activity_start_time}", "{activity_end_time}", "{activity_type}", "{activity_link}")
         val voiceChannel = listOf("{vc_name}", "{vc_bitrate}", "{vc_userlimit}", "{vc_users}", "{vc_id}", "{vc_mention}")
         val incremental = listOf("{n}", "{nato}", "{roman}")
@@ -58,7 +58,6 @@ object VariablesManager {
             return template
                 .replace("{nickname}", owner?.effectiveName ?: "", true)
                 .replace("{username}", owner?.user?.name ?: "", true)
-                .replace("{tag}", owner?.user?.name ?: "", true)
                 .replace("{mention}", owner?.asMention ?: "", true)
                 .replace("{id}", owner?.id ?: "", true)
         }

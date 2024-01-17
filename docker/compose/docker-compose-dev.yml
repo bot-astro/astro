@@ -5,7 +5,7 @@ services:
   astro-mongo:
     image: mongo:latest
     container_name: "astro-mongo"
-    restart: unless-stopped
+    restart: no
     ports:
       - "27017:27017"
     volumes:
@@ -17,7 +17,7 @@ services:
   astro-mongo-express:
     image: mongo-express:latest
     container_name: "astro-mongo-express"
-    restart: unless-stopped
+    restart: no
     ports:
       - "8081:8081"
     networks:
@@ -27,7 +27,7 @@ services:
   astro-redis:
     image: redis:latest
     container_name: "astro-redis"
-    restart: unless-stopped
+    restart: no
     volumes:
       - redis:/data
     ports:
@@ -37,7 +37,7 @@ services:
   astro-redis-insight:
     image: redislabs/redisinsight
     container_name: "astro-redis-insight"
-    restart: unless-stopped
+    restart: no
     ports:
       - "8082:8001"
     networks:
@@ -45,7 +45,7 @@ services:
   astro-influx:
     image: influxdb:latest
     container_name: "astro-influx"
-    restart: unless-stopped
+    restart: no
     ports:
       - "8086:8086"
     environment:

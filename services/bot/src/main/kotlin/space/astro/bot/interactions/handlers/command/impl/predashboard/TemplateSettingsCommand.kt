@@ -61,7 +61,7 @@ class TemplateSettingsCommand(
         if (!premiumRequirementDetector.canCreateTemplate(ctx.guildData)) {
             ctx.replyHandler.replyEmbedAndComponent(
                 Embeds.error(
-                    "There are already 2 Templates setup in this server.\nPremium is required to have more than 2 Templates." +
+                    "There are already 3 Templates setup in this server.\nPremium is required to have more than 3 Templates." +
                     "\nPossible solutions:" +
                             "\n• Get ${Emojis.premium.formatted} Premium" +
                             "\n• Delete an existing template with `/template delete`"
