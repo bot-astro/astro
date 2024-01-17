@@ -103,7 +103,7 @@ class GuildJoinEventListener(
                     false
                 )
             ),
-            footerText = "Developed by the ${Links.DEVELOPERS.linkFromLink("Astro team")}",
+            footerText = "Thank you for using Astro!",
         )
     }
 
