@@ -3,7 +3,10 @@ package space.astro.bot.components.managers.vc
 import dev.minn.jda.ktx.coroutines.await
 import kotlinx.coroutines.delay
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.IMentionable
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.PermissionOverride
+import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
 import space.astro.bot.core.exceptions.ConfigurationException

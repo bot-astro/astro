@@ -1,8 +1,7 @@
 package space.astro.bot.components.managers.vc
 
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 class VariablesManagerTest {
 

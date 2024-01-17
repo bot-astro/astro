@@ -4,7 +4,6 @@ import com.chargebee.models.Subscription
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
-import net.dv8tion.jda.api.sharding.ShardManager
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.core.ui.Emojis
@@ -17,7 +16,6 @@ import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.UserDao
 import space.astro.shared.core.models.database.GuildUpgradeData
 import space.astro.shared.core.services.chargebee.ChargebeeClientService
-import space.astro.shared.core.util.ui.Links
 
 @Command(
     name = "premium",

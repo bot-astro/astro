@@ -1,6 +1,5 @@
 package space.astro.bot.interactions.handlers.menu.impl.vc.ownership
 
-import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import space.astro.bot.components.managers.vc.VCOwnershipManager
 import space.astro.bot.core.ui.Embeds

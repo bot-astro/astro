@@ -14,7 +14,6 @@ import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.context.ConnectionSettingsInteractionContext
 import space.astro.bot.interactions.context.SettingsInteractionContext
 import space.astro.bot.interactions.handlers.command.*
-import space.astro.bot.services.ConfigurationErrorService
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.models.database.ConnectionAction
 import space.astro.shared.core.models.database.ConnectionData

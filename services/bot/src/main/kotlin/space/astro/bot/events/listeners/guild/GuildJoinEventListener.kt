@@ -19,7 +19,6 @@ import space.astro.shared.core.models.analytics.AnalyticsEvent
 import space.astro.shared.core.models.analytics.AnalyticsEventReceiver
 import space.astro.shared.core.models.analytics.AnalyticsEventType
 import space.astro.shared.core.models.analytics.GuildEventData
-import space.astro.shared.core.util.extention.linkFromLink
 import space.astro.shared.core.util.ui.Colors
 import space.astro.shared.core.util.ui.Links
 import java.time.LocalDateTime

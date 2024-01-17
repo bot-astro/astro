@@ -1,7 +1,6 @@
 package space.astro.bot.interactions.handlers.button.impl.help
 
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import net.dv8tion.jda.api.interactions.components.ActionRow
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.interactions.InteractionIds
