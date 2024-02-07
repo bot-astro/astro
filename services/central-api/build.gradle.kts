@@ -41,7 +41,7 @@ sentry {
     // code as part of your stack traces in Sentry.
     includeSourceContext = true
 
-    org = "giuliopime"
-    projectName = "astro-central-api"
+    org = "bot-astro"
+    projectName = "central-api"
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }

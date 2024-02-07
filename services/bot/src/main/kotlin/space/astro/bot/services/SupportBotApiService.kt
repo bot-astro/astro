@@ -41,7 +41,7 @@ class SupportBotApiService(
             codecs.jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper))
             codecs.jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper))
         }
-        .baseUrl(discordConfig.baseUrl)
+        .baseUrl(supportBotApiConfig.baseUrl)
         .defaultHeader("Authorization", supportBotApiConfig.auth)
         .build()
 

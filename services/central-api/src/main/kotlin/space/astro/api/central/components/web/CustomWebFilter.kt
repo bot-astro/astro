@@ -82,8 +82,6 @@ class CustomWebFilter(
             }
         }
 
-
-
         return mono {
             val authHeader = request.headers["Authorization"]?.get(0)
             if (authHeader == null || authHeader != centralApiConfig.auth) {

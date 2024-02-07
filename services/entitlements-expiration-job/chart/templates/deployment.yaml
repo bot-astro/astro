@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  schedule: "0 1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: {{ .Values.name }}
+              image: {{ .Values.image.group }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
+          restartPolicy: OnFailure
+      backoffLimit: 4

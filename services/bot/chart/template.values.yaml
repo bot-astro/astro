@@ -1,0 +1,17 @@
+name: bot
+namespace: astro
+image:
+  group: ghcr.io/bot-astro
+  name: bot
+  tag: latest
+config: bot-config
+replicas: 12
+auth: FILL
+port: 9000
+resources:
+  requests:
+    cpu: 500m
+    memory: 4000Mi
+#  limits:
+#    cpu: 250m
+#    memory: 3Gi

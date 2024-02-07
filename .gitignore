@@ -42,3 +42,5 @@ out/
 
 ### SECRETS ###
 **.env
+values.yaml
+values-staging.yaml

@@ -1,0 +1,14 @@
+name: support-bot
+namespace: astro
+image:
+  group: ghcr.io/bot-astro
+  name: support-bot
+  tag: latest
+config: support-bot-config
+replicas: 2
+auth: FILL
+port: 9002
+resources:
+  requests:
+    cpu: 100m
+    memory: 500Mi

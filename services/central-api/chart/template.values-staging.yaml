@@ -1,0 +1,14 @@
+name: central-api
+namespace: astro-staging
+image:
+  group: ghcr.io/bot-astro
+  name: central-api
+  tag: latest
+config: central-api-config
+replicas: 1
+port: 9001
+auth: FILL
+resources:
+  requests:
+    cpu: 100m
+    memory: 500Mi
