@@ -12,7 +12,7 @@ dependencies {
 
 jib {
     from {
-        image = "openjdk@sha256:cf04661ba3cae4c9d788d503befc635f16ffdc740b00b0010b244d777d03adcf"
+        image = "openjdk:17"
     }
 
     to {

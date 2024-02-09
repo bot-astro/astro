@@ -1,0 +1,34 @@
+version: v1.0
+name: Deploy please-bot to production
+
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+blocks:
+  - name: Execute helm commands
+    task:
+      secrets:
+        - name: kube
+        - name: helm_please-bot
+      env_vars:
+        - name: KUBECONFIG
+          value: /home/semaphore/.kube/config
+        - name: HELMVALUES
+          value: /home/semaphore/.values/please-bot/production.yaml
+        - name: NAMESPACE
+          value: astro
+        - name: RELEASE_NAME
+          value: please-bot
+        - name: CHART_LOCATION
+          value: ./services/please-bot/chart
+      jobs:
+        - name: Deploy to Kubernetes
+          commands:
+            - checkout
+            - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+            - helm upgrade -i $RELEASE_NAME $CHART_LOCATION
+              --set image.tag=${SEMAPHORE_GIT_SHA}
+              --namespace $NAMESPACE
+              --values $HELMVALUES

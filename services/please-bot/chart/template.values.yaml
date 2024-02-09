@@ -1,0 +1,14 @@
+name: please-bot
+namespace: astro
+image:
+  group: ghcr.io/bot-astro
+  name: please-bot
+  tag: latest
+config: please-bot-config
+replicas: 1
+auth: FILL
+port: 9003
+resources:
+  requests:
+    cpu: 100m
+    memory: 500Mi

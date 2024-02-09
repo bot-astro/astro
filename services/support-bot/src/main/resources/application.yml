@@ -5,7 +5,7 @@ info:
     version: "1.0.0"
 
 server:
-  port: "${PORT:9001}"
+  port: "${PORT:9002}"
 
 management:
   metrics:
@@ -47,7 +47,7 @@ logging:
 
 
 sentry:
-  dsn: https://3d0b9348d1c4d44884fa2cfd45ad1c4e@o4506570641702912.ingest.sentry.io/4506575870230528
+  dsn: https://fd05f462a5f47e39c3cd927fc63a3021@o4506708022263808.ingest.sentry.io/4506708030128128
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
   traces-sample-rate: 1.0

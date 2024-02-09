@@ -4,9 +4,6 @@ info:
     description: "Job that deletes expired entitlements."
     version: "1.0.0"
 
-server:
-  port: "${PORT:9002}"
-
 discord:
   application:
     application-id: ${DISCORD_APPLICATION_ID:788708323867885568}
@@ -21,7 +18,7 @@ logging:
 
 
 sentry:
-  dsn: https://3d0b9348d1c4d44884fa2cfd45ad1c4e@o4506570641702912.ingest.sentry.io/4506575870230528
+  dsn: https://10de941a51db08fb8cc81e7cd7ed8c92@o4506708022263808.ingest.sentry.io/4506708028489728
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
   traces-sample-rate: 1.0

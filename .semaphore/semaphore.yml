@@ -103,6 +103,37 @@ blocks:
             - cache store gradle-caches_support-bot ~/.gradle/caches
             - cache store gradle-wrapper_support-bot ~/.gradle/wrapper
 
+  # please-bot
+  - name: Build, test and push please bot
+    dependencies: [ ]
+    run:
+      when: |
+        change_in(['/services/please-bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+    task:
+      secrets:
+        - name: github
+        - name: sentry
+      prologue:
+        commands:
+          - apt-get update -y
+          - apt-get install lftp -y
+          - cache restore gradle-caches_please-bot
+          - cache restore gradle-wrapper_please-bot
+          - checkout
+      jobs:
+        - name: Build, test and push please-bot
+          commands:
+            - ./gradlew :services:please-bot:build
+            - ./gradlew :services:please-bot:test
+            - ./gradlew :services:please-bot:jib -Djib.httpTimeout=60000
+      epilogue:
+        on_pass:
+          commands:
+            - cache delete gradle-caches_please-bot
+            - cache delete gradle-wrapper_please-bot
+            - cache store gradle-caches_please-bot ~/.gradle/caches
+            - cache store gradle-wrapper_please-bot ~/.gradle/wrapper
+
   # entitlements-expiration-job
   - name: Build, test and push entitlements-expiration-job
     dependencies: [ ]
@@ -157,6 +188,10 @@ promotions:
   # support-bot
   - name: Deploy support-bot to production
     pipeline_file: deploy/support-bot/production.yml
+
+  # support-bot
+  - name: Deploy please-bot to production
+    pipeline_file: deploy/please-bot/production.yml
 
   # entitlements-expiration-job
   - name: Deploy entitlements-expiration-job to production

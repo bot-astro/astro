@@ -33,8 +33,6 @@ class ChargebeeController(
             ResponseEntity.badRequest().body(null)
     }
 
-    // TODO: Authenticate the following with chargebee webhook token
-
     @PostMapping("/cancel")
     suspend fun receiveSubscriptionCancellation(@RequestBody subscriptionWebhookData: SubscriptionWebhookData): ResponseEntity<*> {
         try {

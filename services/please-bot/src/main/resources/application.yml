@@ -1,8 +1,11 @@
 info:
   app:
-    name: "Bot"
-    description: "The main bot Discord application."
+    name: "Please bot with an API"
+    description: "A very pathetic but maybe useful debugging attempt."
     version: "1.0.0"
+
+server:
+  port: "${PORT:9003}"
 
 management:
   metrics:
@@ -20,16 +23,20 @@ management:
           - info
           - metrics
           - prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include:
+            - readinessState
+        liveness:
+          include:
+            - livenessState
 
-application:
-  features:
-    premium-restrictions: ${PREMIUM_RESTRICTIONS:false}
-
-discord:
-  application:
-    token: ${BOT_TOKEN}
-    bot-id: ${BOT_ID:788708323867885568}
-    command-guilds: [1026552055046881402]
 
 ##############
 ### SHARED ###
@@ -40,10 +47,10 @@ logging:
 
 
 sentry:
-  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.sentry.io/4506708023967744
+  dsn: https://2013dcd155b2074191d6cca31885e47c@o4506708022263808.ingest.sentry.io/4506718243586048
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
-  traces-sample-rate: 0.7
+  traces-sample-rate: 1.0
 
 bigquery:
   enabled: ${BIGQUERY_ENABLED:false}
@@ -77,3 +84,15 @@ io:
 #####################
 ### END OF SHARED ###
 #####################
+
+discord:
+  application:
+    bot-id: ${DISCORD_APPLICATION_ID:1176957574332026940}
+    token: ${DISCORD_APPLICATION_TOKEN}
+    command-guilds: [700607091391594567]
+    whitelisted-guilds: [700607091391594567]
+    entitlements-bot-id: ${ENTITLEMENTS_BOT_ID:715621848489918495}
+    entitlements-bot-token: ${ENTITLEMENTS_BOT_TOKEN}
+    guild-id-for-premium-role: ${GUILD_ID_FOR_PREMIUM_ROLE:700607091391594567}
+    premium-sku-id: ${PREMIUM_SKU_ID:1096107722115661934}
+    premium-role-id: ${PREMIUM_ROLE_ID:761283474241093682}
