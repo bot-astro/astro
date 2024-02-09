@@ -5,10 +5,6 @@ info:
     version: "1.0.0"
 
 management:
-  metrics:
-    export:
-      prometheus:
-        enabled: true
   endpoints:
     web:
       cors:
@@ -20,6 +16,10 @@ management:
           - info
           - metrics
           - prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 application:
   features:

@@ -7,11 +7,8 @@ info:
 server:
   port: "${PORT:9002}"
 
+
 management:
-  metrics:
-    export:
-      prometheus:
-        enabled: true
   endpoints:
     web:
       cors:
@@ -36,6 +33,10 @@ management:
         liveness:
           include:
             - livenessState
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 
 ##############
@@ -99,3 +100,8 @@ discord:
     guild-id-for-premium-role: ${GUILD_ID_FOR_PREMIUM_ROLE:700607091391594567}
     premium-sku-id: ${PREMIUM_SKU_ID:1096107722115661934}
     premium-role-id: ${PREMIUM_ROLE_ID:761283474241093682}
+spring:
+  data:
+    redis:
+      ssl:
+        enabled: true

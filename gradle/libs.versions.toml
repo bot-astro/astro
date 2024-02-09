@@ -5,8 +5,8 @@ nanoid = "2.0.0"
 datetime = "0.4.0"
 
 # Spring
-spring = "5.3.19"
-spring-boot = "2.6.7"
+spring = "6.0.16"
+spring-boot = "3.2.2"
 
 # Logging
 kotlin-logging = "2.1.21"

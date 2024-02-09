@@ -8,10 +8,6 @@ server:
   port: "${PORT:9003}"
 
 management:
-  metrics:
-    export:
-      prometheus:
-        enabled: true
   endpoints:
     web:
       cors:
@@ -36,6 +32,10 @@ management:
         liveness:
           include:
             - livenessState
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 
 ##############
