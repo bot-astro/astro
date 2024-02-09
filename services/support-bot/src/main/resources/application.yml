@@ -80,10 +80,7 @@ io:
     database: ${MONGO_DATABASE:AstroDev}
   redis:
     cluster: ${REDIS_CLUSTER:false}
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    database: ${REDIS_DATABASE:0}
+    uris: ${REDIS_URIS:redis://localhost:6379}
 
 #####################
 ### END OF SHARED ###
