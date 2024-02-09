@@ -8,7 +8,10 @@ import io.lettuce.core.cluster.api.StatefulRedisClusterConnection
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
+
+private val logger = KotlinLogging.logger { }
 
 /**
  * Service for communication with Redis
@@ -24,12 +27,15 @@ class RedisClientService(redisConfig: RedisConfig) {
 
     // TODO: add topology refresh configuration
     init {
+        logger.info { "Initializing Redis client" }
+        logger.info { "Using Redis host '${redisConfig.host}' and port '${redisConfig.port}'" }
         val uriBuilder = RedisURI.builder()
             .withHost(redisConfig.host)
             .withPort(redisConfig.port)
             .withDatabase(redisConfig.database)
 
         if (redisConfig.password != null) {
+            logger.info { "Using password '${redisConfig.password}' for Redis connection" }
             uriBuilder.withPassword(redisConfig.password)
         }
 
@@ -37,9 +43,11 @@ class RedisClientService(redisConfig: RedisConfig) {
 
         isCluster = redisConfig.cluster
         if (isCluster) {
+            logger.info { "Using Redis cluster" }
             clusterClient = RedisClusterClient.create(uri)
             clusterConnection = clusterClient?.connect()
         } else {
+            logger.info { "Using single Redis instance" }
             client = RedisClient.create(uri)
             connection = client?.connect()
         }
