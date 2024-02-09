@@ -22,7 +22,7 @@ class ObjectMapperFactory {
             .featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .featuresToEnable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             .build<ObjectMapper>()
-//            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .registerKotlinModule()
     }

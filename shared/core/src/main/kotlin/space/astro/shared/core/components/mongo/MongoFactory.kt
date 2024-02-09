@@ -7,7 +7,6 @@ import com.mongodb.client.MongoClients
 import com.mongodb.client.MongoDatabase
 import org.bson.codecs.configuration.CodecRegistries
 import org.bson.codecs.pojo.PojoCodecProvider
-import org.litote.kmongo.KMongo
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 
@@ -19,7 +18,27 @@ class MongoFactory {
 
     @Bean
     fun getMongoClient(mongoConfig: MongoConfig): MongoClient {
-        return KMongo.createClient(mongoConfig.connectionString)
+        return MongoClients.create(
+            MongoClientSettings.builder()
+                .applyConnectionString(
+                    ConnectionString(mongoConfig.connectionString)
+                )
+                .applyToConnectionPoolSettings { builder ->
+                    builder
+                        .maxSize(20)
+                }
+                .codecRegistry(
+                    CodecRegistries.fromRegistries(
+                        MongoClientSettings.getDefaultCodecRegistry(),
+                        CodecRegistries.fromProviders(
+                            PojoCodecProvider.builder()
+                                .automatic(true)
+                                .build()
+                        )
+                    )
+                )
+                .build()
+        )
     }
 
     @Bean

@@ -14,7 +14,7 @@ sentryPlugin = "4.1.1"
 sentry = "7.2.0"
 
 # Databases
-kmongo = "4.8.0"
+mongo = "4.11.1"
 influx = "6.12.0"
 
 # Serializing
@@ -67,7 +67,7 @@ kotlin-logging = { module = "io.github.microutils:kotlin-logging", version.ref =
 sentry = { module = "io.sentry:sentry-spring-boot-starter", version.ref = "sentry" }
 
 # Databases
-kmongo = { module = "org.litote.kmongo:kmongo", version.ref = "kmongo"}
+mongo = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongo"}
 influx = { module = "com.influxdb:influxdb-client-java", version.ref = "influx" }
 
 # Serializing

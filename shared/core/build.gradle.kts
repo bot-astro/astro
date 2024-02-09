@@ -17,7 +17,7 @@ dependencies {
     implementation(libs.jda)
     implementation(libs.chargebee)
     implementation(libs.lettuce)
-    implementation(libs.kmongo)
+    implementation(libs.mongo)
     implementation(libs.influx)
     implementation(libs.bigquery)
 }

@@ -10,7 +10,7 @@ dependencies {
     implementation(libs.bundles.caching)
 
     // Database
-    implementation(libs.kmongo)
+    implementation(libs.mongo)
 
     // Project
     implementation(project(":shared:core"))

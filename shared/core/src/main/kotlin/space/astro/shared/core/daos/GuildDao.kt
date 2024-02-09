@@ -9,6 +9,7 @@ import io.lettuce.core.cluster.api.sync.RedisClusterCommands
 import org.springframework.stereotype.Repository
 import space.astro.shared.core.components.io.DataSerializer
 import space.astro.shared.core.models.database.GuildData
+import space.astro.shared.core.models.redis.RedisDynamicHashCacheDao
 import space.astro.shared.core.models.redis.RedisHashCacheDao
 import space.astro.shared.core.models.redis.RedisKey
 
