@@ -46,11 +46,11 @@ logging:
     root: ${LOG_LEVEL:INFO}
 
 
-sentry:
-  dsn: https://2013dcd155b2074191d6cca31885e47c@o4506708022263808.ingest.sentry.io/4506718243586048
+# sentry:
+  # dsn: https://2013dcd155b2074191d6cca31885e47c@o4506708022263808.ingest.sentry.io/4506718243586048
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
-  traces-sample-rate: 1.0
+  # traces-sample-rate: 1.0
 
 bigquery:
   enabled: ${BIGQUERY_ENABLED:false}
