@@ -9,6 +9,7 @@ import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands
 import mu.KotlinLogging
+import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger { }
@@ -54,14 +55,17 @@ class RedisClientService(redisConfig: RedisConfig) {
         }
     }
 
+    @Bean
     fun asyncCommands(): RedisClusterAsyncCommands<String, String> {
         return if (isCluster) clusterConnection!!.async() else connection!!.async()
     }
 
+    @Bean
     fun syncCommands(): RedisClusterCommands<String, String> {
         return if (isCluster) clusterConnection!!.sync() else connection!!.sync()
     }
 
+    @Bean
     fun reactiveCommands(): RedisClusterReactiveCommands<String, String> {
         return if (isCluster) clusterConnection!!.reactive() else connection!!.reactive()
     }
