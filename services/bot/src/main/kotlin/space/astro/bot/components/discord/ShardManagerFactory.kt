@@ -1,6 +1,9 @@
 package space.astro.bot.components.discord
 
 import dev.minn.jda.ktx.jdabuilder.injectKTX
+import io.lettuce.core.api.async.RedisAsyncCommands
+import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
+import io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands
 import mu.KotlinLogging
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
@@ -19,7 +22,6 @@ import space.astro.bot.config.PodConfig
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.RedisSessionController
-import space.astro.shared.core.services.redis.RedisClientService
 
 private val log = KotlinLogging.logger { }
 
@@ -27,9 +29,10 @@ private val log = KotlinLogging.logger { }
 class ShardManagerFactory(
     private val shardManagerConfig: ShardManagerConfig,
     private val discordApplicationConfig: DiscordApplicationConfig,
-    private val redisClientService: RedisClientService,
     private val jdaToSpringEventBridge: JdaToSpringEventBridge,
-    private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher
+    private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
+    private val asyncCommands: RedisClusterAsyncCommands<String, String>,
+    private val reactiveCommands: RedisClusterReactiveCommands<String, String>
 ) {
 
     private val intents = listOf(
@@ -101,7 +104,8 @@ class ShardManagerFactory(
         return RedisSessionController(
             discordApplicationConfig,
             shardManagerConfig,
-            redisClientService
+            asyncCommands,
+            reactiveCommands
         )
     }
 
