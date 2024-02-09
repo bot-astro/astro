@@ -19,7 +19,7 @@ dependencies {
 
 jib {
     from {
-        image = "openjdk:17"
+        image = "amazoncorretto@sha256:ffe99c76c9304663a7adc8a292c186215f78fc918bfd0b3b0a4b57b3c0d90fd1"
     }
 
     to {

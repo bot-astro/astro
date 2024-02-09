@@ -78,8 +78,11 @@ io:
     connection-string: ${MONGO_CONNECTION_STRING:mongodb://localhost:27017}
     database: ${MONGO_DATABASE:AstroDev}
   redis:
-    uris: ${REDIS_URIS:redis://localhost:6379}
     cluster: ${REDIS_CLUSTER:false}
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: ${REDIS_DATABASE:0}
 
 #####################
 ### END OF SHARED ###
