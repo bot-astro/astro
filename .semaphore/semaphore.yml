@@ -139,20 +139,20 @@ promotions:
   # bot
   - name: Deploy bot to production
     pipeline_file: deploy/bot/production.yml
-  - name: Deploy bot to staging
-    pipeline_file: deploy/bot/staging.yml
-    auto_promote:
-      when: |
-        branch = 'develop' and result = 'passed' and change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+#  - name: Deploy bot to staging
+#    pipeline_file: deploy/bot/staging.yml
+#    auto_promote:
+#      when: |
+#        branch = 'develop' and result = 'passed' and change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
 
   # central-api
   - name: Deploy central-api to production
     pipeline_file: deploy/central-api/production.yml
-  - name: Deploy central-api to staging
-    pipeline_file: deploy/central-api/staging.yml
-    auto_promote:
-      when: |
-        branch = 'develop' and result = 'passed' and change_in(['/services/central-api/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+#  - name: Deploy central-api to staging
+#    pipeline_file: deploy/central-api/staging.yml
+#    auto_promote:
+#      when: |
+#        branch = 'develop' and result = 'passed' and change_in(['/services/central-api/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
 
   # support-bot
   - name: Deploy support-bot to production
@@ -161,8 +161,8 @@ promotions:
   # entitlements-expiration-job
   - name: Deploy entitlements-expiration-job to production
     pipeline_file: deploy/entitlements-expiration-job/production.yml
-  - name: Deploy entitlements-expiration-job to staging
-    pipeline_file: deploy/entitlements-expiration-job/staging.yml
-    auto_promote:
-      when: |
-        branch = 'develop' and result = 'passed' and change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+#  - name: Deploy entitlements-expiration-job to staging
+#    pipeline_file: deploy/entitlements-expiration-job/staging.yml
+#    auto_promote:
+#      when: |
+#        branch = 'develop' and result = 'passed' and change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })

@@ -7,7 +7,7 @@ spec:
   tls:
     - hosts:
         - support-bot.astro-bot.space
-        - staging.support-bot.astro-bot.space
+{{/*        - staging.support-bot.astro-bot.space*/}}
       secretName: tls-astro-bot.space
   rules:
     - host: support-bot.astro-bot.space
@@ -20,13 +20,13 @@ spec:
                 name: support-api
                 port:
                   number: 9002
-    - host: staging.support-bot.astro-bot.space
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: support-bot
-                port:
-                  number: 9002
+{{/*    - host: staging.support-bot.astro-bot.space*/}}
+{{/*      http:*/}}
+{{/*        paths:*/}}
+{{/*          - path: /*/}}
+{{/*            pathType: Prefix*/}}
+{{/*            backend:*/}}
+{{/*              service:*/}}
+{{/*                name: support-bot*/}}
+{{/*                port:*/}}
+{{/*                  number: 9002*/}}
