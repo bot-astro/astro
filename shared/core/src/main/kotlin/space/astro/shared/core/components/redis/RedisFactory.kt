@@ -2,10 +2,7 @@ package space.astro.shared.core.components.redis
 
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
-import io.lettuce.core.TimeoutOptions
 import io.lettuce.core.api.StatefulRedisConnection
-import io.lettuce.core.cluster.ClusterClientOptions
-import io.lettuce.core.cluster.ClusterTopologyRefreshOptions
 import io.lettuce.core.cluster.RedisClusterClient
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
@@ -14,7 +11,6 @@ import io.lettuce.core.cluster.api.sync.RedisClusterCommands
 import mu.KotlinLogging
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
-import java.time.Duration
 
 private val logger = KotlinLogging.logger { }
 
@@ -24,6 +20,9 @@ private val logger = KotlinLogging.logger { }
 @Component
 class RedisFactory(redisConfig: RedisConfig) {
 
+    private var client: RedisClient? = null
+    private var clusterClient: RedisClusterClient? = null
+    private var isCluster = false
     private var statefulRedisClusterConnection: StatefulRedisClusterConnection<String, String>? =
         null
 
@@ -32,42 +31,27 @@ class RedisFactory(redisConfig: RedisConfig) {
     init {
         logger.info { "Initializing Redis connection" }
         logger.info { "Redis cluster: ${redisConfig.cluster}" }
-        logger.info { "Redis URIs: ${redisConfig.uris}" }
+        logger.info { "Redis Host: ${redisConfig.host}" }
+        logger.info { "Redis Password: ${redisConfig.password}" }
 
-        val redisUris = redisConfig.uris.split(",").stream()
-            .map(RedisURI::create)
-            .toList()
+        val uriBuilder = RedisURI.builder()
+            .withHost(redisConfig.host)
+            .withPort(redisConfig.port)
+            .withDatabase(redisConfig.database)
 
-        logger.info { "Redis URIs: $redisUris" }
+        if (redisConfig.password.isNotEmpty()) {
+            uriBuilder.withPassword(redisConfig.password.toCharArray())
+        }
 
-        if (redisConfig.cluster) {
-            val clusterClient = RedisClusterClient.create(redisUris)
-            clusterClient.setOptions(
-                ClusterClientOptions.builder()
-                    .timeoutOptions(
-                        TimeoutOptions.builder()
-                            .fixedTimeout(Duration.ofSeconds(5))
-                            .build()
-                    )
-                    .topologyRefreshOptions(
-                        ClusterTopologyRefreshOptions.builder()
-                            .enableAllAdaptiveRefreshTriggers()
-                            .enablePeriodicRefresh()
-                            .refreshTriggersReconnectAttempts(3)
-                            .build()
-                    ).build()
-            )
-            statefulRedisClusterConnection = clusterClient.connect()
+        val uri = uriBuilder.build()
+
+        isCluster = redisConfig.cluster
+        if (isCluster) {
+            clusterClient = RedisClusterClient.create(uri)
+            statefulRedisClusterConnection = clusterClient?.connect()
         } else {
-            logger.info { "Creating Redis client" }
-            logger.info { "Redis URI: ${redisUris[0]}" }
-            logger.info { "Redis Port: ${redisUris[0].port}" }
-            logger.info { "Redis Host: ${redisUris[0].host}" }
-            logger.info { "Redis Password: ${redisUris[0].password.joinToString()}" }
-            logger.info { "Redis Database: ${redisUris[0].database}" }
-            logger.info { "Redis Username: ${redisUris[0].username}" }
-            val client = RedisClient.create(redisUris[0])
-            statefulRedisConnection = client.connect()
+            client = RedisClient.create(uri)
+            statefulRedisConnection = client?.connect()
         }
 
     }
