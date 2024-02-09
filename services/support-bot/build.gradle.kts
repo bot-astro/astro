@@ -19,7 +19,8 @@ dependencies {
 
 jib {
     from {
-        image = "openjdk:17"
+        // https://hub.docker.com/layers/library/openjdk/17-alpine/images/sha256-a996cdcc040704ec6badaf5fecf1e144c096e00231a29188596c784bcf858d05?context=explore
+        image = "sha256:a996cdcc040704ec6badaf5fecf1e144c096e00231a29188596c784bcf858d05"
     }
 
     to {
