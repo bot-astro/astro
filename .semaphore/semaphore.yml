@@ -63,7 +63,7 @@ blocks:
           commands:
             - ./gradlew :services:central-api:build
             - ./gradlew :services:central-api:test
-            - ./gradlew :services:central-api:jib
+            - ./gradlew :services:central-api:jib -Djib.httpTimeout=60000
       epilogue:
         on_pass:
           commands:
@@ -94,7 +94,7 @@ blocks:
           commands:
             - ./gradlew :services:support-bot:build
             - ./gradlew :services:support-bot:test
-            - ./gradlew :services:support-bot:jib
+            - ./gradlew :services:support-bot:jib -Djib.httpTimeout=60000
       epilogue:
         on_pass:
           commands:
@@ -125,7 +125,7 @@ blocks:
           commands:
             - ./gradlew :services:entitlements-expiration-job:build
             - ./gradlew :services:entitlements-expiration-job:test
-            - ./gradlew :services:entitlements-expiration-job:jib
+            - ./gradlew :services:entitlements-expiration-job:jib -Djib.httpTimeout=60000
       epilogue:
         on_pass:
           commands:
