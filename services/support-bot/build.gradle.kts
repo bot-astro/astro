@@ -19,7 +19,7 @@ dependencies {
 
 jib {
     from {
-        image = "openjdk@sha256:cf04661ba3cae4c9d788d503befc635f16ffdc740b00b0010b244d777d03adcf"
+        image = "amazoncorretto@sha256:ffe99c76c9304663a7adc8a292c186215f78fc918bfd0b3b0a4b57b3c0d90fd1"
     }
 
     to {
