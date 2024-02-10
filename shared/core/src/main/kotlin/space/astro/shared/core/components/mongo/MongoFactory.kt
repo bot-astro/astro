@@ -9,8 +9,7 @@ import org.bson.codecs.configuration.CodecRegistries
 import org.bson.codecs.pojo.PojoCodecProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
-import space.astro.shared.core.models.database.GuildData
-import space.astro.shared.core.models.database.UserData
+import space.astro.shared.core.models.database.*
 
 /**
  * Factory for [MongoClient] and [MongoDatabase]
@@ -35,7 +34,25 @@ class MongoFactory {
                         CodecRegistries.fromProviders(
                             PojoCodecProvider.builder()
                                 .automatic(true)
-                                .register(UserData::class.java, GuildData::class.java)
+                                .register(
+                                    // USER
+                                    UserData::class.java,
+                                    UserEntitlement::class.java,
+                                    UserSettingsDto::class.java,
+                                    GuildUpgradeData::class.java,
+                                    // GUILD
+                                    GuildData::class.java,
+                                    GuildEntitlement::class.java,
+                                    TemplateData::class.java,
+                                    ConnectionData::class.java, // Action?
+                                    GeneratorData::class.java,
+                                    RenameConditions::class.java,
+                                    CommandsSettings::class.java,
+                                    InterfaceData::class.java,
+                                    InterfaceButton::class.java,
+                                    InterfaceAction::class.java,
+                                    EmbedStyle::class.java
+                                )
                                 .build()
                         )
                     )
