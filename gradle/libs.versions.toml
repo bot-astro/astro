@@ -15,6 +15,7 @@ sentry = "7.2.0"
 
 # Databases
 mongo = "4.11.1"
+kmongo = "4.11.0"
 influx = "6.12.0"
 
 # Serializing
@@ -68,6 +69,7 @@ sentry = { module = "io.sentry:sentry-spring-boot-starter", version.ref = "sentr
 
 # Databases
 mongo = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongo"}
+kmongo = { module = "org.litote.kmongo:kmongo", version.ref = "kmongo"}
 influx = { module = "com.influxdb:influxdb-client-java", version.ref = "influx" }
 
 # Serializing

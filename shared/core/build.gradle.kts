@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    implementation(variantOf(libs.dnsMacOS) { classifier("osx-aarch_64")})
+    implementation(variantOf(libs.dnsMacOS) { classifier("osx-aarch_64") })
     implementation(libs.bundles.base)
     implementation(libs.bundles.spring.core)
     implementation(libs.bundles.coroutines)
@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.chargebee)
     implementation(libs.lettuce)
     implementation(libs.mongo)
+    implementation(libs.kmongo)
     implementation(libs.influx)
     implementation(libs.bigquery)
 }
