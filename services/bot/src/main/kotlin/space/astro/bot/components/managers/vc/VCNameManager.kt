@@ -151,6 +151,10 @@ class VCNameManager(
      * @throws ConfigurationException if premium variables have been detected and the guild is not premium
      */
     private fun VCOperationCTX.validateBadwords(nameTemplate: String) {
+        if (generatorData.commandsSettings.badwordsAllowed) {
+            return
+        }
+
         if (!premiumRequirementDetector.canValidateBadwords(guildData)) {
             throw ConfigurationException(configurationErrorService.premiumRequiredForBadwordsValidation())
         }
