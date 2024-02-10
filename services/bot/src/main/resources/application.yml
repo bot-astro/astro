@@ -19,6 +19,19 @@ management:
           - info
           - metrics
           - prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include:
+            - readinessState
+        liveness:
+          include:
+            - livenessState
   prometheus:
     metrics:
       export:

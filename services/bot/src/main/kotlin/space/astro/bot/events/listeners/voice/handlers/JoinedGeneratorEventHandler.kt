@@ -316,7 +316,10 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     if (creationChatMessage != null) {
         if (!premiumRequirementDetector.canSendMessageInVCChatOnVCGeneration(guildData)) {
-            throw ConfigurationException(configurationErrorService.premiumRequiredForAutoChatMessageOnCreation())
+            configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                guildId = guild.id,
+                configurationErrorData = configurationErrorService.premiumRequiredForAutoChatMessageOnCreation()
+            )
         } else {
             chatForMessage.sendMessage(creationChatMessage).queue()
         }
