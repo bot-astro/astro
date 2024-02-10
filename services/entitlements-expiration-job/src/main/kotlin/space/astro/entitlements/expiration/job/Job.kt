@@ -31,7 +31,7 @@ private val log = KotlinLogging.logger {  }
         "space.astro.shared.core.configs",
         "space.astro.shared.core.components.io",
         "space.astro.shared.core.services.redis",
-        "space.astro.shared.core.components.mongo",
+        "space.astro.shared.core.components.kmongo",
         "space.astro.shared.core.components.influx",
         "space.astro.shared.core.services.discord",
         "space.astro.shared.core.daos"
