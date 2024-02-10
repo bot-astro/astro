@@ -8,6 +8,18 @@ dependencies {
     implementation(libs.bundles.base)
     implementation(libs.bundles.web)
     implementation(libs.bundles.caching)
+    implementation(libs.jda) {
+        exclude(
+            group = "club.minnced",
+            module = "opus-java"
+        )
+    }
+    implementation(libs.jda.ktx) {
+        exclude(
+            group = "net.dv8tion",
+            module = "jda"
+        )
+    }
     implementation(libs.bundles.discord) {
         exclude(
             group = "club.minnced",

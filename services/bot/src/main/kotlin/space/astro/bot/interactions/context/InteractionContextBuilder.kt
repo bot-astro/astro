@@ -3,6 +3,7 @@ package space.astro.bot.interactions.context
 import dev.minn.jda.ktx.events.await
 import dev.minn.jda.ktx.messages.Embed
 import kotlinx.coroutines.withTimeoutOrNull
+import mu.KotlinLogging
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent
@@ -25,6 +26,8 @@ import space.astro.shared.core.util.ui.Colors
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.findAnnotation
+
+private val log = KotlinLogging.logger {  }
 
 @Component
 class InteractionContextBuilder(

@@ -15,4 +15,6 @@ spec:
             - name: {{ .Values.name }}
               image: {{ .Values.image.group }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
           restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: ghcr-secret
       backoffLimit: 4
