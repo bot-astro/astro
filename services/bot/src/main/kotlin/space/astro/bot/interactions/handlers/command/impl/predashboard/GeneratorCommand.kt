@@ -58,7 +58,8 @@ class GeneratorCommand(
     ) {
         if (!premiumRequirementDetector.canCreateGenerator(ctx.guildData)) {
             ctx.replyHandler.replyEmbedAndComponent(
-                embed = Embeds.error("There are already 3 Generators setup in this server.\nPremium is required to have more than 3 Generators." +
+                embed = Embeds.error(
+                    "There are already 3 Generators setup in this server.\nPremium is required to have more than 3 Generators." +
                         "\nPossible solutions:" +
                         "\n• Get ${Emojis.premium.formatted} Premium" +
                         "\n• Delete an existing generator with `/generator delete`"
@@ -70,18 +71,21 @@ class GeneratorCommand(
 
         ctx.replyHandler.deferReply()
 
-        val category = if (event.channelType == ChannelType.TEXT) (event.channel as TextChannel).parentCategory else null
+        val category =
+            if (event.channelType == ChannelType.TEXT) (event.channel as TextChannel).parentCategory else null
 
         val generatorAction = ctx.guild.createVoiceChannel("➕ Generator")
         if (category != null)
             generatorAction.setParent(category)
 
         val generator = generatorAction.await()
-        ctx.guildData.generators.add(GeneratorData(
-            id = generator.id,
-            category = category?.id,
-            chatCategory = category?.id,
-            chatPermissionsInherited = PermissionsInherited.GENERATOR)
+        ctx.guildData.generators.add(
+            GeneratorData(
+                id = generator.id,
+                category = category?.id,
+                chatCategory = category?.id,
+                chatPermissionsInherited = PermissionsInherited.GENERATOR
+            )
         )
 
         guildDao.save(ctx.guildData)
@@ -123,17 +127,21 @@ class GeneratorCommand(
         }
 
         if (generators.isEmpty()) {
-            ctx.replyHandler.replyEmbed(Embeds.error(
-                "You only have one generator in the server." +
+            ctx.replyHandler.replyEmbed(
+                Embeds.error(
+                    "You only have one generator in the server." +
                         "To have a fallback for that generator, create a new one with `/generator create`"
-            ))
+                )
+            )
             return
         }
 
         ctx.replyHandler.replyWithSelectMenu(
-            Embeds.selector("**Choose the fallback generator for the ${ctx.generatorData.id.asChannelMention()} generator.**" +
+            Embeds.selector(
+                "**Choose the fallback generator for the ${ctx.generatorData.id.asChannelMention()} generator.**" +
                     "\nWhen that generator category gets filled (meaning 50 channels already exist in that category) Astro will move" +
-                    "the users that try to join that generator to the fallback one."),
+                    "the users that try to join that generator to the fallback one."
+            ),
             StringSelectMenu.create(InteractionIds.getRandom())
                 .addOptions(generators.mapIndexed { index, generatorDto ->
                     val channel = ctx.guild.getVoiceChannelById(generatorDto.id)
@@ -150,7 +158,7 @@ class GeneratorCommand(
                 ctx.generatorData.fallbackId = null
                 ctx.guildData.generators[ctx.generatorIndex] = ctx.generatorData
                 guildDao.save(ctx.guildData)
-                
+
                 ctx.replyHandler.replyEmbed(Embeds.success("This generator doesn't have a fallback generator anymore."))
             } else {
                 val fallbackGen = generators[it.first().toInt()]
@@ -159,10 +167,10 @@ class GeneratorCommand(
                     ctx.replyHandler.replyEmbed(
                         Embeds.error(
                             "The generator you selected (${fallbackGen.id.asChannelMention()}) to be the fallback of this current generator (${ctx.generatorData.id.asChannelMention()}), has as *its* fallback this current generator (yeah it's confusing)." +
-                                    "\n\n" +
-                                    "${ctx.generatorData.id.asChannelMention()} -- fallback --> ${fallbackGen.id.asChannelMention()}" +
-                                    "\n${fallbackGen.id.asChannelMention()} -- fallback --> ${ctx.generatorData.id.asChannelMention()}" +
-                                    "\n\nThat way an infinite loop could be caused, so that is not allowed."
+                                "\n\n" +
+                                "${ctx.generatorData.id.asChannelMention()} -- fallback --> ${fallbackGen.id.asChannelMention()}" +
+                                "\n${fallbackGen.id.asChannelMention()} -- fallback --> ${ctx.generatorData.id.asChannelMention()}" +
+                                "\n\nThat way an infinite loop could be caused, so that is not allowed."
                         )
                     )
 
@@ -255,7 +263,7 @@ class GeneratorCommand(
                 ctx.replyHandler.replyEmbed(
                     Embeds.error(
                         "You provided a ${it.first} bitrate amount which is too high." +
-                                "\nYour server supports a max bitrate of ${guildMax / 1000} kbps, provide an amount within that value."
+                            "\nYour server supports a max bitrate of ${guildMax / 1000} kbps, provide an amount within that value."
                     )
                 )
                 return
@@ -272,7 +280,7 @@ class GeneratorCommand(
             ctx.replyHandler.replyEmbed(
                 Embeds.error(
                     "The minimum bitrate ($currentMin) must be lower than the maximum ($currentMax)" +
-                    "\nMake sure to provide a minimum bitrate lower than the maximum (or a maximum bitrate greater than the minimum)."
+                        "\nMake sure to provide a minimum bitrate lower than the maximum (or a maximum bitrate greater than the minimum)."
                 )
             )
 
@@ -287,9 +295,9 @@ class GeneratorCommand(
         ctx.replyHandler.replyEmbed(
             Embeds.success(
                 "The bitrate settings for temporary voice channels now are:" +
-                        "\n• Default > ${currentDefault / 1000} kbps" +
-                        "\n• Maximum > ${(currentMax ?: guildMax) / 1000} kbps" +
-                        "\n• Minimum > ${currentMin / 1000} kbps"
+                    "\n• Default > ${currentDefault / 1000} kbps" +
+                    "\n• Maximum > ${(currentMax ?: guildMax) / 1000} kbps" +
+                    "\n• Minimum > ${currentMin / 1000} kbps"
             )
         )
     }
@@ -364,10 +372,12 @@ class GeneratorCommand(
             currentMax = max
 
         if (currentMin > currentMax) {
-            ctx.replyHandler.replyEmbed(Embeds.error(
-                "The minimum user limit ($currentMin) must be lower than the maximum ($currentMax)" +
-                "\nMake sure to provide a minimum user limit lower than the maximum (or a maximum user limit greater than the minimum)."
-            ))
+            ctx.replyHandler.replyEmbed(
+                Embeds.error(
+                    "The minimum user limit ($currentMin) must be lower than the maximum ($currentMax)" +
+                        "\nMake sure to provide a minimum user limit lower than the maximum (or a maximum user limit greater than the minimum)."
+                )
+            )
         }
 
         ctx.guildData.generators[ctx.generatorIndex].userLimit = currentDefault
@@ -379,9 +389,9 @@ class GeneratorCommand(
         ctx.replyHandler.replyEmbed(
             Embeds.success(
                 "The user limit settings for temporary voice channels now are:" +
-                        "\n• Default > $currentDefault" +
-                        "\n• Maximum > $currentMax" +
-                        "\n• Minimum > $currentMin"
+                    "\n• Default > $currentDefault" +
+                    "\n• Maximum > $currentMax" +
+                    "\n• Minimum > $currentMin"
             )
         )
     }
@@ -411,8 +421,10 @@ class GeneratorCommand(
     ) {
         if (!premiumRequirementDetector.canUseVCNameTemplate(ctx.guildData, name)) {
             ctx.replyHandler.replyEmbedAndComponent(
-                embed = Embeds.error("Some variables you used in the name can only be used in premium servers." +
-                    "\nSee documentation for variables with the button below."),
+                embed = Embeds.error(
+                    "Some variables you used in the name can only be used in premium servers." +
+                        "\nSee documentation for variables with the button below."
+                ),
                 component = Buttons.Help.variables
             )
             return
@@ -435,8 +447,8 @@ class GeneratorCommand(
         ctx.replyHandler.replyEmbedAndComponent(
             Embeds.success(
                 "The $stateReadableName name for temporary voice channels now is:" +
-                        "\n`$name`" +
-                "\n\nYou can mix variables in the name to further personalize it, use the button below for documentation!"
+                    "\n`$name`" +
+                    "\n\nYou can mix variables in the name to further personalize it, use the button below for documentation!"
             ),
             Buttons.Help.variables
         )
@@ -484,8 +496,8 @@ class GeneratorCommand(
         ctx.replyHandler.replyEmbed(
             Embeds.success(
                 permissionsResult +
-                        "\nCommands like `/lock` and `/hide` will modify only the permissions of ${targetRole.asMention}." +
-                        if (moderatorRole != null) "\n(*${moderatorRole.asMention} is immune to all the voice channel commands*)" else ""
+                    "\nCommands like `/lock` and `/hide` will modify only the permissions of ${targetRole.asMention}." +
+                    if (moderatorRole != null) "\n(*${moderatorRole.asMention} is immune to all the voice channel commands*)" else ""
             )
         )
     }
@@ -570,7 +582,8 @@ class GeneratorCommand(
                     if (region.emoji == null)
                         Emojis.region
                     else
-                        Emoji.fromUnicode(region.emoji!!))
+                        Emoji.fromUnicode(region.emoji!!)
+                )
             })
             .setPlaceholder("Choose a region")
             .setRequiredRange(1, 1)
@@ -587,9 +600,11 @@ class GeneratorCommand(
                 ?.setRegion(selectedRegion)
                 ?.await()
 
-            ctx.replyHandler.replyEmbed(Embeds.success(
-                "Default region for temporary voice channels set to: ${selectedRegion.emoji ?: Emojis.region.formatted} ${selectedRegion.getName()}"
-            ))
+            ctx.replyHandler.replyEmbed(
+                Embeds.success(
+                    "Default region for temporary voice channels set to: ${selectedRegion.emoji ?: Emojis.region.formatted} ${selectedRegion.getName()}"
+                )
+            )
         }
     }
 
@@ -639,10 +654,10 @@ class GeneratorCommand(
         ctx.replyHandler.replyEmbed(
             Embeds.success(
                 "The rename conditions now are:" +
-                        "\n> State changes > ${newRenameConditions.stateChange.asOnOrOff()}" +
-                        "\n> Owner changes > ${newRenameConditions.ownerChange.asOnOrOff()}" +
-                        "\n> If already renamed by user > ${newRenameConditions.renamed.asOnOrOff()}" +
-                        "\n> User activity changes > ${newRenameConditions.activityChange.asOnOrOff()}"
+                    "\n> State changes > ${newRenameConditions.stateChange.asOnOrOff()}" +
+                    "\n> Owner changes > ${newRenameConditions.ownerChange.asOnOrOff()}" +
+                    "\n> If already renamed by user > ${newRenameConditions.renamed.asOnOrOff()}" +
+                    "\n> User activity changes > ${newRenameConditions.activityChange.asOnOrOff()}"
             )
         )
     }
@@ -689,19 +704,37 @@ class GeneratorCommand(
         event: SlashCommandInteractionEvent,
         ctx: GeneratorSettingsInteractionContext
     ) {
-        val voicePermissions = (Permission.getPermissions(Permission.ALL_VOICE_PERMISSIONS) + listOf(Permission.VIEW_CHANNEL, Permission.MANAGE_CHANNEL, Permission.MANAGE_PERMISSIONS, Permission.CREATE_INSTANT_INVITE))
+        val voicePermissions = (Permission.getPermissions(Permission.ALL_VOICE_PERMISSIONS) + listOf(
+            Permission.VIEW_CHANNEL,
+            Permission.MANAGE_CHANNEL,
+            Permission.MANAGE_PERMISSIONS,
+            Permission.CREATE_INSTANT_INVITE
+        ))
             .sorted()
 
         val textPermissions = listOf(
-            Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_SEND, Permission.MESSAGE_TTS, Permission.MESSAGE_MANAGE,
-            Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_ATTACH_FILES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_EXT_STICKER,
-            Permission.MESSAGE_HISTORY, Permission.MESSAGE_MENTION_EVERYONE, Permission.USE_APPLICATION_COMMANDS
+            Permission.MESSAGE_ADD_REACTION,
+            Permission.MESSAGE_SEND,
+            Permission.MESSAGE_TTS,
+            Permission.MESSAGE_MANAGE,
+            Permission.MESSAGE_EMBED_LINKS,
+            Permission.MESSAGE_ATTACH_FILES,
+            Permission.MESSAGE_EXT_EMOJI,
+            Permission.MESSAGE_EXT_STICKER,
+            Permission.MESSAGE_HISTORY,
+            Permission.MESSAGE_MENTION_EVERYONE,
+            Permission.USE_APPLICATION_COMMANDS
         )
 
         val voiceSelectMenu = StringSelectMenu.create(InteractionIds.getRandom())
             .setRequiredRange(0, voicePermissions.size)
             .setPlaceholder("Select the voice permissions")
-            .addOptions(voicePermissions.mapIndexed { index, permission -> SelectOption.of(permission.getName(), index.toString()) })
+            .addOptions(voicePermissions.mapIndexed { index, permission ->
+                SelectOption.of(
+                    permission.getName(),
+                    index.toString()
+                )
+            })
             .build()
 
         ctx.replyHandler.replyWithSelectMenu(
@@ -709,12 +742,18 @@ class GeneratorCommand(
             voiceSelectMenu,
             true
         ) {
-            val selectedPermissions = voicePermissions.filterIndexed { index, _ -> index.toString() in it }.toMutableList()
+            val selectedPermissions =
+                voicePermissions.filterIndexed { index, _ -> index.toString() in it }.toMutableList()
 
             val textSelectMenu = StringSelectMenu.create(InteractionIds.getRandom())
                 .setRequiredRange(0, textPermissions.size)
                 .setPlaceholder("Select the text permissions")
-                .addOptions(textPermissions.mapIndexed { index, permission -> SelectOption.of(permission.getName(), index.toString()) })
+                .addOptions(textPermissions.mapIndexed { index, permission ->
+                    SelectOption.of(
+                        permission.getName(),
+                        index.toString()
+                    )
+                })
                 .build()
 
             ctx.replyHandler.replyWithSelectMenu(
@@ -729,10 +768,12 @@ class GeneratorCommand(
                 ctx.guildData.generators[ctx.generatorIndex].ownerPermissions = permissionsRaw
                 guildDao.save(ctx.guildData)
 
-                ctx.replyHandler.replyEmbed(Embeds.success(
-                    "Here is the list of the permissions that the owners of temporary voice channels will have:" +
+                ctx.replyHandler.replyEmbed(
+                    Embeds.success(
+                        "Here is the list of the permissions that the owners of temporary voice channels will have:" +
                             "\n• ${selectedPermissions.joinToString("\n") { "• ${it.getName()}" }}"
-                ))
+                    )
+                )
             }
         }
     }
@@ -881,17 +922,21 @@ class GeneratorCommand(
                 ctx.guildData.generators[ctx.generatorIndex].chatInterface = -1
                 guildDao.save(ctx.guildData)
 
-                it.replyEmbeds(Embeds.success(
-                    "This is the new message Astro will sent in private text chats of temporary voice channels\n > $content"
-                        .take(MessageEmbed.DESCRIPTION_MAX_LENGTH)
-                )).await()
+                it.replyEmbeds(
+                    Embeds.success(
+                        "This is the new message Astro will sent in private text chats of temporary voice channels\n > $content"
+                            .take(MessageEmbed.DESCRIPTION_MAX_LENGTH)
+                    )
+                ).await()
             }
         } else if (type == "interface") {
             if (ctx.guildData.interfaces.isEmpty()) {
-                ctx.replyHandler.replyEmbed(Embeds.error(
-                    "You don't have any interface in this server." +
-                    "\nCreate an interface with `/interface create` and then run this command again."
-                ))
+                ctx.replyHandler.replyEmbed(
+                    Embeds.error(
+                        "You don't have any interface in this server." +
+                            "\nCreate an interface with `/interface create` and then run this command again."
+                    )
+                )
                 return
             }
 
@@ -899,7 +944,12 @@ class GeneratorCommand(
                 .setPlaceholder("Select the interface")
 
             ctx.guildData.interfaces.mapIndexed { index, interfaceDto ->
-                selectMenuBuilder.addOption(interfaceDto.channelID.asChannelMention(), index.toString(), "${interfaceDto.buttons.size} actions - message id ${interfaceDto.messageID}", Emojis.vcInterface)
+                selectMenuBuilder.addOption(
+                    interfaceDto.channelID.asChannelMention(),
+                    index.toString(),
+                    "${interfaceDto.buttons.size} actions - message id ${interfaceDto.messageID}",
+                    Emojis.vcInterface
+                )
             }
 
             ctx.replyHandler.replyWithSelectMenu(
@@ -910,18 +960,22 @@ class GeneratorCommand(
                 ctx.guildData.generators[ctx.generatorIndex].chatInterface = it.first().toIntOrNull() ?: -1
                 guildDao.save(ctx.guildData)
 
-                ctx.replyHandler.replyEmbed(Embeds.success(
-                    "Users will get an interface in their private text chat by default."
-                ))
+                ctx.replyHandler.replyEmbed(
+                    Embeds.success(
+                        "Users will get an interface in their private text chat by default."
+                    )
+                )
             }
         } else {
             ctx.guildData.generators[ctx.generatorIndex].chatInterface = -1
             ctx.guildData.generators[ctx.generatorIndex].defaultChatText = null
             guildDao.save(ctx.guildData)
 
-            ctx.replyHandler.replyEmbed(Embeds.success(
-                "Users will not get any message in their private text chat on its creation."
-            ))
+            ctx.replyHandler.replyEmbed(
+                Embeds.success(
+                    "Users will not get any message in their private text chat on its creation."
+                )
+            )
         }
     }
 
@@ -944,8 +998,10 @@ class GeneratorCommand(
     ) {
         if (!premiumRequirementDetector.canUseVCNameTemplate(ctx.guildData, name)) {
             ctx.replyHandler.replyEmbedAndComponent(
-                embed = Embeds.error("Some variables you used in the name can only be used in premium servers." +
-                        "\nSee documentation for variables with the button below."),
+                embed = Embeds.error(
+                    "Some variables you used in the name can only be used in premium servers." +
+                        "\nSee documentation for variables with the button below."
+                ),
                 component = Buttons.Help.variables
             )
             return
@@ -956,10 +1012,11 @@ class GeneratorCommand(
 
         ctx.replyHandler.replyEmbedAndComponent(
             Embeds.success(
-            "Private text chats will now have the following name:" +
+                "Private text chats will now have the following name:" +
                     "\n> *$name*" +
                     "\n\nYou can use ${Emojis.variables.formatted} variables to customize the name." +
-                    "\nUse the button below to see the documentation"),
+                    "\nUse the button below to see the documentation"
+            ),
             component = Buttons.Help.variables
         )
     }
