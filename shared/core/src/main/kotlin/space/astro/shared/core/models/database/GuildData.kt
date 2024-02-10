@@ -20,7 +20,20 @@ data class GuildData(
     var interfaces: MutableList<InterfaceData> = mutableListOf(),
     var errorLogsChannelId: String? = null,
     var allowMissingAdminPerm: Boolean = false,
-)
+) {
+    constructor() : this(
+        guildID = "",
+        upgradedByUserID = null, // Already has a default value, included for clarity
+        entitlements = mutableListOf(),
+        bannedCommands = mutableListOf(),
+        templates = mutableListOf(),
+        connections = mutableListOf(),
+        generators = mutableListOf(),
+        interfaces = mutableListOf(),
+        errorLogsChannelId = null, // Already has a default value, included for clarity
+        allowMissingAdminPerm = false // Already has a default value, included for clarity
+    )
+}
 
 /**
  * Entitlement owned by a guild
@@ -104,7 +117,7 @@ enum class InitialPosition {
     BEFORE, AFTER, BOTTOM;
 
     override fun toString(): String {
-        return when(this) {
+        return when (this) {
             BEFORE -> "Before the generator"
             AFTER -> "After the generator"
             BOTTOM -> "Bottom of the category"
@@ -207,14 +220,14 @@ data class ConnectionData(
         }
 
         return "Users will $joinActionName the ${roleID.asRoleMention()} role when joining ${id.asChannelMention()}" +
-                " and they will ${if (action.permanent) "__not__ " else ""}get that role $leaveActionName" +
-                " when they leave the channel." +
-                "\n" +
-                "\n**Summary**" +
-                "\n> **Channel** > ${id.asChannelMention()}" +
-                "\n> **Role** > ${roleID.asRoleMention()}" +
-                "\n> **Action** > ${action.name.lowercaseAndCapitalize()}" +
-                "\n> **Permanent** > ${action.permanent.asTrueOrFalse()}"
+            " and they will ${if (action.permanent) "__not__ " else ""}get that role $leaveActionName" +
+            " when they leave the channel." +
+            "\n" +
+            "\n**Summary**" +
+            "\n> **Channel** > ${id.asChannelMention()}" +
+            "\n> **Role** > ${roleID.asRoleMention()}" +
+            "\n> **Action** > ${action.name.lowercaseAndCapitalize()}" +
+            "\n> **Permanent** > ${action.permanent.asTrueOrFalse()}"
     }
 }
 
