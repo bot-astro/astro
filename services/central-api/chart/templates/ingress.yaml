@@ -8,7 +8,7 @@ spec:
     - hosts:
         - api.astro-bot.space
         - staging.api.astro-bot.space
-      secretName: tls-astro-bot.space
+      secretName: tls
   rules:
     - host: api.astro-bot.space
       http:
