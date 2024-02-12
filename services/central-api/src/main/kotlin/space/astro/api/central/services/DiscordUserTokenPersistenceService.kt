@@ -15,8 +15,8 @@ class DiscordUserTokenPersistenceService(
     val dataSerializer: DataSerializer
 ) {
 
-    suspend fun updateCredentials(userId: Long, tokenPayloadDto: TokenPayloadDto) {
-        val id = userId.toString()
+    suspend fun updateCredentials(userId: String, tokenPayloadDto: TokenPayloadDto) {
+        val id = userId
 
         val authedUser = DiscordAuthedUser(id, tokenPayloadDto)
         authedUsersDao.upsertAuthedUser(authedUser)

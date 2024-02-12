@@ -1,5 +1,6 @@
 package space.astro.shared.core.services.chargebee
 
+import com.chargebee.Environment
 import com.chargebee.ListResult
 import com.chargebee.models.Coupon
 import com.chargebee.models.Customer
@@ -11,8 +12,15 @@ import java.util.*
 
 @Service
 class ChargebeeClientService(
-    private val chargebeeConfig: ChargebeeConfig
+    chargebeeConfig: ChargebeeConfig
 ) {
+    init {
+        Environment.configure(
+            chargebeeConfig.siteName,
+            chargebeeConfig.apiKey
+        )
+    }
+
     fun createPortalSession(userID: String, retry: Boolean = true): String? {
         return try {
             val result = PortalSession.create()

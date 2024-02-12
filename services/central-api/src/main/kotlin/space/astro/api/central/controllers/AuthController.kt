@@ -62,11 +62,11 @@ class AuthController(
 
     @GetMapping("/user/delete/{id}")
     suspend fun logoutDiscord(
-        @RequestHeader("Authorization") sessionToken: Long,
+        @RequestHeader("Authorization") sessionToken: String,
         @PathVariable id: String
     ): ResponseEntity<*> {
         discordUserTokenPersistenceService.deleteCredentials(id)
-        webSessionService.deleteSessions(sessionToken)
+        webSessionService.deleteSessions(id)
         return ResponseEntity.ok(null)
     }
 }

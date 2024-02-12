@@ -66,6 +66,7 @@ class DiscordUserTokenFetchService(
                         .with("grant_type", "authorization_code")
                         .with("code", code)
                         .with("redirect_uri", discordApplicationConfig.redirectUri)
+                        .with("scope", "identify email guilds")
                 )
                 .retrieve()
                 .onStatus(

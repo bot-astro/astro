@@ -33,13 +33,13 @@ class WebSessionService(
 
     val hmacShaKey: SecretKey = Keys.hmacShaKeyFor(jwtConfig.getDecodedKey())
 
-    fun createSession(id: Long): String {
+    fun createSession(id: String): String {
         val token = createToken(id)
         cacheToken(id, token)
         return token
     }
 
-    private fun cacheToken(id: Long, token: String) {
+    private fun cacheToken(id: String, token: String) {
         val key = buildRedisKey(id, token)
         val value = true
 
@@ -49,9 +49,9 @@ class WebSessionService(
         )
     }
 
-    private fun createToken(id: Long): String {
+    private fun createToken(id: String): String {
         return DefaultJwtBuilder().setIssuer("astro-web").setIssuedAt(Date.from(Instant.now()))
-            .setId(id.toString()).signWith(hmacShaKey).compact()
+            .setId(id).signWith(hmacShaKey).compact()
     }
 
     fun existsSession(token: String): Boolean {
@@ -66,16 +66,16 @@ class WebSessionService(
         ).get() == 1L
     }
 
-    fun getIdFromSession(token: String): Long? {
+    fun getIdFromSession(token: String): String? {
         val claims = parser.parseClaimsJws(token)
-        val id = claims.body.id.toLong()
+        val id = claims.body.id
 
         redis.getex(buildRedisKey(id, token), GetExArgs().ex(SESSION_TTL)) ?: return null
 
         return id
     }
 
-    fun deleteSessions(id: Long) {
+    fun deleteSessions(id: String) {
         val key = buildRedisKeyAllSessions(id)
 
         val tokens = redis.keys(key)
@@ -85,11 +85,11 @@ class WebSessionService(
         redis.del(*tokens.toTypedArray())
     }
 
-    private fun buildRedisKey(id: Long, token: String): String {
+    private fun buildRedisKey(id: String, token: String): String {
         return String.format(RedisKey.WEB_SESSION_TOKEN.key, id, token)
     }
 
-    private fun buildRedisKeyAllSessions(id: Long): String {
+    private fun buildRedisKeyAllSessions(id: String): String {
         return String.format(RedisKey.WEB_SESSION_TOKENS.key, id)
     }
 }
