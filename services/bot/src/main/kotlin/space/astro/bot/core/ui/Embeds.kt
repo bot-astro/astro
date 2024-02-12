@@ -29,7 +29,12 @@ object Embeds {
     /// HELP ///
     ////////////
 
-    val helpGeneral = Embed {
+    fun helpGeneral(
+        shardId: Int,
+        shardCount: Int,
+        podId: Int,
+        podCount: Int
+    ) = Embed {
         color = Colors.purple.rgb
         title = "${Emojis.help.formatted} Help - General"
         description = "Astro is the most complete and unique bot for temporary voice channels and voice roles!" +
@@ -47,7 +52,7 @@ object Embeds {
                 "\n> You can view all the errors that Astro encountered when working in your server with the command `/settings errors`." +
                 "\n> If something doesn't seem to work properly always make sure to check those errors to make sure the issue is not on your end."
         footer {
-            name = "For help regarding other features of Astro see the buttons below or /help commands"
+            name = "For help regarding other features of Astro see the buttons below or /help commands • shard $shardId/$shardCount • pod $podId/$podCount"
         }
     }
 
@@ -183,7 +188,9 @@ object Embeds {
                 "\n> With `/generator vc queue` enabled, Astro will try to fill existing channels before creating new ones." +
                 "\n> Useful feature when channels have a user limit set and you need to make sure that channels are all filled with the maximum amount of users." +
                 "\n\n**Fallback generator**" +
-                "\n> When the generator category fills up (gets to 50 channels) users that join the generator will be moved to the fallback generator set with `/generator fallback-generator`."
+                "\n> When the generator category fills up (gets to 50 channels) users that join the generator will be moved to the fallback generator set with `/generator fallback-generator`." +
+                "\n\n**Resetting temporary voice channels**" +
+                "\n> If Astro is not generating correct names for temporary voice channels, for example when using incremental variables, run the `/settings reset-temporary-voice-channels` command."
         footer {
             name = "For help regarding other features of Astro see the buttons below or /help commands"
         }
