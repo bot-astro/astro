@@ -24,6 +24,10 @@ class PremiumRequirementDetector(
             return true
         }
 
+        if (guildData.upgradedByUserID != null) {
+            return true
+        }
+
         val currentMillis = System.currentTimeMillis()
 
         return guildData.entitlements.any {
