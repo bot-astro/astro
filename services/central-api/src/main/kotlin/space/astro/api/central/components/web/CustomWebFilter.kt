@@ -42,7 +42,7 @@ class CustomWebFilter(
             return chain.filter(exchange)
         }
 
-        if (requestPath == "/chargebee/cancel") {
+        if (requestPath.startsWith("/chargebee/cancel")) {
             return mono {
                 val webhookTokenEncoded = request.headers["Authorization"]?.get(0)?.removePrefix("Basic ")
 
@@ -51,7 +51,7 @@ class CustomWebFilter(
                     return@mono null
                 }
 
-                val webhookToken = String(base64Decoder.decode(webhookTokenEncoded))
+                val webhookToken = String(base64Decoder.decode(webhookTokenEncoded)).split(":").lastOrNull()
                 if (webhookToken != chargebeeConfig.webhookToken) {
                     response.statusCode = HttpStatus.UNAUTHORIZED
                     return@mono null
