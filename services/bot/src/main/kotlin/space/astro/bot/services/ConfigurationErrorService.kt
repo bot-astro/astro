@@ -29,52 +29,53 @@ class ConfigurationErrorService {
     ///////////////
     fun premiumVariables(encounteredIn: String) = ConfigurationErrorData(
         description = "Your are trying to use premium variables and your server isn't premium!" +
+                "\nRead more about which variables are premium with `/help variables` and see how to use them in `/help generators`!" +
                 "\nEncountered in: $encounteredIn",
     )
 
     fun premiumRequiredForBadwordsValidation() = ConfigurationErrorData(
         description = "Your generator has badwords validation enabled, but premium is required to use it." +
-                "\nEither upgrade to premium or disable badwords validation!"
+                "\nEither upgrade to premium or disable badwords validation with the command `/generator vc badwords allowed:True` (see more info in `/help generators`)."
     )
 
     fun maximumAmountOfConnections() = ConfigurationErrorData(
         description = "Your server has exceeded the maximum amount of connections." +
-                "\nEither upgrade to premium or delete one or more connection!"
+                "\nEither upgrade to premium or delete one or more connection with `/connection delete`!"
     )
 
     fun maximumAmountOfInterfaces() = ConfigurationErrorData(
         description = "Your server has exceeded the maximum amount of interfaces." +
-                "\nEither upgrade to premium or delete one or more interface!"
+                "\nEither upgrade to premium or delete one or more interface with `/interface delete`!"
     )
 
     fun maximumAmountOfGenerator() = ConfigurationErrorData(
         description = "Your server has exceeded the maximum amount of temporary VC generators." +
-                "\nEither upgrade to premium or delete one or more generators!"
+                "\nEither upgrade to premium or delete one or more generators with `/generator delete`!"
     )
 
     fun premiumFallbackGenerator() = ConfigurationErrorData(
         description = "Your generator has a fallback generator configured, but premium is required to use it." +
-                "\nEither upgrade to premium or remove the fallback generator from the configuration!"
+                "\nEither upgrade to premium or remove the fallback generator from the configuration with `/generator fallback-generator remove:True`!"
     )
 
     fun premiumRequiredForAutoPrivateChatCreation()  = ConfigurationErrorData(
         description = "Your generator has automatic private chat creation enabled, but premium is required to use it." +
-                "\nEither upgrade to premium or disable private chat creation!"
+                "\nEither upgrade to premium or disable private chat creation with `/generator chat creation create:False`!"
     )
 
     fun premiumRequiredForAutoWaitingRoomCreation()  = ConfigurationErrorData(
         description = "Your generator has automatic waiting room creation enabled, but premium is required to use it." +
-                "\nEither upgrade to premium or disable waiting room creation!"
+                "\nEither upgrade to premium or disable waiting room creation with `/generator-waiting creation create:False`!"
     )
 
     fun premiumRequiredForAutoChatMessageOnCreation() = ConfigurationErrorData(
         description = "Your generator has a default creation message, but premium is required to use it." +
-                "\nEither upgrade to premium or remove it!"
+                "\nEither upgrade to premium or remove it with `/generator chat message type:None`!"
     )
 
     fun premiumRequiredForOwnerRole() = ConfigurationErrorData(
         description = "Your generator has an owner role configured, but premium is required to use it." +
-                "\nEither upgrade to premium or remove it!"
+                "\nEither upgrade to premium or remove it with `/generator owner role!"
     )
 
     /////////////////
@@ -82,12 +83,13 @@ class ConfigurationErrorService {
     /////////////////
 
     fun missingGeneratorTargetRole(generatorName: String) = ConfigurationErrorData(
-        description = "The generator $generatorName has a target role set but Astro couldn't find that role in your server!"
+        description = "The generator $generatorName has a target role set but Astro couldn't find that role in your server!" +
+                "\nYou can change it with `/generator vc permissions`"
     )
 
     fun missingFallbackGenerator(encounteredIn: String) = ConfigurationErrorData(
         description = "Your category for temporary VCs is full and you haven't configured a fallback generator." +
-                "\nThis means Astro could not generate a temporary VC because the category was already full, consider creating a fallback generator." +
+                "\nThis means Astro could not generate a temporary VC because the category was already full, consider creating a fallback generator (learn how with `/help generators`)." +
                 "\nEncountered in: $encounteredIn"
     )
 
@@ -115,6 +117,6 @@ class ConfigurationErrorService {
     /////////////////
     fun invalidOldInterface(channelId: String) = ConfigurationErrorData(
         description = "This server has an old interface in ${channelId.asChannelMention()}." +
-                "\nDelete it and create a new one to avoid issues."
+                "\nDelete it with `/interface delete` and create a new one with `/interface create` to avoid potential issues."
     )
 }

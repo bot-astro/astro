@@ -73,9 +73,9 @@ io:
     org: ${INFLUX_ORG:astro-org}
     token: ${INFLUX_TOKEN:astroverysecuretoken}
     url: ${INFLUX_URL:http://localhost:8086}
-  mongo:
-    connection-string: ${MONGO_CONNECTION_STRING:mongodb://localhost:27017}
-    database: ${MONGO_DATABASE:AstroDev}
+  kmongo:
+    connection-string: ${KMONGO_CONNECTION_STRING:mongodb://localhost:27017}
+    database: ${KMONGO_DATABASE:AstroDev}
   redis:
     uris: ${REDIS_URIS:redis://localhost:6379}
     cluster: ${REDIS_CLUSTER:false}

@@ -54,17 +54,39 @@ class VCPermissionManager(
         }
 
         if (newState.permissionReset != null) {
+            // Get the original permissions inherited for the temporary vc
+            val originalPermissionOverrides = when (vcOperationCTX.generatorData.permissionsInherited) {
+                PermissionsInherited.NONE -> null
+                PermissionsInherited.GENERATOR -> vcOperationCTX.generator.permissionOverrides
+                PermissionsInherited.CATEGORY -> vcOperationCTX.generator.parentCategory?.permissionOverrides
+            }
+            val originalPermissionOverride = originalPermissionOverrides?.firstOrNull { it.id == targetRole.id }
+
+            // Find whether the permission to reset was originally allowed or denied
+            val isOriginalPermissionAllowed = originalPermissionOverride?.allowed?.contains(newState.permissionReset) ?: false
+            val isOriginalPermissionDenied = if (isOriginalPermissionAllowed) false else originalPermissionOverride?.denied?.contains(newState.permissionReset) ?: false
+
+            // Get the permission override for the target role
             val permissionOverrideInheritedForTargetRole = vcOperationCTX.temporaryVC.permissionOverrides.firstOrNull { it.id == targetRole.id }
 
             if (permissionOverrideInheritedForTargetRole != null) {
-                val allowed = permissionOverrideInheritedForTargetRole.allowed.apply { remove(newState.permissionReset) }
-                val denied = permissionOverrideInheritedForTargetRole.denied.apply { remove(newState.permissionReset) }
+                // If the original was allowed, allow it for the target role
+                // If it was denied, deny it
+                // If it was neither, set it to neutral
+                if (isOriginalPermissionAllowed) {
+                    vcOperationCTX.temporaryVCManager.modifyPermissionOverride(targetRole, newState.permissionReset?.rawValue ?: 0L, 0L)
+                } else if (isOriginalPermissionDenied) {
+                    vcOperationCTX.temporaryVCManager.modifyPermissionOverride(targetRole, 0L, newState.permissionReset?.rawValue ?: 0L)
+                } else {
+                    val allowed = permissionOverrideInheritedForTargetRole.allowed.apply { remove(newState.permissionReset) }
+                    val denied = permissionOverrideInheritedForTargetRole.denied.apply { remove(newState.permissionReset) }
 
-                vcOperationCTX.temporaryVCManager.putPermissionOverride(
-                    targetRole,
-                    allowed,
-                    denied
-                )
+                    vcOperationCTX.temporaryVCManager.putPermissionOverride(
+                        targetRole,
+                        allowed,
+                        denied
+                    )
+                }
             }
         }
 

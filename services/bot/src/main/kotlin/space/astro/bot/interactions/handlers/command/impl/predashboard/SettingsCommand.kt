@@ -74,13 +74,13 @@ class SettingsCommand(
         val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm")
 
         val description = "Here are the last detected errors by Astro:" +
-                "\n\n${errors.joinToString("\n\n") { 
+                "\n\n" +
+                errors.joinToString("\n\n") {
                     it.description + if (it.instant != null) "\n> ${simpleDateFormat.format(Date.from(it.instant!!))}" else ""
-                }}"
-                    .take(MessageEmbed.DESCRIPTION_MAX_LENGTH)
+                }
 
         ctx.replyHandler.replyEmbed(
-            Embeds.default(description)
+            Embeds.default(description.take(MessageEmbed.DESCRIPTION_MAX_LENGTH))
         )
     }
 

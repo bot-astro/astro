@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@ConfigurationProperties(prefix = "kmongo")
+@ConfigurationProperties(prefix = "io.kmongo")
 data class KmongoConfig(
 
     var connectionString: String = "",

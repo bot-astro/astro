@@ -113,12 +113,26 @@ class GeneratorCommand(
 
     @SubCommand(
         name = "fallback-generator",
-        description = "Sets a fallback generator in case one isn't able to create more vcs (category limit)"
+        description = "Sets a fallback generator in case one isn't able to create more vcs (category limit)",
     )
     suspend fun fallbackGenerator(
         event: SlashCommandInteractionEvent,
-        ctx: GeneratorSettingsInteractionContext
+        ctx: GeneratorSettingsInteractionContext,
+        @CommandOption(
+            type = OptionType.BOOLEAN,
+            description = "Unsets the fallback generator",
+        )
+        remove: Boolean,
     ) {
+        if (remove) {
+            ctx.generatorData.fallbackId = null
+            ctx.guildData.generators[ctx.generatorIndex] = ctx.generatorData
+            guildDao.save(ctx.guildData)
+
+            ctx.replyHandler.replyEmbed(Embeds.success("This generator doesn't have a fallback generator anymore."))
+            return
+        }
+
         val generators = ctx.guildData.generators.apply { removeIf { it.id == ctx.generatorData.id } }
 
         if (!premiumRequirementDetector.canUseFallbackGenerator(ctx.guildData)) {
@@ -149,40 +163,32 @@ class GeneratorCommand(
                         .withEmoji(Emojis.generator)
                         .withDescription(if (channel?.parentCategory != null) "From category ${channel.parentCategory!!.name}" else "Not in a category")
                 })
-                .setRequiredRange(0, 1)
+                .setRequiredRange(1, 1)
                 .setPlaceholder("Select the fallback generator")
                 .build(),
             true
         ) {
-            if (it.isEmpty()) {
-                ctx.generatorData.fallbackId = null
-                ctx.guildData.generators[ctx.generatorIndex] = ctx.generatorData
-                guildDao.save(ctx.guildData)
+            val fallbackGen = generators[it.first().toInt()]
 
-                ctx.replyHandler.replyEmbed(Embeds.success("This generator doesn't have a fallback generator anymore."))
-            } else {
-                val fallbackGen = generators[it.first().toInt()]
-
-                if (fallbackGen.fallbackId == ctx.generatorData.id) {
-                    ctx.replyHandler.replyEmbed(
-                        Embeds.error(
-                            "The generator you selected (${fallbackGen.id.asChannelMention()}) to be the fallback of this current generator (${ctx.generatorData.id.asChannelMention()}), has as *its* fallback this current generator (yeah it's confusing)." +
-                                "\n\n" +
-                                "${ctx.generatorData.id.asChannelMention()} -- fallback --> ${fallbackGen.id.asChannelMention()}" +
-                                "\n${fallbackGen.id.asChannelMention()} -- fallback --> ${ctx.generatorData.id.asChannelMention()}" +
-                                "\n\nThat way an infinite loop could be caused, so that is not allowed."
-                        )
+            if (fallbackGen.fallbackId == ctx.generatorData.id) {
+                ctx.replyHandler.replyEmbed(
+                    Embeds.error(
+                        "The generator you selected (${fallbackGen.id.asChannelMention()}) to be the fallback of this current generator (${ctx.generatorData.id.asChannelMention()}), has as *its* fallback this current generator (yeah it's confusing)." +
+                            "\n\n" +
+                            "${ctx.generatorData.id.asChannelMention()} -- fallback --> ${fallbackGen.id.asChannelMention()}" +
+                            "\n${fallbackGen.id.asChannelMention()} -- fallback --> ${ctx.generatorData.id.asChannelMention()}" +
+                            "\n\nThat way an infinite loop could be caused, so that is not allowed."
                     )
+                )
 
-                    return@replyWithSelectMenu
-                }
-
-                ctx.generatorData.fallbackId = fallbackGen.id
-                ctx.guildData.generators[ctx.generatorIndex] = ctx.generatorData
-                guildDao.save(ctx.guildData)
-
-                ctx.replyHandler.replyEmbed(Embeds.success("This generator now has ${fallbackGen.id.asChannelMention()} as its fallback generator!"))
+                return@replyWithSelectMenu
             }
+
+            ctx.generatorData.fallbackId = fallbackGen.id
+            ctx.guildData.generators[ctx.generatorIndex] = ctx.generatorData
+            guildDao.save(ctx.guildData)
+
+            ctx.replyHandler.replyEmbed(Embeds.success("This generator now has ${fallbackGen.id.asChannelMention()} as its fallback generator!"))
         }
     }
 
