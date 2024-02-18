@@ -55,16 +55,21 @@ class Application(
                     it.endsAt?.isBefore(OffsetDateTime.now(ZoneOffset.UTC).plusDays(1)) == true
                 }
 
+                log.info { "Found expired entitlements: $expiredEntitlements" }
+
                 expiredEntitlements
                     .filter { it.guildId != null }
                     .groupBy { it.guildId!! }
                     .mapValues { it.value.map { entitlement -> entitlement.id } }
                     .forEach { guildIdToEntitlementIds ->
+                        log.info { "Removing premium from guild ${guildIdToEntitlementIds.key}" }
+
                         val guildData = guildDao.get(guildIdToEntitlementIds.key) ?: return@forEach
 
                         val updated = guildData.entitlements.removeIf { savedEntitlement -> savedEntitlement.id in guildIdToEntitlementIds.value }
 
                         if (updated) {
+                            log.info { "Removed premium from guild ${guildData.guildID}" }
                             guildDao.save(guildData)
                         }
                     }

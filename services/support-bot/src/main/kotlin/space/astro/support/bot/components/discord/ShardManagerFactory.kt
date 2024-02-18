@@ -1,5 +1,6 @@
 package space.astro.support.bot.components.discord
 
+import dev.minn.jda.ktx.jdabuilder.injectKTX
 import mu.KotlinLogging
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
@@ -24,7 +25,9 @@ class ShardManagerFactory(
     private val redisClientService: RedisClientService,
 ) {
 
-    private val intents = emptyList<GatewayIntent>()
+    private val intents = listOf(
+        GatewayIntent.GUILD_MEMBERS
+    )
 
     @Bean
     fun getDefaultShardManager(
@@ -67,6 +70,7 @@ class ShardManagerFactory(
             .setShards(shardList)
             .setActivity(activity)
             .addEventListeners(jdaToSpringEventBridge)
+            .injectKTX()
             .build(false)
     }
 

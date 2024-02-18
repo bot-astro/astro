@@ -13,6 +13,13 @@ dependencies {
             module = "opus-java"
         )
     }
+    // NEVER EVER TRUST JDA KTX AND JDA IN THE SAME PROJECT
+    implementation(libs.jda.ktx) {
+        exclude(
+            group = "net.dv8tion",
+            module = "JDA"
+        )
+    }
     implementation(libs.guava)
     implementation(project(":shared:core"))
 }
