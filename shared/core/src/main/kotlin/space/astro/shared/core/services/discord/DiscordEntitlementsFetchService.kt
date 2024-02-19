@@ -8,8 +8,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
+import io.ktor.serialization.jackson.*
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
@@ -28,7 +27,7 @@ class DiscordEntitlementsFetchService(
         expectSuccess = true
         install(Logging)
         install(ContentNegotiation) {
-            json(Json)
+            jackson()
         }
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = 3)

@@ -99,7 +99,7 @@ jda-ktx = { module = "club.minnced:jda-ktx", version.ref = "jda-ktx" }
 chargebee = { module = "com.chargebee:chargebee-java", version.ref = "chargebee"}
 
 # Ktor client
-ktor-serialization = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-serialization = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktor" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-apache = { group = "io.ktor", name = "ktor-client-apache", version.ref = "ktor" }
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
