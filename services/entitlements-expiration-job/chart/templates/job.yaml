@@ -14,6 +14,9 @@ spec:
           containers:
             - name: {{ .Values.name }}
               image: {{ .Values.image.group }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
+              envFrom:
+                - configMapRef:
+                    name: {{ .Values.config }}
           restartPolicy: OnFailure
           imagePullSecrets:
             - name: ghcr-secret

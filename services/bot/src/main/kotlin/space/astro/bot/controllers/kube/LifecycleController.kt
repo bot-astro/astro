@@ -29,7 +29,7 @@ class LifecycleController(
         // otherwise: ResponseEntity.badRequest().build<Any>()
         val allShardsReady: Boolean = shardManager.shards
             .map { it.status }
-            .all { it === JDA.Status.LOADING_SUBSYSTEMS || it === JDA.Status.CONNECTED }
+            .all { it == JDA.Status.LOADING_SUBSYSTEMS || it == JDA.Status.CONNECTED }
 
         return if (allShardsReady) {
             ResponseEntity.noContent().build<Any>()

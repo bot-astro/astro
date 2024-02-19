@@ -22,12 +22,13 @@ class LifecycleController(
         // otherwise: ResponseEntity.badRequest().build<Any>()
         val allShardsReady: Boolean = shardManager.shards
             .map { it.status }
-            .all { it === JDA.Status.LOADING_SUBSYSTEMS || it === JDA.Status.CONNECTED }
+            .all { it == JDA.Status.LOADING_SUBSYSTEMS || it == JDA.Status.CONNECTED }
+
+        log.info("Getting probed /ready: ${shardManager.shards.count { it.status == JDA.Status.CONNECTED }}")
 
         return if (allShardsReady) {
             ResponseEntity.noContent().build<Any>()
         } else {
-            log.info("Getting probed /ready: ${shardManager.shards.count { it.status == JDA.Status.CONNECTED }}")
             log.info("Not Ready --> Returning 500")
             ResponseEntity.status(500).build<Any>()
         }
