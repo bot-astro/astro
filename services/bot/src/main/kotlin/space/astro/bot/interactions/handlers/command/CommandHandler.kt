@@ -329,6 +329,7 @@ class CommandHandler(
                             Embeds.error(
                                 "An unknown error occurred, the developers are aware of it and will investigate it." +
                                         "\n\nError: ${e.message ?: "Unknown"}" +
+                                        "\nFull exception: $e" +
                                         "\n\nIf you need support join the [support server](${Links.SUPPORT_SERVER})."
                             )
                         )
