@@ -249,7 +249,7 @@ class ButtonHandler(
                     }
 
                     else -> {
-                        val configurationError = ConfigurationErrorData(e.message ?: "Unknown issue, please contact developers!")
+                        val configurationError = ConfigurationErrorData(exception.toString())
 
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
                             guildId = guild.id,
