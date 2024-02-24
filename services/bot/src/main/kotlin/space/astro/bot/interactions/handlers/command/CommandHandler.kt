@@ -27,6 +27,7 @@ import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.context.InteractionContextBuilder
 import space.astro.bot.interactions.context.InteractionContextBuilderException
 import space.astro.bot.interactions.reply.InteractionReplyHandler
+import space.astro.shared.core.daos.ConfigurationErrorDao
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.models.analytics.AnalyticsEvent
 import space.astro.shared.core.models.analytics.AnalyticsEventReceiver
@@ -34,6 +35,7 @@ import space.astro.shared.core.models.analytics.AnalyticsEventType
 import space.astro.shared.core.models.analytics.SlashCommandInvocationEventData
 import space.astro.shared.core.models.analytics.meta.SlashCommandInvocationOptionsMetaData
 import space.astro.shared.core.models.analytics.meta.structure.OptionPair
+import space.astro.shared.core.models.influx.ConfigurationErrorData
 import space.astro.shared.core.util.extention.asRelativeTimestampFromNow
 import space.astro.shared.core.util.ui.Links
 import java.lang.reflect.InvocationTargetException
@@ -316,7 +318,20 @@ class CommandHandler(
                     }
 
                     else -> {
-                        interactionContext.replyHandler.replyEmbed(Embeds.error("An unknown error occurred, the developers are aware of it and will investigate it.\nIf you need support join the [support server](${Links.SUPPORT_SERVER})."))
+                        val configurationError = ConfigurationErrorData(e.message ?: "Unknown issue, please contact developers!")
+
+                        configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                            guildId = guild.id,
+                            configurationErrorData = configurationError
+                        )
+
+                        interactionContext.replyHandler.replyEmbed(
+                            Embeds.error(
+                                "An unknown error occurred, the developers are aware of it and will investigate it." +
+                                        "\n\nError: ${e.message ?: "Unknown"}" +
+                                        "\n\nIf you need support join the [support server](${Links.SUPPORT_SERVER})."
+                            )
+                        )
                         throw e
                     }
                 }
