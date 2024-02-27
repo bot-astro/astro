@@ -38,9 +38,8 @@ class SetupCommand(
     ) {
         if (!premiumRequirementDetector.canCreateGenerator(ctx.guildData)) {
             ctx.replyHandler.replyEmbedAndComponent(
-                embed = Embeds.error("There are already 2 Generators setup in this server.\nPremium is required to have more than 2 Generators." +
-                        "\nPossible solutions:" +
-                        "\n• Get ${Emojis.premium.formatted} Premium" +
+                embed = Embeds.error("There are already 3 Generators setup in this server.\nPremium is required to have more than 3 Generators." +
+                        "\nPossible solutions:" + "\n• Get ${Emojis.premium.formatted} Premium" +
                         "\n• Delete an existing generator with `/generator delete`"
                 ),
                 component = Buttons.premium
