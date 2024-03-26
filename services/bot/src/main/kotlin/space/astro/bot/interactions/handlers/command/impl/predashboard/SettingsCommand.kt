@@ -93,7 +93,7 @@ class SettingsCommand(
         ctx.replyHandler.replyEmbed(
             Embed(
                 color = Colors.purple.rgb,
-                description = description,
+                description = description.take(MessageEmbed.DESCRIPTION_MAX_LENGTH),
                 footerText = "For help regarding other features of Astro see the buttons below or /help commands • shard $shardId/$shardCount • pod $podId/$podCount"
             )
         )

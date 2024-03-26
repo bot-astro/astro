@@ -15,3 +15,12 @@ It creates all the required services and their web dashboards:
 | Influx  |   |   | localhost:8086 |  |
 
 > Important: editing documents with the MongoDB dashboard **is not recommended** as it tends to mess up data types!
+
+### Kubernetes secrets creation
+```
+kubectl create namespace astro
+kubectl -n astro create configmap bot-config --from-env-file=./env/bot/prod.env
+kubectl -n astro create configmap central-api-config --from-env-file=./env/central-api/prod.env
+kubectl -n astro create configmap entitlements-expiration-job-config --from-env-file=./env/entitlements-expiration-job/prod.env
+kubectl -n astro create configmap support-bot-config --from-env-file=./env/support-bot/prod.env
+```

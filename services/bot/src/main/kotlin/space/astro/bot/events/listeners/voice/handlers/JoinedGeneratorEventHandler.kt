@@ -211,12 +211,17 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     generatorData.permissionsImmuneRole
         ?.let { guild.getRoleById(it) }
         ?.also { role ->
-            val immuneRolePermissionOverride = permissionOverrides.firstOrNull { it.id == role.id }
-            temporaryVCBuilder.modifyPermissionOverride(
-                permissionOverride = immuneRolePermissionOverride,
-                permissionHolder = role,
-                allow = PermissionSets.immuneRoleVCPermissions,
-                deny = 0L
+//            val immuneRolePermissionOverride = permissionOverrides.firstOrNull { it.id == role.id }
+//            temporaryVCBuilder.modifyPermissionOverride(
+//                permissionOverride = immuneRolePermissionOverride,
+//                permissionHolder = role,
+//                allow = PermissionSets.immuneRoleVCPermissions,
+//                deny = 0L
+//            )
+            temporaryVCBuilder.addRolePermissionOverride(
+                role.idLong,
+                PermissionSets.immuneRoleVCPermissions,
+                0L
             )
         }
 

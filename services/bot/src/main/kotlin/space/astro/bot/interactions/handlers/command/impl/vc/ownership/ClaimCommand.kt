@@ -60,7 +60,7 @@ class ClaimCommand(
         //////////////////////
         /// MODERATOR ROLE ///
         //////////////////////
-        if (ctx.member.roles.any { it.id == ctx.vcOperationCTX.generatorData.ownerRole }) {
+        if (ctx.member.roles.any { it.id == ctx.vcOperationCTX.generatorData.permissionsImmuneRole }) {
             ctx.replyHandler.deferReply()
 
             vcOwnershipManager.changeOwner(ctx.vcOperationCTX, ctx.member)
@@ -69,7 +69,7 @@ class ClaimCommand(
             vcOwnershipManager.handleOwnerRoleMigration(ctx.vcOperationCTX, ctx.vcOperationCTX.temporaryVCOwner, ctx.member)
 
             ctx.replyHandler.replyEmbed(Embeds.default("You are now the owner of the vc." +
-                    "\n\n*This operation was instant because you have the moderator role: ${ctx.vcOperationCTX.generatorData.ownerRole?.asRoleMention()}*"))
+                    "\n\n*This operation was instant because you have the moderator role: ${ctx.vcOperationCTX.generatorData.permissionsImmuneRole?.asRoleMention()}*"))
             return
         }
 
