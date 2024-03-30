@@ -48,7 +48,7 @@ class PremiumRequirementDetector(
             return true
         }
 
-        return guildData.generators.size < 3
+        return guildData.generators.size < 2
     }
 
     fun canCreateInterface(guildData: GuildData): Boolean {
