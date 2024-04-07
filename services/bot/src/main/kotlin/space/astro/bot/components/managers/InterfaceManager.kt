@@ -2,6 +2,7 @@ package space.astro.bot.components.managers
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.messages.Embed
+import mu.KotlinLogging
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
@@ -24,6 +25,8 @@ import space.astro.bot.interactions.InteractionIds
 import space.astro.shared.core.models.database.InterfaceButton
 import space.astro.shared.core.models.database.InterfaceData
 import java.time.Instant
+
+private val log = KotlinLogging.logger {  }
 
 @org.springframework.stereotype.Component
 class InterfaceManager(
@@ -110,6 +113,8 @@ class InterfaceManager(
             buttons = defaultInterfaceButtons.toMutableList()
         )
 
+        log.info { "creating interface: $interfaceData" }
+
         val interfaceMessage = channel.sendMessage(computeMessage(interfaceData)).await()
         interfaceData.messageID = interfaceMessage.id
 
@@ -170,12 +175,17 @@ class InterfaceManager(
                 .filter { it.position.first == i }
                 .sortedBy { it.position.second }
                 .map { computeButton(it) }
+                .onEach {
+                    log.info { "Computed button: ${it.id} ${it.label} ${it.emoji}" }
+                }
                 .takeIf { it.isNotEmpty() }
                 ?.take(MAX_BUTTONS_PER_COMPONENT)
                 ?.also {
                     components.add(ActionRow.of(it))
                 }
         }
+
+        log.info { "creating interface with components: ${components}" }
 
         return components
     }
