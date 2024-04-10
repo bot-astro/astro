@@ -30,13 +30,13 @@ private val log = KotlinLogging.logger {  }
 
 @org.springframework.stereotype.Component
 class InterfaceManager(
-    interactionComponentBuilder: InteractionComponentBuilder
+    private val interactionComponentBuilder: InteractionComponentBuilder
 ) {
     private val MAX_ACTION_ROWS = 5
     private val MAX_COMPONENTS = Message.MAX_COMPONENT_COUNT
     private val MAX_BUTTONS_PER_COMPONENT = Component.Type.BUTTON.maxPerRow
 
-    val defaultInterfaceButtons = listOf(
+    fun getDefaultInterfaceButtons() = mutableListOf(
         InterfaceButton.fromButton(
             interactionComponentBuilder.buttonWithEmoji(InteractionIds.Button.VC_LOCK, ButtonStyle.SECONDARY, Emojis.lock),
             Pair(0, 0)
@@ -110,7 +110,7 @@ class InterfaceManager(
         val interfaceData = InterfaceData(
             channelID = channel.id,
             messageID = "temp_id",
-            buttons = defaultInterfaceButtons.toMutableList()
+            buttons = getDefaultInterfaceButtons()
         )
 
         log.info { "creating interface: $interfaceData" }

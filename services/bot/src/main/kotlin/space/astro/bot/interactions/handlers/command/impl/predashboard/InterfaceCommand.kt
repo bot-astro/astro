@@ -181,7 +181,7 @@ class InterfaceCommand(
         }
 
         val usedInteractionIds = ctx.interfaceData.buttons.map { it.id }
-        val availableInterfaceButtons = interfaceManager.defaultInterfaceButtons.filter { it.id !in usedInteractionIds }.take(25)
+        val availableInterfaceButtons = interfaceManager.getDefaultInterfaceButtons().filter { it.id !in usedInteractionIds }.take(25)
 
         if (availableInterfaceButtons.isEmpty()) {
             ctx.replyHandler.replyEmbed(Embeds.error("You already added all possible actions to this interface!"))
@@ -471,7 +471,7 @@ class InterfaceCommand(
             else -> ButtonStyle.PRIMARY.key
         }
 
-        val interfaceButtonsExisting = interfaceManager.defaultInterfaceButtons.take(25)
+        val interfaceButtonsExisting = interfaceManager.getDefaultInterfaceButtons().take(25)
         val buttonSelectMenu = StringSelectMenu
             .create(InteractionIds.getRandom())
             .addOptions(interfaceButtonsExisting.map { a ->
