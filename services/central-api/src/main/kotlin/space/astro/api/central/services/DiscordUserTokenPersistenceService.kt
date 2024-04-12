@@ -14,8 +14,7 @@ class DiscordUserTokenPersistenceService(
     val authedUsersDao: AuthedUsersDao,
     val redis: RedisClusterAsyncCommands<String, String>,
     val redisSync: RedisClusterCommands<String, String>,
-    val dataSerializer: DataSerializer,
-    val discordUserTokenFetchService: DiscordUserTokenFetchService
+    val dataSerializer: DataSerializer
 ) {
 
     /**
