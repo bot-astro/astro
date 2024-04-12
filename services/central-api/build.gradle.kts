@@ -9,6 +9,9 @@ dependencies {
     implementation(libs.bundles.jwt)
     implementation(libs.bundles.caching)
 
+    // Discord
+    implementation(libs.jda)
+
     // Database
     implementation(libs.mongo)
 

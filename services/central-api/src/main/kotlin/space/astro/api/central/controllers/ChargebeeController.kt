@@ -4,13 +4,12 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import space.astro.api.central.configs.Mappings
+import space.astro.api.central.configs.getUserID
 import space.astro.api.central.models.body.SubscriptionWebhookData
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.UserDao

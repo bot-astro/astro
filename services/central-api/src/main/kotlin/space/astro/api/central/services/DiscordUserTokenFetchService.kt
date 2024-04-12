@@ -14,7 +14,7 @@ import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
 import space.astro.api.central.configs.DiscordApplicationConfig
 import space.astro.api.central.models.AuthorizationWrapperDto
-import space.astro.api.central.models.TokenPayloadDto
+import space.astro.api.central.models.discord.TokenPayloadWithOptionalGuildDto
 import space.astro.shared.core.configs.DiscordConfig
 import space.astro.shared.core.configs.WebClientConfig
 import java.time.Duration
@@ -72,10 +72,10 @@ class DiscordUserTokenFetchService(
                 .onStatus(
                     { it != HttpStatus.OK },
                     { throw Throwable("${it.statusCode()} - Unexpected Response") })
-                .awaitBody<TokenPayloadDto>()
+                .awaitBody<TokenPayloadWithOptionalGuildDto>()
 
             val selfUser = discordUserService.fetchSelfUser(tokenPayload.accessToken)
-            discordUserTokenPersistenceService.updateCredentials(selfUser.id, tokenPayload)
+            discordUserTokenPersistenceService.updateCredentials(selfUser.id, tokenPayload.asTokenPayloadDto())
 
             return AuthorizationWrapperDto(selfUser, tokenPayload)
         } catch (t: Throwable) {
@@ -108,10 +108,10 @@ class DiscordUserTokenFetchService(
                 .onStatus(
                     { it != HttpStatus.OK },
                     { throw Throwable("${it.statusCode()} - Unexpected Response") })
-                .awaitBody<TokenPayloadDto>()
+                .awaitBody<TokenPayloadWithOptionalGuildDto>()
 
             val selfUser = discordUserService.fetchSelfUser(tokenPayload.accessToken)
-            discordUserTokenPersistenceService.updateCredentials(selfUser.id, tokenPayload)
+            discordUserTokenPersistenceService.updateCredentials(selfUser.id, tokenPayload.asTokenPayloadDto())
 
             return AuthorizationWrapperDto(selfUser, tokenPayload)
         } catch (t: Throwable) {

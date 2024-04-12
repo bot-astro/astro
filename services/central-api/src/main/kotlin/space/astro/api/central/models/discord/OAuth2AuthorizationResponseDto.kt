@@ -1,4 +1,4 @@
-package space.astro.api.central.models
+package space.astro.api.central.models.discord
 
 import space.astro.shared.core.models.discord.DiscordUserData
 

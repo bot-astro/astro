@@ -1,16 +1,13 @@
 package space.astro.api.central.controllers.dashboard
 
 import mu.KotlinLogging
-import org.springframework.boot.actuate.autoconfigure.web.exchanges.HttpExchangesAutoConfiguration
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ServerWebExchange
 import space.astro.api.central.configs.Mappings
-import space.astro.api.central.controllers.getUserID
-import space.astro.api.central.daos.AuthedUsersDao
-import space.astro.api.central.models.OAuth2AuthorizationResponseDto
-import space.astro.api.central.models.OAuth2GuildInfo
-import space.astro.api.central.services.DiscordUserService
+import space.astro.api.central.configs.getUserID
+import space.astro.api.central.models.discord.OAuth2AuthorizationResponseDto
+import space.astro.api.central.models.discord.OAuth2GuildInfo
 import space.astro.api.central.services.DiscordUserTokenFetchService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.WebSessionService
@@ -18,7 +15,7 @@ import space.astro.api.central.services.WebSessionService
 private val log = KotlinLogging.logger { }
 
 @RestController
-class AuthController(
+class DashboardAuthController(
     val discordUserTokenFetchService: DiscordUserTokenFetchService,
     val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
     val webSessionService: WebSessionService,

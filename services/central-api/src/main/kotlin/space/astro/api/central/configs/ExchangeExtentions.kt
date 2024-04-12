@@ -1,4 +1,4 @@
-package space.astro.api.central.controllers
+package space.astro.api.central.configs
 
 import org.springframework.web.server.ServerWebExchange
 

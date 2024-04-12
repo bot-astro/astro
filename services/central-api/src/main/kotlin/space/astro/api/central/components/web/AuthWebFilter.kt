@@ -11,7 +11,7 @@ import org.springframework.web.server.WebFilterChain
 import reactor.core.publisher.Mono
 import space.astro.api.central.configs.CentralApiConfig
 import space.astro.api.central.configs.Mappings
-import space.astro.api.central.controllers.ExchangeAttributeNames
+import space.astro.api.central.configs.ExchangeAttributeNames
 import space.astro.api.central.services.DiscordUserTokenFetchService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.WebSessionService

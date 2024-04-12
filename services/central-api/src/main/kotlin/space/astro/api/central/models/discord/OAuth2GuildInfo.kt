@@ -1,4 +1,4 @@
-package space.astro.api.central.models
+package space.astro.api.central.models.discord
 
 data class OAuth2GuildInfo(
     val id: String,

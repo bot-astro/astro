@@ -4,8 +4,8 @@ import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands
 import org.springframework.stereotype.Service
 import space.astro.api.central.daos.AuthedUsersDao
-import space.astro.api.central.models.DiscordAuthedUser
-import space.astro.api.central.models.TokenPayloadDto
+import space.astro.api.central.models.discord.DiscordAuthedUser
+import space.astro.api.central.models.discord.TokenPayloadDto
 import space.astro.shared.core.components.io.DataSerializer
 import space.astro.shared.core.models.redis.RedisKey
 

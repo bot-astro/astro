@@ -5,7 +5,7 @@ import com.mongodb.client.model.ReplaceOptions
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import org.springframework.stereotype.Component
-import space.astro.api.central.models.DiscordAuthedUser
+import space.astro.api.central.models.discord.DiscordAuthedUser
 
 @Component
 class AuthedUsersDao(
