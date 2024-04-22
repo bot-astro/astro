@@ -26,7 +26,9 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
     if (newOwner == null) {
         temporaryVCDao.delete(guild.id, event.temporaryVCData.id)
 
-        vc.delete().queue()
+        vc.delete()
+            .reason("Deleting temporary vc, detected ${vc.members.size} users, filtered to ${vc.members.filter { !it.user.isBot }.size} non bots")
+            .queue()
         privateChat?.delete()?.queue()
         waitingRoom?.delete()?.queue()
 
