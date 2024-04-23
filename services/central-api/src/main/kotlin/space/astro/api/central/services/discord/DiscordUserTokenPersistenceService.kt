@@ -1,4 +1,4 @@
-package space.astro.api.central.services
+package space.astro.api.central.services.discord
 
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands

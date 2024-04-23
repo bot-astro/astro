@@ -1,4 +1,4 @@
-package space.astro.api.central.services
+package space.astro.api.central.services.discord
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.http.HttpStatus
@@ -10,20 +10,21 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
+import space.astro.api.central.models.discord.DiscordPartialChannel
+import space.astro.api.central.models.discord.DiscordPartialGuild
+import space.astro.api.central.models.discord.DiscordPartialRole
 import space.astro.shared.core.configs.DiscordConfig
 import space.astro.shared.core.configs.WebClientConfig
-import space.astro.shared.core.models.discord.DiscordUserData
 import java.time.Duration
 
 @Service
-class DiscordUserService(
+class DiscordGuildsFetchService(
     webClientConfig: WebClientConfig,
     discordConfig: DiscordConfig,
     val objectMapper: ObjectMapper
 ) {
-
     private final val provider: ConnectionProvider =
-        ConnectionProvider.builder("discord-user-service-provider")
+        ConnectionProvider.builder("discord-guilds-fetch-service-provider")
             //.maxConnections(webClientConfig.httpMaxConnections)
             .maxIdleTime(Duration.ofSeconds(webClientConfig.httpMaxIdleTime))
             .maxLifeTime(Duration.ofSeconds(webClientConfig.httpMaxLifeTime))
@@ -41,18 +42,55 @@ class DiscordUserService(
         .baseUrl(discordConfig.baseUrl)
         .build()
 
-
-    suspend fun fetchSelfUser(accessToken: String): DiscordUserData {
+    suspend fun fetchGuilds(
+        accessToken: String
+    ): List<DiscordPartialGuild> {
         return webClient.get()
             .uri { uriBuilder ->
-                uriBuilder.pathSegment("users", "@me")
+                uriBuilder.pathSegment("users", "@me", "guilds")
                     .build()
             }
             .header("Authorization", "Bearer $accessToken")
             .retrieve()
             .onStatus(
                 { it != HttpStatus.OK },
-                { throw Throwable("Failed to fetch user - status: ${it.statusCode()}") }
+                { throw Throwable("Failed to fetch user guilds - status: ${it.statusCode()}") }
+            )
+            .awaitBody()
+    }
+
+    suspend fun fetchGuildChannels(
+        accessToken: String,
+        guildID: String
+    ): List<DiscordPartialChannel> {
+        return webClient.get()
+            .uri { uriBuilder ->
+                uriBuilder.pathSegment("guilds", guildID, "channels")
+                    .build()
+            }
+            .header("Authorization", "Bearer $accessToken")
+            .retrieve()
+            .onStatus(
+                { it != HttpStatus.OK },
+                { throw Throwable("Failed to fetch guild channels - status: ${it.statusCode()}") }
+            )
+            .awaitBody()
+    }
+
+    suspend fun fetchGuildRoles(
+        accessToken: String,
+        guildID: String
+    ): List<DiscordPartialRole> {
+        return webClient.get()
+            .uri { uriBuilder ->
+                uriBuilder.pathSegment("guilds", guildID, "roles")
+                    .build()
+            }
+            .header("Authorization", "Bearer $accessToken")
+            .retrieve()
+            .onStatus(
+                { it != HttpStatus.OK },
+                { throw Throwable("Failed to fetch guild roles - status: ${it.statusCode()}") }
             )
             .awaitBody()
     }

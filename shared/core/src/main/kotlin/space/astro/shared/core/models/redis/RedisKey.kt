@@ -29,5 +29,10 @@ enum class RedisKey(val key: String) {
 
     GUILD_DATA("GD"),
 
-    USER_DATA("UD")
+    USER_DATA("UD"),
+
+    /**
+     * Format with: GUILD_ID
+     */
+    DASHBOARD_GUILDS("DASH_GUILDS")
 }

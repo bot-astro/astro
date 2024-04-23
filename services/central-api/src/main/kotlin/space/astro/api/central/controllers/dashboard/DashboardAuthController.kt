@@ -8,9 +8,10 @@ import space.astro.api.central.configs.Mappings
 import space.astro.api.central.configs.getUserID
 import space.astro.api.central.models.discord.OAuth2AuthorizationResponseDto
 import space.astro.api.central.models.discord.OAuth2GuildInfo
-import space.astro.api.central.services.DiscordUserTokenFetchService
-import space.astro.api.central.services.DiscordUserTokenPersistenceService
-import space.astro.api.central.services.WebSessionService
+import space.astro.api.central.services.dashboard.DashboardGuildsPersistenceService
+import space.astro.api.central.services.discord.DiscordUserTokenFetchService
+import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService
+import space.astro.api.central.services.dashboard.WebSessionService
 
 private val log = KotlinLogging.logger { }
 
@@ -19,6 +20,7 @@ class DashboardAuthController(
     val discordUserTokenFetchService: DiscordUserTokenFetchService,
     val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
     val webSessionService: WebSessionService,
+    val dashboardGuildsPersistenceService: DashboardGuildsPersistenceService
 ) {
 
     @GetMapping(Mappings.Dashboard.LOGIN)
@@ -56,6 +58,7 @@ class DashboardAuthController(
     ): ResponseEntity<*> {
         val userID = exchange.getUserID()
         discordUserTokenPersistenceService.deleteCredentials(userID)
+        dashboardGuildsPersistenceService.deleteUserGuilds(userID)
         webSessionService.deleteSessions(userID)
         return ResponseEntity.ok(null)
     }

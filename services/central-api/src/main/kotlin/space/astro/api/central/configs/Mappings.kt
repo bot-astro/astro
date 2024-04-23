@@ -34,5 +34,19 @@ object Mappings {
         const val GUILD = "${GUILDS}/{guildID}"
         const val GUILD_CHANNELS = "${GUILD}/channels"
         const val GUILD_ROLES = "${GUILD}/roles"
+
+        const val GUILD_DATA = "${GUILD}/data"
+        const val GUILD_UPDATE_SETTINGS = "${GUILD}/data/settings"
+        const val GUILD_CREATE_GENERATOR = "${GUILD}/data/generator"
+        const val GUILD_UPDATE_GENERATOR = "${GUILD}/data/generator/{generatorID}"
+        const val GUILD_CREATE_INTERFACE = "${GUILD}/data/interface"
+        const val GUILD_UPDATE_INTERFACE = "${GUILD}/data/interface/{interfaceID}"
+        const val GUILD_CREATE_VOICE_ROLE = "${GUILD}/data/voice-role"
+        const val GUILD_UPDATE_VOICE_ROLE = "${GUILD}/data/voice-role/{channelID}"
+        const val GUILD_CREATE_TEMPLATE = "${GUILD}/data/template"
+        const val GUILD_UPDATE_TEMPLATE = "${GUILD}/data/template/{templateID}"
+
+        const val GUILD_UPGRADE = "${GUILD}/upgrade"
+        const val GUILD_DOWNGRADE = "${GUILD}/downgrade"
     }
 }

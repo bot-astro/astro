@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ServerWebExchange
 import space.astro.api.central.configs.Mappings
 import space.astro.api.central.configs.getAccessToken
-import space.astro.api.central.services.DiscordUserService
+import space.astro.api.central.services.discord.DiscordUserService
 
 @RestController
 class DashboardUserController(

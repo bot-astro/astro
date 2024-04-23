@@ -1,4 +1,4 @@
-package space.astro.api.central.services
+package space.astro.api.central.services.dashboard
 
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine

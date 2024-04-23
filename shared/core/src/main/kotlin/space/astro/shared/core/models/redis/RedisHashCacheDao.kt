@@ -39,6 +39,10 @@ class RedisHashCacheDao(
     }
 
     /**
+     * Gets all fields from the hash
+     */
+
+    /**
      * Cache all the provided fields in the hash
      *
      * @param fieldToDataMap Map of field name to field data

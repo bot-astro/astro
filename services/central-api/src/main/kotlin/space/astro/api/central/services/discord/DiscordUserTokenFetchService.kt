@@ -1,7 +1,6 @@
-package space.astro.api.central.services
+package space.astro.api.central.services.discord
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.http.codec.json.Jackson2JsonDecoder
@@ -15,11 +14,10 @@ import reactor.netty.resources.ConnectionProvider
 import space.astro.api.central.configs.DiscordApplicationConfig
 import space.astro.api.central.models.AuthorizationWrapperDto
 import space.astro.api.central.models.discord.TokenPayloadWithOptionalGuildDto
+import space.astro.api.central.services.log
 import space.astro.shared.core.configs.DiscordConfig
 import space.astro.shared.core.configs.WebClientConfig
 import java.time.Duration
-
-private val log = KotlinLogging.logger { }
 
 @Service
 class DiscordUserTokenFetchService(
