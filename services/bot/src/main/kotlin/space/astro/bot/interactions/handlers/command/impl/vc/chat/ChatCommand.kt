@@ -67,7 +67,10 @@ class ChatCommand(
     ) {
         ctx.replyHandler.deferReply()
 
-        ctx.vcOperationCTX.privateChat?.delete()?.queue()
+        ctx.vcOperationCTX.privateChat
+            ?.delete()
+            ?.reason("delete private text chat from 'chat delete' command")
+            ?.queue()
         ctx.vcOperationCTX.temporaryVCData.chatID = null
         temporaryVCDao.save(ctx.guildId, ctx.vcOperationCTX.temporaryVCData)
 

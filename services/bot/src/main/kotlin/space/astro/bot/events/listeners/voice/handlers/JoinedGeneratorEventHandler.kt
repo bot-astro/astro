@@ -336,9 +336,14 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     // check if user is still in the created temporary vc before saving the data
     if (owner.voiceState!!.channel?.id != temporaryVC.id) {
-        waitingRoom?.delete()?.queueAfter(1000, TimeUnit.MILLISECONDS)
-        privateChat?.delete()?.queueAfter(2000, TimeUnit.SECONDS)
-        temporaryVC.delete().reason("User left the generated temporary VC too quickly").queueAfter(3000, TimeUnit.SECONDS)
+        waitingRoom?.delete()
+            ?.reason("User left the generated temporary VC too quickly")
+            ?.queueAfter(1000, TimeUnit.MILLISECONDS)
+        privateChat?.delete()
+            ?.reason("User left the generated temporary VC too quickly")
+            ?.queueAfter(2000, TimeUnit.SECONDS)
+        temporaryVC.delete()
+            .reason("User left the generated temporary VC too quickly").queueAfter(3000, TimeUnit.SECONDS)
 
         cooldownsManager.markUserGeneratorsCooldown(data.userId)
 

@@ -65,7 +65,10 @@ class WaitingRoomCommand(
     ) {
         ctx.replyHandler.deferReply()
 
-        ctx.vcOperationCTX.waitingRoom?.delete()?.queue()
+        ctx.vcOperationCTX.waitingRoom
+            ?.delete()
+            ?.reason("user requested waiting room deletion")
+            ?.queue()
         ctx.vcOperationCTX.temporaryVCData.waitingID = null
         temporaryVCDao.save(ctx.guildId, ctx.vcOperationCTX.temporaryVCData)
 

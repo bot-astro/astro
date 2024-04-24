@@ -29,8 +29,12 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
         vc.delete()
             .reason("Deleting temporary vc, detected ${vc.members.size} users, filtered to ${vc.members.filter { !it.user.isBot }.size} non bots")
             .queue()
-        privateChat?.delete()?.queue()
-        waitingRoom?.delete()?.queue()
+        privateChat?.delete()
+            ?.reason("Deleting temporary vc, detected ${vc.members.size} users, filtered to ${vc.members.filter { !it.user.isBot }.size} non bots")
+            ?.queue()
+        waitingRoom?.delete()
+            ?.reason("Deleting temporary vc, detected ${vc.members.size} users, filtered to ${vc.members.filter { !it.user.isBot }.size} non bots")
+            ?.queue()
 
         return
     }

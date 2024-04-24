@@ -106,7 +106,10 @@ class GeneratorCommand(
     ) {
         ctx.guildData.generators.removeIf { it.id == ctx.generatorData.id }
         guildDao.save(ctx.guildData)
-        ctx.guild.getVoiceChannelById(ctx.generatorData.id)?.delete()?.await()
+        ctx.guild.getVoiceChannelById(ctx.generatorData.id)
+            ?.delete()
+            ?.reason("User requested temporary vc generator deletion")
+            ?.await()
 
         ctx.replyHandler.replyEmbed(Embeds.default("The generator has been deleted, to create a new one use `/generator create`"))
     }
