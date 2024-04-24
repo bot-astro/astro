@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import space.astro.api.central.configs.Mappings
 import space.astro.api.central.configs.getUserID
-import space.astro.api.central.models.body.SubscriptionWebhookData
+import space.astro.api.central.models.chargebee.SubscriptionWebhookData
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.UserDao
 import space.astro.shared.core.models.database.GuildUpgradeData

@@ -48,5 +48,9 @@ object Mappings {
 
         const val GUILD_UPGRADE = "${GUILD}/upgrade"
         const val GUILD_DOWNGRADE = "${GUILD}/downgrade"
+
+        const val GUILD_ERRORS = "${GUILD}/errors"
+
+        const val GUILD_TEMPORARY_VOICE_CHANNELS_CACHE = "${GUILD}/vc/cache"
     }
 }

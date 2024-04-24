@@ -1,4 +1,4 @@
-package space.astro.api.central.models.body
+package space.astro.api.central.models.chargebee
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 

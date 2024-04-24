@@ -39,27 +39,6 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
-
-    ////////////////////////
-    /// ULTIMATE UPGRADE ///
-    ////////////////////////
-
-    @GetMapping(Mappings.Dashboard.GUILD_UPGRADE)
-    suspend fun upgradeGuild(
-        @PathVariable guildID: String,
-        exchange: ServerWebExchange
-    ) {
-
-    }
-
-    @GetMapping(Mappings.Dashboard.GUILD_DOWNGRADE)
-    suspend fun downgradeGuild(
-        @PathVariable guildID: String,
-        exchange: ServerWebExchange
-    ) {
-
-    }
-
     ///////////////////////////////
     /// UPDATE GENERIC SETTINGS ///
     ///////////////////////////////
@@ -69,7 +48,14 @@ class DashboardGuildDataController(
         @PathVariable guildID: String,
         exchange: ServerWebExchange
     ) {
-
+        /**
+         * TODO:
+         * - create settings body class
+         * - validate new settings
+         * - fetch old guild data
+         * - update
+         * - save
+         */
     }
 
 
@@ -82,7 +68,15 @@ class DashboardGuildDataController(
         @PathVariable guildID: String,
         exchange: ServerWebExchange
     ) {
-
+        /**
+         * TODO:
+         * - send request to bot api
+         * - receive back generator id
+         * - create generator data
+         * - add to guild data
+         * - save
+         * - return new guild data
+         */
     }
 
     @PostMapping(Mappings.Dashboard.GUILD_UPDATE_GENERATOR)
@@ -91,7 +85,12 @@ class DashboardGuildDataController(
         @PathVariable generatorID: String,
         exchange: ServerWebExchange
     ) {
-
+        /**
+         * TODO:
+         * - validate
+         * - update & save new guild data
+         * - return new guild data
+         */
     }
 
 
@@ -104,7 +103,7 @@ class DashboardGuildDataController(
         @PathVariable guildID: String,
         exchange: ServerWebExchange
     ) {
-
+        // TODO: Same as for generator
     }
 
     @PostMapping(Mappings.Dashboard.GUILD_UPDATE_INTERFACE)
