@@ -61,8 +61,9 @@ class DashboardGuildDataController(
         @RequestBody guildSettings: GuildDataSettingsBody,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
-        if (!guildSettings.validate()) {
-            return ResponseEntity.badRequest().build<Any>()
+        val validation = guildSettings.validate()
+        if (!validation.isValid) {
+            return ResponseEntity.badRequest().body(validation.invalidMessage)
         }
 
         val guildData = guildDao.get(guildID)
@@ -111,8 +112,9 @@ class DashboardGuildDataController(
         @RequestBody generatorData: GeneratorData,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
-        if (!generatorData.validate()) {
-            return ResponseEntity.badRequest().build<Any>()
+        val validation = generatorData.validate()
+        if (!validation.isValid) {
+            return ResponseEntity.badRequest().body(validation.invalidMessage)
         }
 
         val guildData = guildDao.get(guildID)
@@ -140,8 +142,9 @@ class DashboardGuildDataController(
     ) : ResponseEntity<*> {
         val endpoint = podMetaCalculatorService.calculatePodEndpoint(guildID)
 
-        if (!guildDataInterfaceCreateBody.validate()) {
-            return ResponseEntity.badRequest().build<Any>()
+        val validation = guildDataInterfaceCreateBody.validate()
+        if (!validation.isValid) {
+            return ResponseEntity.badRequest().body(validation.invalidMessage)
         }
 
         val guildData = guildDao.get(guildID)
@@ -171,8 +174,9 @@ class DashboardGuildDataController(
     ) : ResponseEntity<*> {
         val endpoint = podMetaCalculatorService.calculatePodEndpoint(guildID)
 
-        if (!interfaceData.validate()) {
-            return ResponseEntity.badRequest().build<Any>()
+        val validation = interfaceData.validate()
+        if (!validation.isValid) {
+            return ResponseEntity.badRequest().body(validation.invalidMessage)
         }
 
         val guildData = guildDao.get(guildID)
@@ -256,8 +260,9 @@ class DashboardGuildDataController(
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()
 
-        if (!templateData.validate()) {
-            return ResponseEntity.badRequest().build<Any>()
+        val validation = templateData.validate()
+        if (!validation.isValid) {
+            return ResponseEntity.badRequest().body(validation.invalidMessage)
         }
 
         guildData.templates.add(templateData)
@@ -275,8 +280,9 @@ class DashboardGuildDataController(
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()
 
-        if (!templateData.validate()) {
-            return ResponseEntity.badRequest().build<Any>()
+        val validation = templateData.validate()
+        if (!validation.isValid) {
+            return ResponseEntity.badRequest().body(validation.invalidMessage)
         }
 
         val index = guildData.templates.indexOfFirst { it.id === templateID }
