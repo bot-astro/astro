@@ -323,8 +323,14 @@ data class ConnectionData(
     var roleID: String,
     var action: ConnectionAction = ConnectionAction.ASSIGN
 ) {
-    fun validate() : Boolean {
-        return true // TODO
+    fun validate() : ValidationResult {
+        val idValidation = id.isValidSnowflake().asValidationResult("invalid channel id")
+        val roleIDValidation = roleID.isValidSnowflake().asValidationResult("invalid role id")
+
+        return ValidationResult.combine(
+            idValidation,
+            roleIDValidation
+        )
     }
 
     override fun toString(): String {

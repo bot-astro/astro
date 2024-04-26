@@ -35,8 +35,6 @@ class MemberUpdateActivitiesEventListener(
         if (event.user.isBot)
             return
 
-        // TODO: Global user cooldown check here?
-
         val guild = event.guild
         val guildId = guild.id
         val vc = event.member.voiceState!!

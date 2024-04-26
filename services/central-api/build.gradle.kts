@@ -15,6 +15,8 @@ dependencies {
     // Database
     implementation(libs.mongo)
 
+    implementation(libs.chargebee)
+
     // Project
     implementation(project(":shared:core"))
 }

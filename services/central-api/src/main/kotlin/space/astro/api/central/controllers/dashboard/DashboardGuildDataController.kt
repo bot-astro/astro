@@ -214,9 +214,11 @@ class DashboardGuildDataController(
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()
 
-        if (!connectionData.validate()) {
-            return ResponseEntity.badRequest().build<Any>()
+        val validation = connectionData.validate()
+        if (!validation.isValid) {
+            return ResponseEntity.badRequest().body(validation.invalidMessage)
         }
+
 
         guildData.connections.add(connectionData)
         guildDao.save(guildData)
@@ -233,8 +235,9 @@ class DashboardGuildDataController(
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()
 
-        if (!connectionData.validate()) {
-            return ResponseEntity.badRequest().build<Any>()
+        val validation = connectionData.validate()
+        if (!validation.isValid) {
+            return ResponseEntity.badRequest().body(validation.invalidMessage)
         }
 
         val index = guildData.connections.indexOfFirst { it.id === channelID }
