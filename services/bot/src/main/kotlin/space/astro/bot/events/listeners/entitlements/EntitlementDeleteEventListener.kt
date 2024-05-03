@@ -23,7 +23,7 @@ class EntitlementDeleteEventListener(
     @EventListener
     fun receiveEntitlementDeleteEvent(event: EntitlementDeleteEvent) {
         coroutineScope.launch {
-            supportBotApiService.forwardDeleteEntitlementEvent(event.entitlement)
+            supportBotApiService.removePremiumRoleFromUser(event.entitlement.userId)
         }
 
         when (event.entitlement.skuId) {

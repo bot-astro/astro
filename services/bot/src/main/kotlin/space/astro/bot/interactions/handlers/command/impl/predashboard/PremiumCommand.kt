@@ -70,7 +70,7 @@ class PremiumCommand(
         }
 
 
-        val userSubs = chargebeeClientService.getUserActiveSubscriptions(ctx.memberId)
+        val userSubs = chargebeeClientService.getActiveServerSubscriptionsOfUser(ctx.memberId)
         val userUpgrades = ctx.userData.guildActiveUpgrades
 
         if (userSubs.isEmpty()) {

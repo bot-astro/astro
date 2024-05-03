@@ -1,5 +1,6 @@
 package space.astro.api.central.controllers.dashboard
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,6 +24,7 @@ import space.astro.shared.core.services.bot.BotApiService
 import space.astro.shared.core.util.exceptions.BotApiPermissionException
 
 @RestController
+@Tag(name = "dashboard-data")
 class DashboardGuildDataController(
     private val guildDao: GuildDao,
     private val dashboardGuildsPersistenceService: DashboardGuildsPersistenceService,
@@ -48,6 +50,7 @@ class DashboardGuildDataController(
         }
 
         val guildData = guildDao.getOrCreate(guildID)
+
         return ResponseEntity.ok(guildData)
     }
 

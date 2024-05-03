@@ -72,6 +72,8 @@ class Application(
                             log.info { "Removed premium from guild ${guildData.guildID}" }
                             guildDao.save(guildData)
                         }
+
+                        // TODO: Remove premium role to entitled user too
                     }
 
                 log.info { "Deleted ${expiredEntitlements.size} expired entitlements" }

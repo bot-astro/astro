@@ -16,8 +16,8 @@ import space.astro.shared.core.models.database.GuildUpgradeData
 import space.astro.shared.core.services.chargebee.ChargebeeClientService
 
 @RestController
-@Tag(name = "dashboard-data")
-class DashboardGuildUltimateController(
+@Tag(name = "dashboard-premium")
+class DashboardGuildPremiumController(
     private val guildDao: GuildDao,
     private val userDao: UserDao,
     private val chargebeeClientService: ChargebeeClientService

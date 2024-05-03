@@ -1,5 +1,6 @@
 package space.astro.api.central.controllers.dashboard
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -10,6 +11,7 @@ import space.astro.api.central.configs.Mappings
 import space.astro.shared.core.daos.ConfigurationErrorDao
 
 @RestController
+@Tag(name = "dashboard-data")
 class DashboardGuildErrorController(
     private val configurationErrorDao: ConfigurationErrorDao
 ) {

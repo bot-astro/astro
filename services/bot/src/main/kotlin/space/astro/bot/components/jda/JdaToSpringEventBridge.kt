@@ -13,5 +13,4 @@ class JdaToSpringEventBridge(
     override fun onEvent(event: GenericEvent) {
         applicationEventPublisher.publishEvent(event)
     }
-
 }

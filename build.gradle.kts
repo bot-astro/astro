@@ -11,26 +11,12 @@ plugins {
 }
 
 repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/bot-astro/jda")
-        credentials {
-            this.username = System.getenv("GITHUB_ACTOR") ?: property("ghpMavenUser").toString()
-            this.password = System.getenv("GITHUB_TOKEN") ?: property("ghpMavenPat").toString()
-        }
-    }
     mavenCentral()
 }
 
 // Migrate this to buildSrc or conventional builds when version catalogs are supported
 subprojects {
     repositories {
-        maven {
-            url = uri("https://maven.pkg.github.com/bot-astro/jda")
-            credentials {
-                this.username = System.getenv("GITHUB_ACTOR") ?: property("ghpMavenUser").toString()
-                this.password = System.getenv("GITHUB_TOKEN") ?: property("ghpMavenPat").toString()
-            }
-        }
         mavenCentral()
         maven("https://jitpack.io/")
     }

@@ -1,5 +1,8 @@
 package space.astro.api.central.controllers.dashboard
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -12,10 +15,13 @@ import space.astro.api.central.services.dashboard.DashboardGuildsPersistenceServ
 import space.astro.api.central.services.discord.DiscordUserTokenFetchService
 import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.dashboard.WebSessionService
+import space.astro.shared.core.util.exceptions.BadRequestException
+import space.astro.shared.core.util.exceptions.UnauthorizedException
 
 private val log = KotlinLogging.logger { }
 
 @RestController
+@Tag(name = "dashboard-auth")
 class DashboardAuthController(
     val discordUserTokenFetchService: DiscordUserTokenFetchService,
     val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
@@ -27,11 +33,16 @@ class DashboardAuthController(
     suspend fun authorizeDiscord(@PathVariable code: String): ResponseEntity<*> {
         log.info { "Authorizing discord user with code $code" }
 
-        // fetch credentials + user from discord
-        val authorizationWrapper = discordUserTokenFetchService.fetchCredentialsFromCode(code)
+        val userAndToken = try {
+            discordUserTokenFetchService.exchangeCodeForAccessTokenAndFetchSelfUser(code)
+        } catch (e: BadRequestException) {
+            return ResponseEntity.badRequest().build<Any>()
+        } catch (e: UnauthorizedException) {
+            return ResponseEntity.badRequest().build<Any>()
+        }
 
-        val user = authorizationWrapper.user
-        val guild = authorizationWrapper.token.guild?.let {
+        val user = userAndToken.user
+        val guild = userAndToken.token.guild?.let {
             OAuth2GuildInfo(
                 id = it.id,
                 name = it.name,
@@ -48,18 +59,20 @@ class DashboardAuthController(
         )
 
         log.info { "Successfully authorized discord user with id ${user.id} - response $response" }
+
         return ResponseEntity.ok(response)
     }
 
     @GetMapping(Mappings.Dashboard.LOGOUT)
     suspend fun logoutDiscord(
-        @RequestHeader("Authorization") sessionToken: String,
         exchange: ServerWebExchange
     ): ResponseEntity<*> {
         val userID = exchange.getUserID()
-        discordUserTokenPersistenceService.deleteCredentials(userID)
+
+        discordUserTokenPersistenceService.deleteToken(userID)
         dashboardGuildsPersistenceService.deleteUserGuilds(userID)
         webSessionService.deleteSessions(userID)
-        return ResponseEntity.ok(null)
+
+        return ResponseEntity.ok().build<Any>()
     }
 }

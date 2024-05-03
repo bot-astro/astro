@@ -12,9 +12,16 @@ import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
 import space.astro.shared.core.configs.DiscordConfig
 import space.astro.shared.core.configs.WebClientConfig
-import space.astro.shared.core.models.discord.DiscordUserData
+import space.astro.shared.core.models.discord.DiscordUserDto
+import space.astro.shared.core.util.exceptions.UnauthorizedException
+import space.astro.shared.core.util.exceptions.UnknownException
 import java.time.Duration
 
+/**
+ * API client to fetch Discord user using access tokens
+ *
+ * @see fetchSelfUser
+ */
 @Service
 class DiscordUserService(
     webClientConfig: WebClientConfig,
@@ -24,10 +31,8 @@ class DiscordUserService(
 
     private final val provider: ConnectionProvider =
         ConnectionProvider.builder("discord-user-service-provider")
-            //.maxConnections(webClientConfig.httpMaxConnections)
             .maxIdleTime(Duration.ofSeconds(webClientConfig.httpMaxIdleTime))
             .maxLifeTime(Duration.ofSeconds(webClientConfig.httpMaxLifeTime))
-            //.pendingAcquireTimeout(Duration.ofSeconds(webClientConfig.httpPendingAcquireTimeout))
             .evictInBackground(Duration.ofSeconds(webClientConfig.httpEvictInBackground))
             .build()
 
@@ -42,7 +47,17 @@ class DiscordUserService(
         .build()
 
 
-    suspend fun fetchSelfUser(accessToken: String): DiscordUserData {
+    /**
+     * Fetches the self user related to the provided [accessToken]
+     *
+     * @param accessToken
+     *
+     * @return the Discord user data
+     *
+     * @throws UnauthorizedException
+     * @throws UnknownException
+     */
+    suspend fun fetchSelfUser(accessToken: String): DiscordUserDto {
         return webClient.get()
             .uri { uriBuilder ->
                 uriBuilder.pathSegment("users", "@me")
@@ -51,8 +66,12 @@ class DiscordUserService(
             .header("Authorization", "Bearer $accessToken")
             .retrieve()
             .onStatus(
+                { it == HttpStatus.UNAUTHORIZED || it == HttpStatus.FORBIDDEN },
+                { throw UnauthorizedException("Don't have permissions to fetch self user with the provided token - status: ${it.statusCode()}") }
+            )
+            .onStatus(
                 { it != HttpStatus.OK },
-                { throw Throwable("Failed to fetch user - status: ${it.statusCode()}") }
+                { throw UnknownException("Failed to fetch user - status: ${it.statusCode()}") }
             )
             .awaitBody()
     }

@@ -2,7 +2,6 @@ package space.astro.shared.core.services.support
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KotlinLogging
-import net.dv8tion.jda.api.entities.entitlement.Entitlement
 import org.springframework.http.HttpStatus
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.http.codec.json.Jackson2JsonDecoder
@@ -13,10 +12,18 @@ import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
 import space.astro.shared.core.configs.SupportBotApiConfig
 import space.astro.shared.core.configs.WebClientConfig
+import space.astro.shared.core.util.exceptions.NotFoundException
+import space.astro.shared.core.util.exceptions.UnknownException
 import java.time.Duration
 
 private val log = KotlinLogging.logger {  }
 
+/**
+ * Api client to interact with the support bot service
+ *
+ * @see addPremiumRoleToUser
+ * @see removePremiumRoleFromUser
+ */
 @Service
 class SupportBotApiService(
     webClientConfig: WebClientConfig,
@@ -44,50 +51,55 @@ class SupportBotApiService(
         .build()
 
 
-    suspend fun forwardCreateEntitlementEvent(entitlement: Entitlement) {
-        log.info { "Forwarding 'create entitlement' event to support bot" }
-        webClient.post()
+    /**
+     * Requests to add the premium role in the Astro support server to the user with the given [userID]
+     *
+     * @param userID the id of the user that should receive the premium role
+     *
+     * @throws [NotFoundException] if the user wasn't found in the support server
+     * @throws [UnknownException] for all other possible errors
+     */
+    suspend fun addPremiumRoleToUser(userID: String) {
+        log.info { "Requesting premium role add to support-bot service" }
+
+        webClient.get()
             .uri { uriBuilder ->
                 uriBuilder
-                    .pathSegment("entitlements", "create")
+                    .pathSegment("premium", "role", "add", userID)
                     .build()
             }
-            .bodyValue(entitlement)
             .retrieve()
             .onStatus(
+                { it == HttpStatus.NOT_FOUND },
+                { throw NotFoundException("${it.statusCode()} - User with the provided ID wasn't found in the support server") })
+            .onStatus(
                 { it != HttpStatus.OK },
-                { throw Throwable("${it.statusCode()} - Unexpected Response") })
+                { throw UnknownException("${it.statusCode()} - Unexpected Response") })
     }
 
-    suspend fun forwardUpdateEntitlementEvent(entitlement: Entitlement) {
-        log.info { "Forwarding 'update entitlement' event to support bot" }
+    /**
+     * Requests to remove the premium role in the Astro support server from the user with the given [userID]
+     *
+     * @param userID the id of the user that should get the premium role removed
+     *
+     * @throws [NotFoundException] if the user wasn't found in the support server
+     * @throws [UnknownException] for all other possible errors
+     */
+    suspend fun removePremiumRoleFromUser(userID: String) {
+        log.info { "Requesting premium role removal to support-bot service" }
 
-        webClient.post()
+        webClient.get()
             .uri { uriBuilder ->
                 uriBuilder
-                    .pathSegment("entitlements", "update")
+                    .pathSegment("premium", "role", "remove", userID)
                     .build()
             }
-            .bodyValue(entitlement)
             .retrieve()
             .onStatus(
-                { it != HttpStatus.OK },
-                { throw Throwable("${it.statusCode()} - Unexpected Response") })
-    }
-
-    suspend fun forwardDeleteEntitlementEvent(entitlement: Entitlement) {
-        log.info { "Forwarding 'delete entitlement' event to support bot" }
-
-        webClient.post()
-            .uri { uriBuilder ->
-                uriBuilder
-                    .pathSegment("entitlements", "delete")
-                    .build()
-            }
-            .bodyValue(entitlement)
-            .retrieve()
+                { it == HttpStatus.NOT_FOUND },
+                { throw NotFoundException("${it.statusCode()} - User with the provided ID wasn't found in the support server") })
             .onStatus(
                 { it != HttpStatus.OK },
-                { throw Throwable("${it.statusCode()} - Unexpected Response") })
+                { throw UnknownException("${it.statusCode()} - Unexpected Response") })
     }
 }

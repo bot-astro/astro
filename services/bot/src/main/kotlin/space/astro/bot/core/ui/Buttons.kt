@@ -13,15 +13,6 @@ object Buttons {
     val support = Button.link(Links.SUPPORT_SERVER, "Support")
     val premium = Button.link(Links.APP_DIRECTORY_PREMIUM, "Premium")
 
-//    object Docs {
-//        val premium = Button.link(Links.Documentation.PREMIUM, "Premium docs")
-//        val variables = Button.link(Links.Documentation.VARIABLES, "Variable docs")
-//        val connection = Button.link(Links.Documentation.CONNECTION, "Connection docs")
-//        val generator = Button.link(Links.Documentation.GENERATOR, "Generator docs")
-//        val interfaces = Button.link(Links.Documentation.INTERFACE, "Interface docs")
-//        val template = Button.link(Links.Documentation.TEMPLATE, "Template docs")
-//    }
-
     object Help {
         val general = Button.of(ButtonStyle.PRIMARY, InteractionIds.Button.HELP_GENERAL, "Help", Emojis.help)
         val premium = Button.of(ButtonStyle.PRIMARY, InteractionIds.Button.HELP_PREMIUM, "Premium", Emojis.premium)

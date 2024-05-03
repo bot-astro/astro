@@ -7,6 +7,7 @@ datetime = "0.4.0"
 # Spring
 spring = "6.0.16"
 spring-boot = "3.2.2"
+openapi = "2.5.0"
 
 # Logging
 kotlin-logging = "2.1.21"
@@ -35,7 +36,7 @@ caffeine = "3.0.5"
 lettuce = "6.1.5.RELEASE"
 
 # JDA
-jda = "5.0.0-beta.17.astro.9_DEV"
+jda = "5.0.0-beta.23"
 jda-ktx = "0.11.0-beta.19"
 
 chargebee = "3.13.0"
@@ -63,6 +64,7 @@ spring-context = { module = "org.springframework:spring-context", version.ref = 
 spring-boot = { module = "org.springframework.boot:spring-boot", version.ref = "spring-boot"}
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot"}
 spring-boot-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "spring-boot"}
+spring-openapi = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version.ref = "openapi" }
 
 spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring-boot"}
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor", version.ref = "spring-boot"}
@@ -95,7 +97,7 @@ caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "c
 lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce"}
 
 # JDA
-jda = { module = "net.dv8tion:jda", version.ref = "jda" }
+jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 jda-ktx = { module = "club.minnced:jda-ktx", version.ref = "jda-ktx" }
 
 chargebee = { module = "com.chargebee:chargebee-java", version.ref = "chargebee"}
@@ -127,6 +129,7 @@ spring-core = [
 web = [
     "spring-boot-webflux",
     "spring-boot-actuator",
+    "spring-openapi",
     "jackson-kotlin"
 ]
 coroutines = [

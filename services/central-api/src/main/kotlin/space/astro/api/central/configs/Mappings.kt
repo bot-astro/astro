@@ -6,6 +6,12 @@ object Mappings {
         const val SHUTDOWN = "/shutdown"
     }
 
+    object Docs {
+        const val SWAGGER = "/swagger"
+        const val API_DOCS = "/v3/api-docs"
+        const val WEBJARS = "/webjars"
+    }
+
     object Status {
         const val STATUS = "/status"
     }
@@ -46,7 +52,7 @@ object Mappings {
         const val GUILD_CREATE_TEMPLATE = "${GUILD}/data/template"
         const val GUILD_UPDATE_TEMPLATE = "${GUILD}/data/template/{templateID}"
 
-        const val GUILD_UPGRADE = "${GUILD}/upgrade"
+        const val GUILD_UPGRADE = "${GUILD}/upgrade/{subscriptionID}"
         const val GUILD_DOWNGRADE = "${GUILD}/downgrade"
 
         const val GUILD_ERRORS = "${GUILD}/errors"

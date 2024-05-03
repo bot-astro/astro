@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent
 import net.dv8tion.jda.api.interactions.callbacks.IMessageEditCallback
 import net.dv8tion.jda.api.interactions.callbacks.IModalCallback
-import net.dv8tion.jda.api.interactions.callbacks.IPremiumReplyCallback
+import net.dv8tion.jda.api.interactions.callbacks.IPremiumRequiredReplyCallback
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 import net.dv8tion.jda.api.interactions.components.ItemComponent
 import net.dv8tion.jda.api.interactions.components.LayoutComponent
@@ -27,7 +27,7 @@ interface IInteractionReplyHandler {
         replyCallback: IReplyCallback,
         messageEditCallback: IMessageEditCallback,
         modalCallback: IModalCallback?,
-        premiumReplyCallback: IPremiumReplyCallback?,
+        premiumReplyCallback: IPremiumRequiredReplyCallback?,
         originatedFromInterface: Boolean = false,
         originatedFromExistingMessage: Boolean = true,
     )

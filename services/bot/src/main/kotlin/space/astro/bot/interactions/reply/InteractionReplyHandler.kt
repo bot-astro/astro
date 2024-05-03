@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.callbacks.IMessageEditCallback
 import net.dv8tion.jda.api.interactions.callbacks.IModalCallback
-import net.dv8tion.jda.api.interactions.callbacks.IPremiumReplyCallback
+import net.dv8tion.jda.api.interactions.callbacks.IPremiumRequiredReplyCallback
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.ItemComponent
@@ -31,7 +31,7 @@ class InteractionReplyHandler(
     private var replyCallback: IReplyCallback,
     private var messageEditCallback: IMessageEditCallback?,
     private var modalCallback: IModalCallback?,
-    private var premiumReplyCallback: IPremiumReplyCallback?,
+    private var premiumReplyCallback: IPremiumRequiredReplyCallback?,
     private var originatedFromInterface: Boolean,
     private var originatedFromExistingMessage: Boolean,
     private val shardManager: ShardManager
@@ -81,7 +81,7 @@ class InteractionReplyHandler(
         replyCallback: IReplyCallback,
         messageEditCallback: IMessageEditCallback,
         modalCallback: IModalCallback?,
-        premiumReplyCallback: IPremiumReplyCallback?,
+        premiumReplyCallback: IPremiumRequiredReplyCallback?,
         originatedFromInterface: Boolean,
         originatedFromExistingMessage: Boolean,
     ) {

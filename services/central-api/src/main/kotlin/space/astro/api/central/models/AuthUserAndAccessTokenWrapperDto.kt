@@ -1,9 +1,9 @@
 package space.astro.api.central.models
 
 import space.astro.api.central.models.discord.TokenPayloadWithOptionalGuildDto
-import space.astro.shared.core.models.discord.DiscordUserData
+import space.astro.shared.core.models.discord.DiscordUserDto
 
-data class AuthorizationWrapperDto(
-    val user: DiscordUserData,
+data class AuthUserAndAccessTokenWrapperDto(
+    val user: DiscordUserDto,
     val token: TokenPayloadWithOptionalGuildDto,
 )

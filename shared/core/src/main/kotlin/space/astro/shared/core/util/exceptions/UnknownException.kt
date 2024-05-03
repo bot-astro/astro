@@ -1,4 +1,6 @@
-package space.astro.shared.core.exceptions
+package space.astro.shared.core.util.exceptions
 
-class UnknownException {
-}
+class UnknownException(
+    override val message: String? = null,
+    override val cause: Throwable? = null,
+) : Exception(message, cause)

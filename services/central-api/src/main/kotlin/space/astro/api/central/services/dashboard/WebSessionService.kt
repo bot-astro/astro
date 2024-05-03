@@ -16,6 +16,9 @@ import java.time.Instant
 import java.util.*
 import javax.crypto.SecretKey
 
+/**
+ * Service to store user web sessions for the frontend dashboard
+ */
 @Service
 class WebSessionService(
     jwtConfig: JwtConfig,
@@ -33,11 +36,48 @@ class WebSessionService(
 
     val hmacShaKey: SecretKey = Keys.hmacShaKeyFor(jwtConfig.getDecodedKey())
 
+
+    /**
+     * @param userID
+     * @return the session token
+     */
     fun createSession(userID: String): String {
         val token = createToken(userID)
         cacheToken(userID, token)
         return token
     }
+
+    /**
+     * Parses the given [token] and returns the user ID of the session
+     *
+     * @param token
+     *
+     * @return the user ID attached to the token
+     */
+    fun getUserIdFromSession(token: String): String? {
+        val claims = parser.parseClaimsJws(token)
+        val id = claims.body.id
+
+        redis.getex(buildRedisKey(id, token), GetExArgs().ex(SESSION_TTL)) ?: return null
+
+        return id
+    }
+
+    /**
+     * Deletes all sessions of the given [userID]
+     *
+     * @param userID
+     */
+    fun deleteSessions(userID: String) {
+        val key = buildRedisKeyAllSessions(userID)
+
+        val tokens = redis.keys(key)
+            .get()
+
+        sessionCache.invalidateAll(tokens)
+        redis.del(*tokens.toTypedArray())
+    }
+
 
     private fun cacheToken(userID: String, token: String) {
         val key = buildRedisKey(userID, token)
@@ -50,39 +90,12 @@ class WebSessionService(
     }
 
     private fun createToken(userID: String): String {
-        return DefaultJwtBuilder().setIssuer("astro-web").setIssuedAt(Date.from(Instant.now()))
-            .setId(userID).signWith(hmacShaKey).compact()
-    }
-
-    fun existsSession(token: String): Boolean {
-        if (sessionCache.getIfPresent(token) != null) {
-            return true
-        }
-
-        val id = getUserIdFromSession(token) ?: return false
-
-        return redis.exists(
-            buildRedisKey(id, token)
-        ).get() == 1L
-    }
-
-    fun getUserIdFromSession(token: String): String? {
-        val claims = parser.parseClaimsJws(token)
-        val id = claims.body.id
-
-        redis.getex(buildRedisKey(id, token), GetExArgs().ex(SESSION_TTL)) ?: return null
-
-        return id
-    }
-
-    fun deleteSessions(userID: String) {
-        val key = buildRedisKeyAllSessions(userID)
-
-        val tokens = redis.keys(key)
-            .get()
-
-        sessionCache.invalidateAll(tokens)
-        redis.del(*tokens.toTypedArray())
+        return DefaultJwtBuilder()
+            .setIssuer("astro-web")
+            .setIssuedAt(Date.from(Instant.now()))
+            .setId(userID)
+            .signWith(hmacShaKey)
+            .compact()
     }
 
     private fun buildRedisKey(id: String, token: String): String {

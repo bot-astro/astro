@@ -1,5 +1,6 @@
 package space.astro.api.central.controllers.dashboard
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import mu.KotlinLogging
 import net.dv8tion.jda.api.Permission
 import org.springframework.http.ResponseEntity
@@ -20,13 +21,13 @@ import space.astro.api.central.services.dashboard.DashboardGuildsPersistenceServ
 private val log = KotlinLogging.logger {  }
 
 @RestController
+@Tag(name = "dashboard-discord-data")
 class DashboardGuildsController(
     private val discordGuildsFetchService: DiscordGuildsFetchService,
     private val dashboardGuildsPersistenceService: DashboardGuildsPersistenceService
 ) {
     @GetMapping(Mappings.Dashboard.GUILDS)
     suspend fun getUserGuilds(
-        @RequestParam refresh: Boolean,
         exchange: ServerWebExchange
     ): ResponseEntity<*> {
         val accessToken = exchange.getAccessToken()

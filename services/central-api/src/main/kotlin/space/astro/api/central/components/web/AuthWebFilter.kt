@@ -50,6 +50,17 @@ class AuthWebFilter(
         }
 
 
+        ////////////////
+        /// API DOCS ///
+        ////////////////
+        if (requestPath.startsWith(Mappings.Docs.API_DOCS)
+            || requestPath.startsWith(Mappings.Docs.WEBJARS)
+            || requestPath.startsWith(Mappings.Docs.SWAGGER))
+        {
+            return chain.filter(exchange)
+        }
+
+
         /////////////
         /// LOGIN ///
         /////////////
@@ -102,7 +113,7 @@ class AuthWebFilter(
                     return@mono null
                 }
 
-                val (tokenPayload, isNotExpired) = userTokenPersistenceService.getCredentials(userID) ?: run {
+                val (tokenPayload, isNotExpired) = userTokenPersistenceService.getToken(userID) ?: run {
                     response.statusCode = HttpStatus.UNAUTHORIZED
                     return@mono null
                 }

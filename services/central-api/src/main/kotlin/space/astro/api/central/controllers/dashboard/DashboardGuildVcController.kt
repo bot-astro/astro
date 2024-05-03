@@ -1,5 +1,6 @@
 package space.astro.api.central.controllers.dashboard
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -9,6 +10,7 @@ import space.astro.api.central.configs.Mappings
 import space.astro.shared.core.daos.TemporaryVCDao
 
 @RestController
+@Tag(name = "dashboard-data")
 class DashboardGuildVcController(
     private val temporaryVCDao: TemporaryVCDao
 ) {

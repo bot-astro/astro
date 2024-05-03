@@ -3,7 +3,7 @@ Astro requires the following services:
 - MongoDB
 - Redis
 - InfluxDB
-- BigQuery
+- BigQuery (can be mocked for local dev)
 
 A Docker compose file for development purposes is available in `/docker/compose`, named `docker-compose-dev.yml`  
 It creates all the required services and their web dashboards:
@@ -16,6 +16,15 @@ It creates all the required services and their web dashboards:
 
 > Important: editing documents with the MongoDB dashboard **is not recommended** as it tends to mess up data types!
 
+### OpenAPI
+| Service     | development url                                                         |
+|-------------|-------------------------------------------------------------------------|
+| bot         | [localhost:9000/swagger-ui.html](http://localhost:9000/swagger-ui.html) |
+| central-api | [localhost:9001/swagger-ui.html](http://localhost:9001/swagger-ui.html) |
+| support-bot | [localhost:9003/swagger-ui.html](http://localhost:9003/swagger-ui.html) |
+
+
+## Deployment
 ### Kubernetes secrets creation
 ```
 kubectl create namespace astro

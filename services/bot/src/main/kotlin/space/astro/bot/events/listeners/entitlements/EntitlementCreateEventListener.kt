@@ -23,7 +23,7 @@ class EntitlementCreateEventListener(
     @EventListener
     fun receiveEntitlementCreateEvent(event: EntitlementCreateEvent) {
         coroutineScope.launch {
-            supportBotApiService.forwardCreateEntitlementEvent(event.entitlement)
+            supportBotApiService.addPremiumRoleToUser(event.entitlement.userId)
         }
 
         when (event.entitlement.skuId) {
@@ -35,7 +35,7 @@ class EntitlementCreateEventListener(
                     guildData.entitlements[entitlementIndex] = GuildEntitlement(
                         event.entitlement.id,
                         event.entitlement.skuId,
-                        event.entitlement.endsAt?.toInstant()?.toEpochMilli()
+                        event.entitlement.timeEnding?.toInstant()?.toEpochMilli()
                     )
 
                     guildDao.save(guildData)
@@ -43,7 +43,7 @@ class EntitlementCreateEventListener(
                     guildData.entitlements.add(GuildEntitlement(
                         event.entitlement.id,
                         event.entitlement.skuId,
-                        event.entitlement.endsAt?.toInstant()?.toEpochMilli()
+                        event.entitlement.timeEnding?.toInstant()?.toEpochMilli()
                     ))
 
                     guildDao.save(guildData)

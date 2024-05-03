@@ -1,5 +1,6 @@
 package space.astro.api.central.controllers.dashboard
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -9,6 +10,7 @@ import space.astro.api.central.configs.getAccessToken
 import space.astro.api.central.services.discord.DiscordUserService
 
 @RestController
+@Tag(name = "dashboard-data")
 class DashboardUserController(
     val discordUserService: DiscordUserService,
 ) {

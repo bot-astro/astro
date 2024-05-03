@@ -1,6 +1,6 @@
 package space.astro.shared.core.models.discord
 
-data class DiscordUserData(
+data class DiscordUserDto(
     val id: String,
     val username: String,
     val discriminator: String,

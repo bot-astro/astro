@@ -24,6 +24,7 @@ class GuildMemberJoinEventListener(
             return
 
         applicationScope.launch {
+            // TODO: check chargebee subscriptions too
             val entitlements = discordEntitlementsFetchService.fetchEntitlements(
                 applicationId = discordApplicationConfig.entitlementsBotId.toString(),
                 authToken = discordApplicationConfig.entitlementsBotToken,
