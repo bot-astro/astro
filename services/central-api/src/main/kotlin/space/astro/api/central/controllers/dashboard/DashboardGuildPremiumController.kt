@@ -1,7 +1,7 @@
 package space.astro.api.central.controllers.dashboard
 
 import com.chargebee.models.Subscription
-import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties.Http
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import space.astro.api.central.configs.Mappings
 import space.astro.api.central.configs.getUserID
-import space.astro.api.central.services.dashboard.DashboardGuildsPersistenceService
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.UserDao
 import space.astro.shared.core.models.database.GuildUpgradeData
 import space.astro.shared.core.services.chargebee.ChargebeeClientService
 
 @RestController
+@Tag(name = "dashboard-data")
 class DashboardGuildUltimateController(
     private val guildDao: GuildDao,
     private val userDao: UserDao,
@@ -39,7 +39,7 @@ class DashboardGuildUltimateController(
             return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("Server is already upgraded to ultimate")
         }
 
-        val chargebeeSubscription = chargebeeClientService.getUserActiveSubscriptions(userID)
+        val chargebeeSubscription = chargebeeClientService.getActiveServerSubscriptionsOfUser(userID)
             .firstOrNull { it.subscription().id() == subscriptionID }
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Subscription with the provided ID not found")
 
