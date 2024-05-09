@@ -256,7 +256,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     try {
         guild.moveVoiceMember(owner, temporaryVC).await()
     } catch (e: Exception) {
-        log.info { "DELETE - Unknown error moving a user into a temporary VC" }
+        log.info { "DELETE - Unknown error moving a user into a temporary VC  - server ${guild.id}" }
         temporaryVC.delete().reason("Unknown error moving a user into a temporary VC").queueAfter(1, TimeUnit.SECONDS)
         throw ConfigurationException(
             configurationErrorService.unknownError(
@@ -346,7 +346,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         privateChat?.delete()
             ?.reason("User left the generated temporary VC too quickly")
             ?.queueAfter(2000, TimeUnit.SECONDS)
-        log.info { "DELETE - User left the generated temporary VC too quickly" }
+        log.info { "DELETE - User left the generated temporary VC too quickly - server ${guild.id}" }
         temporaryVC.delete()
             .reason("User left the generated temporary VC too quickly").queueAfter(3000, TimeUnit.SECONDS)
 
