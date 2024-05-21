@@ -28,14 +28,18 @@ It creates all the required services and their web dashboards:
 ### Kubernetes secrets creation
 ```
 kubectl create namespace astro
+kubectl create namespace astro-staging
 
-kubectl -n astro create configmap central-api-staging-config --from-env-file=./env/central-api/staging.env
+kubectl -n astro-staging create configmap central-api-staging-config --from-env-file=./env/central-api/staging.env
 
 kubectl -n astro create configmap bot-config --from-env-file=./env/bot/prod.env
 kubectl -n astro create configmap central-api-config --from-env-file=./env/central-api/prod.env
 kubectl -n astro create configmap entitlements-expiration-job-config --from-env-file=./env/entitlements-expiration-job/prod.env
 kubectl -n astro create configmap support-bot-config --from-env-file=./env/support-bot/prod.env
+
+kubectl -n astro-staging create secret generic gcp-bigquery-creds --from-file=gcp-bigquery-creds.json
 kubectl -n astro create secret generic gcp-bigquery-creds --from-file=gcp-bigquery-creds.json
 
+kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username=Giuliopime --docker-password=ghp_PAT -n astro-staging
 kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username=Giuliopime --docker-password=ghp_PAT -n astro
 ```

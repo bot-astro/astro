@@ -16,6 +16,7 @@ import space.astro.api.central.services.discord.DiscordUserTokenFetchService
 import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.dashboard.WebSessionService
 import space.astro.shared.core.configs.ChargebeeConfig
+import space.astro.shared.core.configs.KubeConfig
 import java.util.Base64
 
 @Component
@@ -23,6 +24,7 @@ class AuthWebFilter(
     private val webSessionService: WebSessionService,
     private val chargebeeConfig: ChargebeeConfig,
     private val centralApiConfig: CentralApiConfig,
+    private val kubeConfig: KubeConfig,
     private val userTokenPersistenceService: DiscordUserTokenPersistenceService,
     private val userTokenFetchService: DiscordUserTokenFetchService
 ): WebFilter {
@@ -137,7 +139,11 @@ class AuthWebFilter(
         /////////////////////
         return mono {
             val authHeader = request.headers["Authorization"]?.get(0)
-            if (authHeader == null || authHeader != centralApiConfig.auth) {
+                ?: run {
+                    response.statusCode = HttpStatus.UNAUTHORIZED
+                    return@mono null
+                }
+            if (authHeader != centralApiConfig.auth && authHeader != kubeConfig.lifecycleAuthorization) {
                 response.statusCode = HttpStatus.UNAUTHORIZED
                 return@mono null
             }
