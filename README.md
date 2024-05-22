@@ -30,6 +30,7 @@ It creates all the required services and their web dashboards:
 kubectl create namespace astro
 kubectl create namespace astro-staging
 
+kubectl -n astro-staging create configmap bot-staging-config --from-env-file=./env/bot/staging.env
 kubectl -n astro-staging create configmap central-api-staging-config --from-env-file=./env/central-api/staging.env
 
 kubectl -n astro create configmap bot-config --from-env-file=./env/bot/prod.env

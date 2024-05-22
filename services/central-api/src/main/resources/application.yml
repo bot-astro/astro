@@ -96,3 +96,10 @@ discord:
 
 jwt:
   key: ${JWT_KEY}
+bot:
+  endpoint:
+    localhost: ${BOT_ENDPOINT_LOCALHOST:true}
+    port: ${BOT_ENDPOINT_PORT:9000}
+    pod-name: ${BOT_ENDPOINT_POD_NAME:astro}
+    service-name: ${BOT_ENDPOINT_SERVICE_NAME:bot}
+    namespace: ${BOT_ENDPOINT_NAMESPACE:astro}

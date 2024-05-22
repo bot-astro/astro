@@ -139,8 +139,8 @@ promotions:
   # bot
   - name: Deploy bot to production
     pipeline_file: deploy/bot/production.yml
-#  - name: Deploy bot to staging
-#    pipeline_file: deploy/bot/staging.yml
+  - name: Deploy bot to staging
+    pipeline_file: deploy/bot/staging.yml
 #    auto_promote:
 #      when: |
 #        branch = 'develop' and result = 'passed' and change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })

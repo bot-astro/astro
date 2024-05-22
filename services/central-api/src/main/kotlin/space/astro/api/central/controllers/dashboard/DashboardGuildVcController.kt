@@ -20,6 +20,6 @@ class DashboardGuildVcController(
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
         temporaryVCDao.deleteAll(guildID)
-        return ResponseEntity.noContent().build<Any>()
+        return ResponseEntity.ok().build<Any>()
     }
 }

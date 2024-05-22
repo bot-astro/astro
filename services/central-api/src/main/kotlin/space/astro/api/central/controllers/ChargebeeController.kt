@@ -1,7 +1,5 @@
 package space.astro.api.central.controllers
 
-import com.fasterxml.jackson.databind.JsonMappingException
-import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -10,6 +8,7 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
@@ -17,14 +16,15 @@ import org.springframework.web.server.ServerWebExchange
 import space.astro.api.central.configs.Mappings
 import space.astro.api.central.configs.getUserID
 import space.astro.api.central.models.chargebee.SubscriptionWebhookData
+import space.astro.api.central.models.chargebee.UpgradedGuildInfo
+import space.astro.api.central.models.chargebee.UserSubscription
+import space.astro.api.central.models.chargebee.UserSubscriptionsInfo
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.UserDao
 import space.astro.shared.core.models.database.GuildUpgradeData
-import space.astro.shared.core.services.bot.BotApiService
 import space.astro.shared.core.services.chargebee.ChargebeeClientService
 import space.astro.shared.core.services.support.SupportBotApiService
 import space.astro.shared.core.util.exceptions.NotFoundException
-import space.astro.shared.core.util.exceptions.UnknownException
 
 private val log = KotlinLogging.logger { }
 
@@ -67,6 +67,34 @@ class ChargebeeController(
             log.error { "failed creating portal session access url for user $userID" }
             ResponseEntity.badRequest().build<Any>()
         }
+    }
+
+    @GetMapping(Mappings.Chargebee.USER_ACTIVE_SUBSCRIPTIONS)
+    suspend fun getUserActiveSubscriptions(
+        @PathVariable userID: String,
+        exchange: ServerWebExchange
+    ): ResponseEntity<*> {
+        val userData = userDao.get(userID)
+            ?: return ResponseEntity.notFound().build<Any>()
+
+        val activeSubscriptions = chargebeeClientService.getActiveServerSubscriptionsOfUser(userID)
+
+        val subscriptionsInfo = UserSubscriptionsInfo(
+            upgradedGuilds = userData.guildActiveUpgrades.map {
+                UpgradedGuildInfo(
+                    subscriptionId = it.subscriptionID,
+                    guildId = it.guildID,
+                )
+            },
+            subscriptions = activeSubscriptions.map {
+                UserSubscription(
+                    subscriptionId = it.subscription().id(),
+                    quantities = it.subscription().subscriptionItems().firstOrNull()?.quantity() ?: 0
+                )
+            }
+        )
+
+        return ResponseEntity.ok(subscriptionsInfo)
     }
 
     @PostMapping(Mappings.Chargebee.EVENT_SUB_CREATE)

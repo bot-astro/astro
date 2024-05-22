@@ -36,7 +36,7 @@ class DashboardGuildPremiumController(
             ?: return ResponseEntity.notFound().build<Any>()
 
         if (guildData.upgradedByUserID !== null) {
-            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("Server is already upgraded to ultimate")
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Server is already upgraded to ultimate")
         }
 
         val chargebeeSubscription = chargebeeClientService.getActiveServerSubscriptionsOfUser(userID)

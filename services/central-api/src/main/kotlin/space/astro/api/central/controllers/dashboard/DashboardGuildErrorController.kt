@@ -30,6 +30,6 @@ class DashboardGuildErrorController(
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
         configurationErrorDao.clear(guildID)
-        return ResponseEntity.noContent().build<Any>()
+        return ResponseEntity.ok().build<Any>()
     }
 }

@@ -22,6 +22,7 @@ object Mappings {
         }
 
         const val PORTAL_SESSION = "/chargebee/portal-session"
+        const val USER_ACTIVE_SUBSCRIPTIONS = "/chargebee/subscriptions/{userID}"
         const val EVENT_SUB_CREATE = "${Prefixes.EVENT}/sub/create"
         const val EVENT_SUB_CANCEL = "${Prefixes.EVENT}/sub/cancel"
     }
@@ -42,15 +43,15 @@ object Mappings {
         const val GUILD_ROLES = "${GUILD}/roles"
 
         const val GUILD_DATA = "${GUILD}/data"
-        const val GUILD_UPDATE_SETTINGS = "${GUILD}/data/settings"
+        const val GUILD_UPDATE_SETTINGS = "${GUILD}/data"
         const val GUILD_CREATE_GENERATOR = "${GUILD}/data/generator"
-        const val GUILD_UPDATE_GENERATOR = "${GUILD}/data/generator/{generatorID}"
+        const val GUILD_SINGLE_GENERATOR = "${GUILD}/data/generator/{generatorID}"
         const val GUILD_CREATE_INTERFACE = "${GUILD}/data/interface"
-        const val GUILD_UPDATE_INTERFACE = "${GUILD}/data/interface/{interfaceID}"
+        const val GUILD_SINGLE_INTERFACE = "${GUILD}/data/interface/{interfaceID}"
         const val GUILD_CREATE_VOICE_ROLE = "${GUILD}/data/voice-role"
-        const val GUILD_UPDATE_VOICE_ROLE = "${GUILD}/data/voice-role/{channelID}"
+        const val GUILD_SINGLE_VOICE_ROLE = "${GUILD}/data/voice-role/{channelID}"
         const val GUILD_CREATE_TEMPLATE = "${GUILD}/data/template"
-        const val GUILD_UPDATE_TEMPLATE = "${GUILD}/data/template/{templateID}"
+        const val GUILD_SINGLE_TEMPLATE = "${GUILD}/data/template/{templateID}"
 
         const val GUILD_UPGRADE = "${GUILD}/upgrade/{subscriptionID}"
         const val GUILD_DOWNGRADE = "${GUILD}/downgrade"

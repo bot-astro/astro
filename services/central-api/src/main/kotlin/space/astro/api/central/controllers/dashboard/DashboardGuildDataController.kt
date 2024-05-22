@@ -3,6 +3,7 @@ package space.astro.api.central.controllers.dashboard
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -41,10 +42,8 @@ class DashboardGuildDataController(
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
         val userID = exchange.getUserID()
-
         val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
             ?: return ResponseEntity.notFound().build<Any>()
-
         if (!dashboardGuild.canManage) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
         }
@@ -64,6 +63,13 @@ class DashboardGuildDataController(
         @RequestBody guildSettings: GuildDataSettingsBody,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
         val validation = guildSettings.validate()
         if (!validation.isValid) {
             return ResponseEntity.badRequest().body(validation.invalidMessage)
@@ -89,6 +95,13 @@ class DashboardGuildDataController(
         @PathVariable guildID: String,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
         val endpoint = podMetaCalculatorService.calculatePodEndpoint(guildID)
 
         val guildData = guildDao.get(guildID)
@@ -108,13 +121,20 @@ class DashboardGuildDataController(
         }
     }
 
-    @PostMapping(Mappings.Dashboard.GUILD_UPDATE_GENERATOR)
+    @PostMapping(Mappings.Dashboard.GUILD_SINGLE_GENERATOR)
     suspend fun updateGuildGenerator(
         @PathVariable guildID: String,
         @PathVariable generatorID: String,
         @RequestBody generatorData: GeneratorData,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
         val validation = generatorData.validate()
         if (!validation.isValid) {
             return ResponseEntity.badRequest().body(validation.invalidMessage)
@@ -132,6 +152,30 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
+    @DeleteMapping(Mappings.Dashboard.GUILD_SINGLE_GENERATOR)
+    suspend fun deleteGuildGenerator(
+        @PathVariable guildID: String,
+        @PathVariable generatorID: String,
+        exchange: ServerWebExchange
+    ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
+        val guildData = guildDao.get(guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+
+        guildData.generators.removeIf { it.id === generatorID }
+
+        // maybe delete from Discord too? same thing for interfaces? not sure honestly
+
+        guildDao.save(guildData)
+        return ResponseEntity.ok(guildData)
+    }
+
 
     //////////////////
     /// INTERFACES ///
@@ -143,6 +187,13 @@ class DashboardGuildDataController(
         @RequestBody guildDataInterfaceCreateBody: GuildDataInterfaceCreateBody,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
         val endpoint = podMetaCalculatorService.calculatePodEndpoint(guildID)
 
         val validation = guildDataInterfaceCreateBody.validate()
@@ -168,13 +219,20 @@ class DashboardGuildDataController(
         }
     }
 
-    @PostMapping(Mappings.Dashboard.GUILD_UPDATE_INTERFACE)
+    @PostMapping(Mappings.Dashboard.GUILD_SINGLE_INTERFACE)
     suspend fun updateGuildInterface(
         @PathVariable guildID: String,
         @PathVariable interfaceID: String,
         @RequestBody interfaceData: InterfaceData,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
         val endpoint = podMetaCalculatorService.calculatePodEndpoint(guildID)
 
         val validation = interfaceData.validate()
@@ -203,6 +261,27 @@ class DashboardGuildDataController(
         }
     }
 
+    @DeleteMapping(Mappings.Dashboard.GUILD_SINGLE_INTERFACE)
+    suspend fun deleteGuildInterface(
+        @PathVariable guildID: String,
+        @PathVariable interfaceID: String,
+        exchange: ServerWebExchange
+    ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
+        val guildData = guildDao.get(guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+
+        guildData.interfaces.removeIf { it.messageID === interfaceID }
+        guildDao.save(guildData)
+        return ResponseEntity.ok(guildData)
+    }
+
 
     ///////////////////
     /// VOICE ROLES ///
@@ -214,6 +293,13 @@ class DashboardGuildDataController(
         @RequestBody connectionData: ConnectionData,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()
 
@@ -228,13 +314,20 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
-    @PostMapping(Mappings.Dashboard.GUILD_UPDATE_VOICE_ROLE)
+    @PostMapping(Mappings.Dashboard.GUILD_SINGLE_VOICE_ROLE)
     suspend fun updateGuildVoiceRole(
         @PathVariable guildID: String,
         @PathVariable channelID: String,
         @RequestBody connectionData: ConnectionData,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()
 
@@ -252,6 +345,27 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
+    @DeleteMapping(Mappings.Dashboard.GUILD_SINGLE_VOICE_ROLE)
+    suspend fun deleteGuildVoiceRole(
+        @PathVariable guildID: String,
+        @PathVariable channelID: String,
+        exchange: ServerWebExchange
+    ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
+        val guildData = guildDao.get(guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+
+        guildData.connections.removeIf { it.id === channelID }
+        guildDao.save(guildData)
+        return ResponseEntity.ok(guildData)
+    }
+
 
     /////////////////
     /// TEMPLATES ///
@@ -263,6 +377,13 @@ class DashboardGuildDataController(
         @RequestBody templateData: TemplateData,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()
 
@@ -276,13 +397,20 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
-    @PostMapping(Mappings.Dashboard.GUILD_UPDATE_TEMPLATE)
+    @PostMapping(Mappings.Dashboard.GUILD_SINGLE_TEMPLATE)
     suspend fun updateGuildTemplate(
         @PathVariable guildID: String,
         @PathVariable templateID: String,
         @RequestBody templateData: TemplateData,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()
 
@@ -296,6 +424,27 @@ class DashboardGuildDataController(
             ?: return ResponseEntity.notFound().build<Any>()
 
         guildData.templates[index] = templateData
+        guildDao.save(guildData)
+        return ResponseEntity.ok(guildData)
+    }
+
+    @DeleteMapping(Mappings.Dashboard.GUILD_SINGLE_TEMPLATE)
+    suspend fun deleteGuildTemplate(
+        @PathVariable guildID: String,
+        @PathVariable templateID: String,
+        exchange: ServerWebExchange
+    ) : ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+        if (!dashboardGuild.canManage) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
+        val guildData = guildDao.get(guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+
+        guildData.templates.removeIf { it.id === templateID }
         guildDao.save(guildData)
         return ResponseEntity.ok(guildData)
     }
