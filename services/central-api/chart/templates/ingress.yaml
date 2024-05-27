@@ -9,7 +9,7 @@ spec:
         - {{ .Values.host }}
       secretName: tls
   rules:
-    - host: api.astro-bot.space
+    - host: {{ .Values.host }}
       http:
         paths:
           - path: /
@@ -18,14 +18,4 @@ spec:
               service:
                 name: central-api
                 port:
-                  number: 9001
-    - host: staging-api.astro-bot.space
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: central-api
-                port:
-                  number: 10001
+                  number: {{ .Values.port }}
