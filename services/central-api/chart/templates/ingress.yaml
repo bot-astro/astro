@@ -6,8 +6,7 @@ metadata:
 spec:
   tls:
     - hosts:
-        - api.astro-bot.space
-        - staging-api.astro-bot.space
+        - {{ .Values.host }}
       secretName: tls
   rules:
     - host: api.astro-bot.space
