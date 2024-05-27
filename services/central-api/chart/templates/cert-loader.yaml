@@ -6,7 +6,7 @@ metadata:
 spec:
   tls:
     - hosts:
-        - “*.astro-bot.space"
+        - '*.astro-bot.space'
       secretName: tls
   rules:
-    - host: “*.astro-bot.space"
+    - host: '*.astro-bot.space'
