@@ -41,8 +41,11 @@ class AuthWebFilter(
         val requestPath = request.path.toString()
 
         val sessionCookie = request.cookies.getFirst(centralApiConfig.sessionCookieName)
+        println("got cookie $sessionCookie")
         val sessionObjectAsString = sessionCookie?.let { SessionCookieUtil.unseal(it.value, centralApiConfig.sessionCookiePassword) }
+        println("got session $sessionObjectAsString")
         val sessionToken = sessionObjectAsString?.let { dataSerializer.deserialize<OAuth2AuthorizationResponseDto>(sessionObjectAsString).token }
+        println("got token $sessionToken")
 
         response.headers.set("Access-Control-Allow-Origin", "http://localhost:3000")
         response.headers.set("Access-Control-Allow-Methods", "*")
