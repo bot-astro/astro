@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono
 import space.astro.api.central.configs.CentralApiConfig
 import space.astro.api.central.configs.Mappings
 import space.astro.api.central.configs.ExchangeAttributeNames
+import space.astro.api.central.models.auth.SessionWrapper
 import space.astro.api.central.models.discord.OAuth2AuthorizationResponseDto
 import space.astro.api.central.services.discord.DiscordUserTokenFetchService
 import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService
@@ -44,7 +45,7 @@ class AuthWebFilter(
         println("got cookie $sessionCookie")
         val sessionObjectAsString = sessionCookie?.let { SessionCookieUtil.unseal(it.value, centralApiConfig.sessionCookiePassword) }
         println("got session $sessionObjectAsString")
-        val sessionToken = sessionObjectAsString?.let { dataSerializer.deserialize<OAuth2AuthorizationResponseDto>(sessionObjectAsString).token }
+        val sessionToken = sessionObjectAsString?.let { dataSerializer.deserialize<SessionWrapper>(sessionObjectAsString).data.token }
         println("got token $sessionToken")
 
         response.headers.set("Access-Control-Allow-Origin", "http://localhost:3000")
