@@ -41,13 +41,6 @@ class AuthWebFilter(
         val response = exchange.response
         val requestPath = request.path.toString()
 
-        val sessionCookie = request.cookies.getFirst(centralApiConfig.sessionCookieName)
-        println("got cookie $sessionCookie")
-        val sessionObjectAsString = sessionCookie?.let { SessionCookieUtil.unseal(it.value, centralApiConfig.sessionCookiePassword) }
-        println("got session $sessionObjectAsString")
-        val sessionToken = sessionObjectAsString?.let { dataSerializer.deserialize<SessionWrapper>(sessionObjectAsString).data.token }
-        println("got token $sessionToken")
-
         response.headers.set("Access-Control-Allow-Origin", "http://localhost:3000")
         response.headers.set("Access-Control-Allow-Methods", "*")
         response.headers.set("Access-Control-Allow-Headers", "*")
@@ -113,6 +106,10 @@ class AuthWebFilter(
         if (requestPath.startsWith(Mappings.Dashboard.Prefixes.DASHBOARD)
             || requestPath.startsWith(Mappings.Chargebee.PORTAL_SESSION))
         {
+            val sessionCookie = request.cookies.getFirst(centralApiConfig.sessionCookieName)
+            val sessionObjectAsString = sessionCookie?.let { SessionCookieUtil.unseal(it.value, centralApiConfig.sessionCookiePassword) }
+            val sessionToken = sessionObjectAsString?.let { dataSerializer.deserialize<SessionWrapper>(sessionObjectAsString).data.token }
+
             return mono {
                 if (sessionToken == null) {
                     response.statusCode = HttpStatus.UNAUTHORIZED
