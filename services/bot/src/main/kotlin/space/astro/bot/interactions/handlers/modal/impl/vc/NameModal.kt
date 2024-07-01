@@ -31,7 +31,7 @@ class NameModal(
         event: ModalInteractionEvent,
         @VcInteractionContextInfo(
             ownershipRequired = true,
-            vcOperationOrigin = VCOperationCTX.VCOperationOrigin.STATE_CHANGE
+            vcOperationOrigin = VCOperationCTX.VCOperationOrigin.USER_RENAME
         )
         ctx: VcInteractionContext,
     ) {
