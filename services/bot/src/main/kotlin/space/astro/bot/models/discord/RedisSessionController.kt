@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.requests.RestRateLimiter
 import net.dv8tion.jda.api.utils.SessionController
 import net.dv8tion.jda.api.utils.SessionController.ShardedGateway
 import net.dv8tion.jda.api.utils.SessionControllerAdapter
@@ -59,17 +60,17 @@ class RedisSessionController(
         connectionNodes.remove(node)?.cancel(true)
     }
 
-    override fun getGlobalRatelimit(): Long {
-        return try {
-            asyncCommands.get(RedisKey.GLOBAL_RATELIMIT.key).get().toLong()
-        } catch (e: Exception) {
-            Long.MIN_VALUE
-        }
-    }
-
-    override fun setGlobalRatelimit(ratelimit: Long) {
-        asyncCommands.set(RedisKey.GLOBAL_RATELIMIT.key, ratelimit.toString()).get()
-    }
+//    override fun getGlobalRatelimit(): Long {
+//        return try {
+//            asyncCommands.get(RedisKey.GLOBAL_RATELIMIT.key).get().toLong()
+//        } catch (e: Exception) {
+//            Long.MIN_VALUE
+//        }
+//    }
+//
+//    override fun setGlobalRatelimit(ratelimit: Long) {
+//        asyncCommands.set(RedisKey.GLOBAL_RATELIMIT.key, ratelimit.toString()).get()
+//    }
 
     override fun getShardedGateway(api: JDA): ShardedGateway {
         return ShardedGateway(gateway, -1)

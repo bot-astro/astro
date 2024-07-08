@@ -65,7 +65,7 @@ class ShardManagerFactory(
                 discordApplicationConfig.token,
                 intents
             )
-            .setSessionController(sessionController)
+//            .setSessionController(sessionController)
             .setShardsTotal(shardManagerConfig.totalShards)
             .setShards(shardList)
             .setActivity(activity)

@@ -2,6 +2,8 @@ package space.astro.support.bot.models.discord
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.requests.RestRateLimiter
+import net.dv8tion.jda.api.requests.RestRateLimiter.GlobalRateLimit
 import net.dv8tion.jda.api.utils.SessionController
 import net.dv8tion.jda.api.utils.SessionController.ShardedGateway
 import net.dv8tion.jda.api.utils.SessionControllerAdapter
@@ -57,19 +59,19 @@ class RedisSessionController(
         connectionNodes.remove(node)?.cancel(true)
     }
 
-    override fun getGlobalRatelimit(): Long {
-        return try {
-            redisClientService.asyncCommands().get(getRedisGlobalRatelimitKey(discordApplicationConfig.botId)).get()
-                .toLong()
-        } catch (e: Exception) {
-            Long.MIN_VALUE
-        }
-    }
-
-    override fun setGlobalRatelimit(ratelimit: Long) {
-        redisClientService.asyncCommands()
-            .set(getRedisGlobalRatelimitKey(discordApplicationConfig.botId), ratelimit.toString()).get()
-    }
+//    override fun getGlobalRatelimit(): Long {
+//        return try {
+//            redisClientService.asyncCommands().get(getRedisGlobalRatelimitKey(discordApplicationConfig.botId)).get()
+//                .toLong()
+//        } catch (e: Exception) {
+//            Long.MIN_VALUE
+//        }
+//    }
+//
+//    override fun setGlobalRatelimit(ratelimit: Long) {
+//        redisClientService.asyncCommands()
+//            .set(getRedisGlobalRatelimitKey(discordApplicationConfig.botId), ratelimit.toString()).get()
+//    }
 
     override fun getShardedGateway(api: JDA): ShardedGateway {
         return ShardedGateway(gateway, -1)

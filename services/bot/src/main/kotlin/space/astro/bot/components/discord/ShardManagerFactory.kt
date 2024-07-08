@@ -89,7 +89,7 @@ class ShardManagerFactory(
             )
             .setMemberCachePolicy(MemberCachePolicy.VOICE)
             .enableCache(CacheFlag.VOICE_STATE, CacheFlag.MEMBER_OVERRIDES, CacheFlag.ACTIVITY)
-            .setSessionController(sessionController)
+//            .setSessionController(sessionController)
             .setShardsTotal(shardManagerConfig.totalShards)
             .setShards(shardList)
             .setActivity(activity)
