@@ -15,7 +15,7 @@ blocks:
     dependencies: [ ]
     run:
       when: |
-        change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
     task:
       secrets:
         - name: github
@@ -46,7 +46,7 @@ blocks:
     dependencies: [ ]
     run:
       when: |
-        change_in(['/services/central-api/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        change_in(['/services/central-api/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
     task:
       secrets:
         - name: github
@@ -77,7 +77,7 @@ blocks:
     dependencies: [ ]
     run:
       when: |
-        change_in(['/services/support-bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        change_in(['/services/support-bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
     task:
       secrets:
         - name: github
@@ -108,7 +108,7 @@ blocks:
     dependencies: [ ]
     run:
       when: |
-        change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
     task:
       secrets:
         - name: github
