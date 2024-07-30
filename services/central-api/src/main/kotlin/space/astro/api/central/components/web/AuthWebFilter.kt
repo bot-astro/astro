@@ -12,9 +12,12 @@ import reactor.core.publisher.Mono
 import space.astro.api.central.configs.CentralApiConfig
 import space.astro.api.central.configs.Mappings
 import space.astro.api.central.configs.ExchangeAttributeNames
+import space.astro.api.central.models.auth.SessionWrapper
 import space.astro.api.central.services.discord.DiscordUserTokenFetchService
 import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.dashboard.WebSessionService
+import space.astro.api.central.util.SessionCookieUtil
+import space.astro.shared.core.components.io.DataSerializer
 import space.astro.shared.core.configs.ChargebeeConfig
 import space.astro.shared.core.configs.KubeConfig
 import java.util.Base64
@@ -26,7 +29,8 @@ class AuthWebFilter(
     private val centralApiConfig: CentralApiConfig,
     private val kubeConfig: KubeConfig,
     private val userTokenPersistenceService: DiscordUserTokenPersistenceService,
-    private val userTokenFetchService: DiscordUserTokenFetchService
+    private val userTokenFetchService: DiscordUserTokenFetchService,
+    private val dataSerializer: DataSerializer
 ): WebFilter {
     private val base64Decoder = Base64.getDecoder()
 
@@ -101,9 +105,13 @@ class AuthWebFilter(
         if (requestPath.startsWith(Mappings.Dashboard.Prefixes.DASHBOARD)
             || requestPath.startsWith(Mappings.Chargebee.PORTAL_SESSION))
         {
-            return mono {
-                val sessionToken = request.headers["Authorization"]?.get(0)?.replace("Bearer ", "")
+            val sessionCookie = request.cookies.getFirst(centralApiConfig.sessionCookieName)
+            // no need to sign as token is already signed?
+//            val sessionObjectAsString = sessionCookie?.let { SessionCookieUtil.unseal(it.value, centralApiConfig.sessionCookiePassword) }
+            val sessionToken = sessionCookie?.value?.let { dataSerializer.deserialize<SessionWrapper>(it).data.token }
+                ?: request.headers["Authorization"]?.get(0)?.removePrefix("Bearer ")
 
+            return mono {
                 if (sessionToken == null) {
                     response.statusCode = HttpStatus.UNAUTHORIZED
                     return@mono null

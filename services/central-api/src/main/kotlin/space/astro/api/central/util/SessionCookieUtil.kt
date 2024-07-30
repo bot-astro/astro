@@ -14,7 +14,6 @@ private const val ALGORITHM = "PBKDF2WithHmacSHA1"
 private const val TRANSFORMATION = "AES/CBC/PKCS5Padding"
 
 object SessionCookieUtil {
-
     fun unseal(cookie: String, password: String): String {
         val parts = cookie.split("*")
 
