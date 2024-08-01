@@ -8,5 +8,10 @@ import org.springframework.context.annotation.Configuration
 class CentralApiConfig {
     var auth: String = "password"
     var sessionCookieName: String = "astro-session"
-    val sessionCookiePassword: String = "QooPWTxNjjzRV4TXvDvnTPiweTAWUrSU"
+    var sessionCookieAllowOrigin: String = "http://localhost:3000"
+    var sessionCookieDomain: String? = null
+    var sessionCookieSecure: Boolean = false
+    var sessionCookieHttpOnly: Boolean = false
+    var sessionCookieMaxAgeInSeconds: Long = 2592000
+    var sessionCookieSameSite: String = "None"
 }

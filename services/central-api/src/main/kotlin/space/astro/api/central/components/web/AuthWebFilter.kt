@@ -40,7 +40,7 @@ class AuthWebFilter(
         val requestPath = request.path.toString()
 
         response.headers.set("Access-Control-Allow-Credentials", "true")
-        response.headers.set("Access-Control-Allow-Origin", "http://localhost:3000")
+        response.headers.set("Access-Control-Allow-Origin", centralApiConfig.sessionCookieAllowOrigin)
         response.headers.set("Access-Control-Allow-Methods", "*")
         response.headers.set("Access-Control-Allow-Headers", "*")
 
@@ -105,9 +105,7 @@ class AuthWebFilter(
         if (requestPath.startsWith(Mappings.Dashboard.Prefixes.DASHBOARD)
             || requestPath.startsWith(Mappings.Chargebee.PORTAL_SESSION))
         {
-            val sessionCookie = request.cookies.getFirst(centralApiConfig.sessionCookieName)
-            val sessionObjectAsString = sessionCookie?.let { SessionCookieUtil.unseal(it.value, centralApiConfig.sessionCookiePassword) }
-            val sessionToken = sessionObjectAsString?.let { dataSerializer.deserialize<SessionWrapper>(sessionObjectAsString).data.token }
+            val sessionToken = request.cookies.getFirst(centralApiConfig.sessionCookieName)?.value
                 ?: request.headers["Authorization"]?.get(0)?.removePrefix("Bearer ")
 
             return mono {

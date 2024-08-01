@@ -2,9 +2,12 @@ package space.astro.api.central.controllers.dashboard
 
 import io.swagger.v3.oas.annotations.tags.Tag
 import mu.KotlinLogging
+import org.springframework.http.HttpHeaders
+import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ServerWebExchange
+import space.astro.api.central.configs.CentralApiConfig
 import space.astro.api.central.configs.Mappings
 import space.astro.api.central.configs.getUserID
 import space.astro.api.central.models.discord.OAuth2AuthorizationResponseDto
@@ -24,7 +27,8 @@ class DashboardAuthController(
     val discordUserTokenFetchService: DiscordUserTokenFetchService,
     val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
     val webSessionService: WebSessionService,
-    val dashboardGuildsPersistenceService: DashboardGuildsPersistenceService
+    val dashboardGuildsPersistenceService: DashboardGuildsPersistenceService,
+    val centralApiConfig: CentralApiConfig
 ) {
 
     @GetMapping(Mappings.Dashboard.LOGIN)
@@ -41,6 +45,8 @@ class DashboardAuthController(
         } catch (e: UnauthorizedException) {
             return ResponseEntity.badRequest().build<Any>()
         }
+
+        println(userAndToken)
 
         val user = userAndToken.user
         val guild = userAndToken.token.guild?.let {
@@ -59,9 +65,24 @@ class DashboardAuthController(
             guild
         )
 
+        val cookie = ResponseCookie.from(centralApiConfig.sessionCookieName, sessionToken)
+            .path("/")
+            .maxAge(centralApiConfig.sessionCookieMaxAgeInSeconds)
+            .httpOnly(centralApiConfig.sessionCookieHttpOnly)
+            .secure(centralApiConfig.sessionCookieSecure)
+            .sameSite(centralApiConfig.sessionCookieSameSite)
+            .domain(centralApiConfig.sessionCookieDomain)
+            .build()
+
+        val headers = HttpHeaders().apply {
+            set(HttpHeaders.SET_COOKIE, cookie.toString())
+        }
+
         log.info { "Successfully authorized discord user with id ${user.id} - response $response" }
 
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(response)
     }
 
     @GetMapping(Mappings.Dashboard.LOGOUT)
