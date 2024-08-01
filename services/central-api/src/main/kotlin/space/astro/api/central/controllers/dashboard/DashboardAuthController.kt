@@ -46,8 +46,6 @@ class DashboardAuthController(
             return ResponseEntity.badRequest().build<Any>()
         }
 
-        println(userAndToken)
-
         val user = userAndToken.user
         val guild = userAndToken.token.guild?.let {
             OAuth2GuildInfo(
