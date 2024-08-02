@@ -16,8 +16,6 @@ import space.astro.api.central.models.auth.SessionWrapper
 import space.astro.api.central.services.discord.DiscordUserTokenFetchService
 import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.dashboard.WebSessionService
-import space.astro.api.central.util.SessionCookieUtil
-import space.astro.shared.core.components.io.DataSerializer
 import space.astro.shared.core.configs.ChargebeeConfig
 import space.astro.shared.core.configs.KubeConfig
 import java.util.Base64
@@ -30,7 +28,6 @@ class AuthWebFilter(
     private val kubeConfig: KubeConfig,
     private val userTokenPersistenceService: DiscordUserTokenPersistenceService,
     private val userTokenFetchService: DiscordUserTokenFetchService,
-    private val dataSerializer: DataSerializer
 ): WebFilter {
     private val base64Decoder = Base64.getDecoder()
 
@@ -41,8 +38,8 @@ class AuthWebFilter(
 
         response.headers.set("Access-Control-Allow-Credentials", "true")
         response.headers.set("Access-Control-Allow-Origin", centralApiConfig.sessionCookieAllowOrigin)
-        response.headers.set("Access-Control-Allow-Methods", "*")
-        response.headers.set("Access-Control-Allow-Headers", "*")
+//        response.headers.set("Access-Control-Allow-Methods", "*")
+//        response.headers.set("Access-Control-Allow-Headers", centralApiConfig.corsAllowedHeaders)
 
         // chain preflight requests
         if (request.method == HttpMethod.OPTIONS) {
