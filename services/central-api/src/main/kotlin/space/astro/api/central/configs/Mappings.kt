@@ -23,6 +23,7 @@ object Mappings {
 
         const val PORTAL_SESSION = "/chargebee/portal-session"
         const val USER_ACTIVE_SUBSCRIPTIONS = "/chargebee/subscriptions/{userID}"
+        const val LOGGED_USER_ACTIVE_SUBSCRIPTIONS = "/chargebee/subscriptions"
         const val EVENT_SUB_CREATE = "${Prefixes.EVENT}/sub/create"
         const val EVENT_SUB_CANCEL = "${Prefixes.EVENT}/sub/cancel"
     }

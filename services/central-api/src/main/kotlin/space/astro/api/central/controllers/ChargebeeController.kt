@@ -105,6 +105,41 @@ class ChargebeeController(
         return ResponseEntity.ok(subscriptionsInfo)
     }
 
+    @GetMapping(Mappings.Chargebee.LOGGED_USER_ACTIVE_SUBSCRIPTIONS)
+    suspend fun getLoggedUserActiveSubscriptions(
+        exchange: ServerWebExchange
+    ): ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val userData = userDao.get(userID)
+            ?: return ResponseEntity.notFound().build<Any>()
+
+        val activeSubscriptions = chargebeeClientService.getActiveServerSubscriptionsOfUser(userID)
+
+        val subscriptionsInfo = UserSubscriptionsInfo(
+            upgradedGuilds = userData.guildActiveUpgrades.map {
+                UpgradedGuildInfo(
+                    subscriptionId = it.subscriptionID,
+                    guildId = it.guildID,
+                )
+            },
+            subscriptions = activeSubscriptions.map {
+                val quantities = it.subscription().subscriptionItems().firstOrNull()?.quantity() ?: 0
+                val used = userData.guildActiveUpgrades.count { upgrade -> upgrade.subscriptionID == it.subscription().id() }
+                val available = quantities - used
+
+                UserSubscription(
+                    subscriptionId = it.subscription().id(),
+                    annual = it.subscription().billingPeriodUnit() == Subscription.BillingPeriodUnit.YEAR,
+                    quantities = quantities,
+                    used = used,
+                    available = available
+                )
+            },
+        )
+
+        return ResponseEntity.ok(subscriptionsInfo)
+    }
+
     @PostMapping(Mappings.Chargebee.EVENT_SUB_CREATE)
     @ApiResponses(
         value = [
