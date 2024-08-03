@@ -10,7 +10,10 @@ data class UserSubscriptionsInfo(
 
 data class UserSubscription(
     val subscriptionId: String,
-    val quantities: Int
+    val annual: Boolean,
+    val quantities: Int,
+    val used: Int,
+    val available: Int,
 )
 
 data class UpgradedGuildInfo(

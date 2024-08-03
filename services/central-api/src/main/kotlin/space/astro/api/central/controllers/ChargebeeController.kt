@@ -1,5 +1,6 @@
 package space.astro.api.central.controllers
 
+import com.chargebee.models.Subscription
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -87,11 +88,18 @@ class ChargebeeController(
                 )
             },
             subscriptions = activeSubscriptions.map {
+                val quantities = it.subscription().subscriptionItems().firstOrNull()?.quantity() ?: 0
+                val used = userData.guildActiveUpgrades.count { upgrade -> upgrade.subscriptionID == it.subscription().id() }
+                val available = quantities - used
+
                 UserSubscription(
                     subscriptionId = it.subscription().id(),
-                    quantities = it.subscription().subscriptionItems().firstOrNull()?.quantity() ?: 0
+                    annual = it.subscription().billingPeriodUnit() == Subscription.BillingPeriodUnit.YEAR,
+                    quantities = quantities,
+                    used = used,
+                    available = available
                 )
-            }
+            },
         )
 
         return ResponseEntity.ok(subscriptionsInfo)
