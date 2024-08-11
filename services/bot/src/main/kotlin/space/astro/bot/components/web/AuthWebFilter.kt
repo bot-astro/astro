@@ -32,7 +32,7 @@ class AuthWebFilter(
             return mono {
                 val auth = request.headers["Authorization"]?.get(0)
 
-                if (auth !== kubeConfig.lifecycleAuthorization) {
+                if (auth != kubeConfig.lifecycleAuthorization) {
                     response.statusCode = HttpStatus.UNAUTHORIZED
                     return@mono null
                 } else {

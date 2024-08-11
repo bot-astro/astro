@@ -35,7 +35,7 @@ class DashboardGuildPremiumController(
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()
 
-        if (guildData.upgradedByUserID !== null) {
+        if (guildData.upgradedByUserID != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Server is already upgraded to ultimate")
         }
 
