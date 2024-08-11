@@ -28,7 +28,7 @@ class AuthWebFilter(
             return chain.filter(exchange)
         }
 
-        if (requestPath.startsWith(BotApiRoutes.Kube.READY) || requestPath.startsWith(BotApiRoutes.Kube.SHUTDOWN)) {
+        if (requestPath.startsWith(BotApiRoutes.Kube.READY) || requestPath.startsWith(BotApiRoutes.Kube.SHUTDOWN) || requestPath.startsWith(BotApiRoutes.Kube.LIVENESS)) {
             return mono {
                 val auth = request.headers["Authorization"]?.get(0)
 
