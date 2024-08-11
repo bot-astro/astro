@@ -9,17 +9,14 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
-import space.astro.api.central.configs.Mappings
-import space.astro.api.central.configs.getAccessToken
-import space.astro.api.central.configs.getUserID
-import space.astro.shared.core.models.dashboard.DashboardGuildChannel
+import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.api.central.util.getAccessToken
+import space.astro.api.central.util.getUserID
 import space.astro.api.central.models.dashboard.DashboardGuildDto
 import space.astro.api.central.services.bot.PodMetaCalculatorService
-import space.astro.shared.core.models.dashboard.DashboardGuildRole
 import space.astro.api.central.services.discord.DiscordGuildsFetchService
 import space.astro.api.central.services.dashboard.DashboardGuildsPersistenceService
 import space.astro.shared.core.services.bot.BotApiService
-import space.astro.shared.core.util.exceptions.BotApiPermissionException
 import space.astro.shared.core.util.exceptions.NotFoundException
 
 private val log = KotlinLogging.logger {  }
@@ -32,7 +29,7 @@ class DashboardGuildsController(
     private val podMetaCalculatorService: PodMetaCalculatorService,
     private val botApiService: BotApiService
 ) {
-    @GetMapping(Mappings.Dashboard.GUILDS)
+    @GetMapping(CentralApiRoutes.Dashboard.GUILDS)
     suspend fun getUserGuilds(
         exchange: ServerWebExchange
     ): ResponseEntity<*> {
@@ -56,7 +53,7 @@ class DashboardGuildsController(
         return ResponseEntity.ok(dashboardGuilds)
     }
 
-    @GetMapping(Mappings.Dashboard.GUILD_CHANNELS)
+    @GetMapping(CentralApiRoutes.Dashboard.GUILD_CHANNELS)
     suspend fun getGuildChannels(
         @PathVariable guildID: String,
         exchange: ServerWebExchange
@@ -71,7 +68,7 @@ class DashboardGuildsController(
         }
     }
 
-    @GetMapping(Mappings.Dashboard.GUILD_ROLES)
+    @GetMapping(CentralApiRoutes.Dashboard.GUILD_ROLES)
     suspend fun getGuildRoles(
         @PathVariable guildID: String,
         exchange: ServerWebExchange

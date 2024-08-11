@@ -75,8 +75,7 @@ class ShardManagerFactory(
             when (it) {
                 is InsufficientPermissionException -> {
                     configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = it.guildId.toString(),
-                        configurationErrorData = it.toConfigurationErrorDto()
+                        configurationErrorData = it.toConfigurationErrorDto(it.guildId.toString())
                     )
                 }
             }

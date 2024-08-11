@@ -31,6 +31,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 ) {
     val data = event.vcEventData
     val guild = data.guild
+    val guildId = guild.id
     val owner = data.member
     val guildData = data.guildData
     val generatorData = event.generatorData
@@ -47,7 +48,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     /// PREMIUM REQUISITES ///
     //////////////////////////
     if (premiumRequirementDetector.exceededMaximumGeneratorAmount(data.guildData)) {
-        throw ConfigurationException(configurationErrorService.maximumAmountOfGenerator())
+        throw ConfigurationException(configurationErrorService.maximumAmountOfGenerator(guildId))
     }
 
     //////////////
@@ -100,10 +101,11 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
                 guild.moveVoiceMember(owner, fallbackGenerator)
                     .queueAfter(1, TimeUnit.SECONDS)
             } else {
-                throw ConfigurationException(configurationErrorService.premiumFallbackGenerator())
+                throw ConfigurationException(configurationErrorService.premiumFallbackGenerator(guildId))
             }
         } else {
             throw ConfigurationException(configurationErrorService.missingFallbackGenerator(
+                guildId = guildId,
                 encounteredIn = "${data.joinedChannel.name} generator"
             ))
         }
@@ -132,6 +134,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     if (!premiumRequirementDetector.canUseVCNameTemplate(guildData, nameTemplate)) {
         throw ConfigurationException(configurationErrorService.premiumVariables(
+            guildId = guildId,
             encounteredIn = "generating a temporary VC with the name $nameTemplate"
         ))
     }
@@ -191,7 +194,10 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     // denied permissions based on initial state
     generatorData.initialState.permissionDenied?.also { deniedPermission ->
         val targetRole = guild.getRoleById(generatorData.permissionsTargetRole ?: guild.id)
-            ?: throw ConfigurationException(configurationErrorService.missingGeneratorTargetRole(data.joinedChannel.name))
+            ?: throw ConfigurationException(configurationErrorService.missingGeneratorTargetRole(
+                guildId = guildId,
+                generatorName = data.joinedChannel.name
+            ))
 
         val targetRolePermissionOverride = permissionOverrides.firstOrNull { it.id == targetRole.id }
 
@@ -247,7 +253,8 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         temporaryVCBuilder.await()
     } catch (e: Exception) {
         throw ConfigurationException(
-            configurationErrorService.unknownError(
+            configurationErrorService.unknown(
+                guildId = guildId,
                 encounteredIn = "creating a temporary VC: ${e.message}"
             )
         )
@@ -259,7 +266,8 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         log.info { "DELETE - Unknown error moving a user into a temporary VC  - server ${guild.id}" }
         temporaryVC.delete().reason("Unknown error moving a user into a temporary VC").queueAfter(1, TimeUnit.SECONDS)
         throw ConfigurationException(
-            configurationErrorService.unknownError(
+            configurationErrorService.unknown(
+                guildId = guildId,
                 encounteredIn = "moving a user (${owner.id}) into a temporary VC: ${e.message}"
             )
         )
@@ -271,7 +279,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     val privateChat = if (generatorData.autoChat) {
         if (!premiumRequirementDetector.canCreatePrivateChatOnVCGeneration(guildData)) {
-            throw ConfigurationException(configurationErrorService.premiumRequiredForAutoPrivateChatCreation())
+            throw ConfigurationException(configurationErrorService.premiumRequiredForAutoPrivateChatCreation(guildId))
         } else {
             vcPrivateChatManager.create(
                 owner = owner,
@@ -283,7 +291,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     val waitingRoom = if (generatorData.autoWaiting) {
         if (!premiumRequirementDetector.canCreateWaitingRoomOnVCGeneration(guildData)) {
-            throw ConfigurationException(configurationErrorService.premiumRequiredForAutoWaitingRoomCreation())
+            throw ConfigurationException(configurationErrorService.premiumRequiredForAutoWaitingRoomCreation(guildId))
         } else {
             vcWaitingRoomManager.create(
                 owner = owner,
@@ -326,8 +334,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     if (creationChatMessage != null) {
         if (!premiumRequirementDetector.canSendMessageInVCChatOnVCGeneration(guildData)) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                guildId = guild.id,
-                configurationErrorData = configurationErrorService.premiumRequiredForAutoChatMessageOnCreation()
+                configurationErrorService.premiumRequiredForAutoChatMessageOnCreation(guildId)
             )
         } else {
             chatForMessage.sendMessage(creationChatMessage).queue()
@@ -376,7 +383,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         ?.let { guild.getRoleById(it) }
         ?.also {
             if (!premiumRequirementDetector.canAssignTemporaryVCOwnerRole(guildData)) {
-                throw ConfigurationException(configurationErrorService.premiumRequiredForOwnerRole())
+                throw ConfigurationException(configurationErrorService.premiumRequiredForOwnerRole(guildId))
             } else {
                 memberRolesManager.add(it)
             }

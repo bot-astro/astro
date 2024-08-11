@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.events.user.update.UserUpdateActivitiesEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.bot.components.managers.CooldownsManager
 import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.components.managers.vc.VCNameManager
 import space.astro.bot.components.managers.vc.VCPrivateChatManager
@@ -85,15 +84,14 @@ class MemberUpdateActivitiesEventListener(
             vcWaitingRoomManager.performWaitingRoomNameRefresh(vcOperationCTX)
         } catch (e: ConfigurationException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                guildId = guildId,
                 configurationErrorData = e.configurationErrorData
             )
         } catch (_: VcOperationException) {}
 
         vcOperationCTX.queueUpdatedManagers { managerType, e ->
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                guildId = guildId,
-                configurationErrorData = configurationErrorService.unknownError(
+                configurationErrorData = configurationErrorService.unknown(
+                    guildId = guildId,
                     encounteredIn = "updating ${managerType.readableName} name: ${e.message ?: ""}"
                 )
             )

@@ -10,9 +10,8 @@ class ConfigurationErrorEventPublisher(
     private val applicationEventPublisher: ApplicationEventPublisher
 ) {
     fun publishConfigurationErrorEvent(
-        guildId:String,
         configurationErrorData: ConfigurationErrorData
     ) {
-        applicationEventPublisher.publishEvent(ConfigurationErrorEvent(guildId, configurationErrorData))
+        applicationEventPublisher.publishEvent(ConfigurationErrorEvent(configurationErrorData))
     }
 }

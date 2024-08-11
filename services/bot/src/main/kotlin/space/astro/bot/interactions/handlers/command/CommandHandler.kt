@@ -298,7 +298,6 @@ class CommandHandler(
                 when (exception) {
                     is ConfigurationException -> {
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                            guildId = guild.id,
                             configurationErrorData = exception.configurationErrorData
                         )
 
@@ -306,10 +305,9 @@ class CommandHandler(
                     }
 
                     is InsufficientPermissionException -> {
-                        val configurationError = exception.toConfigurationErrorDto()
+                        val configurationError = exception.toConfigurationErrorDto(guild.id)
 
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                            guildId = guild.id,
                             configurationErrorData = configurationError
                         )
 
@@ -317,10 +315,9 @@ class CommandHandler(
                     }
 
                     else -> {
-                        val configurationError = ConfigurationErrorData(exception.toString())
+                        val configurationError = ConfigurationErrorData(guild.id, exception.toString())
 
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                            guildId = guild.id,
                             configurationErrorData = configurationError
                         )
 

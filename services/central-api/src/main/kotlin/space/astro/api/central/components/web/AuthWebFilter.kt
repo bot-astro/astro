@@ -10,12 +10,11 @@ import org.springframework.web.server.WebFilter
 import org.springframework.web.server.WebFilterChain
 import reactor.core.publisher.Mono
 import space.astro.api.central.configs.CentralApiConfig
-import space.astro.api.central.configs.Mappings
-import space.astro.api.central.configs.ExchangeAttributeNames
-import space.astro.api.central.models.auth.SessionWrapper
+import space.astro.shared.core.components.web.CentralApiRoutes
 import space.astro.api.central.services.discord.DiscordUserTokenFetchService
 import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.dashboard.WebSessionService
+import space.astro.api.central.util.ExchangeAttributeNames
 import space.astro.shared.core.configs.ChargebeeConfig
 import space.astro.shared.core.configs.KubeConfig
 import java.util.Base64
@@ -49,7 +48,7 @@ class AuthWebFilter(
         //////////////
         /// STATUS ///
         //////////////
-        if (requestPath.startsWith(Mappings.Status.STATUS)) {
+        if (requestPath.startsWith(CentralApiRoutes.Status.STATUS)) {
             return chain.filter(exchange)
         }
 
@@ -57,9 +56,9 @@ class AuthWebFilter(
         ////////////////
         /// API DOCS ///
         ////////////////
-        if (requestPath.startsWith(Mappings.Docs.API_DOCS)
-            || requestPath.startsWith(Mappings.Docs.WEBJARS)
-            || requestPath.startsWith(Mappings.Docs.SWAGGER))
+        if (requestPath.startsWith(CentralApiRoutes.Docs.API_DOCS)
+            || requestPath.startsWith(CentralApiRoutes.Docs.WEBJARS)
+            || requestPath.startsWith(CentralApiRoutes.Docs.SWAGGER))
         {
             return chain.filter(exchange)
         }
@@ -68,7 +67,7 @@ class AuthWebFilter(
         /////////////
         /// LOGIN ///
         /////////////
-        if (requestPath.startsWith(Mappings.Dashboard.Prefixes.LOGIN)) {
+        if (requestPath.startsWith(CentralApiRoutes.Dashboard.Prefixes.LOGIN)) {
             return chain.filter(exchange)
         }
 
@@ -76,7 +75,7 @@ class AuthWebFilter(
         ////////////////////////
         /// CHARGEBEE EVENTS ///
         ////////////////////////
-        if (requestPath.startsWith(Mappings.Chargebee.Prefixes.EVENT)) {
+        if (requestPath.startsWith(CentralApiRoutes.Chargebee.Prefixes.EVENT)) {
             return mono {
                 val webhookTokenEncoded = request.headers["Authorization"]?.get(0)?.removePrefix("Basic ")
 
@@ -99,10 +98,10 @@ class AuthWebFilter(
         /// DASHBOARD & CHARGEBEE PORTAL SESSION ///
         ////////////////////////////////////////////
 
-        if (requestPath.startsWith(Mappings.Dashboard.Prefixes.DASHBOARD)
-            || requestPath.startsWith(Mappings.Chargebee.PORTAL_SESSION)
-            || requestPath.startsWith(Mappings.Chargebee.USER_ACTIVE_SUBSCRIPTIONS)
-            || requestPath.startsWith(Mappings.Chargebee.LOGGED_USER_ACTIVE_SUBSCRIPTIONS))
+        if (requestPath.startsWith(CentralApiRoutes.Dashboard.Prefixes.DASHBOARD)
+            || requestPath.startsWith(CentralApiRoutes.Chargebee.PORTAL_SESSION)
+            || requestPath.startsWith(CentralApiRoutes.Chargebee.USER_ACTIVE_SUBSCRIPTIONS)
+            || requestPath.startsWith(CentralApiRoutes.Chargebee.LOGGED_USER_ACTIVE_SUBSCRIPTIONS))
         {
             val sessionToken = request.cookies.getFirst(centralApiConfig.sessionCookieName)?.value
                 ?: request.headers["Authorization"]?.get(0)?.removePrefix("Bearer ")

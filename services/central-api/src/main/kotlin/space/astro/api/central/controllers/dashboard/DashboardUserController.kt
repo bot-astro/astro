@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ServerWebExchange
-import space.astro.api.central.configs.Mappings
-import space.astro.api.central.configs.getAccessToken
+import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.api.central.util.getAccessToken
 import space.astro.api.central.services.discord.DiscordUserService
 
 @RestController
@@ -14,7 +14,7 @@ import space.astro.api.central.services.discord.DiscordUserService
 class DashboardUserController(
     val discordUserService: DiscordUserService,
 ) {
-    @GetMapping(Mappings.Dashboard.USERS_ME)
+    @GetMapping(CentralApiRoutes.Dashboard.USERS_ME)
     suspend fun getSelfUser(exchange: ServerWebExchange): ResponseEntity<*> {
         val accessToken = exchange.getAccessToken()
 

@@ -38,7 +38,7 @@ class VCPermissionManager(
 
         val targetRole = if (vcOperationCTX.generatorData.permissionsTargetRole != null) {
             vcOperationCTX.guild.getRoleById(vcOperationCTX.generatorData.permissionsTargetRole!!)
-                ?: throw ConfigurationException(configurationErrorService.missingGeneratorTargetRole(vcOperationCTX.generator.name))
+                ?: throw ConfigurationException(configurationErrorService.missingGeneratorTargetRole(vcOperationCTX.guild.id, vcOperationCTX.generator.name))
         } else {
             vcOperationCTX.guild.publicRole
         }

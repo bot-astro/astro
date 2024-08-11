@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
-import space.astro.api.central.configs.Mappings
-import space.astro.api.central.configs.getUserID
+import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.api.central.util.getUserID
 import space.astro.api.central.models.chargebee.SubscriptionWebhookData
 import space.astro.api.central.models.chargebee.UpgradedGuildInfo
 import space.astro.api.central.models.chargebee.UserSubscription
@@ -41,7 +41,7 @@ class ChargebeeController(
     val supportBotApiService: SupportBotApiService,
     val coroutineScope: CoroutineScope
 ) {
-    @GetMapping(Mappings.Chargebee.PORTAL_SESSION)
+    @GetMapping(CentralApiRoutes.Chargebee.PORTAL_SESSION)
     @ApiResponses(
         value = [
             ApiResponse(
@@ -70,7 +70,7 @@ class ChargebeeController(
         }
     }
 
-    @GetMapping(Mappings.Chargebee.USER_ACTIVE_SUBSCRIPTIONS)
+    @GetMapping(CentralApiRoutes.Chargebee.USER_ACTIVE_SUBSCRIPTIONS)
     suspend fun getUserActiveSubscriptions(
         @PathVariable userID: String,
         exchange: ServerWebExchange
@@ -105,7 +105,7 @@ class ChargebeeController(
         return ResponseEntity.ok(subscriptionsInfo)
     }
 
-    @GetMapping(Mappings.Chargebee.LOGGED_USER_ACTIVE_SUBSCRIPTIONS)
+    @GetMapping(CentralApiRoutes.Chargebee.LOGGED_USER_ACTIVE_SUBSCRIPTIONS)
     suspend fun getLoggedUserActiveSubscriptions(
         exchange: ServerWebExchange
     ): ResponseEntity<*> {
@@ -140,7 +140,7 @@ class ChargebeeController(
         return ResponseEntity.ok(subscriptionsInfo)
     }
 
-    @PostMapping(Mappings.Chargebee.EVENT_SUB_CREATE)
+    @PostMapping(CentralApiRoutes.Chargebee.EVENT_SUB_CREATE)
     @ApiResponses(
         value = [
             ApiResponse(
@@ -167,7 +167,7 @@ class ChargebeeController(
         return ResponseEntity.noContent().build<Any>()
     }
 
-    @PostMapping(Mappings.Chargebee.EVENT_SUB_CANCEL)
+    @PostMapping(CentralApiRoutes.Chargebee.EVENT_SUB_CANCEL)
     @ApiResponses(
         value = [
             ApiResponse(

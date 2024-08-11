@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
-import space.astro.api.central.configs.Mappings
-import space.astro.api.central.configs.getUserID
+import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.api.central.util.getUserID
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.UserDao
 import space.astro.shared.core.models.database.GuildUpgradeData
@@ -22,7 +22,7 @@ class DashboardGuildPremiumController(
     private val userDao: UserDao,
     private val chargebeeClientService: ChargebeeClientService
 ) {
-    @GetMapping(Mappings.Dashboard.GUILD_UPGRADE)
+    @GetMapping(CentralApiRoutes.Dashboard.GUILD_UPGRADE)
     suspend fun upgradeGuild(
         @PathVariable guildID: String,
         @PathVariable subscriptionID: String,
@@ -64,7 +64,7 @@ class DashboardGuildPremiumController(
         return ResponseEntity.ok().build<Any>()
     }
 
-    @GetMapping(Mappings.Dashboard.GUILD_DOWNGRADE)
+    @GetMapping(CentralApiRoutes.Dashboard.GUILD_DOWNGRADE)
     suspend fun downgradeGuild(
         @PathVariable guildID: String,
         exchange: ServerWebExchange

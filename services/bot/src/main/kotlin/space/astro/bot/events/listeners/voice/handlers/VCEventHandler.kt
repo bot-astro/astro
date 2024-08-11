@@ -123,12 +123,10 @@ class VCEventHandler(
     private fun handleException(vcEvent: VCEvent, e: Exception) {
         when (e) {
             is ConfigurationException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                guildId = vcEvent.vcEventData.guild.id,
                 configurationErrorData = e.configurationErrorData
             )
             is InsufficientPermissionException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                guildId = vcEvent.vcEventData.guild.id,
-                configurationErrorData = e.toConfigurationErrorDto()
+                configurationErrorData = e.toConfigurationErrorDto(vcEvent.vcEventData.guild.id)
             )
             else -> throw e
         }

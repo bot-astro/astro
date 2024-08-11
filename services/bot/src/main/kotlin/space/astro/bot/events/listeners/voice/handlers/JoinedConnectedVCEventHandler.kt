@@ -13,7 +13,7 @@ fun VCEventHandler.handleJoinedConnectedVCEvent(
     /// PREMIUM REQUISITES ///
     //////////////////////////
     if (premiumRequirementDetector.exceededMaximumConnectionsAmount(event.vcEventData.guildData)) {
-        throw ConfigurationException(configurationErrorService.maximumAmountOfConnections())
+        throw ConfigurationException(configurationErrorService.maximumAmountOfConnections(event.vcEventData.guild.id))
     }
 
     val role = event.vcEventData.guild.getRoleById(event.connectionData.roleID) ?: return

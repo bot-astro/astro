@@ -141,6 +141,7 @@ class VCNameManager(
     private fun VCOperationCTX.validatePremiumRequirements(nameTemplate: String) {
         if (!premiumRequirementDetector.canUseVCNameTemplate(guildData, nameTemplate)) {
             throw ConfigurationException(configurationErrorService.premiumVariables(
+                guildId = guild.id,
                 encounteredIn = "applying the name $nameTemplate to a temporary VC"
             ))
         }
@@ -157,7 +158,7 @@ class VCNameManager(
         }
 
         if (!premiumRequirementDetector.canValidateBadwords(guildData)) {
-            throw ConfigurationException(configurationErrorService.premiumRequiredForBadwordsValidation())
+            throw ConfigurationException(configurationErrorService.premiumRequiredForBadwordsValidation(guild.id))
         }
 
         if (!generatorData.commandsSettings.badwordsAllowed && VariablesManager.Checkers.containsBadwords(nameTemplate)) {
@@ -258,6 +259,7 @@ class VCNameManager(
         } catch (e: IllegalArgumentException) {
             throw ConfigurationException(
                 configurationErrorService.invalidChannelName(
+                    guildId = guild.id,
                     encounteredIn = "temporary vc name: $name"
                 )
             )

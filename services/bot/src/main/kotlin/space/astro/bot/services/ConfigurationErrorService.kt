@@ -1,6 +1,5 @@
 package space.astro.bot.services
 
-import net.dv8tion.jda.api.Permission
 import org.springframework.stereotype.Service
 import space.astro.shared.core.models.influx.ConfigurationErrorData
 import space.astro.shared.core.util.extention.asChannelMention
@@ -11,7 +10,8 @@ class ConfigurationErrorService {
     /// GENERIC ///
     ///////////////
 
-    fun unknownError(encounteredIn: String) = ConfigurationErrorData(
+    fun unknown(guildId: String, encounteredIn: String) = ConfigurationErrorData(
+        guildId = guildId,
         description = "An unknown error occurred!" +
                 "\nEncountered in: $encounteredIn"
     )
@@ -19,95 +19,131 @@ class ConfigurationErrorService {
     ///////////////////
     /// PERMISSIONS ///
     ///////////////////
-    fun missingBotPermissions(permissions: List<Permission>, requiredFor: String) = ConfigurationErrorData(
-        description = "Astro is missing the following permissions: ${permissions.joinToString(", ") { it.getName() }}" +
-                "\nRequired for: $requiredFor"
-    )
+//    fun missingBotPermissions(guildId: String, permissions: List<Permission>, requiredFor: String) = ConfigurationErrorData(
+//        guildId = guildId,
+//        description = "Astro is missing the following permissions: ${permissions.joinToString(", ") { it.getName() }}" +
+//                "\nRequired for: $requiredFor"
+//    )
 
     ///////////////
     /// PREMIUM ///
     ///////////////
-    fun premiumVariables(encounteredIn: String) = ConfigurationErrorData(
-        description = "Your are trying to use premium variables and your server isn't premium!" +
-                "\nRead more about which variables are premium with `/help variables` and see how to use them in `/help generators`!" +
+    fun premiumVariables(guildId: String, encounteredIn: String) = ConfigurationErrorData(
+        guildId = guildId,
+        description = "Your are trying to use ultimate variables and your server isn't upgraded to ultimate!" +
                 "\nEncountered in: $encounteredIn",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
-    fun premiumRequiredForBadwordsValidation() = ConfigurationErrorData(
-        description = "Your generator has badwords validation enabled, but premium is required to use it." +
-                "\nEither upgrade to premium or disable badwords validation with the command `/generator vc badwords allowed:True` (see more info in `/help generators`)."
+    fun premiumRequiredForBadwordsValidation(guildId: String) = ConfigurationErrorData(
+        guildId = guildId,
+        description = "Your generator has badwords validation enabled, but ultimate is required to use it." +
+                "\nEither upgrade to ultimate or disable badwords validation!",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
-    fun maximumAmountOfConnections() = ConfigurationErrorData(
-        description = "Your server has exceeded the maximum amount of connections." +
-                "\nEither upgrade to premium or delete one or more connection with `/connection delete`!"
+    fun maximumAmountOfConnections(guildId: String) = ConfigurationErrorData(
+        guildId = guildId,
+        description = "Your server has exceeded the maximum amount of voice roles." +
+                "\nEither upgrade to ultimate or delete one or more voice role!",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.VOICE_ROLE
     )
 
-    fun maximumAmountOfInterfaces() = ConfigurationErrorData(
+    fun maximumAmountOfInterfaces(guildId: String) = ConfigurationErrorData(
+        guildId = guildId,
         description = "Your server has exceeded the maximum amount of interfaces." +
-                "\nEither upgrade to premium or delete one or more interface with `/interface delete`!"
+                "\nEither upgrade to ultimate or delete one or more interfaces!",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.INTERFACE
     )
 
-    fun maximumAmountOfGenerator() = ConfigurationErrorData(
+    fun maximumAmountOfGenerator(guildId: String) = ConfigurationErrorData(
+        guildId = guildId,
         description = "Your server has exceeded the maximum amount of temporary VC generators." +
-                "\nEither upgrade to premium or delete one or more generators with `/generator delete`!"
+                "\nEither upgrade to ultimate or delete one or more generators!",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
-    fun premiumFallbackGenerator() = ConfigurationErrorData(
-        description = "Your generator has a fallback generator configured, but premium is required to use it." +
-                "\nEither upgrade to premium or remove the fallback generator from the configuration with `/generator fallback-generator remove:True`!"
+    fun premiumFallbackGenerator(guildId: String) = ConfigurationErrorData(
+        guildId = guildId,
+        description = "Your generator has a fallback generator configured, but ultimate is required to use it." +
+                "\nEither upgrade to ultimate or remove the fallback generator!",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
-    fun premiumRequiredForAutoPrivateChatCreation()  = ConfigurationErrorData(
-        description = "Your generator has automatic private chat creation enabled, but premium is required to use it." +
-                "\nEither upgrade to premium or disable private chat creation with `/generator chat creation create:False`!"
+    fun premiumRequiredForAutoPrivateChatCreation(guildId: String)  = ConfigurationErrorData(
+        guildId = guildId,
+        description = "Your generator has automatic private chat creation enabled, but ultimate is required to use it." +
+                "\nEither upgrade to ultimate or disable private chat creation!",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
-    fun premiumRequiredForAutoWaitingRoomCreation()  = ConfigurationErrorData(
-        description = "Your generator has automatic waiting room creation enabled, but premium is required to use it." +
-                "\nEither upgrade to premium or disable waiting room creation with `/generator-waiting creation create:False`!"
+    fun premiumRequiredForAutoWaitingRoomCreation(guildId: String)  = ConfigurationErrorData(
+        guildId = guildId,
+        description = "Your generator has automatic waiting room creation enabled, but ultimate is required to use it." +
+                "\nEither upgrade to ultimate or disable waiting room creation!",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
-    fun premiumRequiredForAutoChatMessageOnCreation() = ConfigurationErrorData(
-        description = "Your generator has a default creation message, but premium is required to use it." +
-                "\nEither upgrade to premium or remove it with `/generator chat message type:None`!"
+    fun premiumRequiredForAutoChatMessageOnCreation(guildId: String) = ConfigurationErrorData(
+        guildId = guildId,
+        description = "Your generator has a default creation message, but ultimate is required to use it." +
+                "\nEither upgrade to ultimate or remove it!",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
-    fun premiumRequiredForOwnerRole() = ConfigurationErrorData(
-        description = "Your generator has an owner role configured, but premium is required to use it." +
-                "\nEither upgrade to premium or remove it with `/generator owner role`!"
+    fun premiumRequiredForOwnerRole(guildId: String) = ConfigurationErrorData(
+        guildId = guildId,
+        description = "Your generator has an owner role configured, but ultimate is required to use it." +
+                "\nEither upgrade to ultimate or remove it!",
+        premiumRequired = true,
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
     /////////////////
     /// GENERATOR ///
     /////////////////
 
-    fun missingGeneratorTargetRole(generatorName: String) = ConfigurationErrorData(
-        description = "The generator $generatorName has a target role set but Astro couldn't find that role in your server!" +
-                "\nYou can change it with `/generator vc permissions`"
+    fun missingGeneratorTargetRole(guildId: String, generatorName: String) = ConfigurationErrorData(
+        guildId = guildId,
+        description = "The generator $generatorName has a target role set but Astro couldn't find that role in your server!",
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
-    fun missingFallbackGenerator(encounteredIn: String) = ConfigurationErrorData(
+    fun missingFallbackGenerator(guildId: String, encounteredIn: String) = ConfigurationErrorData(
+        guildId = guildId,
         description = "Your category for temporary VCs is full and you haven't configured a fallback generator." +
-                "\nThis means Astro could not generate a temporary VC because the category was already full, consider creating a fallback generator (learn how with `/help generators`)." +
-                "\nEncountered in: $encounteredIn"
+                "\nThis means Astro could not generate a temporary VC because the category was already full, consider creating a fallback generator." +
+                "\nEncountered in: $encounteredIn",
+        guide = ConfigurationErrorData.Guide.GENERATOR
     )
 
     //////////////////////////
     /// CHANNEL PROPERTIES ///
     //////////////////////////
 
-    fun maximumAmountOfChannelsReached(encounteredIn: String) = ConfigurationErrorData(
+    fun maximumAmountOfChannelsReached(guildId: String, encounteredIn: String) = ConfigurationErrorData(
+        guildId = guildId,
         description = "Your server has reached the maximum amount of channels" +
                 "\nEncountered in: $encounteredIn",
     )
 
-    fun invalidChannelName(encounteredIn: String) = ConfigurationErrorData(
+    fun invalidChannelName(guildId: String, encounteredIn: String) = ConfigurationErrorData(
+        guildId = guildId,
         description = "An invalid channel name has been found in your configuration!" +
                 "\nEncountered in: $encounteredIn",
     )
 
-    fun missingChannelParent(requiredFor: String) = ConfigurationErrorData(
+    fun missingChannelParent(guildId: String, requiredFor: String) = ConfigurationErrorData(
+        guildId = guildId,
         description = "A category is misconfigured or missing" +
                 "\nRequired for: $requiredFor",
     )
@@ -115,8 +151,10 @@ class ConfigurationErrorService {
     /////////////////
     /// INTERFACE ///
     /////////////////
-    fun invalidOldInterface(channelId: String) = ConfigurationErrorData(
+    fun invalidOldInterface(guildId: String, channelId: String) = ConfigurationErrorData(
+        guildId = guildId,
         description = "This server has an old interface in ${channelId.asChannelMention()}." +
-                "\nDelete it with `/interface delete` and create a new one with `/interface create` to avoid potential issues."
+                "\nDelete it and create a new one to avoid potential issues.",
+        guide = ConfigurationErrorData.Guide.INTERFACE
     )
 }

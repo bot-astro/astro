@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
+import space.astro.shared.core.components.web.BotApiRoutes
 import space.astro.shared.core.configs.BotApiConfig
 import space.astro.shared.core.configs.WebClientConfig
 import space.astro.shared.core.models.dashboard.DashboardGuildChannel
@@ -60,7 +61,7 @@ class BotApiService(
         guildID: String
     ): List<DashboardGuildChannel> {
         return webClient.get()
-            .uri("${endpoint.removeSuffix("/")}/api/${guildID}/channels")
+            .uri("${endpoint.removeSuffix("/")}${BotApiRoutes.DASHBOARD.GUILD_CHANNELS.replace("{guildID}", guildID)}")
             .retrieve()
             .onStatus(
                 { it == HttpStatus.NOT_FOUND },
@@ -86,7 +87,7 @@ class BotApiService(
         guildID: String
     ): List<DashboardGuildRole> {
         return webClient.get()
-            .uri("${endpoint.removeSuffix("/")}/api/${guildID}/roles")
+            .uri("${endpoint.removeSuffix("/")}${BotApiRoutes.DASHBOARD.GUILD_ROLES.replace("{guildID}", guildID)}")
             .retrieve()
             .onStatus(
                 { it == HttpStatus.NOT_FOUND },
@@ -113,7 +114,7 @@ class BotApiService(
         guildID: String
     ): GeneratorData {
         return webClient.get()
-            .uri("${endpoint.removeSuffix("/")}/api/${guildID}/generator/create")
+            .uri("${endpoint.removeSuffix("/")}${BotApiRoutes.DASHBOARD.CREATE_GENERATOR.replace("{guildID}", guildID)}")
             .retrieve()
             .onStatus(
                 { it == HttpStatus.METHOD_NOT_ALLOWED },
@@ -146,7 +147,7 @@ class BotApiService(
         channelID: String
     ): InterfaceData {
         return webClient.get()
-            .uri("${endpoint.removeSuffix("/")}/api/${guildID}/interface/create/${channelID}")
+            .uri("${endpoint.removeSuffix("/")}${BotApiRoutes.DASHBOARD.CREATE_INTERFACE.replace("{guildID}", guildID).replace("{channelID}", channelID)}")
             .retrieve()
             .onStatus(
                 { it == HttpStatus.METHOD_NOT_ALLOWED },
@@ -178,7 +179,7 @@ class BotApiService(
         interfaceData: InterfaceData
     ) {
         return webClient.post()
-            .uri("${endpoint.removeSuffix("/")}/api/${guildID}/interface/update")
+            .uri("${endpoint.removeSuffix("/")}${BotApiRoutes.DASHBOARD.UPDATE_INTERFACE.replace("{guildID}", guildID)}")
             .bodyValue(interfaceData)
             .retrieve()
             .onStatus(

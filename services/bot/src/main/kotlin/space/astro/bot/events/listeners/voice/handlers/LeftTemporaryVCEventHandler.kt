@@ -76,8 +76,8 @@ fun VCEventHandler.handleLeftTemporaryVCEvent(
             vcOperationCTX.queueUpdatedManagers(
                 failure = { managerType, e ->
                     configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        guildId = guild.id,
-                        configurationErrorData = configurationErrorService.unknownError(
+                        configurationErrorData = configurationErrorService.unknown(
+                            guildId = guild.id,
                             encounteredIn = "updating ${managerType.readableName}: ${e.message ?: ""}"
                         )
                     )

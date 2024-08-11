@@ -9,9 +9,9 @@ import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.WebFilter
 import org.springframework.web.server.WebFilterChain
 import reactor.core.publisher.Mono
+import space.astro.shared.core.components.web.BotApiRoutes
 import space.astro.shared.core.configs.BotApiConfig
 import space.astro.shared.core.configs.KubeConfig
-import java.util.Base64
 
 @Component
 class AuthWebFilter(
@@ -28,10 +28,7 @@ class AuthWebFilter(
             return chain.filter(exchange)
         }
 
-        //////////////
-        /// STATUS ///
-        //////////////
-        if (requestPath.startsWith("/ready") || requestPath.startsWith("/shutdown")) {
+        if (requestPath.startsWith(BotApiRoutes.Kube.READY) || requestPath.startsWith(BotApiRoutes.Kube.SHUTDOWN)) {
             return mono {
                 val auth = request.headers["Authorization"]?.get(0)
 

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
-import space.astro.api.central.configs.Mappings
+import space.astro.shared.core.components.web.CentralApiRoutes
 import space.astro.shared.core.daos.TemporaryVCDao
 
 @RestController
@@ -14,7 +14,7 @@ import space.astro.shared.core.daos.TemporaryVCDao
 class DashboardGuildVcController(
     private val temporaryVCDao: TemporaryVCDao
 ) {
-    @DeleteMapping(Mappings.Dashboard.GUILD_TEMPORARY_VOICE_CHANNELS_CACHE)
+    @DeleteMapping(CentralApiRoutes.Dashboard.GUILD_TEMPORARY_VOICE_CHANNELS_CACHE)
     suspend fun clearTemporaryVoiceChannelsData(
         @PathVariable guildID: String,
         exchange: ServerWebExchange

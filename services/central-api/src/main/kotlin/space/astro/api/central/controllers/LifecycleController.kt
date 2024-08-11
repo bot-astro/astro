@@ -5,9 +5,8 @@ import kotlinx.coroutines.delay
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RestController
-import space.astro.api.central.configs.Mappings
+import space.astro.shared.core.components.web.CentralApiRoutes
 
 private val log = KotlinLogging.logger { }
 
@@ -15,14 +14,14 @@ private val log = KotlinLogging.logger { }
 @Tag(name = "kubernetes")
 class LifecycleController {
 
-    @GetMapping(Mappings.Kube.READY)
+    @GetMapping(CentralApiRoutes.Kube.READY)
     suspend fun ready(): ResponseEntity<*> {
         log.info { "k8s requested ready status, responding with OK" }
 
         return ResponseEntity.noContent().build<Any>()
     }
 
-    @GetMapping(Mappings.Kube.SHUTDOWN)
+    @GetMapping(CentralApiRoutes.Kube.SHUTDOWN)
     suspend fun shutdown(): ResponseEntity<*> {
         log.info { "Got shutdown request" }
 

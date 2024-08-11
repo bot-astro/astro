@@ -92,14 +92,13 @@ class ButtonHandler(
             if (key.startsWith("cmd>")) {
                 key = mapOldIdToNewId(key.substring(4))
                     ?: run {
-                        val configErrorData = configurationErrorService.invalidOldInterface(event.channel.id)
+                        val configErrorData = configurationErrorService.invalidOldInterface(guild.id, event.channel.id)
 
                         event.replyEmbeds(Embeds.error(configErrorData.description))
                             .setEphemeral(true)
                             .queue()
 
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                            guildId = guild.id,
                             configurationErrorData = configErrorData
                         )
 
@@ -230,7 +229,6 @@ class ButtonHandler(
                 when (exception) {
                     is ConfigurationException -> {
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                            guildId = guild.id,
                             configurationErrorData = exception.configurationErrorData
                         )
 
@@ -238,10 +236,9 @@ class ButtonHandler(
                     }
 
                     is InsufficientPermissionException -> {
-                        val configurationError = exception.toConfigurationErrorDto()
+                        val configurationError = exception.toConfigurationErrorDto(guild.id)
 
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                            guildId = guild.id,
                             configurationErrorData = configurationError
                         )
 
@@ -249,10 +246,9 @@ class ButtonHandler(
                     }
 
                     else -> {
-                        val configurationError = ConfigurationErrorData(exception.toString())
+                        val configurationError = ConfigurationErrorData(guild.id, exception.toString())
 
                         configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                            guildId = guild.id,
                             configurationErrorData = configurationError
                         )
 

@@ -1,10 +1,7 @@
 package space.astro.bot.controllers.dashboard
 
 import dev.minn.jda.ktx.coroutines.await
-import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.entities.channel.attribute.ICategorizableChannel
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
-import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.exceptions.PermissionException
@@ -16,18 +13,19 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import space.astro.bot.components.managers.InterfaceManager
+import space.astro.shared.core.components.web.BotApiRoutes
 import space.astro.shared.core.models.dashboard.DashboardGuildChannel
 import space.astro.shared.core.models.dashboard.DashboardGuildRole
 import space.astro.shared.core.models.database.GeneratorData
 import space.astro.shared.core.models.database.InterfaceData
 import space.astro.shared.core.models.database.PermissionsInherited
 
-@RestController()
+@RestController
 class DashboardController(
     private val shardManager: ShardManager,
     private val interfaceManager: InterfaceManager
 ) {
-    @GetMapping("/api/{guildID}/channels")
+    @GetMapping(BotApiRoutes.DASHBOARD.GUILD_CHANNELS)
     suspend fun getGuildChannels(
         @PathVariable guildID: String
     ) : ResponseEntity<*> {
@@ -53,7 +51,7 @@ class DashboardController(
         return ResponseEntity.ok(channels)
     }
 
-    @GetMapping("/api/{guildID}/roles")
+    @GetMapping(BotApiRoutes.DASHBOARD.GUILD_ROLES)
     suspend fun getGuildRoles(
         @PathVariable guildID: String
     ) : ResponseEntity<*> {
@@ -72,7 +70,7 @@ class DashboardController(
         return ResponseEntity.ok(roles)
     }
 
-    @GetMapping("/api/{guildID}/generator/create")
+    @GetMapping(BotApiRoutes.DASHBOARD.CREATE_GENERATOR)
     suspend fun createGenerator(
         @PathVariable guildID: String
     ) : ResponseEntity<*> {
@@ -98,7 +96,7 @@ class DashboardController(
         }
     }
 
-    @GetMapping("/api/{guildID}/interface/create/{channelID}")
+    @GetMapping(BotApiRoutes.DASHBOARD.CREATE_INTERFACE)
     suspend fun createInterface(
         @PathVariable guildID: String,
         @PathVariable channelID: String
@@ -122,7 +120,7 @@ class DashboardController(
         }
     }
 
-    @PostMapping("/api/{guildID}/interface/update")
+    @PostMapping(BotApiRoutes.DASHBOARD.UPDATE_INTERFACE)
     suspend fun updateInterface(
         @PathVariable guildID: String,
         @RequestBody interfaceData: InterfaceData

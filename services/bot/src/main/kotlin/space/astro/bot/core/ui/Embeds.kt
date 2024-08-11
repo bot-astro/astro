@@ -78,7 +78,7 @@ object Embeds {
                 "\n\n**FAQ**" +
                 "\n> Premium is completely managed by Discord, check out [their FAQ](${Links.ExternalGuides.PREMIUM_FAQ}) for any other question." +
                 "\n\n**Old subscribers**" +
-                "\n> If you are a long time subscriber that got premium trough the Astro website, you can manage your subscription [at this link](${Links.OLD_PREMIUM})."
+                "\n> If you are a long time subscriber that got premium trough the Astro website, you can manage your subscription [at this link](${Links.WEBSITE_PREMIUM})."
         footer {
             name = "For help regarding other features of Astro see the buttons below or /help commands"
         }

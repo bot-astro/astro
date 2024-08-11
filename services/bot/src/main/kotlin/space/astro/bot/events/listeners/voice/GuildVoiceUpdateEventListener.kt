@@ -56,8 +56,7 @@ class GuildVoiceUpdateEventListener(
             memberRolesManager.queue()
         } catch (e: HierarchyException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                guildId = event.guild.id,
-                configurationErrorData = e.toConfigurationErrorDto()
+                configurationErrorData = e.toConfigurationErrorDto(event.guild.id)
             )
         }
     }

@@ -59,40 +59,4 @@ class DiscordGuildsFetchService(
             )
             .awaitBody()
     }
-
-    suspend fun fetchGuildChannels(
-        accessToken: String,
-        guildID: String
-    ): List<DiscordPartialChannel> {
-        return webClient.get()
-            .uri { uriBuilder ->
-                uriBuilder.pathSegment("guilds", guildID, "channels")
-                    .build()
-            }
-            .header("Authorization", "Bearer $accessToken")
-            .retrieve()
-            .onStatus(
-                { it != HttpStatus.OK },
-                { throw Throwable("Failed to fetch guild channels - status: ${it.statusCode()} - ${runBlocking {  it.awaitBody<String>()}}") }
-            )
-            .awaitBody()
-    }
-
-    suspend fun fetchGuildRoles(
-        accessToken: String,
-        guildID: String
-    ): List<DiscordPartialRole> {
-        return webClient.get()
-            .uri { uriBuilder ->
-                uriBuilder.pathSegment("guilds", guildID, "roles")
-                    .build()
-            }
-            .header("Authorization", "Bearer $accessToken")
-            .retrieve()
-            .onStatus(
-                { it != HttpStatus.OK },
-                { throw Throwable("Failed to fetch guild roles - status: ${it.statusCode()}") }
-            )
-            .awaitBody()
-    }
 }

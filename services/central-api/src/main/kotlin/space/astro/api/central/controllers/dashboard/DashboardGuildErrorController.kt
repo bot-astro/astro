@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
-import space.astro.api.central.configs.Mappings
+import space.astro.shared.core.components.web.CentralApiRoutes
 import space.astro.shared.core.daos.ConfigurationErrorDao
 
 @RestController
@@ -15,16 +15,16 @@ import space.astro.shared.core.daos.ConfigurationErrorDao
 class DashboardGuildErrorController(
     private val configurationErrorDao: ConfigurationErrorDao
 ) {
-    @GetMapping(Mappings.Dashboard.GUILD_ERRORS)
+    @GetMapping(CentralApiRoutes.Dashboard.GUILD_ERRORS)
     suspend fun getGuildErrors(
         @PathVariable guildID: String,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
-        val errors = configurationErrorDao.get(guildID)
+        val errors = configurationErrorDao.getOfLastSevenDays(guildID)
         return ResponseEntity.ok(errors)
     }
 
-    @DeleteMapping(Mappings.Dashboard.GUILD_ERRORS)
+    @DeleteMapping(CentralApiRoutes.Dashboard.GUILD_ERRORS)
     suspend fun clearGuildErrors(
         @PathVariable guildID: String,
         exchange: ServerWebExchange

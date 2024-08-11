@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
-import space.astro.api.central.configs.Mappings
-import space.astro.api.central.configs.getUserID
+import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.api.central.util.getUserID
 import space.astro.api.central.models.dashboard.body.GuildDataInterfaceCreateBody
 import space.astro.api.central.models.dashboard.body.GuildDataSettingsBody
 import space.astro.api.central.services.bot.PodMetaCalculatorService
@@ -39,7 +39,7 @@ class DashboardGuildDataController(
     /// GETTER FOR ALL SETTINGS ///
     ///////////////////////////////
 
-    @GetMapping(Mappings.Dashboard.GUILD_DATA)
+    @GetMapping(CentralApiRoutes.Dashboard.GUILD_DATA)
     suspend fun getGuildData(
         @PathVariable guildID: String,
         exchange: ServerWebExchange
@@ -60,7 +60,7 @@ class DashboardGuildDataController(
     /// UPDATE GENERIC SETTINGS ///
     ///////////////////////////////
 
-    @PostMapping(Mappings.Dashboard.GUILD_UPDATE_SETTINGS)
+    @PostMapping(CentralApiRoutes.Dashboard.GUILD_UPDATE_SETTINGS)
     suspend fun updateGuildSettings(
         @PathVariable guildID: String,
         @RequestBody guildSettings: GuildDataSettingsBody,
@@ -93,7 +93,7 @@ class DashboardGuildDataController(
     /// GENERATORS ///
     //////////////////
 
-    @PostMapping(Mappings.Dashboard.GUILD_CREATE_GENERATOR)
+    @PostMapping(CentralApiRoutes.Dashboard.GUILD_CREATE_GENERATOR)
     suspend fun createGuildGenerator(
         @PathVariable guildID: String,
         exchange: ServerWebExchange
@@ -130,7 +130,7 @@ class DashboardGuildDataController(
         }
     }
 
-    @PostMapping(Mappings.Dashboard.GUILD_SINGLE_GENERATOR)
+    @PostMapping(CentralApiRoutes.Dashboard.GUILD_SINGLE_GENERATOR)
     suspend fun updateGuildGenerator(
         @PathVariable guildID: String,
         @PathVariable generatorID: String,
@@ -161,7 +161,7 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
-    @DeleteMapping(Mappings.Dashboard.GUILD_SINGLE_GENERATOR)
+    @DeleteMapping(CentralApiRoutes.Dashboard.GUILD_SINGLE_GENERATOR)
     suspend fun deleteGuildGenerator(
         @PathVariable guildID: String,
         @PathVariable generatorID: String,
@@ -190,7 +190,7 @@ class DashboardGuildDataController(
     /// INTERFACES ///
     //////////////////
 
-    @PostMapping(Mappings.Dashboard.GUILD_CREATE_INTERFACE)
+    @PostMapping(CentralApiRoutes.Dashboard.GUILD_CREATE_INTERFACE)
     suspend fun createGuildInterface(
         @PathVariable guildID: String,
         @RequestBody guildDataInterfaceCreateBody: GuildDataInterfaceCreateBody,
@@ -234,7 +234,7 @@ class DashboardGuildDataController(
         }
     }
 
-    @PostMapping(Mappings.Dashboard.GUILD_SINGLE_INTERFACE)
+    @PostMapping(CentralApiRoutes.Dashboard.GUILD_SINGLE_INTERFACE)
     suspend fun updateGuildInterface(
         @PathVariable guildID: String,
         @PathVariable interfaceID: String,
@@ -278,7 +278,7 @@ class DashboardGuildDataController(
         }
     }
 
-    @DeleteMapping(Mappings.Dashboard.GUILD_SINGLE_INTERFACE)
+    @DeleteMapping(CentralApiRoutes.Dashboard.GUILD_SINGLE_INTERFACE)
     suspend fun deleteGuildInterface(
         @PathVariable guildID: String,
         @PathVariable interfaceID: String,
@@ -304,7 +304,7 @@ class DashboardGuildDataController(
     /// VOICE ROLES ///
     ///////////////////
 
-    @PostMapping(Mappings.Dashboard.GUILD_CREATE_VOICE_ROLE)
+    @PostMapping(CentralApiRoutes.Dashboard.GUILD_CREATE_VOICE_ROLE)
     suspend fun createGuildVoiceRole(
         @PathVariable guildID: String,
         @RequestBody connectionData: ConnectionData,
@@ -335,7 +335,7 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
-    @PostMapping(Mappings.Dashboard.GUILD_SINGLE_VOICE_ROLE)
+    @PostMapping(CentralApiRoutes.Dashboard.GUILD_SINGLE_VOICE_ROLE)
     suspend fun updateGuildVoiceRole(
         @PathVariable guildID: String,
         @PathVariable channelID: String,
@@ -366,7 +366,7 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
-    @DeleteMapping(Mappings.Dashboard.GUILD_SINGLE_VOICE_ROLE)
+    @DeleteMapping(CentralApiRoutes.Dashboard.GUILD_SINGLE_VOICE_ROLE)
     suspend fun deleteGuildVoiceRole(
         @PathVariable guildID: String,
         @PathVariable channelID: String,
@@ -392,7 +392,7 @@ class DashboardGuildDataController(
     /// TEMPLATES ///
     /////////////////
 
-    @PostMapping(Mappings.Dashboard.GUILD_CREATE_TEMPLATE)
+    @PostMapping(CentralApiRoutes.Dashboard.GUILD_CREATE_TEMPLATE)
     suspend fun createGuildTemplate(
         @PathVariable guildID: String,
         @RequestBody templateData: TemplateData,
@@ -422,7 +422,7 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
-    @PostMapping(Mappings.Dashboard.GUILD_SINGLE_TEMPLATE)
+    @PostMapping(CentralApiRoutes.Dashboard.GUILD_SINGLE_TEMPLATE)
     suspend fun updateGuildTemplate(
         @PathVariable guildID: String,
         @PathVariable templateID: String,
@@ -453,7 +453,7 @@ class DashboardGuildDataController(
         return ResponseEntity.ok(guildData)
     }
 
-    @DeleteMapping(Mappings.Dashboard.GUILD_SINGLE_TEMPLATE)
+    @DeleteMapping(CentralApiRoutes.Dashboard.GUILD_SINGLE_TEMPLATE)
     suspend fun deleteGuildTemplate(
         @PathVariable guildID: String,
         @PathVariable templateID: String,

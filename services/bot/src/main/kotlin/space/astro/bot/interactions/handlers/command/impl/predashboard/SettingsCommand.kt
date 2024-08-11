@@ -70,7 +70,7 @@ class SettingsCommand(
     ) {
         ctx.replyHandler.deferReply()
 
-        val errors = configurationErrorDao.get(ctx.guildId)
+        val errors = configurationErrorDao.getOfLastSevenDays(ctx.guildId)
 
         if (errors.isEmpty()) {
             ctx.replyHandler.replyEmbed(Embeds.default("Astro didn't report any errors for this server"))
@@ -82,7 +82,7 @@ class SettingsCommand(
         val description = "Here are the last detected errors by Astro:" +
                 "\n\n" +
                 errors.joinToString("\n\n") {
-                    it.description + if (it.instant != null) "\n> ${simpleDateFormat.format(Date.from(it.instant!!))}" else ""
+                    it.description + "\n> ${simpleDateFormat.format(Date(it.timestamp))}"
                 }
 
         val shardId = event.jda.shardInfo.shardId

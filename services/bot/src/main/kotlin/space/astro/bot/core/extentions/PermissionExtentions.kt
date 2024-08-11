@@ -13,11 +13,13 @@ import space.astro.shared.core.models.influx.ConfigurationErrorData
 
 fun Long.toPermissionList() = Permission.getPermissions(this)
 
-fun InsufficientPermissionException.toConfigurationErrorDto() = ConfigurationErrorData(
+fun InsufficientPermissionException.toConfigurationErrorDto(guildId: String) = ConfigurationErrorData(
+    guildId = guildId,
     description = "Astro is missing the ${permission.getName()} permission in channel with ID $channelId"
 )
 
-fun HierarchyException.toConfigurationErrorDto() = ConfigurationErrorData(
+fun HierarchyException.toConfigurationErrorDto(guildId: String) = ConfigurationErrorData(
+    guildId = guildId,
     description = "Astro is not high enough in the server settings roles hierarchy to assign or remove some roles."
 )
 

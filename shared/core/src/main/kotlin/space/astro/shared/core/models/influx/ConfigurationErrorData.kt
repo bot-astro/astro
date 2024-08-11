@@ -1,17 +1,17 @@
 package space.astro.shared.core.models.influx
 
-import com.influxdb.annotations.Column
-import com.influxdb.annotations.Measurement
-import java.time.Instant
-
-/**
- * This is pretty simple
- * and could be improved with a more precise error reporting system in the future
- */
 data class ConfigurationErrorData(
+    val guildId: String,
     val description: String,
+    val premiumRequired: Boolean = false,
+    val guide: Guide? = null,
+    val timestamp: Long = System.currentTimeMillis(),
 ) {
-    override fun toString(): String {
-        return description
+    enum class Guide {
+        BASIC,
+        GENERATOR,
+        TEMPLATE,
+        INTERFACE,
+        VOICE_ROLE
     }
 }

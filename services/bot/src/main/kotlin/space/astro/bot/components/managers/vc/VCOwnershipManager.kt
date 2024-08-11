@@ -98,7 +98,7 @@ class VCOwnershipManager(
                     }
                     vcOperationCTX.guild.addRoleToMember(newOwner.user, ownerRole).queue()
                 } else {
-                    throw ConfigurationException(configurationErrorService.premiumRequiredForOwnerRole())
+                    throw ConfigurationException(configurationErrorService.premiumRequiredForOwnerRole(vcOperationCTX.guild.id))
                 }
             }
         }

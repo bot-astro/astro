@@ -117,9 +117,11 @@ class VCWaitingRoomManager(
         } catch (e: ErrorResponseException) {
             val configError = when (e.errorResponse) {
                 ErrorResponse.MAX_CHANNELS -> configurationErrorService.maximumAmountOfChannelsReached(
+                    guildId = owner.guild.id,
                     encounteredIn = "creating the waiting room of a temporary VC"
                 )
-                else -> configurationErrorService.unknownError(
+                else -> configurationErrorService.unknown(
+                    guildId = owner.guild.id,
                     encounteredIn = "creating the waiting room of a temporary VC: ${e.meaning}"
                 )
             }

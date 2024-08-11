@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ServerWebExchange
 import space.astro.api.central.configs.CentralApiConfig
-import space.astro.api.central.configs.Mappings
-import space.astro.api.central.configs.getUserID
+import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.api.central.util.getUserID
 import space.astro.api.central.models.discord.OAuth2AuthorizationResponseDto
 import space.astro.api.central.models.discord.OAuth2GuildInfo
 import space.astro.api.central.services.dashboard.DashboardGuildsPersistenceService
@@ -31,7 +31,7 @@ class DashboardAuthController(
     val centralApiConfig: CentralApiConfig
 ) {
 
-    @GetMapping(Mappings.Dashboard.LOGIN)
+    @GetMapping(CentralApiRoutes.Dashboard.LOGIN)
     suspend fun authorizeDiscord(
         exchange: ServerWebExchange,
         @PathVariable code: String
@@ -83,7 +83,7 @@ class DashboardAuthController(
             .body(response)
     }
 
-    @GetMapping(Mappings.Dashboard.LOGOUT)
+    @GetMapping(CentralApiRoutes.Dashboard.LOGOUT)
     suspend fun logoutDiscord(
         exchange: ServerWebExchange
     ): ResponseEntity<*> {

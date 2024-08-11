@@ -1,45 +1,45 @@
 package space.astro.shared.core.daos
 
-import com.influxdb.client.QueryApi
-import com.influxdb.client.WriteApi
-import com.influxdb.client.write.Point
-import com.influxdb.query.FluxTable
-import mu.KotlinLogging
+import com.mongodb.client.MongoCollection
+import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.Filters.*
+import com.mongodb.client.model.IndexOptions
+import com.mongodb.client.model.Indexes
+import com.mongodb.client.model.ReplaceOptions
+import org.litote.kmongo.descending
 import org.springframework.stereotype.Repository
-import space.astro.shared.core.components.influx.InfluxConfig
+import space.astro.shared.core.models.database.GuildData
 import space.astro.shared.core.models.influx.ConfigurationErrorData
-import space.astro.shared.core.models.influx.ConfigurationErrorWithTimeData
-
-private val log = KotlinLogging.logger {  }
 
 @Repository
 class ConfigurationErrorDao(
-    private val influxConfig: InfluxConfig,
-    private val influxQueryApi: QueryApi,
-    private val influxWriteApi: WriteApi
+    mongoDatabase: MongoDatabase,
 ) {
-    fun get(guildID: String, lookback: String = "-7d"): List<ConfigurationErrorWithTimeData> {
-        val query = "from(bucket:\"${influxConfig.bucket}\") " +
-                "|> range(start: $lookback) " +
-                "|> filter(fn: (r) => r[\"_measurement\"] == \"configuration_error\") " +
-                "|> filter(fn: (r) => r[\"guild_id\"] == \"$guildID\")"
-        return influxQueryApi.query(query, ConfigurationErrorWithTimeData::class.java).sortedByDescending { it.instant?.toEpochMilli() }
+    private final var collection: MongoCollection<ConfigurationErrorData>
+
+    init {
+        collection = mongoDatabase.getCollection("guilds", ConfigurationErrorData::class.java)
+        collection.createIndex(Indexes.ascending(ConfigurationErrorData::guildId.name), IndexOptions().unique(false))
     }
 
-    fun save(guildId: String, configurationErrorData: ConfigurationErrorData) {
-        val point = Point("configuration_error")
-            .addTag("guild_id", guildId)
-            .addField("description", configurationErrorData.description)
+    fun getOfLastSevenDays(guildID: String): List<ConfigurationErrorData> {
+        val minTimestamp = System.currentTimeMillis() - 604800000
 
-        influxWriteApi.writePoint(point)
+        return collection.find(and(eq(ConfigurationErrorData::guildId.name, guildID), gte(ConfigurationErrorData::timestamp.name, minTimestamp)))
+            .limit(100)
+            .sort(descending(ConfigurationErrorData::timestamp))
+            .toList()
+    }
+
+    fun save(configurationErrorData: ConfigurationErrorData) {
+        collection.replaceOne(
+            eq(GuildData::guildID.name, configurationErrorData.guildId),
+            configurationErrorData,
+            ReplaceOptions().upsert(true)
+        )
     }
 
     fun clear(guildId: String) {
-        val query = "from(bucket:\"${influxConfig.bucket}\") " +
-                "|> filter(fn: (r) => r[\"_measurement\"] == \"configuration_error\") " +
-                "|> filter(fn: (r) => r[\"guild_id\"] == \"$guildId\") " +
-                "|> delete()"
-
-        influxQueryApi.query(query)
+        collection.deleteMany(eq(ConfigurationErrorData::guildId.name, guildId))
     }
 }
