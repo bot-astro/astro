@@ -100,6 +100,7 @@ class AuthWebFilter(
 
         if (requestPath.startsWith(CentralApiRoutes.Dashboard.Prefixes.DASHBOARD)
             || requestPath.startsWith(CentralApiRoutes.Chargebee.PORTAL_SESSION)
+            || requestPath.startsWith(CentralApiRoutes.Chargebee.CHECKOUT)
             || requestPath.startsWith(CentralApiRoutes.Chargebee.USER_ACTIVE_SUBSCRIPTIONS)
             || requestPath.startsWith(CentralApiRoutes.Chargebee.LOGGED_USER_ACTIVE_SUBSCRIPTIONS))
         {
