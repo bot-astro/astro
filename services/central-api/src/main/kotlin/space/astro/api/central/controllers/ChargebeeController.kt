@@ -1,6 +1,9 @@
 package space.astro.api.central.controllers
 
+import com.chargebee.Result
+import com.chargebee.models.HostedPage
 import com.chargebee.models.Subscription
+import com.chargebee.org.json.JSONObject
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -8,24 +11,21 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ServerWebExchange
-import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.api.central.models.chargebee.*
+import space.astro.api.central.services.discord.DiscordUserService
+import space.astro.api.central.util.getAccessToken
 import space.astro.api.central.util.getUserID
-import space.astro.api.central.models.chargebee.SubscriptionWebhookData
-import space.astro.api.central.models.chargebee.UpgradedGuildInfo
-import space.astro.api.central.models.chargebee.UserSubscription
-import space.astro.api.central.models.chargebee.UserSubscriptionsInfo
+import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.shared.core.configs.PremiumFeaturesConfig
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.UserDao
 import space.astro.shared.core.models.database.GuildUpgradeData
 import space.astro.shared.core.services.chargebee.ChargebeeClientService
 import space.astro.shared.core.services.support.SupportBotApiService
 import space.astro.shared.core.util.exceptions.NotFoundException
+
 
 private val log = KotlinLogging.logger { }
 
@@ -39,7 +39,9 @@ class ChargebeeController(
     val guildDao: GuildDao,
     val userDao: UserDao,
     val supportBotApiService: SupportBotApiService,
-    val coroutineScope: CoroutineScope
+    val coroutineScope: CoroutineScope,
+    private val discordUserService: DiscordUserService,
+    private val premiumFeaturesConfig: PremiumFeaturesConfig
 ) {
     @GetMapping(CentralApiRoutes.Chargebee.PORTAL_SESSION)
     @ApiResponses(
@@ -68,6 +70,27 @@ class ChargebeeController(
             log.error { "failed creating portal session access url for user $userID" }
             ResponseEntity.badRequest().build<Any>()
         }
+    }
+
+    @PostMapping(CentralApiRoutes.Chargebee.CHECKOUT)
+    suspend fun createCheckout(
+        @RequestBody checkoutBody: CheckoutBody,
+        exchange: ServerWebExchange
+    ): ResponseEntity<*> {
+        val userID = exchange.getUserID()
+        val userEmail = discordUserService.fetchSelfUser(exchange.getAccessToken()).email
+
+        val result: Result = HostedPage.checkoutNewForItems()
+            .customerId(userID)
+            .customerEmail(userEmail)
+            .subscriptionItemItemPriceId(0, if (checkoutBody.monthly) premiumFeaturesConfig.premiumMonthlyPlanId else premiumFeaturesConfig.premiumYearlyPlanId)
+            .subscriptionItemQuantity(0, checkoutBody.quantity)
+            .request()
+
+        val hostedPage: HostedPage = result.hostedPage()
+        val output: JSONObject = hostedPage.jsonObj
+
+        return ResponseEntity.ok(output)
     }
 
     @GetMapping(CentralApiRoutes.Chargebee.USER_ACTIVE_SUBSCRIPTIONS)

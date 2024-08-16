@@ -22,6 +22,7 @@ object CentralApiRoutes {
         }
 
         const val PORTAL_SESSION = "/chargebee/portal-session"
+        const val CHECKOUT = "/chargebee/checkout"
         const val USER_ACTIVE_SUBSCRIPTIONS = "/chargebee/subscriptions/{userID}"
         const val LOGGED_USER_ACTIVE_SUBSCRIPTIONS = "/chargebee/subscriptions"
         const val EVENT_SUB_CREATE = "${Prefixes.EVENT}/sub/create"

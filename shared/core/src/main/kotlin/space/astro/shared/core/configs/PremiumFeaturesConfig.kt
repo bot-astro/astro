@@ -8,4 +8,6 @@ import org.springframework.context.annotation.Configuration
 class PremiumFeaturesConfig {
     var premiumRestrictions: Boolean = true
     var premiumServerSkuId: String = "1096107722115661934"
+    var premiumMonthlyPlanId: String = "Server-Premium-USD-Monthly"
+    var premiumYearlyPlanId: String = "Server-Premium-USD-Yearly"
 }
