@@ -2,6 +2,7 @@ package space.astro.api.central.controllers.dashboard
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import io.swagger.v3.oas.annotations.tags.Tag
+import net.dv8tion.jda.api.Permission
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -11,12 +12,15 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
+import space.astro.api.central.models.dashboard.DashboardGuildDto
 import space.astro.shared.core.components.web.CentralApiRoutes
 import space.astro.api.central.util.getUserID
 import space.astro.api.central.models.dashboard.body.GuildDataInterfaceCreateBody
 import space.astro.api.central.models.dashboard.body.GuildDataSettingsBody
 import space.astro.api.central.services.bot.PodMetaCalculatorService
 import space.astro.api.central.services.dashboard.DashboardGuildsPersistenceService
+import space.astro.api.central.services.discord.DiscordGuildsFetchService
+import space.astro.api.central.util.getAccessToken
 import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.models.database.ConnectionData
@@ -35,6 +39,7 @@ class DashboardGuildDataController(
     private val podMetaCalculatorService: PodMetaCalculatorService,
     private val botApiService: BotApiService,
     private val premiumRequirementDetector: PremiumRequirementDetector,
+    private val discordGuildsFetchService: DiscordGuildsFetchService,
 ) {
     ///////////////////////////////
     /// GETTER FOR ALL SETTINGS ///
@@ -46,8 +51,32 @@ class DashboardGuildDataController(
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
         val userID = exchange.getUserID()
-        val dashboardGuild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
-            ?: return ResponseEntity.notFound().build<Any>()
+        val accessToken = exchange.getAccessToken()
+
+        val dashboardGuild = run {
+            var guild = dashboardGuildsPersistenceService.getUserGuild(userID, guildID)
+
+            if (guild == null) {
+                val dashboardGuilds = discordGuildsFetchService.fetchGuilds(accessToken)
+                    .map { partialGuild ->
+                        DashboardGuildDto(
+                            id = partialGuild.id,
+                            name = partialGuild.name,
+                            icon = partialGuild.icon,
+                            canManage = Permission.getPermissions(partialGuild.permissions).any {
+                                it == Permission.MANAGE_CHANNEL || it == Permission.MANAGE_SERVER || it == Permission.ADMINISTRATOR
+                            },
+                        )
+                    }
+
+                dashboardGuildsPersistenceService.updateUserGuilds(userID, dashboardGuilds)
+
+                guild = dashboardGuilds.firstOrNull { it.id == guildID }
+            }
+
+            return@run guild
+        } ?: return ResponseEntity.notFound().build<Any>()
+
         if (!dashboardGuild.canManage) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
         }
