@@ -13,6 +13,7 @@ import io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
+import space.astro.shared.core.configs.RedisConfig
 import java.time.Duration
 
 /**

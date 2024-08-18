@@ -6,6 +6,7 @@ import com.influxdb.client.QueryApi
 import com.influxdb.client.WriteApi
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+import space.astro.shared.core.configs.InfluxConfig
 
 @Component
 class InfluxFactory {

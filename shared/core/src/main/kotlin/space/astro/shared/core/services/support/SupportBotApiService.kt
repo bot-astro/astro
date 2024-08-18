@@ -27,7 +27,7 @@ private val log = KotlinLogging.logger {  }
 @Service
 class SupportBotApiService(
     webClientConfig: WebClientConfig,
-    supportBotApiConfig: SupportBotApiConfig,
+    private val supportBotApiConfig: SupportBotApiConfig,
     private val objectMapper: ObjectMapper
 ) {
     private final val provider: ConnectionProvider =
@@ -60,6 +60,10 @@ class SupportBotApiService(
      * @throws [UnknownException] for all other possible errors
      */
     suspend fun addPremiumRoleToUser(userID: String) {
+        if (!supportBotApiConfig.enabled) {
+            return
+        }
+
         log.info { "Requesting premium role add to support-bot service" }
 
         webClient.get()
@@ -86,6 +90,10 @@ class SupportBotApiService(
      * @throws [UnknownException] for all other possible errors
      */
     suspend fun removePremiumRoleFromUser(userID: String) {
+        if (!supportBotApiConfig.enabled) {
+            return
+        }
+
         log.info { "Requesting premium role removal to support-bot service" }
 
         webClient.get()

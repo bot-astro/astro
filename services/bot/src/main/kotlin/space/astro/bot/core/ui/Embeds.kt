@@ -74,7 +74,7 @@ object Embeds {
                 "\n> • Send custom messages or interfaces on voice channel creation" +
                 "\n> • Dedicated support in the [Support Server](${Links.SUPPORT_SERVER})" +
                 "\n\n**Get premium**" +
-                "\n> You can get premium for your server directly on Discord via [the App Directory](${Links.APP_DIRECTORY_PREMIUM})." +
+                "\n> You can get premium for your server directly on Discord via [the App Directory](${Links.APP_DIRECTORY_ULTIMATE})." +
                 "\n\n**FAQ**" +
                 "\n> Premium is completely managed by Discord, check out [their FAQ](${Links.ExternalGuides.PREMIUM_FAQ}) for any other question." +
                 "\n\n**Old subscribers**" +
@@ -243,7 +243,7 @@ object Embeds {
 
     val helpConnections = Embed {
         color = Colors.purple.rgb
-        title = "${Emojis.connection.formatted} Help - Connections"
+        title = "${Emojis.voiceRole.formatted} Help - Connections"
         description = "Connections allow to connect voice channels to roles." +
                 "\nSo that when a user joins a specific voice channel he gets a specific role." +
                 "\n\n**Channel**" +
@@ -270,14 +270,12 @@ object Embeds {
         }
     }
 
-    /*
     fun dashboardSettings() : MessageEmbed {
         return Embed(
             color = Colors.purple.rgb,
-            description = "You can manage Astro's settings on its ${"dashboard".linkFromName(Links.DASHBOARD)}!"
+            description = "Setup Astro and configure all of its settings on the ${Emojis.dashboard.formatted} [`Dashboard`](${Links.DASHBOARD})",
         )
     }
-     */
 
 
     ////////////////////

@@ -6,7 +6,6 @@ import mu.KotlinLogging
 import net.dv8tion.jda.api.events.entitlement.EntitlementUpdateEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.shared.core.configs.PremiumFeaturesConfig
 import space.astro.shared.core.services.support.SupportBotApiService
 import space.astro.shared.core.daos.GuildDao
@@ -29,7 +28,7 @@ class EntitlementUpdateEventListener(
         }
 
         when (event.entitlement.skuId) {
-            premiumFeaturesConfig.premiumServerSkuId -> {
+            premiumFeaturesConfig.serverSkuId -> {
                 val guildData = guildDao.getOrCreate(event.entitlement.guildId!!)
 
                 val entitlementIndex = guildData.entitlements.indexOfFirst { it.id == event.entitlement.id }

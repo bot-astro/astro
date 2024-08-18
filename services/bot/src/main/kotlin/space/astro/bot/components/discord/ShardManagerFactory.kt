@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component
 import space.astro.bot.components.jda.JdaToSpringEventBridge
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.config.PodConfig
+import space.astro.bot.config.ShardManagerConfig
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.RedisSessionController

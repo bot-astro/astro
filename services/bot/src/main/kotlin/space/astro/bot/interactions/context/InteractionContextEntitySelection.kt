@@ -11,6 +11,6 @@ enum class InteractionContextEntitySelection(
 ) {
     TEMPLATE("Template", Emojis.template, "template create", null),
     GENERATOR("Generator", Emojis.generator, "generator create", null),
-    CONNECTION("Connection", Emojis.connection, "connection create", null),
+    CONNECTION("Connection", Emojis.voiceRole, "connection create", null),
     INTERFACE("Interface", Emojis.vcInterface, "interface create", null);
 }

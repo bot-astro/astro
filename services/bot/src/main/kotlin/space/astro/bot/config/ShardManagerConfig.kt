@@ -1,4 +1,4 @@
-package space.astro.bot.components.discord
+package space.astro.bot.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration

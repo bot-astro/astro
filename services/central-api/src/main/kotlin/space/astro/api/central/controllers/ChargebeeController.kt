@@ -3,7 +3,6 @@ package space.astro.api.central.controllers
 import com.chargebee.Result
 import com.chargebee.models.HostedPage
 import com.chargebee.models.Subscription
-import com.chargebee.org.json.JSONObject
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -83,7 +82,7 @@ class ChargebeeController(
         val result: Result = HostedPage.checkoutNewForItems()
             .customerId(userID)
             .customerEmail(userEmail)
-            .subscriptionItemItemPriceId(0, if (checkoutBody.monthly) premiumFeaturesConfig.premiumMonthlyPlanId else premiumFeaturesConfig.premiumYearlyPlanId)
+            .subscriptionItemItemPriceId(0, if (checkoutBody.monthly) premiumFeaturesConfig.monthlyPlanId else premiumFeaturesConfig.yearlyPlanId)
             .subscriptionItemQuantity(0, checkoutBody.quantity)
             .request()
 

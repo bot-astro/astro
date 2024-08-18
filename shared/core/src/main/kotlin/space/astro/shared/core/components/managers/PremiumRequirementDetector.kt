@@ -17,7 +17,7 @@ class PremiumRequirementDetector(
     }
 
     fun isGuildPremium(guildData: GuildData): Boolean {
-        if (!premiumFeaturesConfig.premiumRestrictions) {
+        if (!premiumFeaturesConfig.restrictions) {
             return true
         }
 
@@ -28,12 +28,12 @@ class PremiumRequirementDetector(
         val currentMillis = System.currentTimeMillis()
 
         return guildData.entitlements.any {
-            isEntitlementActive(it, currentMillis) && it.skuId == premiumFeaturesConfig.premiumServerSkuId
+            isEntitlementActive(it, currentMillis) && it.skuId == premiumFeaturesConfig.serverSkuId
         }
     }
 
     fun canCreateConnection(guildData: GuildData): Boolean {
-        if (isGuildPremium(guildData) || !premiumFeaturesConfig.premiumRestrictions) {
+        if (isGuildPremium(guildData) || !premiumFeaturesConfig.restrictions) {
             return true
         }
 
@@ -41,7 +41,7 @@ class PremiumRequirementDetector(
     }
 
     fun canCreateGenerator(guildData: GuildData): Boolean {
-        if (isGuildPremium(guildData) || !premiumFeaturesConfig.premiumRestrictions) {
+        if (isGuildPremium(guildData) || !premiumFeaturesConfig.restrictions) {
             return true
         }
 
@@ -49,7 +49,7 @@ class PremiumRequirementDetector(
     }
 
     fun canCreateInterface(guildData: GuildData): Boolean {
-        if (isGuildPremium(guildData) || !premiumFeaturesConfig.premiumRestrictions) {
+        if (isGuildPremium(guildData) || !premiumFeaturesConfig.restrictions) {
             return true
         }
 
@@ -57,7 +57,7 @@ class PremiumRequirementDetector(
     }
 
     fun canCreateTemplate(guildData: GuildData): Boolean {
-        if (isGuildPremium(guildData) || !premiumFeaturesConfig.premiumRestrictions) {
+        if (isGuildPremium(guildData) || !premiumFeaturesConfig.restrictions) {
             return true
         }
 
@@ -65,13 +65,13 @@ class PremiumRequirementDetector(
     }
 
     fun exceededMaximumConnectionsAmount(guildData: GuildData): Boolean {
-        return premiumFeaturesConfig.premiumRestrictions
+        return premiumFeaturesConfig.restrictions
                 && guildData.connections.size > 1
                 && !isGuildPremium(guildData)
     }
 
     fun exceededMaximumGeneratorAmount(guildData: GuildData): Boolean {
-        return premiumFeaturesConfig.premiumRestrictions
+        return premiumFeaturesConfig.restrictions
                 && guildData.generators.size > 3
                 && !isGuildPremium(guildData)
     }

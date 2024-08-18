@@ -2,7 +2,7 @@
  * Copyright (c) 2023. Hydra Bot
  */
 
-package space.astro.shared.core.components.kmongo
+package space.astro.shared.core.configs
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration

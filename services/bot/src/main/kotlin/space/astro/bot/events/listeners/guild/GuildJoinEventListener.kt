@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -13,7 +12,6 @@ import space.astro.bot.core.extentions.toPermissionList
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Emojis
 import space.astro.bot.interactions.InteractionComponentBuilder
-import space.astro.bot.interactions.InteractionIds
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.shared.core.models.analytics.AnalyticsEvent
 import space.astro.shared.core.models.analytics.AnalyticsEventReceiver
@@ -48,20 +46,10 @@ class GuildJoinEventListener(
             ?.sendMessageEmbeds(createGuildJoinMessage(guild))
             ?.setComponents(
                 ActionRow.of(
-                    interactionComponentBuilder.buttonWithLabelAndEmoji(
-                        id = InteractionIds.Button.SETUP,
-                        buttonStyle = ButtonStyle.SUCCESS,
-                        label = "Setup",
-                        emoji = Emojis.setup
-                    ),
-                    interactionComponentBuilder.buttonWithLabelAndEmoji(
-                        id = InteractionIds.Button.HELP_GENERAL,
-                        buttonStyle = ButtonStyle.PRIMARY,
-                        label = "Help",
-                        emoji = Emojis.help
-                    ),
+                    Buttons.guildDashboard(guild.id),
+                    Buttons.guides,
                     Buttons.support,
-                    Buttons.premium,
+                    Buttons.appDirectoryUltimate,
                 )
             )
             ?.queue()
@@ -86,49 +74,33 @@ class GuildJoinEventListener(
         return Embed(
             color = Colors.purple.rgb,
             authorName = "Astro just landed in ${guild.name}!",
-            authorUrl = Links.WEBSITE,
+            authorUrl = Links.GUILD_DASHBOARD(guild.id),
             authorIcon = guild.selfMember.user.effectiveAvatarUrl,
-            description = "Thanks for inviting Astro in this amazing server, let's get started making it better now!",
+            description = "Thanks for inviting Astro in this amazing server, let's get it to the next level now!",
             thumbnail = guild.iconUrl ?: guild.selfMember.user.effectiveAvatarUrl,
             fields = listOf(
                 MessageEmbed.Field(
+                "Features",
+                "Astro provides the following features:" +
+                        "\n${Emojis.generator.formatted} *Temporary voice channels*" +
+                        "\n${Emojis.voiceRole.formatted} *Voice roles*" +
+                        "\n${Emojis.vcInterface.formatted} *Interfaces*" +
+                        "\n${Emojis.template.formatted} *Templates*" +
+                        "\nTo find out all the cool things you can do with Astro, take a look at the [`Guides`](${Links.GUIDES})!",
+                false
+                ),
+                MessageEmbed.Field(
                     "Setup",
-                    "Use the ${Emojis.setup.formatted} Setup button below to setup Astro for your server!",
+                    "Use the ${Emojis.dashboard.formatted} [`Dashboard`](${Links.GUILD_DASHBOARD(guild.id)}) to setup Astro and configure its settings!",
                     false
                 ),
                 MessageEmbed.Field(
-                    "Help & other resources",
-                    "You can find some general information about Astro with `/help`.",
+                    "Support",
+                    "You can join the ${Emojis.helper.formatted} [`Support server`](${Links.SUPPORT_SERVER}) to ask questions if something is not quite clear to you!",
                     false
-                )
+                ),
             ),
             footerText = "Thank you for using Astro!",
         )
     }
-
-    /*
-    private fun createGuildJoinMessage(guild: Guild): MessageEmbed {
-        return Embed(
-            color = Colors.purple.rgb,
-            authorName = "Astro just landed in ${guild.name}!",
-            authorUrl = Links.WEBSITE,
-            authorIcon = guild.selfMember.user.effectiveAvatarUrl,
-            description = "Thanks for inviting Astro in this amazing server, let's get started making it better now!",
-            thumbnail = guild.iconUrl ?: guild.selfMember.user.effectiveAvatarUrl,
-            fields = listOf(
-                MessageEmbed.Field(
-                    "Setup",
-                    "Open the ${Links.DASHBOARD.linkFromLink("dashboard")} and configure Astro!",
-                    false
-                ),
-                MessageEmbed.Field(
-                    "Help & other resources",
-                    "You can find some general information about Astro with `/help`.",
-                    false
-                )
-            ),
-            footerText = "Developed by the ${Links.DEVELOPERS.linkFromLink("Astro team")}",
-        )
-    }
-     */
 }

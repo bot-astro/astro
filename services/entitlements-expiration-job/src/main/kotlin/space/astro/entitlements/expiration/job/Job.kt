@@ -1,20 +1,14 @@
 package space.astro.entitlements.expiration.job
 
 import io.sentry.Sentry
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import org.springframework.boot.ExitCodeGenerator
-import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.context.ApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.web.context.WebApplicationContext
 import space.astro.entitlements.expiration.job.config.DiscordApplicationConfig
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.services.discord.DiscordEntitlementsFetchService
@@ -47,7 +41,7 @@ class Application(
         runBlocking {
             try {
                 val expiredEntitlements = entitlementsFetchService.fetchEntitlements(
-                    applicationId = discordApplicationConfig.applicationId.toString(),
+                    applicationId = discordApplicationConfig.id.toString(),
                     authToken = discordApplicationConfig.token,
                     userId = null,
                     guildId = null

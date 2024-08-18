@@ -135,6 +135,7 @@ class CommandHandler(
                 return@launch
             }
 
+
             /////////////////////////////
             /// RETRIEVE COMMAND DATA ///
             /////////////////////////////
@@ -184,6 +185,7 @@ class CommandHandler(
                     else -> throw UnsupportedOperationException("Unable to handle option $name!")
                 }
             }
+
 
             ////////////////
             /// COOLDOWN ///

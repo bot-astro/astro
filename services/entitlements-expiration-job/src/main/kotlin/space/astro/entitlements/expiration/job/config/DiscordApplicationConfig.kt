@@ -6,6 +6,6 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @ConfigurationProperties("discord.application")
 class DiscordApplicationConfig {
-    var applicationId: Long = 1176957574332026940
+    var id: Long = 1176957574332026940
     var token: String = "token"
 }

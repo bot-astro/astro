@@ -12,6 +12,7 @@ import org.litote.kmongo.KMongo
 import org.litote.kmongo.util.ObjectMappingConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+import space.astro.shared.core.configs.KmongoConfig
 
 @Component
 class KmongoFactory {

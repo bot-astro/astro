@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @ConfigurationProperties("support.bot")
 class SupportBotApiConfig {
-
+    var enabled: Boolean = true
     var baseUrl: String = "http://localhost:9001"
     var originUrl: String = "http://localhost:3000"
     var auth: String = "authtoken"

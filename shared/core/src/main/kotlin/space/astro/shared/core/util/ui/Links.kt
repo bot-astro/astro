@@ -8,9 +8,10 @@ object Links {
     const val INVITE = "https://astro-bot.space/invite"
     const val SUPPORT_SERVER = "https://discord.gg/yeXwVhg"
     const val WEBSITE_PREMIUM = "https://astro-bot.space/ultimate"
-    const val APP_DIRECTORY_PREMIUM = "https://discord.com/application-directory/715621848489918495/premium"
+    const val APP_DIRECTORY_ULTIMATE = "https://discord.com/application-directory/715621848489918495/premium"
     const val DASHBOARD = "https://astro-bot.space/guilds"
-    fun GUILD_DASHBOARD(guildId: Long) = "https://astro-bot.space/guilds/$guildId"
+    fun GUILD_DASHBOARD(guildId: String) = "https://astro-bot.space/guilds/$guildId"
+    const val GUIDES = "https://astro-bot.space/guides"
 
     const val LOGO = "https://cdn.discordapp.com/avatars/715621848489918495/dc0affdf8de07a3d88c4d192efad649f.png?size=2048"
     const val INTERFACE_BUTTONS_IMAGE = "$WEBSITE/new-interface-image.png"

@@ -2,7 +2,7 @@ package space.astro.bot.interactions.handlers.command.impl.info
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import space.astro.bot.components.discord.ShardManagerConfig
+import space.astro.bot.config.ShardManagerConfig
 import space.astro.bot.config.PodConfig
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
@@ -10,7 +10,6 @@ import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.handlers.command.AbstractCommand
 import space.astro.bot.interactions.handlers.command.Command
 import space.astro.bot.interactions.handlers.command.SubCommand
-import space.astro.shared.core.configs.KubeConfig
 
 
 @Command(
@@ -55,7 +54,7 @@ class HelpCommand(
         ctx.replyHandler.setEphemeral(false)
         ctx.replyHandler.replyEmbedAndComponent(
             embed = Embeds.helpPremium,
-            component = Buttons.premium
+            component = Buttons.appDirectoryUltimate
         )
     }
 

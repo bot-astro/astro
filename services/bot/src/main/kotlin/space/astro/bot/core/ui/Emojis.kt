@@ -3,18 +3,23 @@ package space.astro.bot.core.ui
 import net.dv8tion.jda.api.entities.emoji.Emoji
 
 object Emojis {
-    val astro = Emoji.fromCustom("astro", 1029823551240421386, false)
-    val heart = Emoji.fromCustom("heart", 857952015439233075, false)
-    val party = Emoji.fromCustom("party", 1029823600900972594, false)
+//    val astro = Emoji.fromCustom("astro", 1029823551240421386, false)
+//    val heart = Emoji.fromCustom("heart", 857952015439233075, false)
+//    val party = Emoji.fromCustom("party", 1029823600900972594, false)
+//
+//    val discord = Emoji.fromCustom("discord", 1029823570148339902, false)
+//
+//    val online = Emoji.fromCustom("online", 1029823596203343963, false)
+//    val idle = Emoji.fromCustom("idle", 1029823579312902205, false)
+//    val offline = Emoji.fromCustom("offline", 1029823593342828565, false)
+//
+//    val checkmark = Emoji.fromCustom("checkmark", 825411356173402112, false)
+//    val error = Emoji.fromCustom("error", 823998802713247804, false)
+//    val vote = Emoji.fromCustom("vote", 1029823617791438999, false)
+//    val doubloon = Emoji.fromCustom("doubloon", 811049514605215794, false)
+//    val coins = Emoji.fromCustom("coins", 811049514949279874, false)
 
-    val discord = Emoji.fromCustom("discord", 1029823570148339902, false)
-
-    val online = Emoji.fromCustom("online", 1029823596203343963, false)
-    val idle = Emoji.fromCustom("idle", 1029823579312902205, false)
-    val offline = Emoji.fromCustom("offline", 1029823593342828565, false)
-
-    val checkmark = Emoji.fromCustom("checkmark", 825411356173402112, false)
-    val error = Emoji.fromCustom("error", 823998802713247804, false)
+    val dashboard = Emoji.fromCustom("dashboard", 1274511299954475008, false)
 
     val create = Emoji.fromCustom("create", 1029823564100157510, false)
     val delete = Emoji.fromCustom("delete", 1029823565819809792, false)
@@ -24,7 +29,7 @@ object Emojis {
     val template = Emoji.fromCustom("template", 1038794746249875567, false)
     val generator = Emoji.fromCustom("generator", 1029823573201780846, false)
     val vcInterface = Emoji.fromCustom("interface", 1029823580902543360, false)
-    val connection = Emoji.fromCustom("connection", 1029823562552463480, false)
+    val voiceRole = Emoji.fromCustom("connection", 1029823562552463480, false)
     val setup = Emoji.fromCustom("setup", 1029823609880985600, false)
     val help = Emoji.fromCustom("help", 1029823576141987941, false)
 
@@ -34,9 +39,6 @@ object Emojis {
     val helper = Emoji.fromCustom("helper", 1029828557632979025, false)
 
     val premium = Emoji.fromCustom("premium", 1029823603824414862, false)
-    val vote = Emoji.fromCustom("vote", 1029823617791438999, false)
-    val doubloon = Emoji.fromCustom("doubloon", 811049514605215794, false)
-    val coins = Emoji.fromCustom("coins", 811049514949279874, false)
 
     val stats = Emoji.fromCustom("stats", 1029823613106401320, false)
     val variables = developer

@@ -4,13 +4,11 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.requests.RestRateLimiter
 import net.dv8tion.jda.api.utils.SessionController
 import net.dv8tion.jda.api.utils.SessionController.ShardedGateway
 import net.dv8tion.jda.api.utils.SessionControllerAdapter
-import space.astro.bot.components.discord.ShardManagerConfig
+import space.astro.bot.config.ShardManagerConfig
 import space.astro.bot.config.DiscordApplicationConfig
-import space.astro.shared.core.models.redis.RedisKey
 import space.astro.shared.core.models.redis.RedisRateLimiter
 import java.time.Duration
 import java.util.concurrent.Executors

@@ -82,7 +82,7 @@ class InterfaceCommand(
                             "\nPossible solutions:" +
                             "\n• Get ${Emojis.premium.formatted}" +
                             "\n• Delete an existing interface with `/interface delete`"),
-                component = Buttons.premium
+                component = Buttons.appDirectoryUltimate
             )
             return
         }
