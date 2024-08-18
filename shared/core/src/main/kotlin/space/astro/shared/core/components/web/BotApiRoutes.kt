@@ -9,6 +9,7 @@ object BotApiRoutes {
 
 
     object DASHBOARD {
+        const val IS_BOT_IN_GUILD = "/api/{guildID}/is-bot-in-guild"
         const val GUILD_CHANNELS = "/api/{guildID}/channels"
         const val GUILD_ROLES = "/api/{guildID}/roles"
         const val CREATE_GENERATOR = "/api/{guildID}/generator/create"

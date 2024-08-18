@@ -25,6 +25,16 @@ class DashboardController(
     private val shardManager: ShardManager,
     private val interfaceManager: InterfaceManager
 ) {
+    @GetMapping(BotApiRoutes.DASHBOARD.IS_BOT_IN_GUILD)
+    suspend fun isBotInGuild(
+        @PathVariable guildID: String
+    ) : ResponseEntity<*> {
+        shardManager.getGuildById(guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+
+        return ResponseEntity.status(200).build<Any>()
+    }
+
     @GetMapping(BotApiRoutes.DASHBOARD.GUILD_CHANNELS)
     suspend fun getGuildChannels(
         @PathVariable guildID: String

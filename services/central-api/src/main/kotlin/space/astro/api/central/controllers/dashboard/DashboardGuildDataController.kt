@@ -81,6 +81,12 @@ class DashboardGuildDataController(
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
         }
 
+        val endpoint = podMetaCalculatorService.calculatePodEndpoint(guildID)
+        val hasBot = botApiService.isBotInGuild(endpoint, guildID)
+        if (!hasBot) {
+            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build<Any>()
+        }
+
         val guildData = guildDao.getOrCreate(guildID)
 
         return ResponseEntity.ok(guildData)

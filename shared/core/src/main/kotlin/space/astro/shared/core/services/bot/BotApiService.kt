@@ -7,6 +7,7 @@ import org.springframework.http.codec.json.Jackson2JsonDecoder
 import org.springframework.http.codec.json.Jackson2JsonEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.awaitBodilessEntity
 import org.springframework.web.reactive.function.client.awaitBody
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
@@ -46,6 +47,23 @@ class BotApiService(
         .defaultHeader("Authorization", botApiConfig.auth)
         .build()
 
+    suspend fun isBotInGuild(
+        endpoint: String,
+        guildID: String
+    ): Boolean {
+        val res = webClient.get()
+            .uri("${endpoint.removeSuffix("/")}${BotApiRoutes.DASHBOARD.IS_BOT_IN_GUILD.replace("{guildID}", guildID)}")
+            .retrieve()
+            .awaitBodilessEntity()
+
+        return if (res.statusCode.is2xxSuccessful) {
+            true
+        } else if (res.statusCode == HttpStatus.NOT_FOUND) {
+            false
+        } else {
+            throw Throwable("${res.statusCode} - Unexpected Response")
+        }
+    }
 
     /**
      * Gets guild channels from the bot cache
