@@ -8,6 +8,7 @@ import space.astro.shared.core.util.ui.Links
 object Buttons {
     val invite = Button.link(Links.INVITE, "Invite")
     val support = Button.link(Links.SUPPORT_SERVER, "Support")
+    val ultimate = Button.link(Links.ULTIMATE, "Ultimate")
     val appDirectoryUltimate = Button.link(Links.APP_DIRECTORY_ULTIMATE, "Ultimate")
     val dashboard = Button.link(Links.DASHBOARD, "Dashboard")
     fun guildDashboard(guildId: String) = Button.link(Links.GUILD_DASHBOARD(guildId), "Dashboard")

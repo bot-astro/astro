@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
 import net.dv8tion.jda.api.interactions.components.ActionRow
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -12,6 +13,7 @@ import space.astro.bot.core.extentions.toPermissionList
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Emojis
 import space.astro.bot.interactions.InteractionComponentBuilder
+import space.astro.bot.interactions.InteractionIds
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.shared.core.models.analytics.AnalyticsEvent
 import space.astro.shared.core.models.analytics.AnalyticsEventReceiver
@@ -46,7 +48,15 @@ class GuildJoinEventListener(
             ?.sendMessageEmbeds(createGuildJoinMessage(guild))
             ?.setComponents(
                 ActionRow.of(
+                    interactionComponentBuilder.buttonWithLabelAndEmoji(
+                        id = InteractionIds.Button.SETUP,
+                        buttonStyle = ButtonStyle.SUCCESS,
+                        label = "Setup",
+                        emoji = Emojis.setup
+                    ),
                     Buttons.guildDashboard(guild.id),
+                ),
+                ActionRow.of(
                     Buttons.Guides.all,
                     Buttons.support,
                     Buttons.appDirectoryUltimate,
