@@ -109,6 +109,7 @@ class DashboardGuildDataController(
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
         }
 
+
         val validation = guildSettings.validate()
         if (!validation.isValid) {
             return ResponseEntity.badRequest().body(validation.invalidMessage)
@@ -178,6 +179,10 @@ class DashboardGuildDataController(
             ?: return ResponseEntity.notFound().build<Any>()
         if (!dashboardGuild.canManage) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
+        }
+
+        if (generatorData.commandsSettings.minBitrate < 8000) {
+            generatorData.commandsSettings.minBitrate = 8000
         }
 
         val validation = generatorData.validate()
