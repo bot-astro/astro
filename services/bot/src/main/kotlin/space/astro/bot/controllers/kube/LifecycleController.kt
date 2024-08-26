@@ -31,7 +31,7 @@ class LifecycleController(
         return if (allShardsReady) {
             ResponseEntity.noContent().build<Any>()
         } else {
-            log.info("Getting probed /ready: ${shardManager.shards.count { it.status == JDA.Status.CONNECTED }}")
+            log.info("Getting probed /ready: ${shardManager.shards.count { it.status == JDA.Status.CONNECTED }} / ${shardManager.shards.size}")
             log.info("Not Ready --> Returning 500")
             ResponseEntity.status(500).build<Any>()
         }
