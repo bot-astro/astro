@@ -18,7 +18,7 @@ class LifecycleController {
     suspend fun ready(): ResponseEntity<*> {
         log.info { "k8s requested ready status, responding with OK" }
 
-        return ResponseEntity.noContent().build<Any>()
+        return ResponseEntity.ok().build<Any>()
     }
 
     @GetMapping(CentralApiRoutes.Kube.SHUTDOWN)
@@ -28,6 +28,6 @@ class LifecycleController {
         // grace time for requests to finish since kubernetes doesn't route traffic to the pod anymore when requesting to shut down
         delay(3000)
 
-        return ResponseEntity.noContent().build<Any>()
+        return ResponseEntity.ok().build<Any>()
     }
 }
