@@ -35,6 +35,9 @@ class PremiumRoleController(
         val role = guild.getRoleById(discordApplicationConfig.premiumRoleId)
             ?: throw RuntimeException("Could not find role for premium users with id ${discordApplicationConfig.premiumRoleId}!")
 
+
+        // ciao
+
         return try {
             val user = guild.retrieveMemberById(userID).await()
                 ?: return ResponseEntity.notFound().build<Any>()
