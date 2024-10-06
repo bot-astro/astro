@@ -426,5 +426,5 @@ data class RenameConditions(
     var stateChange: Boolean = true,
     var ownerChange: Boolean = true,
     var renamed: Boolean = false,
-    var activityChange: Boolean = true
+    var activityChange: Boolean = false
 )
