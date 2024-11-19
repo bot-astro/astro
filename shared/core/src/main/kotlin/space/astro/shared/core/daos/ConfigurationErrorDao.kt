@@ -18,7 +18,7 @@ class ConfigurationErrorDao(
     private final var collection: MongoCollection<ConfigurationErrorData>
 
     init {
-        collection = mongoDatabase.getCollection("guilds", ConfigurationErrorData::class.java)
+        collection = mongoDatabase.getCollection("errors", ConfigurationErrorData::class.java)
         collection.createIndex(Indexes.ascending(ConfigurationErrorData::guildId.name), IndexOptions().unique(false))
     }
 
