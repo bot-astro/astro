@@ -319,7 +319,7 @@ data class ConnectionData(
     var id: String,
     var roleID: String,
     var action: ConnectionAction = ConnectionAction.ASSIGN,
-    var permanent: Boolean
+    var permanent: Boolean = false
 ) {
     data class ConnectionDataReqBody(
         var id: String,
