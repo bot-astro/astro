@@ -138,7 +138,7 @@ class VCEventDetector {
 
 
 
-        if (leftConnection?.action?.permanent == true) {
+        if (leftConnection?.permanent == true) {
             leftConnection = null
         }
 
