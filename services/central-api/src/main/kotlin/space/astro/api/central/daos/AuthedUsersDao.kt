@@ -4,8 +4,10 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.ReplaceOptions
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.Indexes
 import org.springframework.stereotype.Component
 import space.astro.api.central.models.discord.DiscordAuthedUser
+import space.astro.shared.core.models.database.UserData
 
 @Component
 class AuthedUsersDao(
@@ -16,6 +18,7 @@ class AuthedUsersDao(
 
     init {
         collection = mongoDatabase.getCollection("authedUsers", DiscordAuthedUser::class.java)
+        collection.createIndex(Indexes.ascending(DiscordAuthedUser::id.name))
     }
 
     suspend fun getAuthedUser(userId: String): DiscordAuthedUser? {
