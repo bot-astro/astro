@@ -1,5 +1,6 @@
 package space.astro.bot.components.managers.vc
 
+import net.dv8tion.jda.api.Permission
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 import space.astro.shared.core.components.managers.VariablesManager

@@ -40,6 +40,8 @@ object CentralApiRoutes {
 
         const val USERS_ME = "${Prefixes.DASHBOARD}/users/@me"
 
+        const val DISCORD_PERMISSIONS = "${Prefixes.DASHBOARD}/discord/permissions"
+
         const val GUILDS = "${Prefixes.DASHBOARD}/guilds"
         const val GUILD = "$GUILDS/{guildID}"
         const val GUILD_CHANNELS = "$GUILD/channels"

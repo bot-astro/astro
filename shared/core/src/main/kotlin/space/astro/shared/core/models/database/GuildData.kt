@@ -107,7 +107,7 @@ data class GeneratorData(
     var defaultWaitingName: String = "Waiting for {vc_name}",
     var waitingBitrate: Int = 0,
     var waitingPosition: InitialPosition = InitialPosition.BEFORE,
-    var waitingUserLimit: Int = 0
+    var waitingUserLimit: Int = 0,
 ) {
     fun validate() : ValidationResult {
         val idValidation = id.isValidSnowflake().asValidationResult("invalid generator id")

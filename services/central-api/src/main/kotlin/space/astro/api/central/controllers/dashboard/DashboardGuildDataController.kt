@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import space.astro.api.central.models.dashboard.DashboardGuildDto
+import space.astro.api.central.models.dashboard.body.GeneratorDataBody
 import space.astro.shared.core.components.web.CentralApiRoutes
 import space.astro.api.central.util.getUserID
 import space.astro.api.central.models.dashboard.body.GuildDataInterfaceCreateBody
@@ -171,7 +172,7 @@ class DashboardGuildDataController(
     suspend fun updateGuildGenerator(
         @PathVariable guildID: String,
         @PathVariable generatorID: String,
-        @RequestBody generatorData: GeneratorData,
+        @RequestBody generatorDataBody: GeneratorDataBody,
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
         val userID = exchange.getUserID()
@@ -180,6 +181,8 @@ class DashboardGuildDataController(
         if (!dashboardGuild.canManage) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build<Any>()
         }
+
+        val generatorData = generatorDataBody.toGeneratorData()
 
         if (generatorData.commandsSettings.minBitrate < 8000) {
             generatorData.commandsSettings.minBitrate = 8000
