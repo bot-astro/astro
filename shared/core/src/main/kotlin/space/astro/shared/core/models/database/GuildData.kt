@@ -108,8 +108,12 @@ data class GeneratorData(
     var waitingBitrate: Int = 0,
     var waitingPosition: InitialPosition = InitialPosition.BEFORE,
     var waitingUserLimit: Int = 0,
+
+    var ownerPermissionIds: List<String> = Permission.getPermissions(ownerPermissions).map { it.name }
 ) {
-    fun validate() : ValidationResult {
+    fun parseAndValidate() : ValidationResult {
+        ownerPermissions = Permission.getRaw(ownerPermissionIds.mapNotNull { try { Permission.valueOf(it) } catch(e: Exception) { null } })
+
         val idValidation = id.isValidSnowflake().asValidationResult("invalid generator id")
         val fallbackIdValidation = (fallbackId?.isValidSnowflake() ?: true).asValidationResult("invalid fallback generator id")
         val defaultNameValidation = (defaultName.length in 2..500).asValidationResult("the default name for the generator must be between 2 and 500 characters")
