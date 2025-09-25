@@ -7,7 +7,7 @@ agent:
     os_image: ubuntu2004
   containers:
     - name: main
-      image: eclipse-temurin:17-jdk-jammy
+      image: openjdk:17-buster
 
 blocks:
   # bot
@@ -22,6 +22,7 @@ blocks:
         - name: sentry
       prologue:
         commands:
+          - echo 'APT::Get::AllowUnauthenticated "true";' > /etc/apt/apt.conf.d/99allow-unauth
           - apt-get update -y
           - apt-get install curl lftp -y
           - cache restore gradle-caches_bot
