@@ -7,7 +7,7 @@ agent:
     os_image: ubuntu2004
   containers:
     - name: main
-      image: eclipse-temurin:17-jdk-focal
+      image: eclipse-temurin:17-jdk-jammy
 
 blocks:
   # bot
