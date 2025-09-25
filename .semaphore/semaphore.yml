@@ -7,7 +7,7 @@ agent:
     os_image: ubuntu2004
   containers:
     - name: main
-      image: amazoncorretto:17
+      image: eclipse-temurin:17
 
 blocks:
   # bot
