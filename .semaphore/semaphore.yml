@@ -23,7 +23,7 @@ blocks:
       prologue:
         commands:
           - apt-get update -y
-          - apt-get install lftp -y
+          - apt-get install lftp tar openssh-client git -y
           - cache restore gradle-caches_bot
           - cache restore gradle-wrapper_bot
           - checkout
