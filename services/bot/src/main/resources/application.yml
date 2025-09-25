@@ -13,15 +13,15 @@ management:
       cors:
         allowed-origins: "*"
         allowed-methods: GET, POST
-      exposure:
-        include:
-          - health
-          - info
-          - metrics
-          - prometheus
+#      exposure:
+#        include:
+#          - health
+#          - info
+#          - metrics
+#          - prometheus
   endpoint:
-    prometheus:
-      enabled: true
+#    prometheus:
+#      enabled: true
     health:
       probes:
         enabled: true
@@ -32,10 +32,10 @@ management:
         liveness:
           include:
             - livenessState
-  prometheus:
-    metrics:
-      export:
-        enabled: true
+#  prometheus:
+#    metrics:
+#      export:
+#        enabled: true
 
 ##############
 ### SHARED ###
