@@ -7,7 +7,7 @@ agent:
     os_image: ubuntu2004
   containers:
     - name: main
-      image: cimg/openjdk:17.0.16
+      image: azul/zulu-openjdk:17-latest
 
 blocks:
   # bot
