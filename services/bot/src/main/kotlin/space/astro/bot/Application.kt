@@ -22,7 +22,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 )
 class Application
 
-// rebuiling for new infra aaaa
+// rebuiling for new infra a
 fun main(args: Array<String>) {
     runApplication<Application>(*args)
 }
