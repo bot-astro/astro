@@ -1,37 +1,16 @@
 package space.astro.bot.interactions.handlers.command.impl.predashboard
 
-import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.Role
-import net.dv8tion.jda.api.entities.channel.ChannelType
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
-import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
-import net.dv8tion.jda.api.interactions.components.text.TextInput
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
-import net.dv8tion.jda.api.interactions.modals.Modal
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.core.ui.Emojis
 import space.astro.bot.interactions.InteractionAction
-import space.astro.bot.interactions.InteractionIds
-import space.astro.bot.interactions.context.GeneratorSettingsInteractionContext
 import space.astro.bot.interactions.context.InteractionContext
-import space.astro.bot.interactions.context.SettingsInteractionContext
-import space.astro.bot.interactions.handlers.command.*
-import space.astro.bot.services.ConfigurationErrorService
-import space.astro.shared.core.daos.GuildDao
-import space.astro.shared.core.models.database.*
-import space.astro.shared.core.util.extention.asAbleOrUnable
-import space.astro.shared.core.util.extention.asChannelMention
-import space.astro.shared.core.util.extention.asEnabledOrDisabled
-import space.astro.shared.core.util.extention.asOnOrOff
+import space.astro.bot.interactions.handlers.command.AbstractCommand
+import space.astro.bot.interactions.handlers.command.BaseCommand
+import space.astro.bot.interactions.handlers.command.Command
+import space.astro.bot.interactions.handlers.command.CommandCategory
 import space.astro.shared.core.util.ui.Links
 
 @Command(

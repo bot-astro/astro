@@ -9,7 +9,9 @@ data class UserData(
     val createdFirstVC: Boolean = false,
     var premium: Boolean = false,
     val guildActiveUpgrades: MutableList<GuildUpgradeData> = mutableListOf(),
-)
+) {
+    val hasUltimate = entitlements.any { it.isActive(System.currentTimeMillis()) } || guildActiveUpgrades.isNotEmpty()
+}
 
 data class UserEntitlement(
     val id: String,

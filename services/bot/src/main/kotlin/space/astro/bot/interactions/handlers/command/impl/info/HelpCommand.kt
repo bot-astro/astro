@@ -2,8 +2,8 @@ package space.astro.bot.interactions.handlers.command.impl.info
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import space.astro.bot.config.ShardManagerConfig
 import space.astro.bot.config.PodConfig
+import space.astro.bot.config.ShardManagerConfig
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.core.ui.Messages
@@ -36,7 +36,7 @@ class HelpCommand(
                 podCount = shardManagerConfig.totalPods
             ),
             components = listOf(
-                ActionRow.of(Buttons.guildDashboard(ctx.guildId), Buttons.appDirectoryUltimate, Buttons.Guides.all, Buttons.support)
+                ActionRow.of(Buttons.guildDashboard(ctx.guildId), Buttons.appDirectoryUltimate, Buttons.Guides.all, Buttons.support, Buttons.vote)
             )
         )
         event.reply(Messages.dashboardSettings()).queue()

@@ -8,13 +8,13 @@ import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.concrete.Category
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
-import space.astro.shared.core.components.managers.VariablesManager
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.modifyPermissionOverride
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
+import space.astro.shared.core.components.managers.VariablesManager
 import space.astro.shared.core.models.database.PermissionsInherited
 import space.astro.shared.core.models.database.TemporaryVCData
 import space.astro.shared.core.util.ui.Colors

@@ -34,5 +34,7 @@ enum class RedisKey(val key: String) {
     /**
      * Format with: GUILD_ID
      */
-    DASHBOARD_GUILDS("DASH_GUILDS")
+    DASHBOARD_GUILDS("DASH_GUILDS"),
+
+    VOTES("VOTES")
 }

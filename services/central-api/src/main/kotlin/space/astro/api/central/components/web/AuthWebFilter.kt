@@ -10,15 +10,15 @@ import org.springframework.web.server.WebFilter
 import org.springframework.web.server.WebFilterChain
 import reactor.core.publisher.Mono
 import space.astro.api.central.configs.CentralApiConfig
-import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.api.central.services.dashboard.WebSessionService
 import space.astro.api.central.services.discord.DiscordUserTokenFetchService
 import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService
-import space.astro.api.central.services.dashboard.WebSessionService
 import space.astro.api.central.util.ExchangeAttributeNames
-import space.astro.shared.core.components.web.BotApiRoutes
+import space.astro.shared.core.components.web.CentralApiRoutes
 import space.astro.shared.core.configs.ChargebeeConfig
 import space.astro.shared.core.configs.KubeConfig
-import java.util.Base64
+import space.astro.shared.core.configs.TopggConfig
+import java.util.*
 
 @Component
 class AuthWebFilter(
@@ -28,6 +28,7 @@ class AuthWebFilter(
     private val kubeConfig: KubeConfig,
     private val userTokenPersistenceService: DiscordUserTokenPersistenceService,
     private val userTokenFetchService: DiscordUserTokenFetchService,
+    private val topggConfig: TopggConfig
 ): WebFilter {
     private val base64Decoder = Base64.getDecoder()
 
@@ -90,6 +91,23 @@ class AuthWebFilter(
         /////////////
         if (requestPath.startsWith(CentralApiRoutes.Dashboard.Prefixes.LOGIN)) {
             return chain.filter(exchange)
+        }
+
+
+        /////////////////////
+        /// TOPPGG EVENTS ///
+        /////////////////////
+        if (requestPath.startsWith(CentralApiRoutes.Topgg.EVENT)) {
+            return mono {
+                val webhookToken = request.headers["Authorization"]?.get(0)
+
+                if (webhookToken == null || webhookToken != topggConfig.webhookAuth) {
+                    response.statusCode = HttpStatus.UNAUTHORIZED
+                    return@mono null
+                }
+
+                chain.filter(exchange).awaitSingleOrNull()
+            }
         }
 
 

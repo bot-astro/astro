@@ -1,24 +1,16 @@
 package space.astro.bot.interactions.handlers.command.impl.predashboard
 
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Role
-import net.dv8tion.jda.api.entities.channel.ChannelType
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.core.ui.Emojis
-import space.astro.bot.core.ui.Messages
 import space.astro.bot.interactions.InteractionAction
-import space.astro.bot.interactions.context.ConnectionSettingsInteractionContext
 import space.astro.bot.interactions.context.InteractionContext
-import space.astro.bot.interactions.context.SettingsInteractionContext
-import space.astro.bot.interactions.handlers.command.*
-import space.astro.shared.core.daos.GuildDao
-import space.astro.shared.core.models.database.ConnectionAction
-import space.astro.shared.core.models.database.ConnectionData
+import space.astro.bot.interactions.handlers.command.AbstractCommand
+import space.astro.bot.interactions.handlers.command.BaseCommand
+import space.astro.bot.interactions.handlers.command.Command
+import space.astro.bot.interactions.handlers.command.CommandCategory
 import space.astro.shared.core.util.ui.Links
 
 @Command(

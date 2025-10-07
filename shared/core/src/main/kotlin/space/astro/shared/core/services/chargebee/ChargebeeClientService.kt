@@ -7,6 +7,7 @@ import com.chargebee.models.PortalSession
 import com.chargebee.models.Subscription
 import org.springframework.stereotype.Service
 import space.astro.shared.core.configs.ChargebeeConfig
+import space.astro.shared.core.services.chargebee.ChargebeeClientService.Companion.SERVER_PREMIUM_PLAN_ID
 
 /**
  * API client to interact with Chargebee

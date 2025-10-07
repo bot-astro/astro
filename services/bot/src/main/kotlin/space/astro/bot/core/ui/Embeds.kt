@@ -295,6 +295,20 @@ object Embeds {
         )
     }
 
+    /////////////////////
+    /// MISCELLANEOUS ///
+    /////////////////////
+
+    fun voteRequired(): MessageEmbed {
+        return Embed(
+            color = Colors.yellow.rgb,
+            authorName = "Vote required!",
+            authorUrl = Links.VOTE,
+            description = "Unlock this command for 12h by [voting](${Links.VOTE})." +
+                    "\nOr get [Ultimate](${Links.ULTIMATE}) to unlock it forever for all members of this server."
+        )
+    }
+
 
     ////////////////////
     /// PREDASHBOARD ///

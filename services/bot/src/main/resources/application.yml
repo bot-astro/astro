@@ -17,11 +17,11 @@ management:
         include:
           - health
           - info
-#          - metrics
-#          - prometheus
+          - metrics
+          - prometheus
   endpoint:
-#    prometheus:
-#      enabled: true
+    prometheus:
+      enabled: true
     health:
       probes:
         enabled: true
@@ -32,10 +32,10 @@ management:
         liveness:
           include:
             - livenessState
-#  prometheus:
-#    metrics:
-#      export:
-#        enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 ##############
 ### SHARED ###

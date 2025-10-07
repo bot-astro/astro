@@ -9,10 +9,10 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.CooldownsManager
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
+import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.interactions.InteractionIds
@@ -21,8 +21,12 @@ import space.astro.bot.interactions.context.InteractionContextBuilder
 import space.astro.bot.interactions.context.InteractionContextBuilderException
 import space.astro.bot.interactions.reply.InteractionReplyHandler
 import space.astro.bot.services.ConfigurationErrorService
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.GuildDao
+import space.astro.shared.core.daos.UserDao
+import space.astro.shared.core.daos.VoteDao
 import space.astro.shared.core.models.database.ConfigurationErrorData
+import space.astro.shared.core.services.topgg.TopggService
 import space.astro.shared.core.util.extention.asRelativeTimestampFromNow
 import space.astro.shared.core.util.ui.Links
 import java.lang.reflect.InvocationTargetException
@@ -37,6 +41,9 @@ class ButtonHandler(
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
     private val interactionContextBuilder: InteractionContextBuilder,
     private val guildDao: GuildDao,
+    private val userDao: UserDao,
+    private val voteDao: VoteDao,
+    private val topggService: TopggService,
     private val premiumRequirementDetector: PremiumRequirementDetector,
     private val cooldownsManager: CooldownsManager,
     private val configurationErrorService: ConfigurationErrorService,
@@ -135,13 +142,31 @@ class ButtonHandler(
             /// PREMIUM CHECK ///
             /////////////////////
             val guildData = guildDao.get(guild.id)
+            val isGuildPremium = guildData?.let { premiumRequirementDetector.isGuildPremium(it) } ?: false
 
-            if (buttonContainer.action.premium && (guildData == null || !premiumRequirementDetector.isGuildPremium(
-                    guildData
-                ))
-            ) {
+            if (buttonContainer.action.premium && (guildData == null || !isGuildPremium)) {
                 event.replyWithPremiumRequired().queue()
                 return@launch
+            }
+
+            //////////////////
+            /// VOTE CHECK ///
+            //////////////////
+
+            if (buttonContainer.action.voteRequired
+                && !isGuildPremium
+                && !voteDao.hasVoted12Hours(member.id)
+                && (userDao.get(member.id)?.let { !it.hasUltimate } ?: true)
+                ) {
+                val lastVoteTimestamp = topggService.lastUserVote(member.id)
+                if (lastVoteTimestamp == null || lastVoteTimestamp < (System.currentTimeMillis() - 43200000)) {
+                    event.replyEmbeds(Embeds.voteRequired())
+                        .setEphemeral(true)
+                        .setActionRow(Buttons.vote, Buttons.appDirectoryUltimate)
+                        .queue()
+
+                    return@launch
+                }
             }
 
             ////////////////////////

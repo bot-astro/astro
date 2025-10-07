@@ -23,7 +23,6 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.sharding.ShardManager
 import space.astro.bot.components.managers.InterfaceManager
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.core.ui.Emojis
@@ -32,6 +31,7 @@ import space.astro.bot.interactions.InteractionIds
 import space.astro.bot.interactions.context.InterfaceSettingsInteractionContext
 import space.astro.bot.interactions.context.SettingsInteractionContext
 import space.astro.bot.interactions.handlers.command.*
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.models.database.EmbedStyle
 import space.astro.shared.core.models.database.InterfaceButton

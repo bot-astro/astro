@@ -60,6 +60,7 @@ class GuildJoinEventListener(
                     Buttons.Guides.all,
                     Buttons.support,
                     Buttons.appDirectoryUltimate,
+                    Buttons.vote,
                 )
             )
             ?.queue()

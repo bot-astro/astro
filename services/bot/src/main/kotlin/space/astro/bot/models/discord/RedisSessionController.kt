@@ -7,8 +7,8 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.utils.SessionController
 import net.dv8tion.jda.api.utils.SessionController.ShardedGateway
 import net.dv8tion.jda.api.utils.SessionControllerAdapter
-import space.astro.bot.config.ShardManagerConfig
 import space.astro.bot.config.DiscordApplicationConfig
+import space.astro.bot.config.ShardManagerConfig
 import space.astro.shared.core.models.redis.RedisRateLimiter
 import java.time.Duration
 import java.util.concurrent.Executors

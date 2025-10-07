@@ -6,7 +6,6 @@ import mu.KotlinLogging
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.shared.core.daos.UserDao
 import space.astro.shared.core.services.chargebee.ChargebeeClientService
 import space.astro.shared.core.services.discord.DiscordEntitlementsFetchService
 import space.astro.support.bot.config.DiscordApplicationConfig

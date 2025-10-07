@@ -1,11 +1,11 @@
 package space.astro.bot.components.managers.vc
 
 import org.springframework.stereotype.Component
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.exceptions.VcOperationException
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.services.ConfigurationErrorService
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.components.managers.VariablesManager
 import space.astro.shared.core.models.database.InitialPosition
 import space.astro.shared.core.models.database.TemporaryVCData

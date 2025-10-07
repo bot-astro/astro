@@ -68,7 +68,7 @@ class RedisHashCacheDao(
             }
     }
 
-    /**
+     /**
      * Delete a field from the hash
      *
      * @param field Field to delete

@@ -1,14 +1,13 @@
 package space.astro.shared.core.daos
 
+import com.mongodb.client.MongoCollection
+import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Indexes
 import com.mongodb.client.model.ReplaceOptions
-import com.mongodb.client.MongoCollection
-import com.mongodb.client.MongoDatabase
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands
 import org.springframework.stereotype.Repository
 import space.astro.shared.core.components.io.DataSerializer
-import space.astro.shared.core.models.database.GuildData
 import space.astro.shared.core.models.database.UserData
 import space.astro.shared.core.models.redis.RedisHashCacheDao
 import space.astro.shared.core.models.redis.RedisKey

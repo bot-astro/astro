@@ -7,7 +7,6 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.CooldownsManager
 import space.astro.bot.components.managers.InterfaceManager
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.components.managers.vc.VCOwnershipManager
 import space.astro.bot.components.managers.vc.VCPositionManager
 import space.astro.bot.components.managers.vc.VCPrivateChatManager
@@ -18,6 +17,7 @@ import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.services.ConfigurationErrorService
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.TemporaryVCDao
 import space.astro.shared.core.models.analytics.*
 import space.astro.shared.core.util.ui.Colors

@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.events.user.update.UserUpdateActivitiesEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.components.managers.vc.VCNameManager
 import space.astro.bot.components.managers.vc.VCPrivateChatManager
 import space.astro.bot.components.managers.vc.VCWaitingRoomManager
@@ -13,6 +12,7 @@ import space.astro.bot.core.exceptions.VcOperationException
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.services.ConfigurationErrorService
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.TemporaryVCDao
 

@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
@@ -18,6 +17,7 @@ import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.context.InteractionContextBuilder
 import space.astro.bot.interactions.context.InteractionContextBuilderException
 import space.astro.bot.interactions.reply.InteractionReplyHandler
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.models.database.ConfigurationErrorData
 import space.astro.shared.core.util.ui.Links
@@ -107,17 +107,20 @@ class ModalHandler(
             /// PREMIUM CHECK ///
             /////////////////////
             val guildData = guildDao.get(guild.id)
+            val isGuildPremium = guildData?.let { premiumRequirementDetector.isGuildPremium(it) } ?: false
 
-            if (modalContainer.action.premium && (guildData == null || !premiumRequirementDetector.isGuildPremium(
-                    guildData
-                ))
-            ) {
+            if (modalContainer.action.premium && (guildData == null || !isGuildPremium)) {
                 event.replyEmbeds(Embeds.error("Premium is required to use this modal!"))
                     .setEphemeral(true)
                     .queue()
 
                 return@launch
             }
+
+            ////////////////////////////////
+            /// NO VOTE CHECK FOR MODALS ///
+            /////////////////////////////.//
+
 
             ////////////////////////
             /// USER PERMISSIONS ///

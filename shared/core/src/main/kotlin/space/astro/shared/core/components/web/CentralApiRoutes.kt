@@ -17,6 +17,10 @@ object CentralApiRoutes {
         const val STATUS = "/status"
     }
 
+    object Topgg {
+        const val EVENT = "/topgg/event"
+    }
+
     object Chargebee {
         object Prefixes {
             const val EVENT = "/chargebee/event"

@@ -20,6 +20,7 @@ object Emojis {
 //    val coins = Emoji.fromCustom("coins", 811049514949279874, false)
 
     val dashboard = Emoji.fromCustom("dashboard", 1274511299954475008, false)
+    val vote = Emoji.fromCustom("vote", 1029823617791438999, false)
 
     val create = Emoji.fromCustom("create", 1029823564100157510, false)
     val delete = Emoji.fromCustom("delete", 1029823565819809792, false)
