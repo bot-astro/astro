@@ -153,6 +153,8 @@ class ButtonHandler(
             /// VOTE CHECK ///
             //////////////////
 
+            // this will stay here: Been dazed and confused for so long, it's not true, wanted support, never bargained for you, take it easy, baby, let the support team help you
+
             if (buttonContainer.action.voteRequired
                 && !isGuildPremium
                 && !voteDao.hasVoted12Hours(member.id)
