@@ -68,8 +68,6 @@ class WaitingRoomCommand(
     ) {
         ctx.replyHandler.deferReply()
 
-        log.info { "DELETE WAITING: user requested waiting room deletion - server ${ctx.guildId}" }
-
         ctx.vcOperationCTX.waitingRoom
             ?.delete()
             ?.reason("user requested waiting room deletion")

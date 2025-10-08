@@ -5,8 +5,8 @@ nanoid = "2.0.0"
 datetime = "0.4.0"
 
 # Spring
-spring = "6.1.10"
-spring-boot = "3.3.1"
+spring = "6.1.21"
+spring-boot = "3.3.13"
 openapi = "2.6.0"
 
 # Logging
@@ -17,7 +17,6 @@ sentry = "7.2.0"
 # Databases
 mongo = "4.11.1"
 kmongo = "4.11.0"
-influx = "6.12.0"
 
 # Serializing
 jackson-kotlin = "2.13.0"
@@ -36,8 +35,8 @@ caffeine = "3.0.5"
 lettuce = "6.1.5.RELEASE"
 
 # JDA
-jda = "5.1.0"
-jda-ktx = "0.11.0-beta.19"
+jda = "5.3.0"
+jda-ktx = "0.12.0"
 
 chargebee = "3.13.0"
 
@@ -76,7 +75,6 @@ sentry = { module = "io.sentry:sentry-spring-boot-starter", version.ref = "sentr
 # Databases
 mongo = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongo"}
 kmongo = { module = "org.litote.kmongo:kmongo", version.ref = "kmongo"}
-influx = { module = "com.influxdb:influxdb-client-java", version.ref = "influx" }
 
 # Serializing
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-kotlin"}

@@ -6,7 +6,6 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RestController
 
 private val log = KotlinLogging.logger {  }

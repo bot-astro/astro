@@ -12,7 +12,9 @@ import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.context.InteractionContext
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
-import kotlin.reflect.full.*
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.memberFunctions
 
 abstract class AbstractCommand : ICommand {
 

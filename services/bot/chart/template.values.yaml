@@ -1,17 +1,17 @@
 name: bot
 namespace: astro
 image:
-  group: ghcr.io/bot-astro
+  group: ghcr.io/your-repository
   name: bot
   tag: latest
 config: bot-config
-replicas: 12
-auth: FILL
+replicas: 1
+auth: Fill with same value as you used for KUBE_LIFECYCLE_AUTHORIZATION in .env files
 port: 9000
 resources:
   requests:
-    cpu: 500m
-    memory: 1536Mi
-#  limits:
-#    cpu: 250m
-#    memory: 3Gi
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 250m
+    memory: 3Gi

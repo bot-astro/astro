@@ -6,7 +6,6 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import space.astro.bot.components.managers.InterfaceManager
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.core.ui.Emojis
@@ -16,6 +15,7 @@ import space.astro.bot.interactions.context.SettingsInteractionContext
 import space.astro.bot.interactions.handlers.button.AbstractButton
 import space.astro.bot.interactions.handlers.button.Button
 import space.astro.bot.interactions.handlers.button.ButtonRunnable
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.models.database.GeneratorData
 
@@ -51,8 +51,8 @@ class SetupButton(
                     "There is already 1 Interface setup in this server." +
                             "\nPremium is required to have more than 1 Interface." +
                             "\nPossible solutions:" +
-                            "\n• Get ${Emojis.premium.formatted}" +
-                            "\n• Delete an existing interface via the dashboard"),
+                            "\n• Delete the existing interface using `/interface delete`" +
+                            "\n• Get ${Emojis.premium.formatted}"),
                 component = Buttons.guildDashboard(ctx.guild.id)
             )
             return
@@ -99,10 +99,11 @@ class SetupButton(
 
             ctx.replyHandler.replyEmbedAndComponents(
                 Embeds.success(
-                    "Astro has been setup in ${category.asMention}. Here is what has been created:" +
+                    "Astro has successfully been setup in ${category.asMention}!" +
+                            "\n\nHere is what has been created:" +
                             "\n• A Generator that can be used to create temporary voice channels: ${generatorC.asMention}" +
                             "\n• An Interface that can be used to run Astro commands via buttons: ${interfaceC.asMention}" +
-                            "\n\nUse the dashboard to further modify Astro's settings!" +
+                            "\n\n**Use the dashboard to further modify Astro's settings!**" +
                             "\n\n*You can change the name, category, position and everything of this channels!*"
                 ),
                 components = listOf(Buttons.guildDashboard(guild.id), Buttons.Guides.all, Buttons.ultimate)

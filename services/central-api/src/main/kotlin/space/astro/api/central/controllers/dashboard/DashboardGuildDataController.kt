@@ -5,23 +5,18 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import net.dv8tion.jda.api.Permission
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ServerWebExchange
 import space.astro.api.central.models.dashboard.DashboardGuildDto
-import space.astro.shared.core.components.web.CentralApiRoutes
-import space.astro.api.central.util.getUserID
 import space.astro.api.central.models.dashboard.body.GuildDataInterfaceCreateBody
 import space.astro.api.central.models.dashboard.body.GuildDataSettingsBody
 import space.astro.api.central.services.bot.PodMetaCalculatorService
 import space.astro.api.central.services.dashboard.DashboardGuildsPersistenceService
 import space.astro.api.central.services.discord.DiscordGuildsFetchService
 import space.astro.api.central.util.getAccessToken
+import space.astro.api.central.util.getUserID
 import space.astro.shared.core.components.managers.PremiumRequirementDetector
+import space.astro.shared.core.components.web.CentralApiRoutes
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.models.database.ConnectionData
 import space.astro.shared.core.models.database.GeneratorData
@@ -185,7 +180,7 @@ class DashboardGuildDataController(
             generatorData.commandsSettings.minBitrate = 8000
         }
 
-        val validation = generatorData.validate()
+        val validation = generatorData.parseAndValidate()
         if (!validation.isValid) {
             return ResponseEntity.badRequest().body(validation.invalidMessage)
         }

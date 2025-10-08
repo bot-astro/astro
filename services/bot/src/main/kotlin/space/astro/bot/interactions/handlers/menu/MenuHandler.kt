@@ -8,19 +8,19 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.bot.components.managers.CooldownsManager
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.core.ui.Embeds
+import space.astro.bot.core.ui.Messages
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.context.InteractionContextBuilder
 import space.astro.bot.interactions.context.InteractionContextBuilderException
 import space.astro.bot.interactions.reply.InteractionReplyHandler
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.GuildDao
-import space.astro.shared.core.models.influx.ConfigurationErrorData
+import space.astro.shared.core.models.database.ConfigurationErrorData
 import space.astro.shared.core.util.ui.Links
 import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.full.callSuspend
@@ -34,7 +34,6 @@ class MenuHandler(
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
     private val interactionContextBuilder: InteractionContextBuilder,
     private val guildDao: GuildDao,
-    private val cooldownsManager: CooldownsManager,
     private val premiumRequirementDetector: PremiumRequirementDetector,
     private val coroutineScope: CoroutineScope,
     private val shardManager: ShardManager
@@ -110,14 +109,19 @@ class MenuHandler(
             /// PREMIUM CHECK ///
             /////////////////////
             val guildData = guildDao.get(guild.id)
+            val isGuildPremium = guildData?.let { premiumRequirementDetector.isGuildPremium(it) } ?: false
 
-            if (menuContainer.action.premium && (guildData == null || !premiumRequirementDetector.isGuildPremium(
-                    guildData
-                ))
-            ) {
-                event.replyWithPremiumRequired().queue()
+            if (menuContainer.action.premium && (guildData == null || !isGuildPremium)) {
+                event.reply(Messages.ultimateRequired)
+                    .setEphemeral(true)
+                    .queue()
                 return@launch
             }
+
+            ///////////////////////////////
+            /// NO VOTE CHECK FOR MENUS ///
+            ///////////////////////////////
+
 
             ////////////////////////
             /// USER PERMISSIONS ///

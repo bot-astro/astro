@@ -2,7 +2,6 @@ package space.astro.shared.core.models.database
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import io.ktor.client.engine.*
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.Region
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -108,9 +107,13 @@ data class GeneratorData(
     var defaultWaitingName: String = "Waiting for {vc_name}",
     var waitingBitrate: Int = 0,
     var waitingPosition: InitialPosition = InitialPosition.BEFORE,
-    var waitingUserLimit: Int = 0
+    var waitingUserLimit: Int = 0,
+
+    var ownerPermissionIds: List<String> = Permission.getPermissions(ownerPermissions).map { it.name }
 ) {
-    fun validate() : ValidationResult {
+    fun parseAndValidate() : ValidationResult {
+        ownerPermissions = Permission.getRaw(ownerPermissionIds.mapNotNull { try { Permission.valueOf(it) } catch(e: Exception) { null } })
+
         val idValidation = id.isValidSnowflake().asValidationResult("invalid generator id")
         val fallbackIdValidation = (fallbackId?.isValidSnowflake() ?: true).asValidationResult("invalid fallback generator id")
         val defaultNameValidation = (defaultName.length in 2..500).asValidationResult("the default name for the generator must be between 2 and 500 characters")
@@ -319,10 +322,9 @@ data class InterfaceButton(
 data class ConnectionData(
     var id: String,
     var roleID: String,
-    var action: ConnectionAction = ConnectionAction.ASSIGN
+    var action: ConnectionAction = ConnectionAction.ASSIGN,
+    var permanent: Boolean = false
 ) {
-    val permanentDashboard = action.permanent
-
     data class ConnectionDataReqBody(
         var id: String,
         var roleID: String,
@@ -336,12 +338,11 @@ data class ConnectionData(
                 ConnectionAction.ConnectionActionReqBody.TOGGLE -> ConnectionAction.TOGGLE
             }
 
-            action.permanent = permanentDashboard
-
             return ConnectionData(
                 id = id,
                 roleID = roleID,
-                action = action
+                action = action,
+                permanent = permanentDashboard
             )
         }
     }
@@ -369,18 +370,19 @@ data class ConnectionData(
         }
 
         return "Users will $joinActionName the ${roleID.asRoleMention()} role when joining ${id.asChannelMention()}" +
-            " and they will ${if (action.permanent) "__not__ " else ""}get that role $leaveActionName" +
+            " and they will ${if (permanent) "__not__ " else ""}get that role $leaveActionName" +
             " when they leave the channel." +
             "\n" +
             "\n**Summary**" +
             "\n> **Channel** > ${id.asChannelMention()}" +
             "\n> **Role** > ${roleID.asRoleMention()}" +
             "\n> **Action** > ${action.name.lowercaseAndCapitalize()}" +
-            "\n> **Permanent** > ${action.permanent.asTrueOrFalse()}"
+            "\n> **Permanent** > ${permanent.asTrueOrFalse()}"
     }
 }
 
 enum class ConnectionAction(
+    @Deprecated("Use permanent property from ConnectionData")
     var permanent: Boolean = false
 ) {
     ASSIGN, REMOVE, TOGGLE;
@@ -426,5 +428,5 @@ data class RenameConditions(
     var stateChange: Boolean = true,
     var ownerChange: Boolean = true,
     var renamed: Boolean = false,
-    var activityChange: Boolean = true
+    var activityChange: Boolean = false
 )

@@ -8,8 +8,7 @@ import com.mongodb.client.model.Indexes
 import com.mongodb.client.model.ReplaceOptions
 import org.litote.kmongo.descending
 import org.springframework.stereotype.Repository
-import space.astro.shared.core.models.database.GuildData
-import space.astro.shared.core.models.influx.ConfigurationErrorData
+import space.astro.shared.core.models.database.ConfigurationErrorData
 
 @Repository
 class ConfigurationErrorDao(
@@ -18,7 +17,7 @@ class ConfigurationErrorDao(
     private final var collection: MongoCollection<ConfigurationErrorData>
 
     init {
-        collection = mongoDatabase.getCollection("guilds", ConfigurationErrorData::class.java)
+        collection = mongoDatabase.getCollection("errors", ConfigurationErrorData::class.java)
         collection.createIndex(Indexes.ascending(ConfigurationErrorData::guildId.name), IndexOptions().unique(false))
     }
 
@@ -33,7 +32,7 @@ class ConfigurationErrorDao(
 
     fun save(configurationErrorData: ConfigurationErrorData) {
         collection.replaceOne(
-            eq(GuildData::guildID.name, configurationErrorData.guildId),
+            eq(ConfigurationErrorData::guildId.name, configurationErrorData.guildId),
             configurationErrorData,
             ReplaceOptions().upsert(true)
         )

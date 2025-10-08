@@ -1,7 +1,7 @@
 name: entitlements-expiration-job
 namespace: astro
 image:
-  group: ghcr.io/bot-astro
+  group: ghcr.io/your-org
   name: entitlements-expiration-job
   tag: latest
 config: entitlements-expiration-job-config

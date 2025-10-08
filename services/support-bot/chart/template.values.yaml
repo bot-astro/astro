@@ -1,12 +1,12 @@
 name: support-bot
 namespace: astro
 image:
-  group: ghcr.io/bot-astro
+  group: ghcr.io/your-org
   name: support-bot
   tag: latest
 config: support-bot-config
 replicas: 2
-auth: FILL
+auth: Fill with same value as you used for KUBE_LIFECYCLE_AUTHORIZATION in .env files
 port: 9002
 resources:
   requests:

@@ -1,12 +1,12 @@
 package space.astro.bot.events.listeners.voice.handlers
 
+import dev.minn.jda.ktx.messages.Embed
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.CooldownsManager
 import space.astro.bot.components.managers.InterfaceManager
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.components.managers.vc.VCOwnershipManager
 import space.astro.bot.components.managers.vc.VCPositionManager
 import space.astro.bot.components.managers.vc.VCPrivateChatManager
@@ -17,8 +17,10 @@ import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.services.ConfigurationErrorService
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.TemporaryVCDao
 import space.astro.shared.core.models.analytics.*
+import space.astro.shared.core.util.ui.Colors
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -120,7 +122,25 @@ class VCEventHandler(
     /// EXCEPTIONS ///
     //////////////////
 
-    private fun handleException(vcEvent: VCEvent, e: Exception) {
+    private suspend fun handleException(vcEvent: VCEvent, e: Exception) {
+        if (e is ConfigurationException || e is InsufficientPermissionException) {
+            try {
+                vcEvent.vcEventData.member.user.openPrivateChannel().queue(
+                    { dmChannel ->
+                        dmChannel.sendMessageEmbeds(Embed {
+                            color = Colors.red.rgb
+                            description = "An error occurred while you were using temporary voice channels." +
+                                    "\n**Checkout the error [on the dashboard error report page](https://astro-bot.space/guilds/${vcEvent.vcEventData.guild.id}/errors)!**" +
+                                    "\n\n*If you are not an administrator of the server please report this message to one of them!*"
+                        }).queue({}, {})
+                    },
+                    {
+                        // ignore failure
+                    }
+                )
+            } catch (_: Exception) {}
+        }
+
         when (e) {
             is ConfigurationException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
                 configurationErrorData = e.configurationErrorData

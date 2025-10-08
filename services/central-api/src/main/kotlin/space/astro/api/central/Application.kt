@@ -18,11 +18,11 @@ import org.springframework.scheduling.annotation.EnableScheduling
         "space.astro.shared.core.services.redis",
         "space.astro.shared.core.components.kmongo",
         "space.astro.shared.core.components.coroutine",
-        "space.astro.shared.core.components.influx",
         "space.astro.shared.core.services.chargebee",
         "space.astro.shared.core.services.bot",
         "space.astro.shared.core.services.support",
-        "space.astro.shared.core.daos"
+        "space.astro.shared.core.daos",
+        "space.astro.shared.core.services.discord",
     ]
 )
 @OpenAPIDefinition(
@@ -47,6 +47,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 )
 class Application
 
+// build
 fun main(args: Array<String>) {
     runApplication<Application>(*args)
 }

@@ -3,13 +3,13 @@ package space.astro.bot.components.managers.vc
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.exceptions.VcOperationException
 import space.astro.bot.core.extentions.modifyPermissionOverride
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.services.ConfigurationErrorService
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 
 @Component
 class VCOwnershipManager(

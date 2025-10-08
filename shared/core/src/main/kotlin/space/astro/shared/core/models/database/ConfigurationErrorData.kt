@@ -1,4 +1,4 @@
-package space.astro.shared.core.models.influx
+package space.astro.shared.core.models.database
 
 data class ConfigurationErrorData(
     val guildId: String,

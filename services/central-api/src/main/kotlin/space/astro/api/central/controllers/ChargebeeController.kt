@@ -131,8 +131,7 @@ class ChargebeeController(
         exchange: ServerWebExchange
     ): ResponseEntity<*> {
         val userID = exchange.getUserID()
-        val userData = userDao.get(userID)
-            ?: return ResponseEntity.notFound().build<Any>()
+        val userData = userDao.getOrCreate(userID)
 
         val activeSubscriptions = chargebeeClientService.getActiveServerSubscriptionsOfUser(userID)
 

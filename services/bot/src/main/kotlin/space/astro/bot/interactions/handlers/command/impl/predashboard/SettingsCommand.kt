@@ -2,17 +2,15 @@ package space.astro.bot.interactions.handlers.command.impl.predashboard
 
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import space.astro.bot.config.ShardManagerConfig
-import space.astro.bot.config.PodConfig
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.core.ui.Emojis
 import space.astro.bot.interactions.InteractionAction
 import space.astro.bot.interactions.context.InteractionContext
-import space.astro.bot.interactions.handlers.command.*
-import space.astro.shared.core.daos.ConfigurationErrorDao
-import space.astro.shared.core.daos.GuildDao
-import space.astro.shared.core.daos.TemporaryVCDao
+import space.astro.bot.interactions.handlers.command.AbstractCommand
+import space.astro.bot.interactions.handlers.command.BaseCommand
+import space.astro.bot.interactions.handlers.command.Command
+import space.astro.bot.interactions.handlers.command.CommandCategory
 import space.astro.shared.core.util.ui.Links
 
 @Command(

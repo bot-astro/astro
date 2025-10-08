@@ -1,21 +1,23 @@
 package space.astro.bot.events.listeners.voice.handlers
 
 import dev.minn.jda.ktx.coroutines.await
+import dev.minn.jda.ktx.messages.Embed
 import mu.KotlinLogging
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.concrete.Category
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
-import space.astro.shared.core.components.managers.VariablesManager
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.modifyPermissionOverride
 import space.astro.bot.core.ui.Embeds
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
+import space.astro.shared.core.components.managers.VariablesManager
 import space.astro.shared.core.models.database.PermissionsInherited
 import space.astro.shared.core.models.database.TemporaryVCData
+import space.astro.shared.core.util.ui.Colors
 import java.util.concurrent.TimeUnit
 
 private val log = KotlinLogging.logger {  }
@@ -263,7 +265,6 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
     try {
         guild.moveVoiceMember(owner, temporaryVC).await()
     } catch (e: Exception) {
-        log.info { "DELETE - Unknown error moving a user into a temporary VC  - server ${guild.id}" }
         temporaryVC.delete().reason("Unknown error moving a user into a temporary VC").queueAfter(1, TimeUnit.SECONDS)
         throw ConfigurationException(
             configurationErrorService.unknown(
@@ -333,6 +334,22 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
 
     if (creationChatMessage != null) {
         if (!premiumRequirementDetector.canSendMessageInVCChatOnVCGeneration(guildData)) {
+            try {
+                event.vcEventData.member.user.openPrivateChannel().queue(
+                    { dmChannel ->
+                        dmChannel.sendMessageEmbeds(Embed {
+                            color = Colors.red.rgb
+                            description = "An error occurred while you were using temporary voice channels." +
+                                    "\n**Checkout the error [on the dashboard error report page](https://astro-bot.space/guilds/${guildId}/errors)!**" +
+                                    "\n\n*If you are not an administrator of the server please report this message to one of them!*"
+                        }).queue({}, {})
+                    },
+                    {
+                        // ignore failure
+                    }
+                )
+            } catch (_: Exception) {}
+
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
                 configurationErrorService.premiumRequiredForAutoChatMessageOnCreation(guildId)
             )
@@ -353,7 +370,6 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         privateChat?.delete()
             ?.reason("User left the generated temporary VC too quickly")
             ?.queueAfter(2, TimeUnit.SECONDS)
-        log.info { "DELETE - User left the generated temporary VC too quickly - server ${guild.id}" }
         temporaryVC.delete()
             .reason("User left the generated temporary VC too quickly").queueAfter(3, TimeUnit.SECONDS)
 

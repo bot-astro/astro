@@ -10,10 +10,10 @@ class VariablesManagerTest {
     fun testPremiumVariablesRegexMatching() {
         val shouldNotMatch = "{nickname} sample name"
         val shouldMatch = "cool {n}"
-        val shouldNotMatch2 = "nice {activity_name}"
+        val shouldMatch2 = "nice {activity_name}"
 
         assertFalse(VariablesManager.Checkers.containsPremiumVariable(shouldNotMatch))
         assert(VariablesManager.Checkers.containsPremiumVariable(shouldMatch))
-        assertFalse(VariablesManager.Checkers.containsPremiumVariable(shouldNotMatch2))
+        assert(VariablesManager.Checkers.containsPremiumVariable(shouldMatch2))
     }
 }

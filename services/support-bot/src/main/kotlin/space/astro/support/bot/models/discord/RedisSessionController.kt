@@ -2,8 +2,6 @@ package space.astro.support.bot.models.discord
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.requests.RestRateLimiter
-import net.dv8tion.jda.api.requests.RestRateLimiter.GlobalRateLimit
 import net.dv8tion.jda.api.utils.SessionController
 import net.dv8tion.jda.api.utils.SessionController.ShardedGateway
 import net.dv8tion.jda.api.utils.SessionControllerAdapter

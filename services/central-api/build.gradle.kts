@@ -28,11 +28,11 @@ plugins {
 
 jib {
     from {
-        image = "openjdk:17"
+        image = "amazoncorretto@sha256:ffe99c76c9304663a7adc8a292c186215f78fc918bfd0b3b0a4b57b3c0d90fd1"
     }
 
     to {
-        image = "ghcr.io/bot-astro/$name"
+        image = "ghcr.io/${project.property("ghcrOrg")}/$name"
         tags = setOf(System.getenv("SEMAPHORE_GIT_SHA"), "latest")
         auth {
             username = System.getenv("GITHUB_ACTOR")

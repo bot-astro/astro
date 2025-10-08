@@ -7,7 +7,7 @@ agent:
     os_image: ubuntu2004
   containers:
     - name: main
-      image: openjdk:17-buster
+      image: openjdk:17-bullseye
 
 blocks:
   # bot
@@ -139,8 +139,8 @@ promotions:
   # bot
   - name: Deploy bot to production
     pipeline_file: deploy/bot/production.yml
-  - name: Deploy bot to staging
-    pipeline_file: deploy/bot/staging.yml
+#  - name: Deploy bot to staging
+#    pipeline_file: deploy/bot/staging.yml
 #    auto_promote:
 #      when: |
 #        branch = 'develop' and result = 'passed' and change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
@@ -148,8 +148,8 @@ promotions:
   # central-api
   - name: Deploy central-api to production
     pipeline_file: deploy/central-api/production.yml
-  - name: Deploy central-api to staging
-    pipeline_file: deploy/central-api/staging.yml
+#  - name: Deploy central-api to staging
+#    pipeline_file: deploy/central-api/staging.yml
 #    auto_promote:
 #      when: |
 #        branch = 'develop' and result = 'passed' and change_in(['/services/central-api/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })

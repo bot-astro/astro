@@ -3,11 +3,14 @@ kind: Ingress
 metadata:
   name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod-dns"
 spec:
+  ingressClassName: nginx
   tls:
     - hosts:
         - {{ .Values.host }}
-      secretName: tls
+      secretName: {{ .Values.name }}-tls
   rules:
     - host: {{ .Values.host }}
       http:

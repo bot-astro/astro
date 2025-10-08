@@ -75,7 +75,7 @@ class InviteCommand: AbstractCommand() {
 
             it.user.openPrivateChannel()
                 .queue {privateChannel ->
-                    privateChannel.sendMessageEmbeds(Embeds.default("${ctx.member.asMention} has invited you to join his VC in ${ctx.guild.name}!" +
+                    privateChannel.sendMessageEmbeds(Embeds.default("${ctx.member.asMention} has invited you to join their VC in ${ctx.guild.name}!" +
                             "\n[Accept invitation](${vcInvite.url})"))
                         .queue()
                 }

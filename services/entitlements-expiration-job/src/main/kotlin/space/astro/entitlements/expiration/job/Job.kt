@@ -26,7 +26,6 @@ private val log = KotlinLogging.logger {  }
         "space.astro.shared.core.components.io",
         "space.astro.shared.core.services.redis",
         "space.astro.shared.core.components.kmongo",
-        "space.astro.shared.core.components.influx",
         "space.astro.shared.core.services.discord",
         "space.astro.shared.core.daos"
     ]
@@ -81,6 +80,8 @@ class Application(
     }
 }
 
+
+// build
 fun main(args: Array<String>) {
     runApplication<Application>(*args)
 }

@@ -2,14 +2,11 @@ package space.astro.support.bot.controllers
 
 import dev.minn.jda.ktx.coroutines.await
 import mu.KotlinLogging
-import net.dv8tion.jda.api.entities.Entitlement
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import space.astro.support.bot.config.DiscordApplicationConfig
@@ -34,6 +31,9 @@ class PremiumRoleController(
 
         val role = guild.getRoleById(discordApplicationConfig.premiumRoleId)
             ?: throw RuntimeException("Could not find role for premium users with id ${discordApplicationConfig.premiumRoleId}!")
+
+
+        // ciao
 
         return try {
             val user = guild.retrieveMemberById(userID).await()

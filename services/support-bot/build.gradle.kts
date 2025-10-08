@@ -30,7 +30,7 @@ jib {
     }
 
     to {
-        image = "ghcr.io/bot-astro/$name"
+        image = "ghcr.io/${project.property("ghcrOrg")}/$name"
         tags = setOf(System.getenv("SEMAPHORE_GIT_SHA"), "latest")
         auth {
             username = System.getenv("GITHUB_ACTOR")

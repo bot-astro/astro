@@ -1,13 +1,13 @@
 name: central-api
 namespace: astro
 image:
-  group: ghcr.io/bot-astro
+  group: ghcr.io/your-org
   name: central-api
   tag: latest
 config: central-api-config
 replicas: 1
 port: 9001
-auth: FILL
+auth: Fill with same value as you used for KUBE_LIFECYCLE_AUTHORIZATION in .env files
 resources:
   requests:
     cpu: 100m

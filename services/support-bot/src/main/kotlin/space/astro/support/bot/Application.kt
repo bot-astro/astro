@@ -14,8 +14,8 @@ import org.springframework.scheduling.annotation.EnableScheduling
         "space.astro.shared.core.components.coroutine",
         "space.astro.shared.core.components.io",
         "space.astro.shared.core.services.redis",
-        "space.astro.shared.core.components.influx",
         "space.astro.shared.core.services.discord",
+        "space.astro.shared.core.services.chargebee"
     ],
     exclude = [
         MongoAutoConfiguration::class,

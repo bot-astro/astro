@@ -20,6 +20,5 @@ dependencies {
     implementation(libs.lettuce)
     implementation(libs.mongo)
     implementation(libs.kmongo)
-    implementation(libs.influx)
     implementation(libs.bigquery)
 }

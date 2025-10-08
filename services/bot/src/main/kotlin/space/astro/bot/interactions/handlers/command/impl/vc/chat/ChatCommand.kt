@@ -70,7 +70,6 @@ class ChatCommand(
     ) {
         ctx.replyHandler.deferReply()
 
-        log.info { "DELETE CHAT: delete private text chat from 'chat delete' command - server ${ctx.guildId}" }
         ctx.vcOperationCTX.privateChat
             ?.delete()
             ?.reason("delete private text chat from 'chat delete' command")

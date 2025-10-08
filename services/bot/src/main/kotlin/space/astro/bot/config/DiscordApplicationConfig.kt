@@ -3,6 +3,7 @@ package space.astro.bot.config
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 
+// another test
 @Configuration
 @ConfigurationProperties("discord.application")
 class DiscordApplicationConfig {

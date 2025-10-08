@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration
 class DiscordApplicationConfig {
 
     var id: String = "id"
+    var token: String = "token"
     var secret: String = "secret"
     var redirectUri: String = "http://localhost:3000/callback/discord"
 }

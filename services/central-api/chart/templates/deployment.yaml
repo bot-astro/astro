@@ -15,6 +15,8 @@ spec:
       labels:
         app: {{ .Values.name }}
     spec:
+      nodeSelector:
+        node.kubernetes.io/agent: "astro"
       containers:
         - name: {{ .Values.name }}
           image: {{ .Values.image.group }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
@@ -56,4 +58,4 @@ spec:
                   - name: Authorization
                     value: {{ .Values.auth }}
       imagePullSecrets:
-        - name: ghcr-secret
+        - name: docker-registry

@@ -3,11 +3,13 @@ kind: Ingress
 metadata:
   name: {{ .Values.name }}-ing
   namespace: {{ .Values.namespace }}
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod-dns"
 spec:
   tls:
     - hosts:
         - support-bot.astro-bot.space
-      secretName: tls
+      secretName: {{ .Values.name }}-tls
   rules:
     - host: support-bot.astro-bot.space
       http:

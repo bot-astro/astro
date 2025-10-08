@@ -17,6 +17,10 @@ object CentralApiRoutes {
         const val STATUS = "/status"
     }
 
+    object Topgg {
+        const val EVENT = "/topgg/event"
+    }
+
     object Chargebee {
         object Prefixes {
             const val EVENT = "/chargebee/event"
@@ -40,6 +44,8 @@ object CentralApiRoutes {
 
         const val USERS_ME = "${Prefixes.DASHBOARD}/users/@me"
 
+        const val DISCORD_PERMISSIONS = "${Prefixes.DASHBOARD}/discord/permissions"
+
         const val GUILDS = "${Prefixes.DASHBOARD}/guilds"
         const val GUILD = "$GUILDS/{guildID}"
         const val GUILD_CHANNELS = "$GUILD/channels"
@@ -56,6 +62,7 @@ object CentralApiRoutes {
         const val GUILD_CREATE_TEMPLATE = "$GUILD/data/template"
         const val GUILD_SINGLE_TEMPLATE = "$GUILD/data/template/{templateID}"
 
+        const val GUILD_ENTITLEMENTS_REFRESH = "$GUILD/entitlements/refresh"
         const val GUILD_UPGRADE = "$GUILD/upgrade/{subscriptionID}"
         const val GUILD_DOWNGRADE = "$GUILD/downgrade"
 

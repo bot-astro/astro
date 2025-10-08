@@ -17,24 +17,29 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.CooldownsManager
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
+import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
+import space.astro.bot.core.ui.Messages
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.context.InteractionContextBuilder
 import space.astro.bot.interactions.context.InteractionContextBuilderException
 import space.astro.bot.interactions.reply.InteractionReplyHandler
+import space.astro.shared.core.components.managers.PremiumRequirementDetector
 import space.astro.shared.core.daos.GuildDao
+import space.astro.shared.core.daos.UserDao
+import space.astro.shared.core.daos.VoteDao
 import space.astro.shared.core.models.analytics.AnalyticsEvent
 import space.astro.shared.core.models.analytics.AnalyticsEventReceiver
 import space.astro.shared.core.models.analytics.AnalyticsEventType
 import space.astro.shared.core.models.analytics.SlashCommandInvocationEventData
 import space.astro.shared.core.models.analytics.meta.SlashCommandInvocationOptionsMetaData
 import space.astro.shared.core.models.analytics.meta.structure.OptionPair
-import space.astro.shared.core.models.influx.ConfigurationErrorData
+import space.astro.shared.core.models.database.ConfigurationErrorData
+import space.astro.shared.core.services.topgg.TopggService
 import space.astro.shared.core.util.extention.asRelativeTimestampFromNow
 import space.astro.shared.core.util.ui.Links
 import java.lang.reflect.InvocationTargetException
@@ -56,6 +61,9 @@ class CommandHandler(
     private val interactionContextBuilder: InteractionContextBuilder,
     private val premiumRequirementDetector: PremiumRequirementDetector,
     private val guildDao: GuildDao,
+    private val voteDao: VoteDao,
+    private val userDao: UserDao,
+    private val topggService: TopggService,
     private val cooldownsManager: CooldownsManager,
     private val coroutineScope: CoroutineScope
 ) {
@@ -203,10 +211,33 @@ class CommandHandler(
             /// PREMIUM CHECK ///
             /////////////////////
             val guildData = guildDao.get(guild.id)
+            val isGuildPremium = guildData?.let { premiumRequirementDetector.isGuildPremium(it) } ?: false
 
-            if (commandContainer.action.premium && (guildData == null || !premiumRequirementDetector.isGuildPremium(guildData))) {
-                event.replyWithPremiumRequired().queue()
+            if (commandContainer.action.premium && (guildData == null || !isGuildPremium)) {
+                event.reply(Messages.ultimateRequired)
+                    .setEphemeral(true)
+                    .queue()
                 return@launch
+            }
+
+            //////////////////
+            /// VOTE CHECK ///
+            //////////////////
+
+            if (commandContainer.action.voteRequired
+                && !isGuildPremium
+                && !voteDao.hasVoted12Hours(member.id)
+                && (userDao.get(member.id)?.let { !it.hasUltimate } ?: true)
+                ) {
+                val lastVoteTimestamp = topggService.lastUserVote(member.id)
+                if (lastVoteTimestamp == null || lastVoteTimestamp < (System.currentTimeMillis() - 43200000)) {
+                    event.replyEmbeds(Embeds.voteRequired())
+                        .setEphemeral(true)
+                        .setActionRow(Buttons.vote, Buttons.appDirectoryUltimate)
+                        .queue()
+
+                    return@launch
+                }
             }
 
             ////////////////////////

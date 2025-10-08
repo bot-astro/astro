@@ -8,20 +8,66 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
-import space.astro.shared.core.components.web.CentralApiRoutes
+import space.astro.api.central.configs.DiscordApplicationConfig
 import space.astro.api.central.util.getUserID
+import space.astro.shared.core.components.web.CentralApiRoutes
 import space.astro.shared.core.daos.GuildDao
 import space.astro.shared.core.daos.UserDao
+import space.astro.shared.core.models.database.GuildEntitlement
 import space.astro.shared.core.models.database.GuildUpgradeData
 import space.astro.shared.core.services.chargebee.ChargebeeClientService
+import space.astro.shared.core.services.discord.DiscordEntitlementsFetchService
 
 @RestController
 @Tag(name = "dashboard-premium")
 class DashboardGuildPremiumController(
     private val guildDao: GuildDao,
     private val userDao: UserDao,
-    private val chargebeeClientService: ChargebeeClientService
+    private val chargebeeClientService: ChargebeeClientService,
+    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val discordEntitlementsFetchService: DiscordEntitlementsFetchService
 ) {
+    @GetMapping(CentralApiRoutes.Dashboard.GUILD_ENTITLEMENTS_REFRESH)
+    suspend fun refreshEntitlements(
+        @PathVariable guildID: String,
+        exchange: ServerWebExchange
+    ) : ResponseEntity<*> {
+        val guildData = guildDao.get(guildID)
+            ?: return ResponseEntity.notFound().build<Any>()
+
+        val entitlements = discordEntitlementsFetchService.fetchEntitlements(
+            applicationId = discordApplicationConfig.id,
+            authToken = discordApplicationConfig.token,
+            guildId = guildID,
+            userId = null
+        )
+
+        entitlements.forEach { entitlement ->
+            val entitlementIndex = guildData.entitlements.indexOfFirst { it.id == entitlement.id }
+            if (entitlementIndex >= 0) {
+                guildData.entitlements[entitlementIndex] = GuildEntitlement(
+                    entitlement.id,
+                    entitlement.skuId,
+                    entitlement.endsAt?.toInstant()?.toEpochMilli()
+                )
+
+                guildDao.save(guildData)
+            } else {
+                guildData.entitlements.add(
+                    GuildEntitlement(
+                        entitlement.id,
+                        entitlement.skuId,
+                        entitlement.endsAt?.toInstant()?.toEpochMilli()
+                    )
+                )
+
+                guildDao.save(guildData)
+            }
+        }
+
+        return ResponseEntity.ok(guildData)
+    }
+
     @GetMapping(CentralApiRoutes.Dashboard.GUILD_UPGRADE)
     suspend fun upgradeGuild(
         @PathVariable guildID: String,
@@ -29,8 +75,7 @@ class DashboardGuildPremiumController(
         exchange: ServerWebExchange
     ) : ResponseEntity<*> {
         val userID = exchange.getUserID()
-        val userData = userDao.get(userID)
-            ?: return ResponseEntity.notFound().build<Any>()
+        val userData = userDao.getOrCreate(userID)
 
         val guildData = guildDao.get(guildID)
             ?: return ResponseEntity.notFound().build<Any>()

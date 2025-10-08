@@ -3,7 +3,7 @@ package space.astro.bot.events.publishers
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import space.astro.bot.events.ConfigurationErrorEvent
-import space.astro.shared.core.models.influx.ConfigurationErrorData
+import space.astro.shared.core.models.database.ConfigurationErrorData
 
 @Component
 class ConfigurationErrorEventPublisher(
