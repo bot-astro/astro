@@ -15,6 +15,29 @@ Resources:
 - [Website](https://astro-bot.space)
 - [Demo](https://youtube.com)
 
+## Table of Contents
+- [About The Project](#about-the-project)
+- [Development](#development)
+    - [Prerequisites](#prerequisites)
+    - [Understanding the Codebase](#understanding-the-codebase)
+        - [BigQuery](#bigquery)
+    - [Running the Application](#running-the-application)
+        - [MongoDB and Redis Dashboards](#mongodb-and-redis-dashboards)
+        - [OpenAPI](#openapi)
+- [Deployment](#deployment)
+    - [Prerequisites](#prerequisites-1)
+    - [Create .env Files](#create-env-files)
+    - [Create Kubernetes Resources](#create-kubernetes-resources)
+        - [Namespace](#namespace)
+        - [Config Maps](#config-maps)
+        - [Secrets](#secrets)
+    - [Configure Helm Values](#configure-helm-values)
+    - [Configure Semaphore](#configure-semaphore)
+- [Contributing](#contributing)
+    - [Top Contributors](#top-contributors)
+- [License](#license)
+- [Contact](#contact)
+
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -141,7 +164,7 @@ You can access the OpenAPI documentation for each service at the following URLs:
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) installed on your local machine and with access to your k8s cluster.
 
 ### Create .env files
-Create the production `prod.env` files (you can also use the development ones created in the previous section, just remember in the following steps that your files are called `dev.end`).    
+Create the production `prod.env` files (you can also use the development ones created in the previous section, just remember in the following steps that your files are called `dev.env`).    
 The `/env` folder contains a `.env.template` file for each service + 1 common `.env.template` shared by all services.  
 Create a `prod.env` file for each service inside the `/env` folder and, in each of them, copy both the content of `/env/shared-core/.env.template` and the content of the `.env.template` file of the service.
 
@@ -199,7 +222,7 @@ You need to configure the value files, so for each service copy the `/service/{s
       | Configuration Files | Description                                     |
       |---------------------|-------------------------------------------------|
       | `/home/semaphore/.kube/config`   | Upload the kubeconfig file for your k8s cluster |
-   4) for each service, create a secret using the same name as the service and add in `Configuration Files`: `/home/semaphore/.values/{service-name}/production.yaml` as the path (replace {service-name}) and provide the `values.yaml` file to it (you should have configured them previously in `services/{service-name}/charts/values.yaml`).
+   4) for each service, create a secret using the same name as the service and add in `Configuration Files`: `/home/semaphore/.values/{service-name}/production.yaml` as the path (replace `{service-name}`) and provide the `values.yaml` file to it (you should have configured them previously in `services/{service-name}/charts/values.yaml`).
 
 Now when you commit to any branch, Semaphore will automatically:  
 - build the Docker image for each service
@@ -234,8 +257,6 @@ Don't forget to give the project a star! Thanks again!
 Distributed under the AGPL-3.0 license. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- CONTACT -->
 ## Contact
