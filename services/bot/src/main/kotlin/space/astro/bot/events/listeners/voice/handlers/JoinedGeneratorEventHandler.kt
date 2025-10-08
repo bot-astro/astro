@@ -86,7 +86,7 @@ suspend fun VCEventHandler.handleJoinedGeneratorEvent(
         category = guild.getCategoryById(it)
     }
 
-    if (category != null && category.channels.size >= 50) {
+    if (category != null && category!!.channels.size >= 50) {
         val fallbackGenerator = generatorData.fallbackId
             ?.let { fallback ->
                 data.guildData.generators.firstOrNull { it.id == fallback && it.id != data.leftChannel?.id }

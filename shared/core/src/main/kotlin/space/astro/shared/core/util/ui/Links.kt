@@ -13,6 +13,8 @@ object Links {
     fun GUILD_DASHBOARD(guildId: String) = "https://astro-bot.space/guilds/$guildId"
     const val GUIDES = "https://astro-bot.space/guides"
     const val VOTE = "https://top.gg/bot/715621848489918495/vote"
+    const val GITHUB = "https://github.com/bot-astro/astro"
+    const val BLOG_ARTICLE = "https://giuliopime.dev/blog/so-i-built-a-discord-bot"
 
     const val LOGO = "https://cdn.discordapp.com/avatars/715621848489918495/dc0affdf8de07a3d88c4d192efad649f.png?size=2048"
     const val INTERFACE_BUTTONS_IMAGE = "$WEBSITE/new-interface-image.png"

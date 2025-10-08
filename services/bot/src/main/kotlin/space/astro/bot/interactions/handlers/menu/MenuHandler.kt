@@ -12,6 +12,7 @@ import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.core.ui.Embeds
+import space.astro.bot.core.ui.Messages
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.context.InteractionContextBuilder
@@ -111,7 +112,9 @@ class MenuHandler(
             val isGuildPremium = guildData?.let { premiumRequirementDetector.isGuildPremium(it) } ?: false
 
             if (menuContainer.action.premium && (guildData == null || !isGuildPremium)) {
-                event.replyWithPremiumRequired().queue()
+                event.reply(Messages.ultimateRequired)
+                    .setEphemeral(true)
+                    .queue()
                 return@launch
             }
 

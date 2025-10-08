@@ -14,6 +14,7 @@ import space.astro.bot.core.exceptions.ConfigurationException
 import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
+import space.astro.bot.core.ui.Messages
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.interactions.InteractionIds
 import space.astro.bot.interactions.context.InteractionContext
@@ -145,7 +146,9 @@ class ButtonHandler(
             val isGuildPremium = guildData?.let { premiumRequirementDetector.isGuildPremium(it) } ?: false
 
             if (buttonContainer.action.premium && (guildData == null || !isGuildPremium)) {
-                event.replyWithPremiumRequired().queue()
+                event.reply(Messages.ultimateRequired)
+                    .setEphemeral(true)
+                    .queue()
                 return@launch
             }
 

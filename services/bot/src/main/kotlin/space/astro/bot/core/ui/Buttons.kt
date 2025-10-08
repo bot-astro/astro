@@ -1,5 +1,6 @@
 package space.astro.bot.core.ui
 
+import net.dv8tion.jda.api.entities.SkuSnowflake
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import space.astro.bot.interactions.InteractionIds
@@ -13,11 +14,14 @@ object Buttons {
     val dashboard = Button.link(Links.DASHBOARD, "Dashboard").withEmoji(Emojis.dashboard)
     fun guildDashboard(guildId: String) = Button.link(Links.GUILD_DASHBOARD(guildId), "Dashboard").withEmoji(Emojis.dashboard)
     val vote = Button.link(Links.VOTE, "Vote").withEmoji(Emojis.vote)
+    val github = Button.link(Links.GITHUB, "GitHub").withEmoji(Emojis.developer)
 
     object Guides {
         val all = Button.link(Links.GUIDES, "Guides").withEmoji(Emojis.help)
         val interfaces = Button.link(Links.GUIDES + "/interface", "Interface guide").withEmoji(Emojis.vcInterface)
     }
+
+    val premiumRequired = Button.premium(SkuSnowflake.fromId("1096107722115661934")) // yeah... this should be injected from env variables
 
     object Bundles {
         ////////////////////

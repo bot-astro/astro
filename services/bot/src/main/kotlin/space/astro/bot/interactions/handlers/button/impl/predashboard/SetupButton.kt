@@ -51,8 +51,8 @@ class SetupButton(
                     "There is already 1 Interface setup in this server." +
                             "\nPremium is required to have more than 1 Interface." +
                             "\nPossible solutions:" +
-                            "\n• Get ${Emojis.premium.formatted}" +
-                            "\n• Delete an existing interface via the dashboard"),
+                            "\n• Delete the existing interface using `/interface delete`" +
+                            "\n• Get ${Emojis.premium.formatted}"),
                 component = Buttons.guildDashboard(ctx.guild.id)
             )
             return

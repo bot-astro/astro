@@ -223,11 +223,7 @@ class InteractionReplyHandler(
     ///////////////
 
     override suspend fun replyPremiumRequired() {
-        if (premiumReplyCallback == null) {
-            throw IllegalStateException("This interaction doesn't support premium required replies")
-        }
-
-        premiumReplyCallback?.replyWithPremiumRequired()?.await()
+        reply(Embeds.ultimateRequired, listOf(ActionRow.of(Buttons.premiumRequired)))
     }
 
 

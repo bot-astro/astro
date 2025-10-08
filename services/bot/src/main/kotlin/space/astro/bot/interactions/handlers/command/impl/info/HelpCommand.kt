@@ -36,7 +36,7 @@ class HelpCommand(
                 podCount = shardManagerConfig.totalPods
             ),
             components = listOf(
-                ActionRow.of(Buttons.guildDashboard(ctx.guildId), Buttons.appDirectoryUltimate, Buttons.Guides.all, Buttons.support, Buttons.vote)
+                ActionRow.of(Buttons.guildDashboard(ctx.guildId), Buttons.appDirectoryUltimate, Buttons.Guides.all, Buttons.support, Buttons.github)
             )
         )
         event.reply(Messages.dashboardSettings()).queue()

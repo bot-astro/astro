@@ -32,10 +32,12 @@ class TopggService(
                 registerModule(JavaTimeModule())
             }
         }
-        install(HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 3)
-            exponentialDelay()
-        }
+        // for a better UX, we do not retry 5xx responses
+//        install(HttpRequestRetry) {
+//            retryOnServerErrors(maxRetries = 3)
+//            exponentialDelay()
+//        }
+        install(HttpTimeout)
         defaultRequest {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
@@ -47,9 +49,11 @@ class TopggService(
      * Checks whether a user has voted on top.gg in the last 12 hours
      *
      * @param userId Optional user id filter
+     * @param timeoutMillis Optional timeout for the request, default is 2000 ms to avoid exceeding Discord 3 seconds initial interaction reply limit
      */
     suspend fun lastUserVote(
         userId: String,
+        timeoutMillis: Long? = 2000
     ): Long? {
         try {
             val uri = UriComponentsBuilder.fromUri(URI("https://top.gg/api/v1"))
@@ -58,7 +62,11 @@ class TopggService(
                 .build()
                 .toUriString()
 
-            val body: TopggVoteResponse = httpClient.get(uri).body()
+            val body: TopggVoteResponse = httpClient.get(uri) {
+                timeout {
+                    requestTimeoutMillis = timeoutMillis
+                }
+            }.body()
 
             return body.createdAt.toEpochMilli()
         } catch (e: ClientRequestException) {

@@ -7,13 +7,13 @@ import space.astro.shared.core.util.ui.Colors
 import space.astro.shared.core.util.ui.Links
 
 object Embeds {
-    const val footer = "Use /help for support"
+    const val footer = "Astro now open source at https://github.com/bot-astro/astro"
 
     fun default(description: String): MessageEmbed {
         return Embed(
             color = Colors.purple.rgb,
             description = description,
-            footerText = footer
+            footerText = footer,
         )
     }
 
@@ -24,6 +24,14 @@ object Embeds {
             footerText = footer
         )
     }
+
+    val ultimateRequired = Embed(
+        color = Colors.purple.rgb,
+        title = "${Emojis.premium.formatted} Ultimate required",
+        description = "Unlock this feature and more with the premium version of Astro: ${Emojis.premium.formatted} Ultimate." +
+                "\n\nDiscover which features you can unlock with Ultimate [`on Astro's website`](${Links.ULTIMATE})!",
+        footerText = footer
+    )
 
     ////////////
     /// HELP ///
@@ -68,6 +76,11 @@ object Embeds {
             MessageEmbed.Field(
                 "Support",
                 "You can join the ${Emojis.helper.formatted} [`Support server`](${Links.SUPPORT_SERVER}) to ask questions if something is not quite clear to you!",
+                false
+            ),
+            MessageEmbed.Field(
+                "Open Source",
+                "Astro is now open source! You can find the code on [`GitHub`](${Links.GITHUB}) and a story of the project on my [`blog article`](${Links.BLOG_ARTICLE})",
                 false
             ),
         ),
