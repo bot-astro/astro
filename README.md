@@ -91,11 +91,6 @@ Nothing fancy, ran as a k8s cronjob.
 A Discord bot that manages the support server of the bot, mainly used to apply the premium role to premium users.
 Includes a REST api used by the `bot` service, when it receives an entitlement event from Discord, it sends a request to the support bot to update the user's role.   
 
-It also includes a small service that checks for expired Discord premium application entitlements and updates the bot database.  
-- `central-api`: the REST api for the bot
-- `entitlements-expiration-job`: simple service that checks for expired Discord premium application entitlements and updates the bot database
-- `support-bot`: a Discord bot that manages the support server of the bot, mainly used to apply the premium role to premium users
-
 #### BigQuery
 BigQuery is used for gathering statistics about the bot usage, mainly commands used, guilds joined / left and temporary voice channels generated.  
 It is completely optional and you can skip configuring it if you don't need it.  
@@ -192,12 +187,16 @@ You can access the OpenAPI documentation for each service at the following URLs:
 > I do **not** provide support for self-hosting the bot.
 
 ### Prerequisites
+- A fork of this repository
 - Kubernetes cluster
 - Redis instance
 - MongoDB instance
 - [Semaphore](http://semaphore.io) account
 - [Sentry](https://sentry.io)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) installed on your local machine and with access to your k8s cluster.
+
+### Configure `gradle.properties`
+Update the `ghcrOrg` value in `gradle.properties` to your GitHub username or organization name.  
 
 ### Create .env files
 Create the production `prod.env` files (you can also use the development ones created in the previous section, just remember in the following steps that your files are called `dev.env`).    
