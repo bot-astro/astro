@@ -11,6 +11,7 @@ import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.context.VcInteractionContextInfo
 import space.astro.bot.interactions.handlers.command.*
 import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.shared.core.daos.TemporaryVCDao
 
 @Command(
     name = "name",
@@ -19,7 +20,8 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
     action = InteractionAction.VC_NAME
 )
 class NameCommand(
-    val vcNameManager: VCNameManager
+    val vcNameManager: VCNameManager,
+    val temporaryVCDao: TemporaryVCDao
 ) : AbstractCommand() {
     @BaseCommand
     suspend fun run(
@@ -41,8 +43,8 @@ class NameCommand(
             ctx.replyHandler.deferReply()
 
             vcNameManager.performVCRename(ctx.vcOperationCTX, name)
-
             ctx.vcOperationCTX.queueUpdatedManagers()
+            temporaryVCDao.save(ctx.guildId, ctx.vcOperationCTX.temporaryVCData)
 
             ctx.replyHandler.replyEmbed(
                 Embeds.default(

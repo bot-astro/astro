@@ -13,13 +13,15 @@ import space.astro.bot.interactions.handlers.modal.AbstractModal
 import space.astro.bot.interactions.handlers.modal.Modal
 import space.astro.bot.interactions.handlers.modal.ModalRunnable
 import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.shared.core.daos.TemporaryVCDao
 
 @Modal(
     id = InteractionIds.Modal.VC_NAME,
     action = InteractionAction.VC_NAME
 )
 class NameModal(
-    private val vcNameManager: VCNameManager
+    private val vcNameManager: VCNameManager,
+    private val temporaryVCDao: TemporaryVCDao
 ) : AbstractModal() {
 
     companion object {
@@ -44,8 +46,8 @@ class NameModal(
 
         try {
             vcNameManager.performVCRename(ctx.vcOperationCTX, name)
-
             ctx.vcOperationCTX.queueUpdatedManagers()
+            temporaryVCDao.save(ctx.guildId, ctx.vcOperationCTX.temporaryVCData)
 
             ctx.replyHandler.replyEmbed(
                 Embeds.default(
