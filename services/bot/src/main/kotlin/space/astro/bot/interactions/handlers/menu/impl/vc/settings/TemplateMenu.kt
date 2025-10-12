@@ -27,7 +27,7 @@ class TemplateMenu(
         event: StringSelectInteractionEvent,
         @VcInteractionContextInfo(
             ownershipRequired = true,
-            vcOperationOrigin = VCOperationCTX.VCOperationOrigin.STATE_CHANGE
+            vcOperationOrigin = VCOperationCTX.VCOperationOrigin.USER_RENAME
         )
         ctx: VcInteractionContext,
     ) {
