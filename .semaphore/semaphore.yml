@@ -24,8 +24,8 @@ blocks:
         - name: sentry
       prologue:
         commands:
-          - apt-get update -y
-          - apt-get install -y lftp
+          - sudo apt-get update -y
+          - sudo apt-get install -y lftp
           - cache restore gradle-caches_bot
           - cache restore gradle-wrapper_bot
           - checkout
@@ -55,8 +55,8 @@ blocks:
         - name: sentry
       prologue:
         commands:
-          - apt-get update -y
-          - apt-get install -y lftp
+          - sudo apt-get update -y
+          - sudo apt-get install -y lftp
           - cache restore gradle-caches_central-api
           - cache restore gradle-wrapper_central-api
           - checkout
@@ -86,8 +86,8 @@ blocks:
         - name: sentry
       prologue:
         commands:
-          - apt-get update -y
-          - apt-get install -y lftp
+          - sudo apt-get update -y
+          - sudo apt-get install -y lftp
           - cache restore gradle-caches_support-bot
           - cache restore gradle-wrapper_support-bot
           - checkout
@@ -117,8 +117,8 @@ blocks:
         - name: sentry
       prologue:
         commands:
-          - apt-get update -y
-          - apt-get install -y lftp
+          - sudo apt-get update -y
+          - sudo apt-get install -y lftp
           - cache restore gradle-caches_entitlements-expiration-job
           - cache restore gradle-wrapper_entitlements-expiration-job
           - checkout
