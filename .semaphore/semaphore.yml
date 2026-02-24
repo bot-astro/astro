@@ -7,12 +7,12 @@ agent:
     os_image: ubuntu2004
   containers:
     - name: main
-      image: openjdk:17-bullseye
+      image: amazoncorretto:17
 
 blocks:
   # bot
   - name: Build, test and push astro bot
-    dependencies: [ ]
+    dependencies: []
     run:
       when: |
         change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
@@ -43,7 +43,7 @@ blocks:
 
   # central-api
   - name: Build, test and push central-api
-    dependencies: [ ]
+    dependencies: []
     run:
       when: |
         change_in(['/services/central-api/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
@@ -74,7 +74,7 @@ blocks:
 
   # support-bot
   - name: Build, test and push support bot
-    dependencies: [ ]
+    dependencies: []
     run:
       when: |
         change_in(['/services/support-bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
@@ -105,7 +105,7 @@ blocks:
 
   # entitlements-expiration-job
   - name: Build, test and push entitlements-expiration-job
-    dependencies: [ ]
+    dependencies: []
     run:
       when: |
         change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
@@ -134,25 +134,24 @@ blocks:
             - cache store gradle-caches_entitlements-expiration-job ~/.gradle/caches
             - cache store gradle-wrapper_entitlements-expiration-job ~/.gradle/wrapper
 
-
 promotions:
   # bot
   - name: Deploy bot to production
     pipeline_file: deploy/bot/production.yml
-#  - name: Deploy bot to staging
-#    pipeline_file: deploy/bot/staging.yml
-#    auto_promote:
-#      when: |
-#        branch = 'develop' and result = 'passed' and change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+  #  - name: Deploy bot to staging
+  #    pipeline_file: deploy/bot/staging.yml
+  #    auto_promote:
+  #      when: |
+  #        branch = 'develop' and result = 'passed' and change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
 
   # central-api
   - name: Deploy central-api to production
     pipeline_file: deploy/central-api/production.yml
-#  - name: Deploy central-api to staging
-#    pipeline_file: deploy/central-api/staging.yml
-#    auto_promote:
-#      when: |
-#        branch = 'develop' and result = 'passed' and change_in(['/services/central-api/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+  #  - name: Deploy central-api to staging
+  #    pipeline_file: deploy/central-api/staging.yml
+  #    auto_promote:
+  #      when: |
+  #        branch = 'develop' and result = 'passed' and change_in(['/services/central-api/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
 
   # support-bot
   - name: Deploy support-bot to production
