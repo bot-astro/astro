@@ -7,7 +7,7 @@ agent:
     os_image: ubuntu2004
   containers:
     - name: main
-      image: eclipse-temurin:20
+      image: eclipse-temurin:17-jdk-jammy
 
 blocks:
   # bot
@@ -23,7 +23,7 @@ blocks:
       prologue:
         commands:
           - apt-get update -y
-          - apt-get install lftp -y
+          - apt-get install lftp openssh-client -y
           - cache restore gradle-caches_bot
           - cache restore gradle-wrapper_bot
           - checkout
@@ -54,7 +54,7 @@ blocks:
       prologue:
         commands:
           - apt-get update -y
-          - apt-get install lftp -y
+          - apt-get install lftp openssh-client -y
           - cache restore gradle-caches_central-api
           - cache restore gradle-wrapper_central-api
           - checkout
@@ -85,7 +85,7 @@ blocks:
       prologue:
         commands:
           - apt-get update -y
-          - apt-get install lftp -y
+          - apt-get install lftp openssh-client -y
           - cache restore gradle-caches_support-bot
           - cache restore gradle-wrapper_support-bot
           - checkout
@@ -116,7 +116,7 @@ blocks:
       prologue:
         commands:
           - apt-get update -y
-          - apt-get install lftp -y
+          - apt-get install lftp openssh-client -y
           - cache restore gradle-caches_entitlements-expiration-job
           - cache restore gradle-wrapper_entitlements-expiration-job
           - checkout
