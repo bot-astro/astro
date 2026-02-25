@@ -225,15 +225,15 @@ kubectl -n astro create configmap support-bot-config --from-env-file=./env/suppo
 Follow the instructions in the [BigQuery section](#bigquery) to obtain the service account JSON key.  
 You can skip this step if you don't wanna enable BigQuery.  
 ```shell
-kubectl -n astro create secret generic gcp-bigquery-creds --from-file=service-account-key.json
+kubectl -n astro create secret generic gcp-bigquery-creds --from-file=gcp-bigquery-creds.json
 ```
 
 This allows your cluster to pull images from GitHub Container Registry.  
 Replace `your_github_username` and `your_github_token` with your GitHub username and token ([token instructions](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)).   
 ```shell
-EXPORT DOCKER_USERNAME=your_github_username
-EXPORT DOCKER_PASSWORD=your_github_token
-kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username=$DOCKER_USERNAME --docker-password=$DOCKER_PASSWORD -n astro
+export DOCKER_USERNAME=your_github_username
+export DOCKER_PASSWORD=your_github_token
+kubectl create secret docker-registry docker-registry --docker-server=ghcr.io --docker-username=$DOCKER_USERNAME --docker-password=$DOCKER_PASSWORD -n astro
 ```
 
 ### Configure Helm values

@@ -12,7 +12,7 @@ spec:
       template:
         spec:
           nodeSelector:
-            gport.giuliopime.dev/agent: "as-tender"
+            gport.giuliopime.dev/agent: "as-cruiser"
           containers:
             - name: {{ .Values.name }}
               image: {{ .Values.image.group }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
