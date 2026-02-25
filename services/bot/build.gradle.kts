@@ -50,11 +50,10 @@ jib {
 
     container {
         jvmFlags = listOf(
-            "-XX:MaxRAMPercentage=80",
             "-XX:+PrintCommandLineFlags",
-            "-XX:+PrintFlagsFinal",
             "-XshowSettings:vm",
-            "-Xlog:os+container=trace"
+//            "-XX:+PrintFlagsFinal",
+//            "-Xlog:os+container=trace"
         )
     }
 }

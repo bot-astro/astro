@@ -44,7 +44,8 @@ spec:
             cpu: {{ .Values.resources.requests.cpu }}
             memory: {{ .Values.resources.requests.memory }}
           limits:
-            cpu: {{ .Values.resources.limits.cpu }}
+            # cpu: {{ .Values.resources.limits.cpu }} we don't want to limit the cpu
+            # see https://home.robusta.dev/blog/stop-using-cpu-limits
             memory: {{ .Values.resources.limits.memory }}
         readinessProbe:
           httpGet:

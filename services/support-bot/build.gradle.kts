@@ -37,6 +37,15 @@ jib {
             password = System.getenv("GITHUB_TOKEN")
         }
     }
+
+    container {
+        jvmFlags = listOf(
+            "-XX:+PrintCommandLineFlags",
+            "-XshowSettings:vm",
+//            "-XX:+PrintFlagsFinal",
+//            "-Xlog:os+container=trace"
+        )
+    }
 }
 
 sentry {

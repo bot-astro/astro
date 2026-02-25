@@ -28,7 +28,7 @@ plugins {
 
 jib {
     from {
-        image = "amazoncorretto:17-al2023-headless"
+        image = "amazoncorretto:21-al2023-headless"
     }
 
     to {
@@ -38,6 +38,15 @@ jib {
             username = System.getenv("GITHUB_ACTOR")
             password = System.getenv("GITHUB_TOKEN")
         }
+    }
+
+    container {
+        jvmFlags = listOf(
+            "-XX:+PrintCommandLineFlags",
+            "-XshowSettings:vm",
+//            "-XX:+PrintFlagsFinal",
+//            "-Xlog:os+container=trace"
+        )
     }
 }
 
