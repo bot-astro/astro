@@ -49,7 +49,11 @@ jib {
     }
 
     container {
-        jvmFlags = listOf("-Xms1200m", "-Xmx2800m")
+        jvmFlags = listOf(
+//            "-Xms1200m",
+//            "-Xmx2800m",
+            "-XX:MaxRAMPercentage=80"
+        )
     }
 }
 
