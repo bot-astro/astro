@@ -87,4 +87,4 @@ spec:
       - name: docker-registry
       terminationGracePeriodSeconds: 30
   serviceName: {{ .Values.name }}
-  podManagementPolicy: OrderedReady
+  podManagementPolicy: Parallel
