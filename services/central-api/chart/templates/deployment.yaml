@@ -16,7 +16,7 @@ spec:
         app: {{ .Values.name }}
     spec:
       nodeSelector:
-        gport.giuliopime.dev/agent: "as-sailboat"
+        gport.giuliopime.dev/agent: "as-tender"
       containers:
         - name: {{ .Values.name }}
           image: {{ .Values.image.group }}/{{ .Values.image.name }}:{{ .Values.image.tag }}

@@ -20,7 +20,7 @@ spec:
         random: '0'
     spec:
       nodeSelector:
-        gport.giuliopime.dev/agent: "as-sailboat"
+        gport.giuliopime.dev/agent: "as-tender"
       containers:
       - name: {{ .Values.name }}
         image: {{ .Values.image.group }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
