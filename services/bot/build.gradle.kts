@@ -47,6 +47,10 @@ jib {
             password = System.getenv("GITHUB_TOKEN")
         }
     }
+
+    container {
+        jvmFlags = listOf("-Xms1200m", "-Xmx2800m")
+    }
 }
 
 
