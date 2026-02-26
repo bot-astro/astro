@@ -25,7 +25,8 @@ spec:
       - name: {{ .Values.name }}
         image: {{ .Values.image.group }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
         ports:
-          - containerPort: {{ .Values.port }}
+          - name: metrics
+            containerPort: {{ .Values.port }}
         envFrom:
           - configMapRef:
               name: {{ .Values.config }}

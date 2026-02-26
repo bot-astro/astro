@@ -45,3 +45,5 @@ values.yaml
 values-staging.yaml
 
 gcp-bigquery-creds.json
+
+ignored/
