@@ -51,8 +51,8 @@ spec:
             httpHeaders:
               - name: Authorization
                 value: {{ .Values.auth }}
-          initialDelaySeconds: 1
-          periodSeconds: 5
+          initialDelaySeconds: 30
+          periodSeconds: 10
           failureThreshold: 20
         livenessProbe:
           httpGet:
@@ -61,8 +61,8 @@ spec:
             httpHeaders:
               - name: Authorization
                 value: {{ .Values.auth }}
-          initialDelaySeconds: 1
-          periodSeconds: 5
+          initialDelaySeconds: 30
+          periodSeconds: 10
           failureThreshold: 10
         lifecycle:
           preStop:
