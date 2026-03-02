@@ -12,7 +12,7 @@ dependencies {
 
 jib {
     from {
-        image = "amazoncorretto:21-al2023-headless"
+        image = "amazoncorretto:25-al2023-headless"
     }
 
     to {
