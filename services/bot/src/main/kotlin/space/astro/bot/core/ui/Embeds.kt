@@ -7,7 +7,8 @@ import space.astro.shared.core.util.ui.Colors
 import space.astro.shared.core.util.ui.Links
 
 object Embeds {
-    const val footer = "Astro now open source at https://github.com/bot-astro/astro"
+//    const val footer = "Astro now open source at https://github.com/bot-astro/astro"
+    const val footer = "shhh I made a new app - https://index-it.app"
 
     fun default(description: String): MessageEmbed {
         return Embed(
