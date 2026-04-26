@@ -13,7 +13,7 @@ Other repositories:
 
 Resources:
 - [Website](https://astro-bot.space)
-- [Demo](https://youtube.com)
+- [Demo](https://youtu.be/6HF8EwMBanY)
 
 ## Table of Contents
 - [About The Project](#about-the-project)
