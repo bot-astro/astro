@@ -33,7 +33,7 @@ class PodMetaCalculatorService(
 }
 
 //fun main() {
-//    val shardId = (1205249235667255369 shr 22) % 160
+//    val shardId = (1211323027548274728 shr 22) % 160
 //    val shardsPerPod = 160.floorDiv(10)
 //    println(shardId.floorDiv(shardsPerPod))
 //}

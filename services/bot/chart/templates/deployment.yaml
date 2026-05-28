@@ -54,6 +54,7 @@ spec:
             httpHeaders:
               - name: Authorization
                 value: {{ .Values.auth }}
+          timeoutSeconds: 5
           initialDelaySeconds: 120
           periodSeconds: 20
           failureThreshold: 120
@@ -64,6 +65,7 @@ spec:
             httpHeaders:
             - name: Authorization
               value: {{ .Values.auth }}
+          timeoutSeconds: 5
           initialDelaySeconds: 360
           periodSeconds: 60
           failureThreshold: 10
