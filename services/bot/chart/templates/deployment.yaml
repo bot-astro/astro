@@ -60,7 +60,7 @@ spec:
           failureThreshold: 120
         livenessProbe:
           httpGet:
-            path: /actuator/health/liveness
+            path: /liveness
             port: {{ .Values.port }}
             httpHeaders:
             - name: Authorization
