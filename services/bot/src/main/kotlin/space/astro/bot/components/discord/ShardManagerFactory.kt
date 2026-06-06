@@ -5,7 +5,6 @@ import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands
 import mu.KotlinLogging
 import net.dv8tion.jda.api.entities.Activity
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
@@ -19,7 +18,6 @@ import space.astro.bot.components.jda.JdaToSpringEventBridge
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.config.PodConfig
 import space.astro.bot.config.ShardManagerConfig
-import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.RedisSessionController
 
@@ -72,15 +70,7 @@ class ShardManagerFactory(
             else -> Activity.watching(discordApplicationConfig.activityText)
         }
 
-        RestAction.setDefaultFailure {
-            when (it) {
-                is InsufficientPermissionException -> {
-                    configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                        configurationErrorData = it.toConfigurationErrorDto(it.guildId.toString())
-                    )
-                }
-            }
-        }
+        RestAction.setDefaultFailure(DefaultFailureConsumer(configurationErrorEventPublisher))
 
         return DefaultShardManagerBuilder
             .createLight(

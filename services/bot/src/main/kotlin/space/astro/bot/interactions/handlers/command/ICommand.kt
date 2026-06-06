@@ -14,4 +14,5 @@ interface ICommand {
     val category: CommandCategory
     var id: Long?
     val action: InteractionAction
+    val guildOnly: Boolean
 }

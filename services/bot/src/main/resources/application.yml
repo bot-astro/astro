@@ -29,9 +29,11 @@ management:
         readiness:
           include:
             - readinessState
+            - shardsReadiness
         liveness:
           include:
             - livenessState
+            - shardsLiveness
   prometheus:
     metrics:
       export:

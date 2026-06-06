@@ -2,8 +2,8 @@ package space.astro.shared.core.components.web
 
 object BotApiRoutes {
     object Kube {
-        const val READY = "/ready"
-        const val LIVENESS = "/liveness"
+        const val READY = "/actuator/health/readiness"
+        const val LIVENESS = "/actuator/health/liveness"
         const val SHUTDOWN = "/shutdown"
     }
 

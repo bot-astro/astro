@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.bigquery)
     implementation(libs.nanoid)
     implementation(libs.chargebee)
+    implementation(libs.datetime)
 
     implementation(project(":shared:core"))
 

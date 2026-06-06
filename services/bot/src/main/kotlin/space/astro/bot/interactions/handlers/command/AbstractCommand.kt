@@ -4,6 +4,7 @@ import mu.KotlinLogging
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.Command.Choice
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -29,6 +30,7 @@ abstract class AbstractCommand : ICommand {
 
     final override val category: CommandCategory
     final override val action: InteractionAction
+    final override val guildOnly: Boolean
 
 
     init {
@@ -48,6 +50,10 @@ abstract class AbstractCommand : ICommand {
         }
         category = commandAnnotation.category
         action = commandAnnotation.action
+        guildOnly = commandAnnotation.guildOnly
+        if (guildOnly) {
+            data.setContexts(InteractionContextType.GUILD)
+        }
 
         reflectedClass.memberFunctions.forEach { function ->
             val functionBaseCommandAnnotation = function.findAnnotation<BaseCommand>()

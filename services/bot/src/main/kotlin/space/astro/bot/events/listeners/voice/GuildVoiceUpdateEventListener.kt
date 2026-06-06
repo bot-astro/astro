@@ -3,6 +3,7 @@ package space.astro.bot.events.listeners.voice
 import mu.KotlinLogging
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent
 import net.dv8tion.jda.api.exceptions.HierarchyException
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.core.extentions.toConfigurationErrorDto
@@ -55,6 +56,10 @@ class GuildVoiceUpdateEventListener(
         try {
             memberRolesManager.queue()
         } catch (e: HierarchyException) {
+            configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                configurationErrorData = e.toConfigurationErrorDto(event.guild.id)
+            )
+        } catch (e: InsufficientPermissionException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
                 configurationErrorData = e.toConfigurationErrorDto(event.guild.id)
             )

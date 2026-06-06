@@ -14,7 +14,8 @@ annotation class Command(
     val description: String = "N/A",
     val requiredPermissions: Array<Permission> = [],
     val category: CommandCategory = CommandCategory.ALL,
-    val action: InteractionAction = InteractionAction.GENERIC
+    val action: InteractionAction = InteractionAction.GENERIC,
+    val guildOnly: Boolean = true
 )
 
 @Retention(AnnotationRetention.RUNTIME)

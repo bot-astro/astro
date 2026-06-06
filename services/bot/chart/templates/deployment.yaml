@@ -49,7 +49,7 @@ spec:
             memory: {{ .Values.resources.limits.memory }}
         readinessProbe:
           httpGet:
-            path: /ready
+            path: /actuator/health/readiness
             port: {{ .Values.port }}
             httpHeaders:
               - name: Authorization
@@ -60,7 +60,7 @@ spec:
           failureThreshold: 120
         livenessProbe:
           httpGet:
-            path: /liveness
+            path: /actuator/health/liveness
             port: {{ .Values.port }}
             httpHeaders:
             - name: Authorization
