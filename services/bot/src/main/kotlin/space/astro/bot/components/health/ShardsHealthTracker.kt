@@ -1,14 +1,15 @@
 package space.astro.bot.components.health
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @Component
 class ShardsHealthTracker(
