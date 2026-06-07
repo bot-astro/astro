@@ -233,7 +233,6 @@ class ButtonHandler(
                     replyCallback = event,
                     messageEditCallback = event,
                     modalCallback = event,
-                    premiumReplyCallback = event,
                     shardManager = shardManager
                 )
             )

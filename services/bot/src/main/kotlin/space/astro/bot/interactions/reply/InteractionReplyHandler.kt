@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.callbacks.IMessageEditCallback
 import net.dv8tion.jda.api.interactions.callbacks.IModalCallback
-import net.dv8tion.jda.api.interactions.callbacks.IPremiumRequiredReplyCallback
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.ItemComponent
@@ -24,6 +23,7 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder
 import space.astro.bot.core.ui.Buttons
 import space.astro.bot.core.ui.Embeds
+import kotlin.time.Duration.Companion.milliseconds
 
 private val log = KotlinLogging.logger {  }
 
@@ -31,7 +31,6 @@ class InteractionReplyHandler(
     private var replyCallback: IReplyCallback,
     private var messageEditCallback: IMessageEditCallback?,
     private var modalCallback: IModalCallback?,
-    private var premiumReplyCallback: IPremiumRequiredReplyCallback?,
     private var originatedFromInterface: Boolean,
     private var originatedFromExistingMessage: Boolean,
     private val shardManager: ShardManager
@@ -81,14 +80,12 @@ class InteractionReplyHandler(
         replyCallback: IReplyCallback,
         messageEditCallback: IMessageEditCallback,
         modalCallback: IModalCallback?,
-        premiumReplyCallback: IPremiumRequiredReplyCallback?,
         originatedFromInterface: Boolean,
         originatedFromExistingMessage: Boolean,
     ) {
         this.replyCallback = replyCallback
         this.messageEditCallback = messageEditCallback
         this.modalCallback = modalCallback
-        this.premiumReplyCallback = premiumReplyCallback
         this.originatedFromInterface = originatedFromInterface
         this.originatedFromExistingMessage = originatedFromExistingMessage
         sentFirstMessage = false
@@ -102,7 +99,6 @@ class InteractionReplyHandler(
             replyCallback = event,
             messageEditCallback = event,
             modalCallback = event,
-            premiumReplyCallback = event,
             originatedFromInterface = false,
             originatedFromExistingMessage = true
         )
@@ -113,7 +109,6 @@ class InteractionReplyHandler(
             replyCallback = event,
             messageEditCallback = event,
             modalCallback = null,
-            premiumReplyCallback = null,
             originatedFromInterface = false,
             originatedFromExistingMessage = true
         )
@@ -269,7 +264,7 @@ class InteractionReplyHandler(
             components = buttons
         )
 
-        withTimeoutOrNull(timeoutAmount) {
+        withTimeoutOrNull(timeoutAmount.milliseconds) {
             return@withTimeoutOrNull shardManager.await<ButtonInteractionEvent> {
                 it.componentId == buttons[0].id!! || it.componentId == buttons[1].id!!
             }
@@ -293,7 +288,7 @@ class InteractionReplyHandler(
         if (onClick != null) {
             val buttonsIds = buttons.mapNotNull { it.id }
 
-            withTimeoutOrNull(timeoutAmount) {
+            withTimeoutOrNull(timeoutAmount.milliseconds) {
                 return@withTimeoutOrNull shardManager.await<ButtonInteractionEvent> {
                     it.componentId in buttonsIds
                 }
@@ -312,7 +307,7 @@ class InteractionReplyHandler(
         replyEmbedAndComponents(embed = embed, components = buttons)
 
         val buttonsIds = buttons.mapNotNull { it.id }
-        withTimeoutOrNull(timeoutAmount) {
+        withTimeoutOrNull(timeoutAmount.milliseconds) {
             return@withTimeoutOrNull shardManager.await<ButtonInteractionEvent> {
                 it.componentId in buttonsIds
             }
@@ -339,7 +334,7 @@ class InteractionReplyHandler(
                 components = listOf(ActionRow.of(selectMenu), ActionRow.of(cancelButton))
             )
 
-            withTimeoutOrNull(timeoutAmount) {
+            withTimeoutOrNull(timeoutAmount.milliseconds) {
                 return@withTimeoutOrNull shardManager.await<GenericComponentInteractionCreateEvent> {
                     (it is StringSelectInteractionEvent && it.componentId == selectMenu.id)
                             || (it is ButtonInteractionEvent && it.componentId == cancelButton.id!!)
@@ -355,7 +350,7 @@ class InteractionReplyHandler(
         } else {
             replyEmbedAndComponent(embed = embed, selectMenu)
 
-            withTimeoutOrNull(timeoutAmount) {
+            withTimeoutOrNull(timeoutAmount.milliseconds) {
                 return@withTimeoutOrNull shardManager.await<StringSelectInteractionEvent> {
                     it.componentId == selectMenu.id
                 }
@@ -375,7 +370,7 @@ class InteractionReplyHandler(
     ) {
         replyModal(modal)
 
-        withTimeoutOrNull(600000) {
+        withTimeoutOrNull(600000.milliseconds) {
             return@withTimeoutOrNull shardManager.await<ModalInteractionEvent> {
                 it.modalId == modal.id
             }

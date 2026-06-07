@@ -23,7 +23,6 @@ class AnalyticsService(
             when (receiver) {
                 AnalyticsEventReceiver.BIGQUERY -> publishToBigQuery(analyticsEvent.data)
                 AnalyticsEventReceiver.CONSOLE -> publishToConsole(analyticsEvent)
-                else -> {}
             }
         }
     }

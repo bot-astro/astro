@@ -179,7 +179,6 @@ class ModalHandler(
                     replyCallback = event,
                     messageEditCallback = event,
                     modalCallback = null,
-                    premiumReplyCallback = null,
                     shardManager = shardManager
                 )
             )

@@ -61,6 +61,14 @@ jib {
     }
 }
 
+kotlin {
+    compilerOptions {
+        optIn.add(
+            "kotlin.time.ExperimentalTime"
+        )
+    }
+}
+
 
 tasks.test {
     useJUnitPlatform()

@@ -297,7 +297,6 @@ class CommandHandler(
                     replyCallback = event,
                     messageEditCallback = null,
                     modalCallback = event,
-                    premiumReplyCallback = event,
                     shardManager = shardManager
                 )
             )
