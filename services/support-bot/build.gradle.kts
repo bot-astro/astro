@@ -21,6 +21,7 @@ dependencies {
         )
     }
     implementation(libs.guava)
+    implementation(libs.chargebee)
     implementation(project(":shared:core"))
 }
 
