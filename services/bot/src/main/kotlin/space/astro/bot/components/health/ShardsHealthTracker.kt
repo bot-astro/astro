@@ -1,5 +1,6 @@
 package space.astro.bot.components.health
 
+import mu.KotlinLogging
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.scheduling.annotation.Scheduled
@@ -10,6 +11,8 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+
+private val log = KotlinLogging.logger { }
 
 @Component
 class ShardsHealthTracker(
@@ -39,11 +42,17 @@ class ShardsHealthTracker(
     }
 
     fun allHealthy(): Boolean {
-        return shardManager.statuses.values.all { HEALTHY_STATUSES.contains(it) }
+        val notHealthy = shardManager.shards.filter { !HEALTHY_STATUSES.contains(it.status) }
+        if (notHealthy.isNotEmpty())
+            log.warn("Shards not healthy: ${notHealthy.joinToString { it.shardInfo.shardId.toString() }}")
+        return notHealthy.isEmpty()
     }
 
     fun anyStuck(threshold: Duration): Boolean {
-        return timestamps.any { Clock.System.now() - it.value > threshold }
+        val stuckShards = timestamps.filter { Clock.System.now() - it.value > threshold }
+        if (stuckShards.isNotEmpty())
+            log.warn("Shards stuck: ${stuckShards.keys.joinToString { it.toString() }}")
+        return stuckShards.isNotEmpty()
     }
 
 }
