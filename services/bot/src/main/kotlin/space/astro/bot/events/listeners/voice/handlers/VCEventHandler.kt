@@ -123,6 +123,7 @@ class VCEventHandler(
     //////////////////
 
     private suspend fun handleException(vcEvent: VCEvent, e: Exception) {
+        /*
         if (e is ConfigurationException || e is InsufficientPermissionException) {
             try {
                 vcEvent.vcEventData.member.user.openPrivateChannel().queue(
@@ -140,6 +141,7 @@ class VCEventHandler(
                 )
             } catch (_: Exception) {}
         }
+        */
 
         when (e) {
             is ConfigurationException -> configurationErrorEventPublisher.publishConfigurationErrorEvent(
