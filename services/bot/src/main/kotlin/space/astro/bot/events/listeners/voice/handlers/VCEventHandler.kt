@@ -38,46 +38,44 @@ class VCEventHandler(
     val vcPositionManager: VCPositionManager,
     val interfaceManager: InterfaceManager
 ) {
-    fun handleEvents(
+    suspend fun handleEvents(
         events: List<VCEvent>,
         memberRolesManager: SimpleMemberRolesManager
     ) {
-        runBlocking {
-            val generatorEvents = events.filterIsInstance<VCEvent.JoinedGenerator>()
-            val nonGeneratorEvents = events.filter { it !is VCEvent.JoinedGenerator }.toMutableList()
+        val generatorEvents = events.filterIsInstance<VCEvent.JoinedGenerator>()
+        val nonGeneratorEvents = events.filter { it !is VCEvent.JoinedGenerator }.toMutableList()
 
-            generatorEvents.forEach { joinedGeneratorEvent ->
-                try {
-                    handleJoinedGeneratorEvent(joinedGeneratorEvent, memberRolesManager)
-                    trackTemporaryVCGenerationAnalyticEvent(joinedGeneratorEvent)
-                } catch (e: Exception) {
-                    // Remove connection events that were related to this joined generator event
-                    nonGeneratorEvents.removeAll { connectionEvent ->
-                        connectionEvent is VCEvent.JoinedConnectedVC
-                                && connectionEvent.connectionData.id == joinedGeneratorEvent.generatorData.id
-                    }
-
-                    handleException(joinedGeneratorEvent, e)
+        generatorEvents.forEach { joinedGeneratorEvent ->
+            try {
+                handleJoinedGeneratorEvent(joinedGeneratorEvent, memberRolesManager)
+                trackTemporaryVCGenerationAnalyticEvent(joinedGeneratorEvent)
+            } catch (e: Exception) {
+                // Remove connection events that were related to this joined generator event
+                nonGeneratorEvents.removeAll { connectionEvent ->
+                    connectionEvent is VCEvent.JoinedConnectedVC
+                            && connectionEvent.connectionData.id == joinedGeneratorEvent.generatorData.id
                 }
+
+                handleException(joinedGeneratorEvent, e)
             }
+        }
 
-            nonGeneratorEvents.forEach {
-                try {
-                    when (it) {
-                        is VCEvent.JoinedTemporaryVC -> handleJoinedTemporaryVCEvent(it, memberRolesManager)
-                        is VCEvent.JoinedConnectedVC -> {
-                            handleJoinedConnectedVCEvent(it, memberRolesManager)
-                            trackConnectionInvocationAnalyticEvent(it)
-                        }
-                        is VCEvent.LeftTemporaryVC -> handleLeftTemporaryVCEvent(it, memberRolesManager)
-                        is VCEvent.LeftConnectedVC -> handleLeftConnectedVCEvent(it, memberRolesManager)
-                        else -> {
-                            throw RuntimeException("Handler not found for VC event: $it")
-                        }
+        nonGeneratorEvents.forEach {
+            try {
+                when (it) {
+                    is VCEvent.JoinedTemporaryVC -> handleJoinedTemporaryVCEvent(it, memberRolesManager)
+                    is VCEvent.JoinedConnectedVC -> {
+                        handleJoinedConnectedVCEvent(it, memberRolesManager)
+                        trackConnectionInvocationAnalyticEvent(it)
                     }
-                } catch (e: Exception) {
-                    handleException(it, e)
+                    is VCEvent.LeftTemporaryVC -> handleLeftTemporaryVCEvent(it, memberRolesManager)
+                    is VCEvent.LeftConnectedVC -> handleLeftConnectedVCEvent(it, memberRolesManager)
+                    else -> {
+                        throw RuntimeException("Handler not found for VC event: $it")
+                    }
                 }
+            } catch (e: Exception) {
+                handleException(it, e)
             }
         }
     }

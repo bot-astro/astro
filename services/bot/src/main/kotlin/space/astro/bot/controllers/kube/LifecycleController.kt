@@ -16,6 +16,12 @@ private val log = KotlinLogging.logger { }
 class LifecycleController(
     val shardManager: ShardManager
 ) {
+    @GetMapping("/dummy")
+    suspend fun dummy(@RequestHeader("Authorization") auth: String): ResponseEntity<*> {
+        log.info("Got dummy request")
+        return ResponseEntity.noContent().build<Any>()
+    }
+
     @GetMapping(BotApiRoutes.Kube.SHUTDOWN)
     suspend fun shutdown(@RequestHeader("Authorization") auth: String): ResponseEntity<*> {
         log.info("Got shutdown request - persisting players...")

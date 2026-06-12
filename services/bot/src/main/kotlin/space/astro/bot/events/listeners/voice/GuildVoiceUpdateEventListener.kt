@@ -26,7 +26,7 @@ class GuildVoiceUpdateEventListener(
 ) {
 
     @EventListener
-    fun receiveGuildVoiceUpdate(event: GuildVoiceUpdateEvent) {
+    suspend fun receiveGuildVoiceUpdate(event: GuildVoiceUpdateEvent) {
         // Ignore bots and when a user doesn't switch voice channel
         if (event.member.user.isBot || event.channelJoined?.id == event.channelLeft?.id) {
             return
