@@ -1,11 +1,25 @@
 rootProject.name = "astro"
 
-// Include gradle modules
-include(":services:central-api")
-include(":shared:core")
-include("services:bot")
-findProject(":services:bot")?.name = "bot"
-include("services:support-bot")
-findProject(":services:support-bot")?.name = "support-bot"
-include("services:entitlements-expiration-job")
-findProject(":services:entitlements-expiration-job")?.name = "entitlements-expiration-job"
+pluginManagement {
+    includeBuild("build-logic")
+
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+plugins {
+    // automatically download JDK if missing
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
+include(
+    // standalone
+//    "services:bot",
+//    "services:central-api",
+//    "services:support-bot",
+//    "services:entitlements-expiration-job",
+    // shared
+//    "shared:core"
+)

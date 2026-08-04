@@ -1,4 +1,11 @@
 [versions]
+kotlin="2.2.21"
+kotlinxCoroutines="1.10.2"
+kotlinxDatetime="0.7.1"
+ksp="2.3.3"
+serialization="1.9.0"
+jib="3.5.1"
+
 # Core
 guava = "32.1.2-jre"
 nanoid = "2.0.0"
@@ -21,10 +28,8 @@ kmongo = "4.11.0"
 # Serializing
 jackson-kotlin = "2.22.0"
 jackson-date = "2.22.0"
-kotlinx-serialization = "1.9.0"
 
 # Kotlin
-kotlin = "2.2.21"
 coroutines = "1.10.2"
 
 # JWT
@@ -49,7 +54,21 @@ bigquery = "2.62.0"
 # Testing
 junit="5.14.4"
 
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin"}
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+sentry = { id = "io.sentry.jvm.gradle", version.ref = "sentryPlugin" }
+jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
+
 [libraries]
+# PLUGINS
+kotlin-jvm-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-serialization-plugin = { group = "org.jetbrains.kotlin.plugin.serialization", name = "org.jetbrains.kotlin.plugin.serialization.gradle.plugin", version.ref = "kotlin" }
+
+
 # macOS fix
 dnsMacOS = { module = "io.netty:netty-resolver-dns-native-macos", version = "4.1.104.Final" }
 # Core
@@ -79,7 +98,7 @@ kmongo = { module = "org.litote.kmongo:kmongo", version.ref = "kmongo"}
 # Serializing
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-kotlin"}
 jackson-date = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson-date" }
-kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization"}
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization"}
 
 # Kotlin
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines"}
@@ -159,9 +178,3 @@ discord = [
     "jda",
     "jda-ktx"
 ]
-
-[plugins]
-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin"}
-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
-sentry = { id = "io.sentry.jvm.gradle", version.ref = "sentryPlugin" }

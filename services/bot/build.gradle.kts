@@ -1,7 +1,7 @@
-version = "1.0-SNAPSHOT"
+project.version = "2.0.0"
 
 plugins {
-    id("com.google.cloud.tools.jib")
+    id("service-conventions")
 }
 
 dependencies {
