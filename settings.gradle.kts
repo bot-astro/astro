@@ -21,5 +21,5 @@ include(
 //    "services:support-bot",
 //    "services:entitlements-expiration-job",
     // shared
-//    "shared:core"
+    "shared:core"
 )

@@ -9,4 +9,5 @@ repositories {
 dependencies {
     compileOnly(libs.kotlin.jvm.plugin)
     compileOnly(libs.kotlin.serialization.plugin)
+    compileOnly(libs.kotlin.spring.plugin)
 }

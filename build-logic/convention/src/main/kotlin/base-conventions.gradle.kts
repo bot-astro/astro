@@ -2,6 +2,7 @@ plugins {
     base
     kotlin("jvm")
     kotlin("plugin.serialization")
+    kotlin("plugin.spring")
 }
 
 repositories {

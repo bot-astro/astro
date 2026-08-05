@@ -67,7 +67,7 @@ jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 # PLUGINS
 kotlin-jvm-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-serialization-plugin = { group = "org.jetbrains.kotlin.plugin.serialization", name = "org.jetbrains.kotlin.plugin.serialization.gradle.plugin", version.ref = "kotlin" }
-
+kotlin-spring-plugin = { module = "org.jetbrains.kotlin.plugin.spring:org.jetbrains.kotlin.plugin.spring.gradle.plugin", version.ref = "kotlin" }
 
 # macOS fix
 dnsMacOS = { module = "io.netty:netty-resolver-dns-native-macos", version = "4.1.104.Final" }

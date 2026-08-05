@@ -1,12 +1,10 @@
-version = "1.0-SNAPSHOT"
+version = "0.0.1"
 
 plugins {
-    base
-    java
+    id("base-conventions")
 }
 
 dependencies {
-    implementation(variantOf(libs.dnsMacOS) { classifier("osx-aarch_64") })
     implementation(libs.bundles.base)
     implementation(libs.bundles.spring.core)
     implementation(libs.bundles.coroutines)
@@ -21,4 +19,8 @@ dependencies {
     implementation(libs.mongo)
     implementation(libs.kmongo)
     implementation(libs.bigquery)
+    implementation(kotlin("stdlib"))
+}
+repositories {
+    mavenCentral()
 }
