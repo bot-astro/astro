@@ -35,32 +35,6 @@ dependencies {
     testImplementation(kotlin("test"))
 }
 
-jib {
-    from {
-        image = "amazoncorretto:25-al2023-headless"
-    }
-
-    to {
-        image = "ghcr.io/${project.property("ghcrOrg")}/$name"
-        tags = setOf(System.getenv("SEMAPHORE_GIT_SHA"), "latest")
-        auth {
-            username = System.getenv("GITHUB_ACTOR")
-            password = System.getenv("GITHUB_TOKEN")
-        }
-    }
-
-    container {
-        jvmFlags = listOf(
-            "-XX:+PrintCommandLineFlags",
-            "-XshowSettings:vm",
-            "-XX:MinRAMPercentage=60.0",
-            "-XX:MaxRAMPercentage=60.0"
-//            "-XX:+PrintFlagsFinal",
-//            "-Xlog:os+container=trace"
-        )
-    }
-}
-
 kotlin {
     compilerOptions {
         optIn.add(

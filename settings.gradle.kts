@@ -16,10 +16,10 @@ plugins {
 
 include(
     // standalone
-//    "services:bot",
-//    "services:central-api",
-//    "services:support-bot",
-//    "services:entitlements-expiration-job",
+    "services:bot",
+    "services:central-api",
+    "services:support-bot",
+    "services:entitlements-expiration-job",
     // shared
     "shared:core"
 )

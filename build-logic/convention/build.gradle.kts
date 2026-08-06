@@ -7,7 +7,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly(libs.kotlin.jvm.plugin)
-    compileOnly(libs.kotlin.serialization.plugin)
-    compileOnly(libs.kotlin.spring.plugin)
+    implementation(libs.kotlin.jvm.plugin)
+    implementation(libs.kotlin.serialization.plugin)
+    implementation(libs.kotlin.spring.plugin)
+    implementation(libs.jib.plugin)
+    implementation(libs.sentry.plugin)
 }

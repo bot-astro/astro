@@ -4,7 +4,7 @@ kotlinxCoroutines="1.10.2"
 kotlinxDatetime="0.7.1"
 ksp="2.3.3"
 serialization="1.9.0"
-jib="3.5.1"
+jib="3.5.4"
 
 # Core
 guava = "32.1.2-jre"
@@ -18,7 +18,7 @@ openapi = "2.8.17"
 
 # Logging
 kotlin-logging = "2.1.23"
-sentryPlugin = "4.1.1"
+sentryPlugin = "6.14.0"
 sentry = "7.2.0"
 
 # Databases
@@ -68,6 +68,8 @@ jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 kotlin-jvm-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-serialization-plugin = { group = "org.jetbrains.kotlin.plugin.serialization", name = "org.jetbrains.kotlin.plugin.serialization.gradle.plugin", version.ref = "kotlin" }
 kotlin-spring-plugin = { module = "org.jetbrains.kotlin.plugin.spring:org.jetbrains.kotlin.plugin.spring.gradle.plugin", version.ref = "kotlin" }
+jib-plugin = { module = "com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin", version.ref = "jib" }
+sentry-plugin = { module = "io.sentry.jvm.gradle:io.sentry.jvm.gradle.gradle.plugin", version.ref = "sentryPlugin"}
 
 # macOS fix
 dnsMacOS = { module = "io.netty:netty-resolver-dns-native-macos", version = "4.1.104.Final" }

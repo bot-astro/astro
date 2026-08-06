@@ -1,5 +1,7 @@
+project.version = "2.0.0"
+
 plugins {
-    id("com.google.cloud.tools.jib")
+    id("service-conventions")
 }
 
 dependencies {
@@ -23,30 +25,6 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.chargebee)
     implementation(project(":shared:core"))
-}
-
-jib {
-    from {
-        image = "amazoncorretto:25-al2023-headless"
-    }
-
-    to {
-        image = "ghcr.io/${project.property("ghcrOrg")}/$name"
-        tags = setOf(System.getenv("SEMAPHORE_GIT_SHA"), "latest")
-        auth {
-            username = System.getenv("GITHUB_ACTOR")
-            password = System.getenv("GITHUB_TOKEN")
-        }
-    }
-
-    container {
-        jvmFlags = listOf(
-            "-XX:+PrintCommandLineFlags",
-            "-XshowSettings:vm",
-//            "-XX:+PrintFlagsFinal",
-//            "-Xlog:os+container=trace"
-        )
-    }
 }
 
 sentry {
