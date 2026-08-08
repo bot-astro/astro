@@ -1,6 +1,6 @@
 package space.astro.support.bot.listeners
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.events.session.ReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component

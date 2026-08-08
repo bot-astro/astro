@@ -3,6 +3,8 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     kotlin("plugin.spring")
+    id("io.spring.dependency-management")
+    id("org.springframework.boot")
 }
 
 repositories {
@@ -15,12 +17,12 @@ sourceSets.main {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 tasks.test {

@@ -2,7 +2,7 @@ package space.astro.support.bot.listeners
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component

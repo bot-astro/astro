@@ -27,7 +27,7 @@ import space.astro.shared.core.components.io.DataSerializer
 class RedisHashCacheDao(
     val keyBase: String,
     val dataSerializer: DataSerializer,
-    val redis: RedisClusterCommands<String, String>,
+    val redis: RedisCommands<String, String>,
 ) {
     /**
      * Get a single field from the hash

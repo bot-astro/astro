@@ -1,132 +1,118 @@
 [versions]
-kotlin="2.2.21"
-kotlinxCoroutines="1.10.2"
-kotlinxDatetime="0.7.1"
-ksp="2.3.3"
-serialization="1.9.0"
-jib="3.5.4"
+# Build tooling
+jib = "3.5.4"
+ksp = "2.3.3"
+
+# Kotlin
+kotlin = "2.4.0"
+kotlinxCoroutines = "1.11.0"
+kotlinxDatetime = "0.8.0"
+kotlinxSerialization = "1.11.0"
 
 # Core
-guava = "32.1.2-jre"
+guava = "33.6.0-jre"
 nanoid = "2.0.0"
 datetime = "0.7.1"
 
 # Spring
-spring = "6.2.18"
-spring-boot = "3.5.14"
-openapi = "2.8.17"
+springDependencyManagementPlugin = "1.1.7"
+springBootPlugin = "4.1.0"
 
-# Logging
-kotlin-logging = "2.1.23"
+# Logging and monitoring
 sentryPlugin = "6.14.0"
-sentry = "7.2.0"
+sentry = "8.52.0"
+kotlin-logging = "8.0.4"
+logback = "1.6.1"
 
-# Databases
-mongo = "4.11.5"
-kmongo = "4.11.0"
+# Database
+mongo = "5.9.1"
 
-# Serializing
-jackson-kotlin = "2.22.0"
-jackson-date = "2.22.0"
+# Serialization
+jackson-kotlin = "2.22.1"
+jackson-date = "2.22.1"
 
-# Kotlin
+# Concurrency
 coroutines = "1.10.2"
 
-# JWT
-jjwt = "0.11.5"
+# Security
+jjwt = "0.13.0"
 
 # Caching
+# TODO: replace with Jedis
 caffeine = "3.2.4"
-lettuce = "6.8.2.RELEASE"
+lettuce = "7.6.0.RELEASE"
 
-# JDA
-jda = "5.6.1"
-jda-ktx = "0.13.0"
-
-chargebee = "3.47.0"
-
-# Ktor
-ktor="2.3.13"
+# Integrations
+chargebee = "4.14.0"
+jda = "6.5.0"
+jda-ktx = "0.15.0"
 
 # Analytics
-bigquery = "2.62.0"
+bigquery = "2.69.0"
 
 # Testing
-junit="5.14.4"
-
-[plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin"}
-ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-sentry = { id = "io.sentry.jvm.gradle", version.ref = "sentryPlugin" }
-jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
+junit = "6.1.2"
 
 [libraries]
-# PLUGINS
+# BUILD PLUGINS
 kotlin-jvm-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-serialization-plugin = { group = "org.jetbrains.kotlin.plugin.serialization", name = "org.jetbrains.kotlin.plugin.serialization.gradle.plugin", version.ref = "kotlin" }
 kotlin-spring-plugin = { module = "org.jetbrains.kotlin.plugin.spring:org.jetbrains.kotlin.plugin.spring.gradle.plugin", version.ref = "kotlin" }
+spring-boot-plugin = { module = "org.springframework.boot:org.springframework.boot.gradle.plugin", version.ref = "springBootPlugin" }
+spring-dependency-management-plugin = { module = "io.spring.dependency-management:io.spring.dependency-management.gradle.plugin", version.ref = "springDependencyManagementPlugin" }
 jib-plugin = { module = "com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin", version.ref = "jib" }
-sentry-plugin = { module = "io.sentry.jvm.gradle:io.sentry.jvm.gradle.gradle.plugin", version.ref = "sentryPlugin"}
+sentry-plugin = { module = "io.sentry.jvm.gradle:io.sentry.jvm.gradle.gradle.plugin", version.ref = "sentryPlugin" }
 
-# macOS fix
-dnsMacOS = { module = "io.netty:netty-resolver-dns-native-macos", version = "4.1.104.Final" }
+# PLATFORM BOMS
+mongo-bom = { module = "org.mongodb:mongodb-driver-bom", version.ref = "mongo" }
+
+# DEPENDENCIES
+# Database
+mongo-driver = { module = "org.mongodb:mongodb-driver-kotlin-coroutine" }
+mongo-bson-kotlinx = { module = "org.mongodb:bson-kotlinx" }
+
 # Core
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 nanoid = { module = "com.aventrix.jnanoid:jnanoid", version.ref = "nanoid" }
 datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
 
 # Spring
-spring-core = { module = "org.springframework:spring-core", version.ref = "spring"}
-spring-context = { module = "org.springframework:spring-context", version.ref = "spring"}
-spring-boot = { module = "org.springframework.boot:spring-boot", version.ref = "spring-boot"}
-spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot"}
-spring-boot-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "spring-boot"}
-spring-openapi = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version.ref = "openapi" }
+spring-core = { module = "org.springframework:spring-core" }
+spring-context = { module = "org.springframework:spring-context" }
+spring-boot = { module = "org.springframework.boot:spring-boot" }
+spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
+spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis"}
+spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 
-spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring-boot"}
-spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor", version.ref = "spring-boot"}
-
-# Logging
-kotlin-logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin-logging"}
+# Logging and monitoring
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 sentry = { module = "io.sentry:sentry-spring-boot-starter", version.ref = "sentry" }
 
-# Databases
-mongo = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongo"}
-kmongo = { module = "org.litote.kmongo:kmongo", version.ref = "kmongo"}
-
-# Serializing
-jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-kotlin"}
+# Serialization
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-kotlin" }
 jackson-date = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson-date" }
-kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization"}
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
-# Kotlin
-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines"}
-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "coroutines"}
+# Concurrency
+coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "coroutines" }
 
-# JWT
-jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt"}
-jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt"}
-jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt"}
+# Security
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
 # Caching
-caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine"}
-lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce"}
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
 
-# JDA
+# Integrations
 jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 jda-ktx = { module = "club.minnced:jda-ktx", version.ref = "jda-ktx" }
-
-chargebee = { module = "com.chargebee:chargebee-java", version.ref = "chargebee"}
-
-# Ktor client
-ktor-serialization = { group = "io.ktor", name = "ktor-serialization-jackson", version.ref = "ktor" }
-ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
-ktor-client-apache = { group = "io.ktor", name = "ktor-client-apache", version.ref = "ktor" }
-ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
-ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+chargebee = { module = "com.chargebee:chargebee-java", version.ref = "chargebee" }
 
 # Analytics
 bigquery = { module = "com.google.cloud:google-cloud-bigquery", version.ref = "bigquery" }
@@ -135,48 +121,23 @@ bigquery = { module = "com.google.cloud:google-cloud-bigquery", version.ref = "b
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 
 [bundles]
-base = [
-    "kotlin-logging",
-    "spring-boot-configuration-processor",
-    "sentry"
+service-core=[
+    "spring-boot-starter",
+    "spring-boot-starter-webflux",
+    "spring-boot-starter-actuator"
 ]
-spring-core = [
-    "spring-core",
-    "spring-context",
-    "spring-boot"
-]
-web = [
-    "spring-boot-webflux",
-    "spring-boot-actuator",
-    "spring-openapi",
-    "jackson-kotlin"
-]
-coroutines = [
+coroutines=[
     "coroutines-core",
     "coroutines-reactor"
 ]
-serialization = [
-    "jackson-kotlin",
-    "kotlinx-serialization",
-    "jackson-date"
+logging=[
+    "kotlin-logging",
+    "logback"
 ]
-caching = [
-    "caffeine",
-    "lettuce"
+cache=[
+    "spring-boot-starter-data-redis"
 ]
-jwt = [
-    "jjwt-api",
-    "jjwt-impl",
-    "jjwt-jackson"
-]
-ktor-client = [
-    "ktor-client-core",
-    "ktor-client-apache",
-    "ktor-client-logging",
-    "ktor-serialization",
-    "ktor-client-content-negotiation",
-]
-discord = [
-    "jda",
-    "jda-ktx"
+db=[
+    "mongo-driver",
+    "mongo-bson-kotlinx"
 ]

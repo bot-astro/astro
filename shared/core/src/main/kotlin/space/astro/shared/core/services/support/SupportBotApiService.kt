@@ -1,7 +1,7 @@
 package space.astro.shared.core.services.support
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.http.codec.json.Jackson2JsonDecoder

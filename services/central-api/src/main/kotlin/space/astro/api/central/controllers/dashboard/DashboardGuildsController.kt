@@ -1,7 +1,7 @@
 package space.astro.api.central.controllers.dashboard
 
 import io.swagger.v3.oas.annotations.tags.Tag
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.Permission
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

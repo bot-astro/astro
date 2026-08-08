@@ -2,7 +2,7 @@ package space.astro.shared.core.components.bigquery
 
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 
@@ -17,9 +17,8 @@ class BigQueryFactory {
             BigQueryOptions.getDefaultInstance().service
         } catch (e: Exception) {
             e.printStackTrace()
-            log.error("Unable to create BigQuery client ${e.message}")
+            log.error { "Unable to create BigQuery client ${e.message}" }
             null
         }
     }
-
 }

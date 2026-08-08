@@ -1,29 +1,25 @@
 package space.astro.bot
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLoggingConfiguration
+import net.dv8tion.jda.api.requests.RestAction
+import net.dv8tion.jda.api.utils.messages.MessageRequest.setDefaultUseComponentsV2
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.scheduling.annotation.EnableScheduling
+import space.astro.bot.utils.discord.DefaultFailureConsumer
 
-@EnableScheduling
-@SpringBootApplication(
-    scanBasePackages = [
-        "space.astro.bot",
-        "space.astro.shared.core.configs",
-        "space.astro.shared.core.components.io",
-        "space.astro.shared.core.components.managers",
-        "space.astro.shared.core.components.bigquery",
-        "space.astro.shared.core.components.sentry",
-        "space.astro.shared.core.services.redis",
-        "space.astro.shared.core.components.kmongo",
-        "space.astro.shared.core.daos",
-        "space.astro.shared.core.services",
-        "space.astro.shared.core.services.chargebee",
-        "space.astro.shared.core.services.support"
-    ]
-)
+@SpringBootApplication
 class Application
 
-// rebuiling for new infra
 fun main(args: Array<String>) {
+    KotlinLoggingConfiguration.logStartupMessage = false
+    val log = KotlinLogging.logger { }
+
+    Thread.setDefaultUncaughtExceptionHandler { t, e ->
+        log.error(e) { "Uncaught exception in thread $t" }
+    }
+
+    setDefaultUseComponentsV2(true)
+
     runApplication<Application>(*args)
 }

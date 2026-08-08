@@ -1,16 +1,17 @@
 package space.astro.bot.config
 
+import net.dv8tion.jda.api.entities.Activity
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
+import org.springframework.stereotype.Component
 
-// another test
-@Configuration
+@Component
 @ConfigurationProperties("discord.application")
 class DiscordApplicationConfig {
-    var botId: Long = 715621848489918495
-    var token: String = "token"
-    var activityType = "WATCHING"
-    var activityText = "/help | astro-bot.space"
-    var commandGuilds = emptyList<Long>()
-    var whitelistedGuilds = emptyList<Long>()
+    val applicationId: Long = 715621848489918495
+    val token: String = "token"
+    val activityType = "CUSTOM_STATUS"
+    val activityText = "/help | astro-bot.space"
+
+    fun getActivityType(): Activity.ActivityType = Activity.ActivityType.valueOf(activityType)
 }

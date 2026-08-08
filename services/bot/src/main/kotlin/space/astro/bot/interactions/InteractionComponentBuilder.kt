@@ -1,14 +1,14 @@
 package space.astro.bot.interactions
 
+import net.dv8tion.jda.api.components.buttons.Button
+import net.dv8tion.jda.api.components.buttons.ButtonStyle
+import net.dv8tion.jda.api.components.label.Label
+import net.dv8tion.jda.api.components.selections.EntitySelectMenu
+import net.dv8tion.jda.api.components.selections.SelectOption
+import net.dv8tion.jda.api.components.selections.StringSelectMenu
+import net.dv8tion.jda.api.components.textinput.TextInput
 import net.dv8tion.jda.api.entities.emoji.Emoji
-import net.dv8tion.jda.api.interactions.components.buttons.Button
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
-import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu
-import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu.SelectTarget
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
-import net.dv8tion.jda.api.interactions.components.text.TextInput
-import net.dv8tion.jda.api.interactions.modals.Modal
+import net.dv8tion.jda.api.modals.Modal
 import org.springframework.stereotype.Component
 
 @Component
@@ -69,7 +69,7 @@ class InteractionComponentBuilder {
 
     fun entitySelectMenu(
         id: String,
-        entityTypes: List<SelectTarget>,
+        entityTypes: List<EntitySelectMenu.SelectTarget>,
         placeholder: String? = null,
         rangeMin: Int = 1,
         rangeMax: Int = 1
@@ -87,6 +87,6 @@ class InteractionComponentBuilder {
         title: String,
         textInput: TextInput
     ) = Modal.create(id, title)
-        .addActionRow(textInput)
+        .addComponents(Label.of("", textInput))
         .build()
 }

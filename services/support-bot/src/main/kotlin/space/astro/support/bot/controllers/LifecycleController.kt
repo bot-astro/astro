@@ -1,7 +1,7 @@
 package space.astro.support.bot.controllers
 
 import kotlinx.coroutines.delay
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.http.ResponseEntity

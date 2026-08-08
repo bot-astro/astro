@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.kotlin.convertValue
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryError
 import com.google.cloud.bigquery.InsertAllRequest
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import space.astro.shared.core.configs.BigQueryConfig
 import space.astro.shared.core.models.analytics.AnalyticsEventData
 import space.astro.shared.core.models.analytics.AnalyticsEventType

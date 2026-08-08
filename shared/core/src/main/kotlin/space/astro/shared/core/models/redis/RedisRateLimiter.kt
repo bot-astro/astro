@@ -2,13 +2,21 @@ package space.astro.shared.core.models.redis
 
 import io.lettuce.core.RedisNoScriptException
 import io.lettuce.core.ScriptOutputType
-import io.lettuce.core.cluster.api.reactive.RedisClusterReactiveCommands
+import io.lettuce.core.api.sync.RedisCommands
 import space.astro.shared.core.models.ratelimit.RateLimiter
 import space.astro.shared.core.models.ratelimit.RateLimiterAcquireResult
 import java.time.Duration
 
+/**
+ * Rate limiter based on Redis
+ *
+ * @param commands Redis commands
+ * @param namespace Redis rate limiting namespace
+ * @param defaultMaxPerInterval Default max requests per interval
+ * @param intervalDuration Interval duration
+ */
 class RedisRateLimiter(
-    private val commands: RedisClusterReactiveCommands<String, String>,
+    private val commands: RedisCommands<String, String>,
     private val namespace: String,
     private val defaultMaxPerInterval: Int,
     private val intervalDuration: Duration
@@ -32,7 +40,7 @@ class RedisRateLimiter(
     }
 
     init {
-        scriptHash = commands.scriptLoad(SCRIPT).block()!!
+        scriptHash = commands.scriptLoad(SCRIPT)
     }
 
     override fun tryAcquire(id: String): RateLimiterAcquireResult {
@@ -40,17 +48,13 @@ class RedisRateLimiter(
     }
 
     override fun tryAcquire(id: String, maxPerInterval: Int): RateLimiterAcquireResult {
-        val key = getKey(id)
+        val key = RedisKey.RATELIMIT.key.format(namespace, id)
 
         val keys = arrayOf(key)
         val args = arrayOf(intervalDuration.toMillis().toString())
 
         return try {
-            val result = commands.evalsha<ArrayList<Long>>(scriptHash, ScriptOutputType.MULTI, keys, *args)
-                .collectList()
-                .block()!!
-
-            val data = result[0]
+            val data = commands.evalsha<ArrayList<Long>>(scriptHash, ScriptOutputType.MULTI, keys, *args)
             val incr = data[0]
 
             RateLimiterAcquireResult(
@@ -61,7 +65,7 @@ class RedisRateLimiter(
         } catch (e: RedisNoScriptException) {
             e.printStackTrace()
             // NOTE: recreate script if redis fails to find old one
-            scriptHash = commands.scriptLoad(SCRIPT).block()!!
+            scriptHash = commands.scriptLoad(SCRIPT)
 
             // NOTE: try to prevent outage by releasing rate limit temporarily
             RateLimiterAcquireResult(
@@ -76,9 +80,4 @@ class RedisRateLimiter(
             )
         }
     }
-
-    private fun getKey(key: String): String {
-        return listOf("RATELIMIT", namespace, key).joinToString(":")
-    }
-
 }

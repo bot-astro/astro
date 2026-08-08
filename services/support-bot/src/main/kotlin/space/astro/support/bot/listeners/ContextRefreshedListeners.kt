@@ -1,6 +1,6 @@
 package space.astro.support.bot.listeners
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener

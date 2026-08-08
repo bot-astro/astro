@@ -2,7 +2,7 @@ package space.astro.entitlements.expiration.job
 
 import io.sentry.Sentry
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.ConfigurableApplicationContext

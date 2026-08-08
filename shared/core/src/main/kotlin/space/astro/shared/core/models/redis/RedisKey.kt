@@ -6,6 +6,13 @@ enum class RedisKey(val key: String) {
      */
     GLOBAL_RATELIMIT("GR:%s"),
 
+    /**
+     * Generic key for Redis rate limiting implementation
+     *
+     * Format with: NAMESPACE+KEY
+     */
+    RATELIMIT("RATELIMIT:%s:%s"),
+
     GENERATOR_RATELIMIT_FOR_USER("GENR"),
 
     COMMAND_RATELIMIT_FOR_USER("CMDR"),

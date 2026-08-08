@@ -1,7 +1,7 @@
 package space.astro.support.bot.components.discord
 
 import dev.minn.jda.ktx.jdabuilder.injectKTX
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
