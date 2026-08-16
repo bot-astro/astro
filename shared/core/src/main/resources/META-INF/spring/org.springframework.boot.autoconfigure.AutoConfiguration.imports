@@ -1,1 +1,2 @@
 space.astro.shared.core.autoconfigure.ARedisAutoConfiguration
+space.astro.shared.core.autoconfigure.AMongoDaosAutoConfiguration

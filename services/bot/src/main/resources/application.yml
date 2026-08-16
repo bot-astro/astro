@@ -4,6 +4,7 @@ info:
     description: "The main bot Discord application."
     version: "1.0.0"
 
+
 server:
   port: ${BOT_API_PORT:9000}
 
@@ -29,11 +30,11 @@ management:
         readiness:
           include:
             - readinessState
-            - shardsReadiness
+#            - shardsReadiness
         liveness:
           include:
             - livenessState
-            - shardsLiveness
+#            - shardsLiveness
   prometheus:
     metrics:
       export:
@@ -53,9 +54,12 @@ sentry:
   # We recommend adjusting this value in production.
   traces-sample-rate: 0.05
 
-
 spring:
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/AstroLocal}
   data:
+    mongodb:
+      auto-index-creation: true
     redis:
       client-name: bot
       client-type: lettuce
@@ -63,3 +67,10 @@ spring:
       port: ${REDIS_PORT:6379}
       database: ${REDIS_DATABASE:0}
       password: ${REDIS_PASSWORD:}
+
+discord:
+  application:
+    id: ${DISCORD_APPLICATION_ID:788708323867885568}
+    token: ${DISCORD_APPLICATION_TOKEN:}
+    activity-type: ${DISCORD_APPLICATION_ACTIVITY_TYPE:CUSTOM_STATUS}
+    activity-text: ${DISCORD_APPLICATION_ACTIVITY_TEXT:/help | astro-bot.space}

@@ -30,3 +30,7 @@ jib {
         )
     }
 }
+
+dependencies {
+    implementation("io.netty:netty-resolver-dns-native-macos:4.2.17.Final:osx-aarch_64")
+}

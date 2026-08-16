@@ -2,8 +2,8 @@ package space.astro.bot.utils.discord
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-import space.astro.bot.core.extentions.toConfigurationErrorDto
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
+import space.astro.bot.utils.extensions.toConfigurationErrorDto
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeoutException
 import java.util.function.Consumer

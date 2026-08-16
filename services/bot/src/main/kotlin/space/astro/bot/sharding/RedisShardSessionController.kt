@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.utils.SessionControllerAdapter
 import org.springframework.stereotype.Component
 import space.astro.bot.config.DiscordApplicationConfig
 import space.astro.bot.config.ShardManagerConfig
-import space.astro.shared.core.models.redis.RedisRateLimiter
+import space.astro.shared.core.utils.ratelimit.RedisRateLimiter
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -49,7 +49,7 @@ class RedisShardSessionController(
     override fun appendSession(node: SessionController.SessionConnectNode) {
         val shardId = node.shardInfo.shardId
         val concurrencyBucket: Int = shardId % shardManagerConfig.maxIdentifyConcurrency
-        val key = getBucketIdentifier(discordApplicationConfig.applicationId, concurrencyBucket)
+        val key = getBucketIdentifier(discordApplicationConfig.id, concurrencyBucket)
 
         val future: Future<*> = executor.submit {
             try {

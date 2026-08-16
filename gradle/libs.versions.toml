@@ -13,6 +13,7 @@ kotlinxSerialization = "1.11.0"
 guava = "33.6.0-jre"
 nanoid = "2.0.0"
 datetime = "0.7.1"
+nettyDns = "4.2.17.Final"
 
 # Spring
 springDependencyManagementPlugin = "1.1.7"
@@ -67,20 +68,20 @@ sentry-plugin = { module = "io.sentry.jvm.gradle:io.sentry.jvm.gradle.gradle.plu
 mongo-bom = { module = "org.mongodb:mongodb-driver-bom", version.ref = "mongo" }
 
 # DEPENDENCIES
-# Database
-mongo-driver = { module = "org.mongodb:mongodb-driver-kotlin-coroutine" }
-mongo-bson-kotlinx = { module = "org.mongodb:bson-kotlinx" }
 
 # Core
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 nanoid = { module = "com.aventrix.jnanoid:jnanoid", version.ref = "nanoid" }
 datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
+netty-resolver-dsn = { module = "io.netty:netty-resolver-dns-native-macos", version.ref = "nettyDns"}
 
 # Spring
 spring-core = { module = "org.springframework:spring-core" }
 spring-context = { module = "org.springframework:spring-context" }
 spring-boot = { module = "org.springframework.boot:spring-boot" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
+spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
 spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis"}
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
@@ -88,7 +89,7 @@ spring-boot-configuration-processor = { module = "org.springframework.boot:sprin
 
 # Logging and monitoring
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
-logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logback = { module = "ch.qos.logback:logback-classic" }
 sentry = { module = "io.sentry:sentry-spring-boot-starter", version.ref = "sentry" }
 
 # Serialization
@@ -122,8 +123,8 @@ junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "ju
 
 [bundles]
 service-core=[
+    "netty-resolver-dsn",
     "spring-boot-starter",
-    "spring-boot-starter-webflux",
     "spring-boot-starter-actuator"
 ]
 coroutines=[
@@ -138,6 +139,6 @@ cache=[
     "spring-boot-starter-data-redis"
 ]
 db=[
-    "mongo-driver",
-    "mongo-bson-kotlinx"
+    "kotlin-reflect",
+    "spring-boot-starter-data-mongodb"
 ]

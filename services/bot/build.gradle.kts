@@ -9,6 +9,7 @@ dependencies {
 
     implementation(libs.bundles.service.core)
     implementation(libs.bundles.logging)
+    implementation(libs.bundles.db)
     implementation(libs.bundles.cache)
 
     implementation(libs.jda) {

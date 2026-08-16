@@ -1,4 +1,4 @@
-name: "astro-dev-env"
+name: "astro-local-env"
 
 services:
   mongo:

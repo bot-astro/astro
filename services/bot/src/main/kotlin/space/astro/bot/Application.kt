@@ -5,10 +5,12 @@ import io.github.oshai.kotlinlogging.KotlinLoggingConfiguration
 import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.utils.messages.MessageRequest.setDefaultUseComponentsV2
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 import space.astro.bot.utils.discord.DefaultFailureConsumer
 
 @SpringBootApplication
+@ConfigurationPropertiesScan(basePackages = ["space.astro.bot.config"])
 class Application
 
 fun main(args: Array<String>) {

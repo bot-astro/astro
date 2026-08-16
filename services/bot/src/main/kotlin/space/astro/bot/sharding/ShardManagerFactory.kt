@@ -27,7 +27,6 @@ class ShardManagerFactory(
     private val discordApplicationConfig: DiscordApplicationConfig,
     private val jdaToSpringEventBridge: JdaToSpringEventBridge,
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
-    private val redisCommands: RedisCommands<String, String>,
 ) {
 
     private val intents = listOf(

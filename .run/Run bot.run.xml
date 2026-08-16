@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run bot" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <option name="envFilePaths">
-      <option value="$PROJECT_DIR$/env/bot/dev.env" />
+      <option value="$PROJECT_DIR$/env/bot/local.env" />
     </option>
     <module name="astro.services.bot.main" />
     <selectedOptions>
