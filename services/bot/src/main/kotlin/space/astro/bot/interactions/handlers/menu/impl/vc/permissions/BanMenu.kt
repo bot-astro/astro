@@ -46,6 +46,14 @@ class BanMenu(
             roles = roles
         )
 
+        if (banned.isEmpty()) {
+            ctx.replyHandler.replyEmbed(
+                Embeds.error("No users or roles were banned," +
+                    " this may be because they involve a role which is immune to this command!")
+            )
+            return
+        }
+
         ctx.replyHandler.replyEmbed(
             Embeds.default(
             "The following users and roles have been banned from your voice channel:" +

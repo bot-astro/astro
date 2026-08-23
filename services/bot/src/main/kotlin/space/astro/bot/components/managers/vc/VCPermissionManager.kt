@@ -267,10 +267,10 @@ class VCPermissionManager(
                     0,
                     Permission.VOICE_CONNECT.rawValue
                 )
-            }
 
-            if (member.voiceState!!.channel?.id == vcOperationCTX.temporaryVC.id) {
-                membersToKick.add(member)
+                if (member.voiceState!!.channel?.id == vcOperationCTX.temporaryVC.id) {
+                    membersToKick.add(member)
+                }
             }
         }
 
