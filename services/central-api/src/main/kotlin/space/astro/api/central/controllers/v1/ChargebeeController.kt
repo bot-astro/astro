@@ -1,13 +1,6 @@
-package space.astro.api.central.controllers
+package space.astro.api.central.controllers.v1
 
-import com.chargebee.Result
-import com.chargebee.models.HostedPage
-import com.chargebee.models.Subscription
-import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.responses.ApiResponses
-import io.swagger.v3.oas.annotations.tags.Tag
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import com.chargebee.v4.models.hostedPage.params.HostedPageCheckoutNewForItemsParams
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -16,52 +9,29 @@ import space.astro.api.central.models.chargebee.*
 import space.astro.api.central.services.discord.DiscordUserService
 import space.astro.api.central.util.getAccessToken
 import space.astro.api.central.util.getUserID
-import space.astro.shared.core.components.web.CentralApiRoutes
-import space.astro.shared.core.configs.PremiumFeaturesConfig
-import space.astro.shared.core.daos.GuildDao
-import space.astro.shared.core.daos.UserDao
-import space.astro.shared.core.models.database.GuildUpgradeData
-import space.astro.shared.core.services.chargebee.ChargebeeClientService
-import space.astro.shared.core.services.support.SupportBotApiService
-import space.astro.shared.core.util.exceptions.NotFoundException
+import space.astro.shared.core.clients.ChargebeeClientHelper
+import space.astro.shared.core.config.PremiumConfig
+import tools.jackson.databind.ObjectMapper
+import kotlin.collections.iterator
 
 
 private val log = KotlinLogging.logger { }
 
 @RestController
-@Tag(
-    name = "chargebee",
-    description = "handling of all chargebee webhooks"
-)
 class ChargebeeController(
-    val chargebeeClientService: ChargebeeClientService,
-    val guildDao: GuildDao,
-    val userDao: UserDao,
-    val supportBotApiService: SupportBotApiService,
-    val coroutineScope: CoroutineScope,
+    private val chargebeeClientHelper: ChargebeeClientHelper,
     private val discordUserService: DiscordUserService,
-    private val premiumFeaturesConfig: PremiumFeaturesConfig
+    private val premiumConfig: PremiumConfig,
+    private val objectMapper: ObjectMapper,
 ) {
-    @GetMapping(CentralApiRoutes.Chargebee.PORTAL_SESSION)
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "200",
-                description = "portal session created, access url is contained in the response body"
-            ),
-        ApiResponse(
-            responseCode = "400",
-            description = "portal session couldn't be created with the provided user ID"
-        )
-        ]
-    )
+    @GetMapping(Routes.Chargebee.PORTAL_SESSION)
     suspend fun createPortalSession(
         exchange: ServerWebExchange
     ): ResponseEntity<*> {
         val userID = exchange.getUserID()
         log.info { "creating Chargebee portal session for user $userID" }
 
-        val accessUrl = chargebeeClientService.createPortalSession(userID)
+        val accessUrl = chargebeeClientHelper.createPortalSession(userID)
 
         return if (accessUrl != null)
             ResponseEntity.ok(accessUrl)
@@ -71,7 +41,7 @@ class ChargebeeController(
         }
     }
 
-    @PostMapping(CentralApiRoutes.Chargebee.CHECKOUT)
+    @PostMapping(Routes.Chargebee.CHECKOUT)
     suspend fun createCheckout(
         @RequestBody checkoutBody: CheckoutBody,
         exchange: ServerWebExchange
@@ -79,19 +49,33 @@ class ChargebeeController(
         val userID = exchange.getUserID()
         val userEmail = discordUserService.fetchSelfUser(exchange.getAccessToken()).email
 
-        val result: Result = HostedPage.checkoutNewForItems()
-            .customerId(userID)
-            .customerEmail(userEmail)
-            .subscriptionItemItemPriceId(0, if (checkoutBody.monthly) premiumFeaturesConfig.monthlyPlanId else premiumFeaturesConfig.yearlyPlanId)
-            .subscriptionItemQuantity(0, checkoutBody.quantity)
-            .request()
 
-        val hostedPage: HostedPage = result.hostedPage()
+        val chargebeeRes = chargebeeClientHelper.client.hostedPages().checkoutNewForItems(
+            HostedPageCheckoutNewForItemsParams.builder()
+                .customer(HostedPageCheckoutNewForItemsParams.CustomerParams.builder()
+                    .id(userID)
+                    .email(userEmail)
+                    .build()
+                )
+                .subscriptionItems(listOf(
+                    HostedPageCheckoutNewForItemsParams.SubscriptionItemsParams.builder()
+                        .itemPriceId(if (checkoutBody.monthly) premiumConfig.monthlyPlanId else premiumConfig.yearlyPlanId)
+                        .quantity(checkoutBody.quantity)
+                        .build()
+                    )
+                )
+                .build()
+        )
 
-        return ResponseEntity.ok(hostedPage.jsonObj.toString())
+        val hostedPageJson = objectMapper
+            .readTree(chargebeeRes.responsePayload())
+            .get("hosted_page")
+            .toString()
+
+        return ResponseEntity.ok(hostedPageJson)
     }
 
-    @GetMapping(CentralApiRoutes.Chargebee.USER_ACTIVE_SUBSCRIPTIONS)
+    @GetMapping(Routes.Chargebee.USER_ACTIVE_SUBSCRIPTIONS)
     suspend fun getUserActiveSubscriptions(
         @PathVariable userID: String,
         exchange: ServerWebExchange
@@ -126,7 +110,7 @@ class ChargebeeController(
         return ResponseEntity.ok(subscriptionsInfo)
     }
 
-    @GetMapping(CentralApiRoutes.Chargebee.LOGGED_USER_ACTIVE_SUBSCRIPTIONS)
+    @GetMapping(Routes.Chargebee.LOGGED_USER_ACTIVE_SUBSCRIPTIONS)
     suspend fun getLoggedUserActiveSubscriptions(
         exchange: ServerWebExchange
     ): ResponseEntity<*> {
@@ -160,7 +144,7 @@ class ChargebeeController(
         return ResponseEntity.ok(subscriptionsInfo)
     }
 
-    @PostMapping(CentralApiRoutes.Chargebee.EVENT_SUB_CREATE)
+    @PostMapping(Routes.Chargebee.EVENT_SUB_CREATE)
     @ApiResponses(
         value = [
             ApiResponse(
@@ -187,7 +171,7 @@ class ChargebeeController(
         return ResponseEntity.noContent().build<Any>()
     }
 
-    @PostMapping(CentralApiRoutes.Chargebee.EVENT_SUB_CANCEL)
+    @PostMapping(Routes.Chargebee.EVENT_SUB_CANCEL)
     @ApiResponses(
         value = [
             ApiResponse(

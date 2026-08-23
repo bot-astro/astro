@@ -9,7 +9,7 @@ import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.WebFilter
 import org.springframework.web.server.WebFilterChain
 import reactor.core.publisher.Mono
-import space.astro.api.central.configs.CentralApiConfig
+import space.astro.api.central.config.CentralApiConfig
 import space.astro.api.central.services.dashboard.WebSessionService
 import space.astro.api.central.services.discord.DiscordUserTokenFetchService
 import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService

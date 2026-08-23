@@ -9,7 +9,7 @@ import io.jsonwebtoken.security.Keys
 import io.lettuce.core.GetExArgs
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands
 import org.springframework.stereotype.Service
-import space.astro.api.central.configs.JwtConfig
+import space.astro.api.central.config.JwtConfig
 import space.astro.shared.core.models.redis.RedisKey
 import java.time.Duration
 import java.time.Instant

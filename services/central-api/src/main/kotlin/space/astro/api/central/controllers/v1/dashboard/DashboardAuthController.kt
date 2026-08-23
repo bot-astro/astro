@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
-import space.astro.api.central.configs.CentralApiConfig
+import space.astro.api.central.config.CentralApiConfig
 import space.astro.api.central.models.discord.OAuth2AuthorizationResponseDto
 import space.astro.api.central.models.discord.OAuth2GuildInfo
 import space.astro.api.central.services.dashboard.DashboardGuildsPersistenceService

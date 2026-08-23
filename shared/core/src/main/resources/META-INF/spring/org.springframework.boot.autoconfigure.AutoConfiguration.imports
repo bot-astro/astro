@@ -1,2 +1,3 @@
 space.astro.shared.core.autoconfigure.ARedisAutoConfiguration
 space.astro.shared.core.autoconfigure.AMongoDaosAutoConfiguration
+space.astro.shared.core.autoconfigure.AChargebeeClientHelper

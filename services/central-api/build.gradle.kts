@@ -5,34 +5,41 @@ plugins {
 }
 
 dependencies {
-    // Generalized dependency bundles
-    implementation(libs.bundles.base)
+    implementation(project(":shared:core"))
+
+    implementation(libs.bundles.service.core)
     implementation(libs.bundles.web)
     implementation(libs.bundles.serialization)
-    implementation(libs.bundles.coroutines)
-    implementation(libs.bundles.jwt)
-    implementation(libs.bundles.caching)
+    implementation(libs.bundles.logging)
+    implementation(libs.bundles.db)
+    implementation(libs.bundles.cache)
 
-    // Discord
-    implementation(libs.jda)
-
-    // Database
-    implementation(libs.mongo)
+    implementation(libs.jda) {
+        exclude(
+            group = "club.minnced",
+            module = "opus-java"
+        )
+    }
     implementation(libs.nanoid)
-
     implementation(libs.chargebee)
 
-    // Project
-    implementation(project(":shared:core"))
-}
-
-sentry {
-    // Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
-    // This enables source context, allowing you to see your source
-    // code as part of your stack traces in Sentry.
-    includeSourceContext = true
-
-    org = "bot-astro"
-    projectName = "central-api"
-    authToken = System.getenv("SENTRY_AUTH_TOKEN")
+    // Generalized dependency bundles
+//    implementation(libs.bundles.base)
+//    implementation(libs.bundles.web)
+//    implementation(libs.bundles.serialization)
+//    implementation(libs.bundles.coroutines)
+//    implementation(libs.bundles.jwt)
+//    implementation(libs.bundles.caching)
+//
+//    // Discord
+//    implementation(libs.jda)
+//
+//    // Database
+//    implementation(libs.mongo)
+//    implementation(libs.nanoid)
+//
+//    implementation(libs.chargebee)
+//
+//    // Project
+//    implementation(project(":shared:core"))
 }

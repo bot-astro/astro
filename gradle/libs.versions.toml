@@ -29,7 +29,6 @@ logback = "1.6.1"
 mongo = "5.9.1"
 
 # Serialization
-jackson-kotlin = "2.22.1"
 jackson-date = "2.22.1"
 
 # Concurrency
@@ -83,7 +82,7 @@ spring-boot = { module = "org.springframework.boot:spring-boot" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
 spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
 spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis"}
-spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 
@@ -93,9 +92,7 @@ logback = { module = "ch.qos.logback:logback-classic" }
 sentry = { module = "io.sentry:sentry-spring-boot-starter", version.ref = "sentry" }
 
 # Serialization
-jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-kotlin" }
-jackson-date = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson-date" }
-kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+jackson-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
 
 # Concurrency
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -127,6 +124,9 @@ service-core=[
     "spring-boot-starter",
     "spring-boot-starter-actuator"
 ]
+serialization=[
+    "jackson-kotlin"
+]
 coroutines=[
     "coroutines-core",
     "coroutines-reactor"
@@ -141,4 +141,7 @@ cache=[
 db=[
     "kotlin-reflect",
     "spring-boot-starter-data-mongodb"
+]
+web=[
+    "spring-boot-starter-webmvc"
 ]

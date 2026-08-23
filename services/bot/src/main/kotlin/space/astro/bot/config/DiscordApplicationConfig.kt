@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.bind.ConstructorBinding
 
 @ConfigurationProperties("discord.application")
-class DiscordApplicationConfig @ConstructorBinding constructor(
+data class DiscordApplicationConfig(
     val id: Long,
     val token: String,
     val activityType: String,

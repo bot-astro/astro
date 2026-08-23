@@ -1,4 +1,4 @@
-package space.astro.api.central.configs
+package space.astro.api.central.config
 
 import io.jsonwebtoken.io.Decoders
 import org.springframework.boot.context.properties.ConfigurationProperties

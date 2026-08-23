@@ -1,8 +1,8 @@
 package space.astro.api.central.services.bot
 
 import org.springframework.stereotype.Service
-import space.astro.api.central.configs.BotEndpointConfig
-import space.astro.api.central.configs.BotShardConfig
+import space.astro.api.central.config.BotEndpointConfig
+import space.astro.api.central.config.BotShardConfig
 
 @Service
 class PodMetaCalculatorService(

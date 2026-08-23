@@ -1,4 +1,4 @@
-package space.astro.api.central.configs
+package space.astro.api.central.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration

@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
-import space.astro.api.central.configs.DiscordApplicationConfig
+import space.astro.api.central.config.DiscordApplicationConfig
 import space.astro.api.central.models.AuthUserAndAccessTokenWrapperDto
 import space.astro.api.central.models.discord.TokenPayloadWithOptionalGuildDto
 import space.astro.shared.core.configs.DiscordConfig

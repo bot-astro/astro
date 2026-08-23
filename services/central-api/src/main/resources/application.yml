@@ -47,3 +47,18 @@ sentry:
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
   traces-sample-rate: 0.05
+
+
+chargebee:
+  api-key: ${CHARGEBEE_API_KEY:}
+  site-name: ${CHARGEBEE_SITE_NAME:bot-astro}
+  server-premium-plan-id: ${CHARGEBEE_SERVER_PREMIUM_PLAN_ID:Server-Premium}
+
+discord:
+  api:
+    base-url: ${DISCORD_API_BASE_URL:https://discord.com/api/v10}
+
+premium:
+  server-sku-id: ${PREMIUM_SERVER_SKU_ID:1096107722115661934}
+  monthly-plan-id: ${PREMIUM_MONTHLY_PLAN_ID:Server-Premium-USD-Monthly}
+  yearly-plan-id: ${PREMIUM_YEARLY_PLAN_ID:Server-Premium-USD-Yearly}
