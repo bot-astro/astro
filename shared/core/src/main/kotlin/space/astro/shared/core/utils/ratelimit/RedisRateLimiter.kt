@@ -47,7 +47,7 @@ class RedisRateLimiter(
     }
 
     override fun tryAcquire(id: String, maxPerInterval: Int): RateLimiterAcquireResult {
-        val key = RedisKey.RATELIMIT.key.format(namespace, id)
+        val key = RedisKey.RATE_LIMIT(namespace, id)
 
         val keys = arrayOf(key)
         val args = arrayOf(intervalDuration.toMillis().toString())

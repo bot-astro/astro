@@ -21,7 +21,7 @@ class DefaultFailureConsumer(
 
         if (t is InsufficientPermissionException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                configurationErrorData = t.toConfigurationErrorDto(t.guildId.toString())
+                configurationErrorEntity = t.toConfigurationErrorDto(t.guildId.toString())
             )
             return
         }

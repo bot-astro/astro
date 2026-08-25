@@ -1,0 +1,14 @@
+name: central-api
+namespace: astro-staging
+image:
+  group: ghcr.io/your-org
+  name: central-api
+  tag: latest
+config: central-api-config
+replicas: 1
+port: 9001
+auth: Fill with same value as you used for KUBE_LIFECYCLE_AUTHORIZATION in .env files
+resources:
+  requests:
+    cpu: 100m
+    memory: 500Mi

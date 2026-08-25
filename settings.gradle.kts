@@ -19,7 +19,7 @@ plugins {
 include(
     // standalone
     "services:bot",
-    "services:central-api",
+    "services:api-central",
 //    "services:support-bot",
 //    "services:entitlements-expiration-job",
     // shared

@@ -18,6 +18,8 @@ nettyDns = "4.2.17.Final"
 # Spring
 springDependencyManagementPlugin = "1.1.7"
 springBootPlugin = "4.1.0"
+springdoc = "3.1.0"
+scalarWebMvc = "0.6.65"
 
 # Logging and monitoring
 sentryPlugin = "6.14.0"
@@ -38,8 +40,6 @@ coroutines = "1.10.2"
 jjwt = "0.13.0"
 
 # Caching
-# TODO: replace with Jedis
-caffeine = "3.2.4"
 lettuce = "7.6.0.RELEASE"
 
 # Integrations
@@ -82,9 +82,13 @@ spring-boot = { module = "org.springframework.boot:spring-boot" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
 spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
 spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis"}
+spring-boot-starter-restclient = { module = "org.springframework.boot:spring-boot-starter-restclient" }
 spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
+springdoc-openapi-starter-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdoc" }
+scalar-webmvc = { module = "com.scalar.maven:scalar-webmvc", version.ref = "scalarWebMvc"}
 
 # Logging and monitoring
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
@@ -104,7 +108,6 @@ jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
 # Caching
-caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
 
 # Integrations
@@ -143,5 +146,11 @@ db=[
     "spring-boot-starter-data-mongodb"
 ]
 web=[
-    "spring-boot-starter-webmvc"
+    "spring-boot-starter-webmvc",
+    "spring-boot-starter-security",
+    "jjwt-api",
+    "jjwt-impl",
+    "jjwt-jackson",
+    "springdoc-openapi-starter-webmvc-api",
+    "scalar-webmvc"
 ]

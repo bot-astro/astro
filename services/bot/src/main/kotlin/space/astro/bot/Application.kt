@@ -6,11 +6,14 @@ import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.utils.messages.MessageRequest.setDefaultUseComponentsV2
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import space.astro.bot.utils.discord.DefaultFailureConsumer
+import space.astro.shared.core.properties.ShardManagerConfig
 
 @SpringBootApplication
-@ConfigurationPropertiesScan(basePackages = ["space.astro.bot.config"])
+@ConfigurationPropertiesScan
+@EnableConfigurationProperties(ShardManagerConfig::class)
 class Application
 
 fun main(args: Array<String>) {

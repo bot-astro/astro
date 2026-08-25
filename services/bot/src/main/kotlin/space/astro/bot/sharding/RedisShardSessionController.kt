@@ -4,8 +4,8 @@ import io.lettuce.core.api.sync.RedisCommands
 import net.dv8tion.jda.api.utils.SessionController
 import net.dv8tion.jda.api.utils.SessionControllerAdapter
 import org.springframework.stereotype.Component
-import space.astro.bot.config.DiscordApplicationConfig
-import space.astro.bot.config.ShardManagerConfig
+import space.astro.bot.properties.DiscordApplicationProperties
+import space.astro.shared.core.properties.ShardManagerConfig
 import space.astro.shared.core.utils.ratelimit.RedisRateLimiter
 import java.time.Duration
 import java.util.concurrent.Executors
@@ -18,7 +18,7 @@ import java.util.concurrent.Future
  */
 @Component
 class RedisShardSessionController(
-    private val discordApplicationConfig: DiscordApplicationConfig,
+    private val discordApplicationProperties: DiscordApplicationProperties,
     private val shardManagerConfig: ShardManagerConfig,
     redisCommands: RedisCommands<String, String>,
 ) : SessionControllerAdapter() {
@@ -49,7 +49,7 @@ class RedisShardSessionController(
     override fun appendSession(node: SessionController.SessionConnectNode) {
         val shardId = node.shardInfo.shardId
         val concurrencyBucket: Int = shardId % shardManagerConfig.maxIdentifyConcurrency
-        val key = getBucketIdentifier(discordApplicationConfig.id, concurrencyBucket)
+        val key = getBucketIdentifier(discordApplicationProperties.id, concurrencyBucket)
 
         val future: Future<*> = executor.submit {
             try {

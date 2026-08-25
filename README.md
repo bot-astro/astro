@@ -73,14 +73,14 @@ Regarding interactions, like slash commands, buttons, menus and modal, their log
 - `InteractionContext`: groups together everything needed by any type of interaction to run, has subclasses for interaction categories
 
 It includes a small REST api for retrieving roles and channels that the dashboard needs to present the user with.  
-The dashboard doesn't directly query the bot service, but instead queries `central-api` which in turn queries the bot service.  
+The dashboard doesn't directly query the bot service, but instead queries `central-api-old` which in turn queries the bot service.  
 
 It interacts with:
 - BigQuery: for storing statistics about the bot usage
 - MongoDB: storage for user / guild settings
 - Redis: volatile cache and storage for temporary voice channels data
 
-#### `central-api`
+#### `central-api-old`
 A REST api for the bot, it's used by the dashboard to retrieve settings and data from the bot database.  
 The dashboard requests the list of roles and channels of a given guild, and to respond to this, this API queries the `bot` service api.  
 Since they are both running on k8s and the bot is sharded and divided in pods, the central api needs to calculate the correct pod to send the request to.  
@@ -153,7 +153,7 @@ While for production, you should use the JSON key.
 ### Running the application
 1) Run Docker compose
     ```shell
-    docker compose -f docker/docker-compose-local.yml up -d
+    docker compose -f docker/docker-compose-dev.yml up -d
     ```
 2) Create the development `dev.env` files  
     The `/env` folder contains a `.env.template` file for each service + 1 common `.env.template` shared by all services.  

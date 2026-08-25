@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import space.astro.shared.core.clients.ChargebeeClientHelper
-import space.astro.shared.core.config.ChargebeeClientConfig
+import space.astro.shared.core.properties.ChargebeeClientProperties
 
 @AutoConfiguration
-@EnableConfigurationProperties(ChargebeeClientConfig::class)
+@EnableConfigurationProperties(ChargebeeClientProperties::class)
 @ConditionalOnProperty(
     prefix = "chargebee",
     name = ["enabled"],
@@ -20,6 +20,6 @@ class AChargebeeClientHelper {
     @Bean
     @ConditionalOnMissingBean
     fun chargebeeClientHelper(
-        config: ChargebeeClientConfig
+        config: ChargebeeClientProperties
     ) = ChargebeeClientHelper(config)
 }

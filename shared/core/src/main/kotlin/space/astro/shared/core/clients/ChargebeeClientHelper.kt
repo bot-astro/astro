@@ -6,10 +6,10 @@ import com.chargebee.v4.models.portalSession.params.PortalSessionCreateParams
 import com.chargebee.v4.models.subscription.Subscription
 import com.chargebee.v4.models.subscription.params.SubscriptionListParams
 import com.chargebee.v4.models.subscription.responses.SubscriptionListResponse
-import space.astro.shared.core.config.ChargebeeClientConfig
+import space.astro.shared.core.properties.ChargebeeClientProperties
 
 class ChargebeeClientHelper(
-    private val config: ChargebeeClientConfig
+    private val config: ChargebeeClientProperties
 ) {
     val client: ChargebeeClient = ChargebeeClient.builder()
         .apiKey(config.apiKey)
@@ -47,7 +47,7 @@ class ChargebeeClientHelper(
     }
 
     /**
-     * Fetches all user subscriptions for [ChargebeeClientConfig.serverPremiumPlanId]
+     * Fetches all user subscriptions for [ChargebeeClientProperties.serverUltimatePlanId]
      *
      * @param userID
      *
@@ -57,14 +57,14 @@ class ChargebeeClientHelper(
         val res = client.subscriptions().list(
             SubscriptionListParams.builder()
                 .customerId().`is`(userID)
-                .itemPriceId().startsWith(config.serverPremiumPlanId)
+                .itemPriceId().startsWith(config.serverUltimatePlanId)
                 .build()
         )
         return res.list
     }
 
     /**
-     * Fetches all active user subscriptions for [ChargebeeClientConfig.serverPremiumPlanId]
+     * Fetches all active user subscriptions for [ChargebeeClientProperties.serverUltimatePlanId]
      *
      * @param userID
      *

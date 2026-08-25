@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run central api" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <option name="envFilePaths">
-      <option value="$PROJECT_DIR$/env/central-api/dev.env" />
+      <option value="$PROJECT_DIR$/.env" />
     </option>
-    <module name="astro.services.central-api.main" />
+    <module name="astro.services.api-central.main" />
     <selectedOptions>
       <option name="environmentVariables" />
     </selectedOptions>

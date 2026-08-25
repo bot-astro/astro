@@ -14,6 +14,7 @@ dependencies {
     implementation(libs.bigquery)
     implementation(libs.spring.core)
     implementation(libs.spring.context)
+    implementation(libs.spring.boot.starter.restclient)
 
     implementation(libs.chargebee)
 //    implementation(libs.bundles.base)

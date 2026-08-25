@@ -1,0 +1,90 @@
+info:
+  app:
+    name: "Central API"
+    description: "Main REST API for Astro"
+
+logging:
+  level:
+    root: ${CA__LOG_LEVEL}
+
+server:
+  port: ${CA__PORT}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+          - prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include:
+            - readinessState
+        liveness:
+          include:
+            - livenessState
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+
+springdoc:
+  api-docs:
+    path: /docs/openapi.json
+
+scalar:
+  enabled: true
+  url: /docs/openapi.json
+  path: /docs
+  page-title: "Astro API Reference"
+
+
+sentry:
+  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.sentry.io/4506708023967744
+  # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
+  # We recommend adjusting this value in production.
+  traces-sample-rate: 0.05
+
+
+#####################
+# CUSTOM PROPERTIES #
+#####################
+
+### SHARED ###
+
+chargebee:
+  enabled: true
+  site-name: ${CHARGEBEE_SITE_NAME}
+  api-key: ${CHARGEBEE_API_KEY}
+  server-ultimate-plan-id: ${CHARGEBEE_SERVER_PREMIUM_PLAN_ID}
+
+discord:
+  api:
+    base-url: ${DISCORD_API_BASE_URL}
+    enabled: true
+  oauth:
+    id: ${DISCORD_OAUTH_ID}
+    secret: ${DISCORD_OAUTH_SECRET}
+    redirect-uri: ${DISCORD_OAUTH_REDIRECT_URI}
+
+
+### SERVICE SPECIFIC ###
+
+central:
+  api:
+    auth: ${CA__AUTH:}
+    session-cookie-name: ${CA__SESSION_COOKIE_NAME}
+    session-cookie-allow-origin: ${CA__SESSION_COOKIE_ALLOW_ORIGIN}
+    session-cookie-domain: ${CA__SESSION_COOKIE_DOMAIN}
+    session-cookie-secure: ${CA__SESSION_COOKIE_SECURE}
+    session-cookie-same-site: ${CA__SESSION_COOKIE_SAME_SITE}
+    cors-allowed-headers: ${CA__CORS_ALLOWED_HEADERS}
+    cors-allowed-methods: ${CA__CORS_ALLOWED_METHODS}

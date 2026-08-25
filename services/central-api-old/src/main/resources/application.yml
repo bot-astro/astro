@@ -1,0 +1,75 @@
+info:
+  app:
+    name: "Central API"
+    description: "A fast and reliable Central API application to manage data for the web."
+    version: "1.0.0"
+
+server:
+  port: ${CENTRAL_API_API_PORT:9001}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+          - prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include:
+            - readinessState
+        liveness:
+          include:
+            - livenessState
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+##############
+### SHARED ###
+##############
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+
+
+sentry:
+  dsn: https://57acc0d723f47fa990648188825a43bb@o4506708022263808.ingest.sentry.io/4506708031963136
+  # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
+  # We recommend adjusting this value in production.
+  traces-sample-rate: 0.05
+
+
+chargebee:
+  api-key: ${CHARGEBEE_API_KEY:}
+  site-name: ${CHARGEBEE_SITE_NAME:bot-astro}
+  server-premium-plan-id: ${CHARGEBEE_SERVER_PREMIUM_PLAN_ID:Server-Premium}
+
+discord:
+  api:
+    base-url: ${DISCORD_API_BASE_URL:https://discord.com/api/v10}
+    enabled: true
+
+premium:
+  server-sku-id: ${PREMIUM_SERVER_SKU_ID:1096107722115661934}
+  monthly-plan-id: ${PREMIUM_MONTHLY_PLAN_ID:Server-Premium-USD-Monthly}
+  yearly-plan-id: ${PREMIUM_YEARLY_PLAN_ID:Server-Premium-USD-Yearly}
+
+springdoc:
+  api-docs:
+    path: /docs/openapi.json
+
+scalar:
+  enabled: true
+  url: /docs/openapi.json
+  path: /docs
+  page-title: "Astro API Reference"
