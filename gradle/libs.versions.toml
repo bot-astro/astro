@@ -19,7 +19,6 @@ nettyDns = "4.2.17.Final"
 springDependencyManagementPlugin = "1.1.7"
 springBootPlugin = "4.1.0"
 springdoc = "3.1.0"
-scalarWebMvc = "0.6.65"
 
 # Logging and monitoring
 sentryPlugin = "6.14.0"
@@ -87,8 +86,7 @@ spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-st
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
-springdoc-openapi-starter-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdoc" }
-scalar-webmvc = { module = "com.scalar.maven:scalar-webmvc", version.ref = "scalarWebMvc"}
+springdoc-openapi-starter-webmvc-scalar = { module = "org.springdoc:springdoc-openapi-starter-webmvc-scalar", version.ref = "springdoc" }
 
 # Logging and monitoring
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
@@ -148,9 +146,8 @@ db=[
 web=[
     "spring-boot-starter-webmvc",
     "spring-boot-starter-security",
+    "springdoc-openapi-starter-webmvc-scalar",
     "jjwt-api",
     "jjwt-impl",
-    "jjwt-jackson",
-    "springdoc-openapi-starter-webmvc-api",
-    "scalar-webmvc"
+    "jjwt-jackson"
 ]

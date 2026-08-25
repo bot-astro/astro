@@ -1,5 +1,8 @@
 package space.astro.api.central.controllers
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -8,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import space.astro.api.central.components.OpenApiConfiguration
 import space.astro.api.central.models.auth.AuthSession
 import space.astro.api.central.models.responses.LoginResponse
 import space.astro.api.central.services.dashboard.AuthSessionService
@@ -17,6 +21,7 @@ import space.astro.shared.core.properties.DiscordOAuthProperties
 
 @RestController
 @RequestMapping("/v2/auth")
+@Tag(name = "Authentication")
 class AuthController(
     private val discordApiClient: DiscordApiClient,
     private val discordOAuthProperties: DiscordOAuthProperties,
@@ -24,7 +29,12 @@ class AuthController(
     private val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService
 ) {
 
-    @GetMapping("/login")
+    @Operation(
+        summary = "Login via Discord",
+        description = "Login via Discord and get a session cookie",
+        operationId = "loginViaDiscord"
+    )
+    @PostMapping("/login")
     fun loginViaDiscord(@RequestParam code: String): ResponseEntity<LoginResponse> {
         // TODO: Store the token via DiscordUserTokenPersistanceService?
         val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
@@ -43,12 +53,21 @@ class AuthController(
             set(HttpHeaders.SET_COOKIE, cookie.toString())
         }
 
+        if (true)
+            return ResponseEntity.badRequest().build()
+
         return ResponseEntity.ok()
             .headers(headers)
             .body(response)
     }
 
 
+    @Operation(
+        summary = "Logout",
+        description = "Logout and delete the session cookie",
+        operationId = "logout",
+        security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)]
+    )
     @PostMapping("/logout")
     fun logout(
         @AuthenticationPrincipal authSession: AuthSession

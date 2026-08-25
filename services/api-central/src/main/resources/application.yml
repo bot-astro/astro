@@ -10,6 +10,7 @@ logging:
 server:
   port: ${CA__PORT}
 
+
 management:
   endpoints:
     web:
@@ -45,6 +46,7 @@ scalar:
   url: /docs/openapi.json
   path: /docs
   page-title: "Astro API Reference"
+  operation-sorter: method
 
 
 sentry:
