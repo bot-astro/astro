@@ -1,4 +1,4 @@
-package space.astro.api.central.services.dashboard
+package space.astro.api.central.services
 
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.http.ResponseCookie
@@ -60,7 +60,7 @@ class AuthSessionService(
             centralApiProperties.sessionCookieName,
             "${authSession.userId}:${authSession.sessionId}"
         )
-            .maxAge(AuthSessionService.SESSION_TTL)
+            .maxAge(SESSION_TTL)
             .httpOnly(true)
             .secure(centralApiProperties.sessionCookieSecure)
             .sameSite(centralApiProperties.sessionCookieSameSite)

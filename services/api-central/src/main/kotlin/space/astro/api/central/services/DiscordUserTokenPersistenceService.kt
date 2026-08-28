@@ -1,4 +1,4 @@
-package space.astro.api.central.services.discord
+package space.astro.api.central.services
 
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service

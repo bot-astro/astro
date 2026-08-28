@@ -4,7 +4,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 
 class AuthContext(
-    private val sessionData: AuthSession,
+    private val authPrincipal: AuthPrincipal,
     private val authorities: Collection<GrantedAuthority>
 ) : Authentication {
 
@@ -14,11 +14,11 @@ class AuthContext(
 
     override fun getDetails(): Any? = null
 
-    override fun getPrincipal(): AuthSession = sessionData
+    override fun getPrincipal(): AuthPrincipal = authPrincipal
 
     override fun isAuthenticated(): Boolean = true
 
     override fun setAuthenticated(isAuthenticated: Boolean) {}
 
-    override fun getName(): String = "User ${sessionData.userId}"
+    override fun getName(): String = "User ${authPrincipal.userId}"
 }

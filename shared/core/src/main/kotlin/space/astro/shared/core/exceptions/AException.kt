@@ -26,3 +26,23 @@ class ABadRequestException(
     message = message,
     cause = cause
 )
+
+class AUnauthorizedException(
+    message: String,
+    cause: Throwable? = null
+): AException(
+    httpStatusCode = 401,
+    errorCode = AErrorCode.UNAUTHORIZED,
+    message = message,
+    cause = cause
+)
+
+class ANotFoundException(
+    message: String,
+    cause: Throwable? = null
+): AException(
+    httpStatusCode = 404,
+    errorCode = AErrorCode.NOT_FOUND,
+    message = message,
+    cause = cause
+)

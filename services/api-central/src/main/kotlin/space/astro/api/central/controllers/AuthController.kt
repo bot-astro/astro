@@ -6,21 +6,21 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import space.astro.api.central.components.OpenApiConfiguration
-import space.astro.api.central.models.auth.AuthSession
+import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.responses.LoginResponse
-import space.astro.api.central.services.dashboard.AuthSessionService
-import space.astro.api.central.services.discord.DiscordUserTokenPersistenceService
+import space.astro.api.central.services.AuthSessionService
+import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.properties.DiscordOAuthProperties
+import space.astro.shared.core.utils.api.CentralApiEndpoint
 
 @RestController
-@RequestMapping("/v2/auth")
+@RequestMapping
 @Tag(name = "Authentication")
 class AuthController(
     private val discordApiClient: DiscordApiClient,
@@ -34,11 +34,12 @@ class AuthController(
         description = "Login via Discord and get a session cookie",
         operationId = "loginViaDiscord"
     )
-    @PostMapping("/login")
+    @PostMapping(CentralApiEndpoint.LOGIN_VIA_DISCORD)
     fun loginViaDiscord(@RequestParam code: String): ResponseEntity<LoginResponse> {
-        // TODO: Store the token via DiscordUserTokenPersistanceService?
         val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
         val discordUser = discordApiClient.getSelfUser(discordToken.accessToken)
+
+        discordUserTokenPersistenceService.upsert(discordUser.id, discordToken)
 
         val authSession = authSessionService.createSession(discordUser.id)
 
@@ -53,9 +54,6 @@ class AuthController(
             set(HttpHeaders.SET_COOKIE, cookie.toString())
         }
 
-        if (true)
-            return ResponseEntity.badRequest().build()
-
         return ResponseEntity.ok()
             .headers(headers)
             .body(response)
@@ -68,12 +66,12 @@ class AuthController(
         operationId = "logout",
         security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)]
     )
-    @PostMapping("/logout")
+    @PostMapping(CentralApiEndpoint.LOGOUT)
     fun logout(
-        @AuthenticationPrincipal authSession: AuthSession
+        @AuthenticationPrincipal authPrincipal: AuthPrincipal
     ): ResponseEntity<Void> {
-        // TODO: delete persisted token
-        authSessionService.deleteSession(authSession.userId, authSession.sessionId)
+        discordUserTokenPersistenceService.delete(authPrincipal.userId)
+        authSessionService.deleteSession(authPrincipal.userId, authPrincipal.sessionId)
         return ResponseEntity.noContent().build()
     }
 }

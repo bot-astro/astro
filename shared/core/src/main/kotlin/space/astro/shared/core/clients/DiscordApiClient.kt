@@ -140,6 +140,7 @@ class DiscordApiClient(
                     throw AUnknownException("Failed to fetch Discord user guilds")
                 }
         } catch (e: RestClientResponseException) {
+            // TODO: handle auth errors properly
             throw AUnknownException("Failed to fetch Discord user guilds", e)
         }
     }

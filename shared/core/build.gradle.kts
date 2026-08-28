@@ -11,10 +11,12 @@ dependencies {
     implementation(libs.bundles.db)
     implementation(libs.bundles.cache)
 
+    implementation(libs.jackson.kotlin)
     implementation(libs.bigquery)
     implementation(libs.spring.core)
     implementation(libs.spring.context)
     implementation(libs.spring.boot.starter.restclient)
+    implementation(libs.jda)
 
     implementation(libs.chargebee)
 //    implementation(libs.bundles.base)
