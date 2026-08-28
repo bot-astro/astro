@@ -7,13 +7,18 @@ object BotApiRoutes {
         const val SHUTDOWN = "/shutdown"
     }
 
-
-    object DASHBOARD {
-        const val IS_BOT_IN_GUILD = "/api/{guildID}/is-bot-in-guild"
-        const val GUILD_CHANNELS = "/api/{guildID}/channels"
-        const val GUILD_ROLES = "/api/{guildID}/roles"
-        const val CREATE_GENERATOR = "/api/{guildID}/generator/create"
-        const val CREATE_INTERFACE = "/api/{guildID}/interface/create/{channelID}"
-        const val UPDATE_INTERFACE = "/api/{guildID}/interface/update"
+    object Dashboard {
+        object Prefixes {
+            const val DASHBOARD = "/api"
+        }
+        
+        const val GUILD = "${Prefixes.DASHBOARD}/{guildID}"
+        const val GUILD_CHANNELS = "$GUILD/channels"
+        const val GUILD_ROLES = "$GUILD/roles"
+        const val CREATE_GENERATOR = "$GUILD/generator/create"
+        const val CREATE_INTERFACE = "$GUILD/interface/create/{channelID}"
+        const val UPDATE_INTERFACE = "$GUILD/interface/update"
+        
+        const val IS_BOT_IN_GUILD = "$GUILD/is-bot-in-guild"
     }
 }

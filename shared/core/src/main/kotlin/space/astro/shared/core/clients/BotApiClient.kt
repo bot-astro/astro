@@ -6,12 +6,13 @@ import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.body
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.AUnknownException
-import space.astro.shared.core.models.database.guildSettings.GeneratorData
-import space.astro.shared.core.models.discord.DiscordPartialChannelDto
-import space.astro.shared.core.models.discord.DiscordPartialRoleDto
-import space.astro.shared.core.models.request.BotChannelCreateRequest
+import space.astro.shared.core.models.api.bot.request.ChannelCreateBotApiRequest
+import space.astro.shared.core.models.api.bot.response.DiscordGuildBotApiResponse
+import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
+import space.astro.shared.core.models.api.bot.response.DiscordGuildRoleBotApiResponse
 import space.astro.shared.core.properties.bot.BotEndpointProperties
 import space.astro.shared.core.properties.bot.BotShardProperties
+import space.astro.shared.core.utils.api.BotApiEndpoint
 
 class BotApiClient(
     private val botEndpointProperties: BotEndpointProperties,
@@ -21,9 +22,9 @@ class BotApiClient(
 
     private fun baseUrl(podId: Long): String {
         return if (botEndpointProperties.localhost)
-            "http://localhost:${botEndpointProperties.port}/api/v2"
+            "http://localhost:${botEndpointProperties.port}"
         else
-            "http://${botEndpointProperties.podName}-$podId.${botEndpointProperties.serviceName}.${botEndpointProperties.namespace}:${botEndpointProperties.port}/api/v2"
+            "http://${botEndpointProperties.podName}-$podId.${botEndpointProperties.serviceName}.${botEndpointProperties.namespace}:${botEndpointProperties.port}"
     }
 
     private fun baseUrlForGuild(guildId: String): String {
@@ -37,29 +38,29 @@ class BotApiClient(
         return (guildId.toLong() shr 22) % botShardProperties.totalShards
     }
 
-    fun isBotInGuild(
-        guildId: String,
-    ): Boolean {
-        return try {
-            client.get()
-                .uri("${baseUrlForGuild(guildId)}/guilds/$guildId")
+    fun getGuild(
+        guildId: String
+    ): DiscordGuildBotApiResponse {
+        try {
+            return client.get()
+                .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD, guildId)
                 .retrieve()
-
-            true
+                .body()
+                ?: throw AUnknownException("Failed to fetch guild")
         } catch (e: RestClientException) {
             if (e is RestClientResponseException && e.statusCode.value() == 404)
-                return false
+                throw ANotFoundException("Guild with id $guildId not found")
 
-            throw AUnknownException("Failed to check if bot is in guild", e)
+            throw AUnknownException("Failed to fetch guild", e)
         }
     }
 
     fun getGuildChannels(
         guildId: String
-    ): List<DiscordPartialChannelDto> {
+    ): List<DiscordGuildChannelBotApiResponse> {
         try {
             return client.get()
-                .uri("${baseUrlForGuild(guildId)}/guilds/$guildId/channels")
+                .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD_CHANNELS, guildId)
                 .retrieve()
                 .body()
                 ?: throw AUnknownException("Failed to fetch guild channels")
@@ -71,12 +72,31 @@ class BotApiClient(
         }
     }
 
+    fun createChannel(
+        guildId: String,
+        request: ChannelCreateBotApiRequest
+    ): DiscordGuildChannelBotApiResponse {
+        try {
+            return client.post()
+                .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD_CHANNELS, guildId)
+                .body(request)
+                .retrieve()
+                .body()
+                ?: throw AUnknownException("Failed to create channel")
+        } catch (e: RestClientException) {
+            if (e is RestClientResponseException && e.statusCode.value() == 404)
+                throw ANotFoundException("Guild with id $guildId not found")
+
+            throw AUnknownException("Failed to create channel", e)
+        }
+    }
+
     fun getGuildRoles(
         guildId: String
-    ): List<DiscordPartialRoleDto> {
+    ): List<DiscordGuildRoleBotApiResponse> {
         try {
             return client.get()
-                .uri("${baseUrlForGuild(guildId)}/guilds/$guildId/roles")
+                .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD_ROLES, guildId)
                 .retrieve()
                 .body()
                 ?: throw AUnknownException("Failed to fetch guild roles")
@@ -85,58 +105,6 @@ class BotApiClient(
                 throw ANotFoundException("Guild with id $guildId not found")
 
             throw AUnknownException("Failed to fetch guild roles", e)
-        }
-    }
-
-    fun createChannel(
-        guildId: String,
-        botChannelCreateRequest: BotChannelCreateRequest
-    ) {
-        TODO()
-        try {
-            client.post()
-                .uri("${baseUrlForGuild(guildId)}/guilds/$guildId/generator")
-                .body(botChannelCreateRequest)
-                .retrieve()
-        } catch (e: RestClientException) {
-            if (e is RestClientResponseException) {
-                when (e.statusCode.value()) {
-                    404 -> throw ANotFoundException("Guild with id $guildId not found")
-                }
-            }
-
-            throw AUnknownException("Failed to create generator", e)
-        }
-    }
-
-    fun createInterface(
-        guildId: String,
-        channelId: String
-    ) {
-       TODO()
-    }
-
-    fun updateInterface(
-        guildId: String,
-        interfaceData: InterfaceData
-    ) {
-        TODO()
-        try {
-            client.post()
-                .uri("${baseUrlForGuild(guildId)}/guilds/$guildId/interface")
-                .body(interfaceData)
-                .retrieve()
-        } catch (e: RestClientException) {
-            if (e is RestClientResponseException) {
-                when (e.statusCode.value()) {
-                    404 -> throw ANotFoundException("Guild with id $guildId not found")
-                    405 -> throw BotApiPermissionException(
-                        "Bot doesn't have permissions to update the interface"
-                    )
-                }
-            }
-
-            throw AUnknownException("Failed to update interface", e)
         }
     }
 }

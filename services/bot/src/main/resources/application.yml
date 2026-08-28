@@ -40,6 +40,17 @@ management:
       export:
         enabled: true
 
+springdoc:
+  api-docs:
+    path: /docs/openapi.json
+
+scalar:
+  enabled: true
+  url: /docs/openapi.json
+  path: /docs
+  page-title: "Astro bot-API Reference"
+  operation-sorter: method
+
 ##############
 ### SHARED ###
 ##############

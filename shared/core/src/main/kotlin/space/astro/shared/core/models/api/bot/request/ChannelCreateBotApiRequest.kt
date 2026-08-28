@@ -1,6 +1,6 @@
-package space.astro.shared.core.models.request
+package space.astro.shared.core.models.api.bot.request
 
-data class BotChannelCreateRequest(
+data class ChannelCreateBotApiRequest(
     val name: String,
     val categoryId: String?,
     val channelType: ChannelCreateType,
