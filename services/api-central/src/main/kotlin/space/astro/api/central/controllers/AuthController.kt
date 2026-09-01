@@ -161,6 +161,12 @@ class AuthController(
     ): ResponseEntity<Void> {
         discordUserTokenPersistenceService.delete(authPrincipal.userId)
         authSessionService.deleteSession(authPrincipal.userId, authPrincipal.sessionId)
-        return ResponseEntity.noContent().build()
+
+        return ResponseEntity.noContent()
+            .header(
+                HttpHeaders.SET_COOKIE,
+                authSessionService.createExpiredSessionCookie().toString()
+            )
+            .build()
     }
 }

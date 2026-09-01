@@ -55,18 +55,24 @@ class AuthSessionService(
         redis.delete(RedisKey.AUTH_SESSION(userId, sessionId))
     }
 
-    fun createSessionCookie(authSession: AuthSession): ResponseCookie {
-        return ResponseCookie.from(
-            centralApiProperties.sessionCookieName,
-            "${authSession.userId}:${authSession.sessionId}"
+    fun createSessionCookie(session: AuthSession): ResponseCookie =
+        sessionCookie(
+            "${session.userId}:${session.sessionId}",
+            SESSION_TTL
         )
-            .maxAge(SESSION_TTL)
+
+    fun createExpiredSessionCookie(): ResponseCookie =
+        sessionCookie("", Duration.ZERO)
+
+    private fun sessionCookie(value: String, maxAge: Duration): ResponseCookie =
+        ResponseCookie.from(centralApiProperties.sessionCookieName, value)
+            .maxAge(maxAge)
             .httpOnly(true)
             .secure(centralApiProperties.sessionCookieSecure)
             .sameSite(centralApiProperties.sessionCookieSameSite)
             .domain(centralApiProperties.sessionCookieDomain)
+            .path("/")
             .build()
-    }
 
     /**
      * @return Pair(userId, sessionId)

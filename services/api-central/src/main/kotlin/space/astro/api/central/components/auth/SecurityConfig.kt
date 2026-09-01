@@ -9,6 +9,7 @@ import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import space.astro.shared.core.properties.api_central.CentralApiProperties
+import space.astro.shared.core.utils.api.CentralApiEndpoint
 
 
 @Configuration
@@ -28,7 +29,10 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it
                     .requestMatchers("/docs/**").permitAll()
-                    .requestMatchers("/v2/auth/login/discord").permitAll()
+                    .requestMatchers(
+                        CentralApiEndpoint.DISCORD_LOGIN,
+                        CentralApiEndpoint.DISCORD_OAUTH_CALLBACK
+                    ).permitAll()
                     .anyRequest().authenticated()
             }
             .build()
