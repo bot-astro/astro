@@ -48,6 +48,7 @@ package space.astro.shared.core.utils.redis
 
 object RedisKey {
     fun RATE_LIMIT(namespace: String, key: String) = "RL:$namespace:$key"
+    fun OAUTH_STATE(state: String) = "OS:$state"
     fun AUTH_SESSION(userId: String, sessionId: String) = "AT:$userId:$sessionId"
     fun DISCORD_USER_TOKEN(userId: String) = "DUT:$userId"
     fun DISCORD_USER_GUILDS() = "DUG"

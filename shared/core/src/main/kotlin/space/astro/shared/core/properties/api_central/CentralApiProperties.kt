@@ -10,6 +10,5 @@ data class CentralApiProperties(
     val sessionCookieDomain: String?,
     val sessionCookieSecure: Boolean,
     val sessionCookieSameSite: String,
-    val corsAllowedHeaders: String,
-    val corsAllowedMethods: String,
+    val corsAllowedOrigins: List<String>,
 )

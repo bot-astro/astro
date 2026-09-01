@@ -1,6 +1,5 @@
 package space.astro.api.central.controllers
 
-import net.dv8tion.jda.api.Permission
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,12 +11,22 @@ import space.astro.api.central.services.DiscordUserGuildsPersistenceService
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.AUnauthorizedException
+import space.astro.shared.core.models.discord.DiscordUserDto
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
 @RestController
 class DiscordController(
-    private val discordUserGuildsPersistenceService: DiscordUserGuildsPersistenceService
+    private val discordUserGuildsPersistenceService: DiscordUserGuildsPersistenceService,
+    private val discordApiClient: DiscordApiClient
 ) {
+    @GetMapping(CentralApiEndpoint.DISCORD_SELF_USER)
+    fun getSelfUser(
+        @AuthenticationPrincipal authPrincipal: AuthPrincipal,
+    ): ResponseEntity<DiscordUserDto> {
+        val user = discordApiClient.getSelfUser(authPrincipal.userDiscordToken)
+        return ResponseEntity.ok(user)
+    }
+
     @GetMapping(CentralApiEndpoint.DISCORD_USER_GUILDS)
     fun getUserGuilds(
         @AuthenticationPrincipal authPrincipal: AuthPrincipal

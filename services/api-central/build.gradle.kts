@@ -1,4 +1,4 @@
-project.version = "2.0.0"
+project.version = "6.0.0"
 
 plugins {
     id("service-conventions")

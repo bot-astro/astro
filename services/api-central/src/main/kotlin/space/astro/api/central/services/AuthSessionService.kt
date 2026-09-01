@@ -87,7 +87,7 @@ class AuthSessionService(
         val bytes = ByteArray(16)
         secureRandom.nextBytes(bytes)
 
-        return Base64.getEncoder()
+        return Base64.getUrlEncoder()
             .withoutPadding()
             .encodeToString(bytes)
     }

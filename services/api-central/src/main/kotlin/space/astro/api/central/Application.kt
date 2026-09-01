@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
 import space.astro.shared.core.properties.DiscordOAuthProperties
+import space.astro.shared.core.properties.FrontendProperties
 
 @SpringBootApplication(
     exclude = [
@@ -19,7 +20,7 @@ import space.astro.shared.core.properties.DiscordOAuthProperties
     "space.astro.shared.core.properties.api_central",
     "space.astro.api.central"
 ])
-@EnableConfigurationProperties(DiscordOAuthProperties::class)
+@EnableConfigurationProperties(DiscordOAuthProperties::class, FrontendProperties::class)
 @OpenAPIDefinition(
     info = Info(
         title = "Astro API",

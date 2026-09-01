@@ -6,5 +6,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class DiscordOAuthProperties(
     val id: String,
     val secret: String,
-    val redirectUri: String
+    val redirectUri: String,
 )

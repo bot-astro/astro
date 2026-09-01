@@ -88,5 +88,5 @@ central:
     session-cookie-domain: ${CA__SESSION_COOKIE_DOMAIN}
     session-cookie-secure: ${CA__SESSION_COOKIE_SECURE}
     session-cookie-same-site: ${CA__SESSION_COOKIE_SAME_SITE}
-    cors-allowed-headers: ${CA__CORS_ALLOWED_HEADERS}
-    cors-allowed-methods: ${CA__CORS_ALLOWED_METHODS}
+    cors-allowed-origins:
+      - ${CA__CORS_ALLOWED_ORIGIN}

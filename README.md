@@ -153,7 +153,7 @@ While for production, you should use the JSON key.
 ### Running the application
 1) Run Docker compose
     ```shell
-    docker compose -f docker/docker-compose-dev.yml up -d
+    docker compose -f docker/docker-compose.yml up -d
     ```
 2) Create the development `dev.env` files  
     The `/env` folder contains a `.env.template` file for each service + 1 common `.env.template` shared by all services.  
