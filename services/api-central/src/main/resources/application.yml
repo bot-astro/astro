@@ -77,6 +77,8 @@ discord:
     secret: ${DISCORD_OAUTH_SECRET}
     redirect-uri: ${DISCORD_OAUTH_REDIRECT_URI}
 
+frontend:
+  base-url: ${FRONTEND_BASE_URL}
 
 ### SERVICE SPECIFIC ###
 
