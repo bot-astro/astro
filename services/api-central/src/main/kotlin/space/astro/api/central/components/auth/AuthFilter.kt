@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import space.astro.api.central.components.ControllersExceptionHandler
 import space.astro.api.central.models.auth.AuthContext
 import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
@@ -17,6 +18,7 @@ import space.astro.shared.core.properties.api_central.CentralApiProperties
 @Component
 class AuthFilter(
     private val authSessionService: AuthSessionService,
+    private val exceptionHandler: ControllersExceptionHandler,
     private val centralApiProperties: CentralApiProperties,
     private val discordOAuthProperties: DiscordOAuthProperties,
     private val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
@@ -28,6 +30,17 @@ class AuthFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        try {
+            authenticate(request)
+        } catch (e: Exception) {
+            SecurityContextHolder.clearContext()
+            exceptionHandler.writeException(response, e)
+            return
+        }
+        filterChain.doFilter(request, response)
+    }
+
+    private fun authenticate(request: HttpServletRequest) {
         val cookieValue = request.cookies
             ?.firstOrNull { it.name == centralApiProperties.sessionCookieName }
             ?.value
@@ -35,10 +48,10 @@ class AuthFilter(
         if (cookieValue != null) {
             val (userId, sessionId) = authSessionService.getUserAndSessionIdFromCookie(cookieValue)
             val sessionData = authSessionService.getSession(userId, sessionId)
-                ?: return filterChain.doFilter(request, response)
+                ?: return
 
             val (isExpired, userDiscordToken) = discordUserTokenPersistenceService.get(sessionData.userId)
-                ?: return filterChain.doFilter(request, response)
+                ?: return
 
             val discordAccessToken = if (!isExpired) {
                 userDiscordToken.accessToken
@@ -56,6 +69,5 @@ class AuthFilter(
 
         }
 
-        filterChain.doFilter(request, response)
     }
 }

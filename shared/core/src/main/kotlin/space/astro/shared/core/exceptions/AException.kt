@@ -31,7 +31,7 @@ class AUnauthorizedException(
     message: String,
     cause: Throwable? = null
 ): AException(
-    httpStatusCode = 401,
+    httpStatusCode = 403,
     errorCode = AErrorCode.UNAUTHORIZED,
     message = message,
     cause = cause

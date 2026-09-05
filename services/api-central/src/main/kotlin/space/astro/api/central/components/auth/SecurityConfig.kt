@@ -8,6 +8,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import space.astro.api.central.components.ControllersExceptionHandler
 import space.astro.shared.core.properties.api_central.CentralApiProperties
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
@@ -15,6 +16,7 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 @Configuration
 class SecurityConfig(
     private val authFilter: AuthFilter,
+    private val exceptionHandler: ControllersExceptionHandler,
     private val centralApiProperties: CentralApiProperties
 ) {
 
@@ -25,6 +27,14 @@ class SecurityConfig(
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
             .logout { it.disable() }
+            .exceptionHandling {
+                it.authenticationEntryPoint { _, response, exception ->
+                    exceptionHandler.writeException(response, exception)
+                }
+                it.accessDeniedHandler { _, response, exception ->
+                    exceptionHandler.writeException(response, exception)
+                }
+            }
             .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests {
                 it

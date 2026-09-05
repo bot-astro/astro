@@ -5,5 +5,5 @@ data class DiscordUserDto(
     val username: String,
     val discriminator: String,
     val avatar: String?,
-    val email: String?
+    val email: String
 )
