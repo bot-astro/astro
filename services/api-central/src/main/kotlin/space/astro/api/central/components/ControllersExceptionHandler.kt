@@ -75,7 +75,8 @@ class ControllersExceptionHandler(private val jsonMapper: JsonMapper) {
     }
 
     private fun codeForStatus(status: Int): AErrorCode = when (status) {
-        401, 403 -> AErrorCode.UNAUTHORIZED
+        401 -> AErrorCode.UNAUTHENTICATED
+        403 -> AErrorCode.UNAUTHORIZED
         404 -> AErrorCode.NOT_FOUND
         in 400..499 -> AErrorCode.INVALID_REQUEST
         else -> AErrorCode.UNKNOWN

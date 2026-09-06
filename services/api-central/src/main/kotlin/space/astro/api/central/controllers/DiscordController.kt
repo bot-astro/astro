@@ -24,16 +24,7 @@ class DiscordController(
     private val discordUserGuildsPersistenceService: DiscordUserGuildsPersistenceService,
     private val discordApiClient: DiscordApiClient
 ) {
-    @ApiResponses(
-        ApiResponse(
-            responseCode = "401",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        ),
-        ApiResponse(
-            responseCode = "500",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        )
-    )
+
     @GetMapping(CentralApiEndpoint.DISCORD_SELF_USER)
     fun getSelfUser(
         @AuthenticationPrincipal authPrincipal: AuthPrincipal,
@@ -42,16 +33,6 @@ class DiscordController(
         return ResponseEntity.ok(user)
     }
 
-    @ApiResponses(
-        ApiResponse(
-            responseCode = "401",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        ),
-        ApiResponse(
-            responseCode = "500",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        )
-    )
     @GetMapping(CentralApiEndpoint.DISCORD_USER_GUILDS)
     fun getUserGuilds(
         @AuthenticationPrincipal authPrincipal: AuthPrincipal
@@ -74,10 +55,6 @@ class DiscordController(
             description = "NOT_FOUND: The guild was not found among the user’s guilds.",
             content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
         ),
-        ApiResponse(
-            responseCode = "500",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        )
     )
     @GetMapping(CentralApiEndpoint.DISCORD_GUILD_CHANNELS)
     fun getGuildChannels(

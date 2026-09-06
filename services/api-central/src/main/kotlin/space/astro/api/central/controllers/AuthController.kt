@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.util.UriComponentsBuilder
 import space.astro.api.central.components.OpenApiConfiguration
 import space.astro.api.central.models.auth.AuthPrincipal
+import space.astro.api.central.models.responses.AuthUserResponse
 import space.astro.api.central.services.AuthSessionService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.OAuthStateService
@@ -54,14 +55,6 @@ class AuthController(
             responseCode = "307",
             description = "Redirect to Discord authorization."
         ),
-        ApiResponse(
-            responseCode = "400",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        ),
-        ApiResponse(
-            responseCode = "500",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        )
     )
     @GetMapping(CentralApiEndpoint.DISCORD_LOGIN)
     fun discord(
@@ -106,24 +99,8 @@ class AuthController(
 
     @Operation(
         summary = "Discord OAuth callback",
-        description = "Endpoint called by Discord containing the code & state for the first part of the OAuth flow"
-    )
-    @ApiResponses(
-        ApiResponse(
-            responseCode = "302",
-            description = "Redirect to the frontend." +
-                    "\nOAuth denial or missing parameters set `error_code=discord_oauth_error`," +
-                    " invalid or expired state sets `error_code=invalid_oauth_state`" +
-                    " (both in the query params of your original `redirect_path`.",
-        ),
-        ApiResponse(
-            responseCode = "400",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        ),
-        ApiResponse(
-            responseCode = "500",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        )
+        description = "Endpoint called by Discord containing the code & state for the first part of the OAuth flow",
+        hidden = true
     )
     @GetMapping(CentralApiEndpoint.DISCORD_OAUTH_CALLBACK)
     fun discordCallback(
@@ -166,23 +143,13 @@ class AuthController(
 
     @Operation(
         summary = "Get logged in user",
-        description = "Returns the logged in user entity (from Astro database, not Discord)",
+        description = "Returns the logged in user entity",
         security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)]
-    )
-    @ApiResponses(
-        ApiResponse(
-            responseCode = "403",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        ),
-        ApiResponse(
-            responseCode = "500",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        )
     )
     @GetMapping(CentralApiEndpoint.ME)
     fun me(
         @AuthenticationPrincipal authPrincipal: AuthPrincipal
-    ): ResponseEntity<UserEntity> {
+    ): ResponseEntity<AuthUserResponse> {
         val user = userRepository.findByUserID(authPrincipal.userId)
             ?: run {
                 val userEntity = UserEntity(userID = authPrincipal.userId)
@@ -190,7 +157,13 @@ class AuthController(
                 userEntity
             }
 
-        return ResponseEntity.ok(user)
+        val discordUser = discordApiClient.getSelfUser(authPrincipal.userDiscordToken)
+
+        return ResponseEntity.ok(AuthUserResponse(
+            id=user.userID,
+            username = discordUser.username,
+            avatar = discordUser.avatar
+        ))
     }
 
     @Operation(
@@ -203,14 +176,6 @@ class AuthController(
         ApiResponse(
             responseCode = "204",
             description = "Session deleted and session cookie expired.",
-        ),
-        ApiResponse(
-            responseCode = "403",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        ),
-        ApiResponse(
-            responseCode = "500",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
         )
     )
     @PostMapping(CentralApiEndpoint.LOGOUT)

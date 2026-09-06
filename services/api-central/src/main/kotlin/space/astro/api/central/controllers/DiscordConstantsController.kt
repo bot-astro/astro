@@ -14,16 +14,6 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 @RestController
 class DiscordConstantsController {
 
-    @ApiResponses(
-        ApiResponse(
-            responseCode = "401",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        ),
-        ApiResponse(
-            responseCode = "500",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        )
-    )
     @GetMapping(CentralApiEndpoint.DISCORD_CHANNEL_RELATED_PERMISSIONS)
     suspend fun getChannelRelatedPermissions() : ResponseEntity<List<DiscordPermissionMeta>> {
         return ResponseEntity.ok(DiscordPermissionMeta.channelsRelatedPermissions)
