@@ -47,8 +47,10 @@ class AuthController(
     @Operation(
         summary = "Login via Discord",
         description = "Perform Discord OAuth flow, " +
-                "will result in a session cookie on a successful flow " +
-                "and instead on a query parameter called `error_code` set in the baseUrl of the frontend on errors",
+                "will result in a session cookie on a successful flow + " +
+                "a redirect to the provided `redirect_path` (if it contains `{guild_id}` " +
+                "that will be replaced with the id of the guild the bot was added to.\n" +
+                "Instead on a query parameter called `error_code` set in the baseUrl of the frontend on errors",
     )
     @ApiResponses(
         ApiResponse(
@@ -115,12 +117,6 @@ class AuthController(
                 .build()
         }
 
-        val redirectPath = oAuthStateService.consume(state)
-            ?: return ResponseEntity
-                .status(HttpStatus.FOUND)
-                .location(URI("${frontendProperties.baseUrl}?error_code=invalid_oauth_state"))
-                .build()
-
         val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
         val discordUser = discordApiClient.getSelfUser(discordToken.accessToken)
 
@@ -133,6 +129,18 @@ class AuthController(
         val headers = HttpHeaders().apply {
             set(HttpHeaders.SET_COOKIE, cookie.toString())
         }
+
+        val redirectPath = oAuthStateService.consume(state)
+            ?.let {
+                val guildId = discordToken.guild?.id
+                if (guildId != null) {
+                    it.replace("{guild_id}", guildId)
+                }
+            }
+            ?: return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI("${frontendProperties.baseUrl}?error_code=invalid_oauth_state"))
+                .build()
 
         return ResponseEntity
             .status(HttpStatus.FOUND)
