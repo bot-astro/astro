@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.properties.DiscordApiProperties
+import tools.jackson.databind.json.JsonMapper
 
 @AutoConfiguration
 @EnableConfigurationProperties(DiscordApiProperties::class)
@@ -21,5 +22,6 @@ class ADiscordApiClient {
     @ConditionalOnMissingBean
     fun discordApiClient(
         discordApiConfig: DiscordApiProperties,
-    ): DiscordApiClient = DiscordApiClient(discordApiConfig)
+        jsonMapper: JsonMapper,
+    ): DiscordApiClient = DiscordApiClient(discordApiConfig, jsonMapper)
 }

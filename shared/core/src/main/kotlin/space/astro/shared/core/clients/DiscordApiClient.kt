@@ -2,6 +2,7 @@ package space.astro.shared.core.clients
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.MediaType
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestClient
@@ -15,15 +16,27 @@ import space.astro.shared.core.models.discord.DiscordTokenDto
 import space.astro.shared.core.models.discord.DiscordUserDto
 import space.astro.shared.core.properties.DiscordApiProperties
 import space.astro.shared.core.properties.DiscordOAuthProperties
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.json.JsonMapper
 
 private val log = KotlinLogging.logger {  }
 
 class DiscordApiClient(
     discordApiConfig: DiscordApiProperties,
+    jsonMapper: JsonMapper,
 ) {
+
+    private val discordJsonMapper = jsonMapper.rebuild()
+        .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .build()
 
     private val client = RestClient.builder()
         .baseUrl(discordApiConfig.baseUrl)
+        .configureMessageConverters { converters ->
+            converters.withJsonConverter(
+                JacksonJsonHttpMessageConverter(discordJsonMapper)
+            )
+        }
         .build()
 
     /**

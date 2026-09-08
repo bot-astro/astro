@@ -117,6 +117,7 @@ class AuthController(
                 .build()
         }
 
+        // TODO: try catch and redirect
         val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
         val discordUser = discordApiClient.getSelfUser(discordToken.accessToken)
 
@@ -131,10 +132,12 @@ class AuthController(
         }
 
         val redirectPath = oAuthStateService.consume(state)
-            ?.let {
+            ?.let { path ->
                 val guildId = discordToken.guild?.id
                 if (guildId != null) {
-                    it.replace("{guild_id}", guildId)
+                    path.replace("{guild_id}", guildId)
+                } else {
+                    path
                 }
             }
             ?: return ResponseEntity
