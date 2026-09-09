@@ -21,12 +21,14 @@ class DiscordUserTokenPersistenceService(
      * @return a pair of (isExpired, token entity) or null if not found
      */
     fun get(userId: String): Pair<Boolean, DiscordUserTokenEntity>? {
-        val serializedData = redisTemplate.opsForValue().get(RedisKey.DISCORD_USER_TOKEN(userId))
+        val serializedTokenFromCache = redisTemplate.opsForValue().get(RedisKey.DISCORD_USER_TOKEN(userId))
 
-        return if (serializedData != null) {
-            Pair(false, jsonMapper.readValue(serializedData))
+        return if (serializedTokenFromCache != null) {
+            Pair(false, jsonMapper.readValue(serializedTokenFromCache))
         } else {
-            Pair(true, discordUserTokenRepository.findById(userId).orElse(null))
+            val tokenFromDb =  discordUserTokenRepository.findById(userId).orElse(null)
+                ?: return null
+            Pair(true, tokenFromDb)
         }
     }
 
@@ -36,7 +38,7 @@ class DiscordUserTokenPersistenceService(
 
         redisTemplate.opsForValue().set(
             RedisKey.DISCORD_USER_TOKEN(userId),
-            jsonMapper.writeValueAsString(discordTokenDto),
+            jsonMapper.writeValueAsString(tokenEntity),
             (discordTokenDto.expiresIn - 300).seconds.toJavaDuration(),
         )
     }
