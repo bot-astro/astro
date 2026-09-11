@@ -66,8 +66,6 @@ class AuthFilter(
                 authorities = emptyList()
             )
             SecurityContextHolder.getContext().authentication = authContext
-
         }
-
     }
 }

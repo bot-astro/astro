@@ -23,8 +23,7 @@ class AuthSessionService(
 ) {
 
     companion object {
-        val SESSION_TTL = Duration.ofDays(60)
-        val SESSION_REFRESH_THRESHOLD = Duration.ofDays(30)
+        val SESSION_TTL: Duration = Duration.ofDays(60)
     }
 
     private val secureRandom = SecureRandom()

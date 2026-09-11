@@ -149,11 +149,10 @@ class DiscordApiClient(
                 .retrieve()
                 .body<List<DiscordPartialGuildDto>>()
                 ?: run {
-                    log.error { "Discord returned an empty gulds response" }
+                    log.error { "Discord returned an empty guilds response" }
                     throw AUnknownException("Failed to fetch Discord user guilds")
                 }
         } catch (e: RestClientResponseException) {
-            // TODO: handle auth errors properly
             throw AUnknownException("Failed to fetch Discord user guilds", e)
         }
     }

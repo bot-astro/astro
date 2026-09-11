@@ -1,5 +1,6 @@
 package space.astro.api.central.controllers
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -24,12 +25,16 @@ import space.astro.api.central.services.AuthSessionService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.OAuthStateService
 import space.astro.shared.core.clients.DiscordApiClient
+import space.astro.shared.core.exceptions.ABadRequestException
+import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.models.database.UserEntity
 import space.astro.shared.core.properties.DiscordOAuthProperties
 import space.astro.shared.core.properties.FrontendProperties
 import space.astro.shared.core.repositories.UserRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 import java.net.URI
+
+private val log = KotlinLogging.logger {  }
 
 @RestController
 @RequestMapping
@@ -50,7 +55,8 @@ class AuthController(
                 "will result in a session cookie on a successful flow + " +
                 "a redirect to the provided `redirect_path` (if it contains `{guild_id}` " +
                 "that will be replaced with the id of the guild the bot was added to.\n" +
-                "Instead on a query parameter called `error_code` set in the baseUrl of the frontend on errors",
+                "Instead on a query parameter called `error_code` set in the baseUrl of the frontend on errors " +
+                "(errors can be: discord_oauth_error, invalid_oauth_state, internal).",
     )
     @ApiResponses(
         ApiResponse(
@@ -123,30 +129,40 @@ class AuthController(
                 .location(URI("${frontendProperties.baseUrl}?error_code=invalid_oauth_state"))
                 .build()
 
-        // TODO: try catch and redirect
-        val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
-        val discordUser = discordApiClient.getSelfUser(discordToken.accessToken)
+        try {
+            val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
+            val discordUser = discordApiClient.getSelfUser(discordToken.accessToken)
 
-        discordUserTokenPersistenceService.upsert(discordUser.id, discordToken)
+            discordUserTokenPersistenceService.upsert(discordUser.id, discordToken)
 
-        val authSession = authSessionService.createSession(discordUser.id)
+            val authSession = authSessionService.createSession(discordUser.id)
 
-        val cookie = authSessionService.createSessionCookie(authSession)
+            val cookie = authSessionService.createSessionCookie(authSession)
 
-        val headers = HttpHeaders().apply {
-            set(HttpHeaders.SET_COOKIE, cookie.toString())
+            val headers = HttpHeaders().apply {
+                set(HttpHeaders.SET_COOKIE, cookie.toString())
+            }
+
+            val guildId = discordToken.guild?.id
+            if (guildId != null) {
+                redirectPath = redirectPath.replace("{guild_id}", guildId)
+            }
+
+            return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI("${frontendProperties.baseUrl}${redirectPath}"))
+                .headers(headers)
+                .build()
+        } catch (e: Exception) {
+            if (e !is ABadRequestException) {
+                log.error(e) { "Discord OAuth callback failed"}
+            }
+
+            return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI("${frontendProperties.baseUrl}?error_code=internal"))
+                .build()
         }
-
-        val guildId = discordToken.guild?.id
-        if (guildId != null) {
-            redirectPath = redirectPath.replace("{guild_id}", guildId)
-        }
-
-        return ResponseEntity
-            .status(HttpStatus.FOUND)
-            .location(URI("${frontendProperties.baseUrl}${redirectPath}"))
-            .headers(headers)
-            .build()
     }
 
     @Operation(
