@@ -73,7 +73,5 @@ class DiscordController(
 
         if (!guild.canManage)
             throw AUnauthorizedException("You don't have permissions to manage this guild")
-
-
     }
 }

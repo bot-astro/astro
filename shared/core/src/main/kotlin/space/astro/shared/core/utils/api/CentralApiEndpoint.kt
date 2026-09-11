@@ -6,6 +6,8 @@ object CentralApiEndpoint {
     const val ME = "/v2/auth/me"
     const val LOGOUT = "/v2/auth/logout"
 
+    const val GUILD_ERRORS = "/v2/guilds/{guildId}/errors"
+
     const val DISCORD_CHANNEL_RELATED_PERMISSIONS = "/v2/discord/constants/permissions"
 
     const val DISCORD_SELF_USER = "/v2/discord/users/@me"

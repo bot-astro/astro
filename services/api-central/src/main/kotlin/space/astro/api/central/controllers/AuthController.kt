@@ -117,6 +117,12 @@ class AuthController(
                 .build()
         }
 
+        var redirectPath = oAuthStateService.consume(state)
+            ?: return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI("${frontendProperties.baseUrl}?error_code=invalid_oauth_state"))
+                .build()
+
         // TODO: try catch and redirect
         val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
         val discordUser = discordApiClient.getSelfUser(discordToken.accessToken)
@@ -131,19 +137,10 @@ class AuthController(
             set(HttpHeaders.SET_COOKIE, cookie.toString())
         }
 
-        val redirectPath = oAuthStateService.consume(state)
-            ?.let { path ->
-                val guildId = discordToken.guild?.id
-                if (guildId != null) {
-                    path.replace("{guild_id}", guildId)
-                } else {
-                    path
-                }
-            }
-            ?: return ResponseEntity
-                .status(HttpStatus.FOUND)
-                .location(URI("${frontendProperties.baseUrl}?error_code=invalid_oauth_state"))
-                .build()
+        val guildId = discordToken.guild?.id
+        if (guildId != null) {
+            redirectPath = redirectPath.replace("{guild_id}", guildId)
+        }
 
         return ResponseEntity
             .status(HttpStatus.FOUND)

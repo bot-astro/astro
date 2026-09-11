@@ -1,4 +1,4 @@
-package space.astro.api.central.controllers.dashboard
+@package space.astro.api.central.controllers.dashboard
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import io.swagger.v3.oas.annotations.tags.Tag
