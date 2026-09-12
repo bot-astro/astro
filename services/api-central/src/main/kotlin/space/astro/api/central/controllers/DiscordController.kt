@@ -13,16 +13,17 @@ import space.astro.api.central.components.OpenApiConfiguration
 import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.responses.DiscordUserGuild
 import space.astro.api.central.services.DiscordUserGuildsPersistenceService
+import space.astro.shared.core.clients.BotApiClient
 import space.astro.shared.core.clients.DiscordApiClient
-import space.astro.shared.core.exceptions.ANotFoundException
-import space.astro.shared.core.exceptions.AUnauthorizedException
+import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
 import space.astro.shared.core.models.discord.DiscordUserDto
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
 @RestController
 class DiscordController(
     private val discordUserGuildsPersistenceService: DiscordUserGuildsPersistenceService,
-    private val discordApiClient: DiscordApiClient
+    private val discordApiClient: DiscordApiClient,
+    private val botApiClient: BotApiClient
 ) {
 
     @GetMapping(CentralApiEndpoint.DISCORD_SELF_USER)
@@ -46,32 +47,16 @@ class DiscordController(
 
     @ApiResponses(
         ApiResponse(
-            responseCode = "403",
-            description = "UNAUTHORIZED: The user lacks Manage Channels, Manage Server, or Administrator permission for this guild.",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
-        ),
-        ApiResponse(
             responseCode = "404",
-            description = "NOT_FOUND: The guild was not found among the user’s guilds.",
+            description = "NOT_FOUND: The guild was not found by the bot.",
             content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
         ),
     )
     @GetMapping(CentralApiEndpoint.DISCORD_GUILD_CHANNELS)
     fun getGuildChannels(
-        @PathVariable guildId: String,
-        @AuthenticationPrincipal authPrincipal: AuthPrincipal
-    ) {
-        val guild = discordUserGuildsPersistenceService.getUserGuild(authPrincipal.userId, guildId)
-            ?: run {
-                val guilds = discordUserGuildsPersistenceService.fetchFromDiscord(
-                    userId = authPrincipal.userId,
-                    userDiscordAccessToken = authPrincipal.userDiscordToken
-                )
-                guilds.find { it.id == guildId }
-                    ?: throw ANotFoundException("Guild with id $guildId not found")
-            }
-
-        if (!guild.canManage)
-            throw AUnauthorizedException("You don't have permissions to manage this guild")
+        @PathVariable guildId: String
+    ): ResponseEntity<List<DiscordGuildChannelBotApiResponse>> {
+        val channels = botApiClient.getGuildChannels(guildId)
+        return ResponseEntity.ok(channels)
     }
 }

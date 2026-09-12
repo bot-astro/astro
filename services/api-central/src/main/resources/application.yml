@@ -77,6 +77,19 @@ discord:
     secret: ${DISCORD_OAUTH_SECRET}
     redirect-uri: ${DISCORD_OAUTH_REDIRECT_URI}
 
+bot:
+  endpoint:
+    localhost: ${BOT_ENDPOINT_LOCALHOST}
+    port: ${BOT_API_PORT}
+    pod-name: ${BOT_ENDPOINT_POD_NAME}
+    service-name: ${BOT_ENDPOINT_SERVICE_NAME}
+    namespace: ${BOT_ENDPOINT_NAMESPACE}
+  shard:
+    manager:
+      total-shards: ${BOT_SHARD_MANAGER_TOTAL_SHARDS}
+      total-pods: ${BOT_SHARD_MANAGER_TOTAL_PODS}
+      login-factor: ${BOT_SHARD_MANAGER_LOGIN_FACTOR}
+
 frontend:
   base-url: ${FRONTEND_BASE_URL}
 

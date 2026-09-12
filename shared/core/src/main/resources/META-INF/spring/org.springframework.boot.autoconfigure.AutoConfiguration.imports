@@ -1,5 +1,6 @@
 space.astro.shared.core.autoconfigure.ARedisAutoConfiguration
 space.astro.shared.core.autoconfigure.AMongoRepositoriesAutoConfiguration
+space.astro.shared.core.autoconfigure.ABotApiClient
 space.astro.shared.core.autoconfigure.AChargebeeClientHelper
 space.astro.shared.core.autoconfigure.ADiscordApiClient
 space.astro.shared.core.autoconfigure.AJsonMapperBuilder
