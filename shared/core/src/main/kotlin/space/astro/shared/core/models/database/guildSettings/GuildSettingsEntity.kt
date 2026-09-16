@@ -14,15 +14,13 @@ data class GuildSettingsEntity(
     val id: ObjectId = ObjectId.get(),
     @Indexed
     val guildID: String,
-    var upgradedByUserID: String? = null,
-    val entitlements: MutableList<GuildEntitlementData> = mutableListOf(),
-    var bannedCommands: MutableList<String> = mutableListOf(),
-    val templates: MutableList<TemplateData> = mutableListOf(),
-    val connections: MutableList<ConnectionData> = mutableListOf(),
-    val generators: MutableList<GeneratorData> = mutableListOf(),
-    var interfaces: MutableList<InterfaceData> = mutableListOf(),
-    var errorLogsChannelId: String? = null,
-    var allowMissingAdminPerm: Boolean = false,
+    var upgradedByUserID: String?,
+    val entitlements: MutableList<GuildEntitlementData>,
+    val templates: MutableList<TemplateData>,
+    val connections: MutableList<ConnectionData>,
+    val generators: MutableList<GeneratorData>,
+    var interfaces: MutableList<InterfaceData>,
+    var allowMissingAdminPerm: Boolean,
 )
 
 
