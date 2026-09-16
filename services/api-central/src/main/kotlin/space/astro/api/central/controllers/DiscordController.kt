@@ -16,6 +16,7 @@ import space.astro.api.central.services.DiscordUserGuildsPersistenceService
 import space.astro.shared.core.clients.BotApiClient
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
+import space.astro.shared.core.models.api.bot.response.DiscordGuildRoleBotApiResponse
 import space.astro.shared.core.models.discord.DiscordUserDto
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
@@ -48,7 +49,7 @@ class DiscordController(
     @ApiResponses(
         ApiResponse(
             responseCode = "404",
-            description = "NOT_FOUND: The guild was not found by the bot.",
+            description = "The guild was not found by the bot.",
             content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
         ),
     )
@@ -58,5 +59,20 @@ class DiscordController(
     ): ResponseEntity<List<DiscordGuildChannelBotApiResponse>> {
         val channels = botApiClient.getGuildChannels(guildId)
         return ResponseEntity.ok(channels)
+    }
+
+    @ApiResponses(
+        ApiResponse(
+            responseCode = "404",
+            description = "The guild was not found by the bot.",
+            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
+        ),
+    )
+    @GetMapping(CentralApiEndpoint.DISCORD_GUILD_ROLES)
+    fun getGuildRoles(
+        @PathVariable guildId: String,
+    ): ResponseEntity<List<DiscordGuildRoleBotApiResponse>> {
+        val roles = botApiClient.getGuildRoles(guildId)
+        return ResponseEntity.ok(roles)
     }
 }

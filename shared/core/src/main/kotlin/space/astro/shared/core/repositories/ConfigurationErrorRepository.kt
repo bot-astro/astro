@@ -4,5 +4,8 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 
 interface ConfigurationErrorRepository : MongoRepository<ConfigurationErrorEntity, String> {
-    fun findAllByTimestampGreaterThanEqual(timestamp: Long): List<ConfigurationErrorEntity>
+    fun findAllByGuildIdAndTimestampGreaterThanEqual(
+        guildId: String,
+        timestamp: Long,
+    ): List<ConfigurationErrorEntity>
 }

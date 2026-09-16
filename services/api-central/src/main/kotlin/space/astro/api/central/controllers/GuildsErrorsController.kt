@@ -21,7 +21,10 @@ class GuildsErrorsController(
     ) : ResponseEntity<List<ConfigurationErrorEntity>> {
         val sevenDaysAgo = System.currentTimeMillis() - Duration.ofDays(7).toMillis()
         val filterTimestamp = fromTimestamp?.coerceAtLeast(sevenDaysAgo) ?: sevenDaysAgo
-        val errors = configurationErrorRepository.findAllByTimestampGreaterThanEqual(filterTimestamp)
+        val errors = configurationErrorRepository.findAllByGuildIdAndTimestampGreaterThanEqual(
+            guildId,
+            filterTimestamp,
+        )
 
         return ResponseEntity.ok(errors)
     }

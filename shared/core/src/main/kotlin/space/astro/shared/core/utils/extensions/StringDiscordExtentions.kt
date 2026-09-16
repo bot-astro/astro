@@ -1,4 +1,4 @@
-package space.astro.shared.core.util.extention
+package space.astro.shared.core.utils.extensions
 
 /**
  * Checks whether this [String] is a valid Discord snowflake
