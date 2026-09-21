@@ -5,7 +5,11 @@ import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 
 
 interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String> {
-    fun createNewGuildSettings(guildID: String): GuildSettingsEntity {
+    fun createNewGuildSettings(
+        guildID: String,
+        locale: String
+    ): GuildSettingsEntity {
+        // TODO: validate locale value
         val guildSettings = GuildSettingsEntity(
             guildID = guildID,
             upgradedByUserID = null,
@@ -14,7 +18,8 @@ interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String>
             connections = mutableListOf(),
             interfaces = mutableListOf(),
             generators = mutableListOf(),
-            allowMissingAdminPerm = false
+            allowMissingAdminPerm = false,
+            locale = locale
         )
 
         return save(guildSettings)

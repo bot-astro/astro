@@ -5,10 +5,14 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import space.astro.api.central.models.auth.AuthPrincipal
+import space.astro.api.central.models.requests.GuildSettingsUpdateBody
 import space.astro.api.central.services.DiscordUserGuildsPersistenceService
 import space.astro.shared.core.clients.BotApiClient
+import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AErrorCode
 import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.exceptions.ANotFoundException
@@ -48,8 +52,38 @@ class GuildSettingsController(
         }
 
         val guildSettings = guildSettingsRepository.findByIdOrNull(guildId)
-            ?: guildSettingsRepository.createNewGuildSettings(guildId)
+            ?: guildSettingsRepository.createNewGuildSettings(guildId, discordGuild.preferredLocale)
 
         return ResponseEntity.ok(guildSettings)
+    }
+
+    @PostMapping(CentralApiEndpoint.GUILD_SETTINGS)
+    fun updateGuildSettings(
+        @PathVariable guildId: String,
+        @AuthenticationPrincipal authPrincipal: AuthPrincipal,
+        @RequestBody newGuildSettings: GuildSettingsUpdateBody
+    ): ResponseEntity<GuildSettingsEntity> {
+        val discordGuild = discordUserGuildsPersistenceService.getUserGuild(authPrincipal.userId, guildId)
+            ?: throw ANotFoundException("Guild with ID $guildId not found in the user's Discord guilds")
+
+        if (!discordGuild.canManage) {
+            throw AUnauthorizedException("User is not allowed to manage guild with ID $guildId")
+        }
+
+        val validation = newGuildSettings.validate()
+        if (!validation.isValid) {
+            throw ABadRequestException("Invalid guild settings provided")
+        }
+
+        val guildData = guildSettingsRepository.findByIdOrNull(guildId)
+            ?: throw ANotFoundException("Guild with ID $guildId not found Astro database")
+
+        guildData.apply {
+            allowMissingAdminPerm = newGuildSettings.allowMissingAdminPerms
+            locale = newGuildSettings.locale
+        }
+        guildSettingsRepository.save(guildData)
+
+        return ResponseEntity.ok(guildData)
     }
 }

@@ -42,7 +42,8 @@ class DiscordUserGuildsPersistenceService(
                     permissions = partialGuildDto.permissions,
                     canManage = Permission.getPermissions(partialGuildDto.permissions).any {
                         it == Permission.MANAGE_CHANNEL || it == Permission.MANAGE_SERVER || it == Permission.ADMINISTRATOR
-                    }
+                    },
+                    preferredLocale = partialGuildDto.preferredLocale,
                 )
             }
 
