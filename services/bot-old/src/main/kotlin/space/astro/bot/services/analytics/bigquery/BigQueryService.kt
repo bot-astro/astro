@@ -28,7 +28,8 @@ class BigQueryService(
                     GuildEventData::class to AnalyticsEventType.GUILD_EVENT,
                     SlashCommandInvocationEventData::class to AnalyticsEventType.SLASH_COMMAND_INVOCATION,
                     TemporaryVCGenerationEventData::class to AnalyticsEventType.TEMPORARY_VC_GENERATION,
-                    ConnectionInvocationEventData::class to AnalyticsEventType.CONNECTION_INVOCATION
+                    ConnectionInvocationEventData::class to AnalyticsEventType.CONNECTION_INVOCATION,
+                    GuildSnapshotData::class to AnalyticsEventType.GUILD_SNAPSHOT,
                 )
             )
             TABLES = Collections.unmodifiableMap(tables)
