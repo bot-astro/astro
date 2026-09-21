@@ -37,3 +37,23 @@ dependencies {
 repositories {
     mavenCentral()
 }
+
+// Localization
+val generateLocalesIndex = tasks.register("generate_locales_index") {
+    description = "Reads the list of i18n files and generates an index with the list of locales available"
+
+    val i18nFiles = fileTree("src/main/resources/i18n") { include("*.json") }
+    val outDir = layout.buildDirectory.dir("generated/locale-index")
+    inputs.files(i18nFiles)
+    outputs.dir(outDir)
+
+    doLast {
+        val tags = i18nFiles.files.map { it.nameWithoutExtension }.sorted()
+        val target = outDir.get().asFile.resolve("i18n").apply { mkdirs() }
+        target.resolve("locales.txt").writeText(tags.joinToString("\n"))
+    }
+}
+
+tasks.processResources {
+    from(generateLocalesIndex)
+}

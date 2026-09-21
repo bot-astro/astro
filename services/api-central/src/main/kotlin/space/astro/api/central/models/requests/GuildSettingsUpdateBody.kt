@@ -1,5 +1,6 @@
 package space.astro.api.central.models.requests
 
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.utils.validation.ValidationResult
 
 data class GuildSettingsUpdateBody(
@@ -8,7 +9,9 @@ data class GuildSettingsUpdateBody(
     val locale: String,
 ) {
     fun validate(): ValidationResult {
-        // TODO: validate locale key®
+        if (!L.isLocaleSupported(locale))
+            return ValidationResult.invalid("Unsupported locale $locale")
+
         return ValidationResult.valid()
     }
 }

@@ -20,6 +20,7 @@ import space.astro.shared.core.exceptions.AUnauthorizedException
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
+import java.util.Locale
 
 @RestController
 class GuildSettingsController(
@@ -80,7 +81,7 @@ class GuildSettingsController(
 
         guildData.apply {
             allowMissingAdminPerm = newGuildSettings.allowMissingAdminPerms
-            locale = newGuildSettings.locale
+            locale = Locale.forLanguageTag(newGuildSettings.locale).toLanguageTag()
         }
         guildSettingsRepository.save(guildData)
 

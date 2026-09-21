@@ -1,6 +1,7 @@
 package space.astro.shared.core.repositories
 
 import org.springframework.data.mongodb.repository.MongoRepository
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 
 
@@ -9,7 +10,6 @@ interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String>
         guildID: String,
         locale: String
     ): GuildSettingsEntity {
-        // TODO: validate locale value
         val guildSettings = GuildSettingsEntity(
             guildID = guildID,
             upgradedByUserID = null,
@@ -19,7 +19,7 @@ interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String>
             interfaces = mutableListOf(),
             generators = mutableListOf(),
             allowMissingAdminPerm = false,
-            locale = locale
+            locale = L.closestSupportedLocale(locale).toLanguageTag()
         )
 
         return save(guildSettings)
