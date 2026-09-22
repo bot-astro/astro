@@ -91,6 +91,22 @@ class BotApiClient(
         }
     }
 
+    fun deleteChannel(
+        guildId: String,
+        channelId: String
+    ) {
+        try {
+            client.delete()
+                .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD_CHANNEL, guildId, channelId)
+                .retrieve()
+        } catch (e: RestClientException) {
+            if (e is RestClientResponseException && e.statusCode.value() == 404)
+                throw ANotFoundException("Guild with id $guildId not found")
+
+            throw AUnknownException("Failed to delete channel", e)
+        }
+    }
+
     fun getGuildRoles(
         guildId: String
     ): List<DiscordGuildRoleBotApiResponse> {

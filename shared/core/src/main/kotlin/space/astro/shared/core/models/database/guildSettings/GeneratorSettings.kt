@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import space.astro.shared.core.utils.extensions.isValidSnowflake
+import space.astro.shared.core.utils.validation.Validatable
 import space.astro.shared.core.utils.validation.ValidationResult
 import space.astro.shared.core.utils.validation.asValidationResult
 
@@ -48,8 +49,8 @@ data class GeneratorSettings(
     var waitingUserLimit: Int? = null,
 
     var ownerPermissionIds: List<String> = emptyList(),
-) {
-    fun parseAndValidate() : ValidationResult {
+): Validatable {
+    override fun validate() : ValidationResult {
         ownerPermissions = Permission.getRaw(ownerPermissionIds.mapNotNull { try { Permission.valueOf(it) } catch(e: Exception) { null } })
 
         val idValidation = id.isValidSnowflake().asValidationResult("invalid generator id")
