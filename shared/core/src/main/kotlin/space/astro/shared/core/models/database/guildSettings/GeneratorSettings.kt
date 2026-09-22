@@ -7,47 +7,47 @@ import space.astro.shared.core.utils.extensions.isValidSnowflake
 import space.astro.shared.core.utils.validation.ValidationResult
 import space.astro.shared.core.utils.validation.asValidationResult
 
-data class GeneratorData(
+data class GeneratorSettings(
     val id: String,
-    var fallbackId: String?,
-    var queueMode: Boolean,
+    var fallbackId: String? = null,
+    var queueMode: Boolean = false,
     var defaultName: String,
-    var defaultLockedName: String?,
-    var defaultHiddenName: String?,
-    var userLimit: Int,
-    var bitrate: Int,
-    var category: String?,
-    var permissionsInherited: PermissionsInherited,
-    var permissionsTargetRole: String?,
-    var permissionsImmuneRole: String?,
-    var ownerPermissions: Long,
-    var ownerRole: String?,
-    var initialState: VCState,
-    var initialPosition: InitialPosition,
-    var renameConditions: RenameConditions,
-    var commandsSettings: CommandsSettings,
+    var defaultLockedName: String? = null,
+    var defaultHiddenName: String? = null,
+    var userLimit: Int? = null,
+    var bitrate: Int? = null,
+    var category: String? = null,
+    var permissionsInherited: PermissionsInherited = PermissionsInherited.NONE,
+    var permissionsTargetRole: String? = null,
+    var permissionsImmuneRole: String? = null,
+    var ownerPermissions: Long? = null,
+    var ownerRole: String? = null,
+    var initialState: VCState = VCState.UNLOCKED,
+    var initialPosition: InitialPosition = InitialPosition.BOTTOM,
+    var renameConditions: RenameConditions = RenameConditions(),
+    var commandsSettings: CommandsSettings = CommandsSettings(),
 
-    var autoChat: Boolean,
-    var autoWaiting: Boolean,
+    var autoChat: Boolean = false,
+    var autoWaiting: Boolean = false,
 
-    var chatCategory: String?,
-    var chatTopic: String?,
-    var chatNsfw: Boolean,
-    var chatSlowmode: Int,
-    var chatPermissionsInherited: PermissionsInherited,
+    var chatCategory: String? = null,
+    var chatTopic: String? = null,
+    var chatNsfw: Boolean = false,
+    var chatSlowmode: Int? = null,
+    var chatPermissionsInherited: PermissionsInherited = PermissionsInherited.NONE,
     var defaultChatName: String,
-    var defaultChatText: String?,
-    var defaultChatTextEmbed: Boolean,
-    var chatInterface: Int,
+    var defaultChatText: String? = null,
+    var defaultChatTextEmbed: Boolean = false,
+    var chatInterface: Int? = null,
 
-    var waitingCategory: String?,
-    var waitingPermissionsInherited: PermissionsInherited,
+    var waitingCategory: String? = null,
+    var waitingPermissionsInherited: PermissionsInherited = PermissionsInherited.NONE,
     var defaultWaitingName: String,
-    var waitingBitrate: Int,
-    var waitingPosition: InitialPosition,
-    var waitingUserLimit: Int,
+    var waitingBitrate: Int? = null,
+    var waitingPosition: InitialPosition = InitialPosition.BOTTOM,
+    var waitingUserLimit: Int? = null,
 
-    var ownerPermissionIds: List<String>
+    var ownerPermissionIds: List<String> = emptyList(),
 ) {
     fun parseAndValidate() : ValidationResult {
         ownerPermissions = Permission.getRaw(ownerPermissionIds.mapNotNull { try { Permission.valueOf(it) } catch(e: Exception) { null } })
@@ -101,13 +101,11 @@ data class GeneratorData(
     }
 
     data class CommandsSettings(
-        var maxUserLimit: Int,
-        var minUserLimit: Int,
+        var maxUserLimit: Int? = null,
+        var minUserLimit: Int? = null,
 
-        var maxBitrate: Int?,
-        var minBitrate: Int,
-
-        var badwordsAllowed: Boolean,
+        var maxBitrate: Int? = null,
+        var minBitrate: Int? = null,
     ) {
         fun validate() : ValidationResult {
             val maxUserLimitValidation = (maxUserLimit in 0..99).asValidationResult("the maximum user limit for the generator must be between 0 and 99")
@@ -125,10 +123,10 @@ data class GeneratorData(
     }
 
     data class RenameConditions(
-        var stateChange: Boolean,
-        var ownerChange: Boolean,
-        var renamed: Boolean,
-        var activityChange: Boolean
+        var stateChange: Boolean = true,
+        var ownerChange: Boolean = true,
+        var renamed: Boolean = true,
+        var activityChange: Boolean = true
     )
 
     enum class PermissionsInherited {

@@ -1,13 +1,18 @@
 package space.astro.shared.core.lang
 
+import com.ibm.icu.text.MessageFormat
+import space.astro.shared.core.exceptions.AErrorCode
+import space.astro.shared.core.exceptions.AException
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.readValue
 import java.util.Locale
 
-/**
- * Object that manages localization
- */
 object L {
+    private val json = JsonMapper.builder().build()
+
     private val locales: List<Locale>
     private val default: Locale = Locale.forLanguageTag("en-US")
+    private val bundles: Map<Locale, Map<String, String>>
 
     init {
         val stream = L::class.java.classLoader
@@ -19,7 +24,21 @@ object L {
         }
 
         locales = languageTags.map(Locale::forLanguageTag)
+
+        bundles = locales.associateWith { locale ->
+            val resourcePath = "i18n/${locale.toLanguageTag()}.json"
+
+            val resource = javaClass.classLoader.getResourceAsStream(resourcePath)
+                ?.bufferedReader()?.use { it.readText() }
+                ?: error("$resourcePath missing, did gradle task 'processResources' run?")
+
+            json.readValue<Map<String, String>>(resource)
+        }
     }
+
+    ////////////
+    // LOCALE //
+    ////////////
 
     fun isLocaleSupported(languageTag: String)
         = locales.contains(Locale.forLanguageTag(languageTag))
@@ -36,5 +55,31 @@ object L {
             ?.let { return it }
 
         return default
+    }
+
+
+    /////////////////
+    // TRANSLATION //
+    /////////////////
+    fun t(locale: Locale, key: String, vararg args: Pair<String, Any?>): String {
+            val pattern = bundles[locale]?.get(key)
+                ?: bundles.getValue(default)[key]
+                ?: throw AException(
+                    httpStatusCode = 500,
+                    errorCode = AErrorCode.TRANSLATION,
+                    message = "Missing translation key: $key",
+                    cause = null
+                )
+
+        try {
+            return MessageFormat(pattern, locale).format(args.toMap())
+        } catch (e: Exception) {
+            throw AException(
+                httpStatusCode = 500,
+                errorCode = AErrorCode.TRANSLATION,
+                message = "Translation failed for key $key with args: ${args.contentToString()}",
+                cause = e
+            )
+        }
     }
 }

@@ -4,6 +4,7 @@ import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
+import java.util.Locale
 
 @Document(collection = "guilds")
 data class GuildSettingsEntity(
@@ -15,12 +16,14 @@ data class GuildSettingsEntity(
     val entitlements: MutableList<GuildEntitlementData> = mutableListOf(),
     val templates: MutableList<TemplateData> = mutableListOf(),
     val connections: MutableList<ConnectionData> = mutableListOf(),
-    val generators: MutableList<GeneratorData> = mutableListOf(),
+    val generators: MutableList<GeneratorSettings> = mutableListOf(),
     var interfaces: MutableList<InterfaceData> = mutableListOf(),
     var allowMissingAdminPerm: Boolean = false,
     // Language + region
     var locale: String = "en-US",
-)
+) {
+    val javaLocale = Locale.forLanguageTag(locale)
+}
 
 
 

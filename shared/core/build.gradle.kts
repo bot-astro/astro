@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.spring.boot.starter.restclient)
     implementation(libs.jda)
     implementation(libs.nanoid)
+    implementation(libs.bundles.icu4j)
 
     implementation(libs.chargebee)
 //    implementation(libs.bundles.base)

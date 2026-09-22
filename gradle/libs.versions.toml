@@ -14,6 +14,7 @@ guava = "33.6.0-jre"
 nanoid = "2.0.0"
 datetime = "0.7.1"
 nettyDns = "4.2.17.Final"
+icu4j = "68.1"
 
 # Spring
 springDependencyManagementPlugin = "1.1.7"
@@ -73,6 +74,9 @@ guava = { module = "com.google.guava:guava", version.ref = "guava" }
 nanoid = { module = "com.aventrix.jnanoid:jnanoid", version.ref = "nanoid" }
 datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
 netty-resolver-dsn = { module = "io.netty:netty-resolver-dns-native-macos", version.ref = "nettyDns"}
+icu4j = { module = "com.ibm.icu:icu4j", version.ref = "icu4j" }
+icu4j-charset = { module = "com.ibm.icu:icu4j-charset", version.ref = "icu4j" }
+icu4j-localespi = { module = "com.ibm.icu:icu4j-localespi", version.ref = "icu4j" }
 
 # Spring
 spring-core = { module = "org.springframework:spring-core" }
@@ -120,6 +124,11 @@ bigquery = { module = "com.google.cloud:google-cloud-bigquery", version.ref = "b
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 
 [bundles]
+icu4j = [
+    "icu4j",
+    "icu4j-charset",
+    "icu4j-localespi"
+]
 service-core=[
     "netty-resolver-dsn",
     "spring-boot-starter",
