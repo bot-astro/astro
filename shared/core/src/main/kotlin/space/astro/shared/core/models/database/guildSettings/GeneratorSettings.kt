@@ -15,6 +15,7 @@ data class GeneratorSettings(
     var defaultName: String,
     var defaultLockedName: String? = null,
     var defaultHiddenName: String? = null,
+    var defaultStatus: String? = null,
     var userLimit: Int? = null,
     var bitrate: Int? = null,
     var category: String? = null,
@@ -58,6 +59,7 @@ data class GeneratorSettings(
         val defaultNameValidation = (defaultName.length in 2..500).asValidationResult("the default name for the generator must be between 2 and 500 characters")
         val defaultLockedNameValidation = (defaultLockedName?.length?.let { it in 2..500 } ?: true).asValidationResult("the default locked name for the generator must be between 2 and 500 characters")
         val defaultHiddenNameValidation = (defaultHiddenName?.length?.let { it in 2..500 } ?: true).asValidationResult("the default hidden name for the generator must be between 2 and 500 characters")
+        val defaultStatusValidation = (defaultStatus?.length?.let { it <= 500} ?: true).asValidationResult("the default status for the generator can contain max 500 characters")
         val userLimitValidation = (userLimit in 0..99).asValidationResult("the user limit for the generator must be between 0 and 99")
         val bitrateValidation = (bitrate in 0..384000).asValidationResult("the bitrate for the generator must be between 0 and 384000")
         val categoryValidation = (category?.isValidSnowflake() ?: true).asValidationResult("invalid category id")
@@ -82,6 +84,7 @@ data class GeneratorSettings(
             defaultNameValidation,
             defaultLockedNameValidation,
             defaultHiddenNameValidation,
+            defaultStatusValidation,
             userLimitValidation,
             bitrateValidation,
             categoryValidation,
