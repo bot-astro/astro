@@ -3,12 +3,15 @@ package space.astro.bot.api.controllers
 import dev.minn.jda.ktx.coroutines.await
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import net.dv8tion.jda.api.entities.Icon
 import net.dv8tion.jda.api.entities.channel.attribute.ICategorizableChannel
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import space.astro.bot.api.models.GuildProfileUpdateBody
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.AUnknownException
@@ -31,7 +34,7 @@ class DiscordGuildController(
         operationId = "getGuild"
     )
     @GetMapping(BotApiEndpoint.DISCORD_GUILD)
-    suspend fun getGuild(
+    fun getGuild(
         @PathVariable guildId: String
     ): ResponseEntity<DiscordGuildBotApiResponse> {
         val guild = shardManager.getGuildById(guildId)
@@ -46,13 +49,27 @@ class DiscordGuildController(
         return ResponseEntity.ok(response)
     }
 
+    @PostMapping(BotApiEndpoint.DISCORD_GUILD_PROFILE)
+    fun updateGuildProfile(
+        @PathVariable guildId: String,
+        @RequestBody newProfile: GuildProfileUpdateBody
+    ): ResponseEntity<Void> {
+        val guild = shardManager.getGuildById(guildId)
+            ?: throw ANotFoundException("Guild with ID $guildId not found")
+
+        guild.selfMember.manager.setNickname(newProfile.nickname)
+        guild.selfMember.manager.setBio(newProfile.bio)
+        guild.selfMember.manager.setAvatar(Icon)
+        guild.selfMember.manager.setNickname(newProfile.nickname)
+    }
+
     @Operation(
         summary = "Get guild channels",
         description = "Returns a list of channels for the specified guild",
         operationId = "getGuildChannels"
     )
     @GetMapping(BotApiEndpoint.DISCORD_GUILD_CHANNELS)
-    suspend fun getGuildChannels(
+    fun getGuildChannels(
         @PathVariable guildId: String
     ): ResponseEntity<List<DiscordGuildChannelBotApiResponse>> {
         val guild = shardManager.getGuildById(guildId)
@@ -122,13 +139,41 @@ class DiscordGuildController(
         }
     }
 
+    @DeleteMapping(BotApiEndpoint.DISCORD_GUILD_CHANNEL)
+    suspend fun deleteChannel(
+        @PathVariable guildId: String,
+        @PathVariable channelId: String
+    ): ResponseEntity<Void> {
+        val guild = shardManager.getGuildById(guildId)
+            ?: throw ANotFoundException("Guild not found")
+
+        try {
+            guild.channels.find { it.id == channelId }
+                ?.delete()
+                ?.reason("Channel deletion triggered from the dashboard")
+                ?.await()
+        } catch (e: ErrorResponseException) {
+            when (e.errorResponse) {
+                ErrorResponse.UNKNOWN_CHANNEL -> return ResponseEntity.noContent().build()
+                ErrorResponse.MISSING_PERMISSIONS -> throw ABadRequestException("Insufficient permissions to delete channel", e)
+                else -> throw ABadRequestException(e.message ?: "Error from Discord API", e)
+            }
+        } catch (e: InsufficientPermissionException) {
+            throw ABadRequestException("Insufficient permissions to delete channel", e)
+        } catch (e: Exception) {
+            throw AUnknownException("An unexpected error occurred", e)
+        }
+
+        return ResponseEntity.noContent().build()
+    }
+
     @Operation(
         summary = "Get guild roles",
         description = "Returns a list of roles for the specified guild",
         operationId = "getGuildRoles"
     )
     @GetMapping(BotApiEndpoint.DISCORD_GUILD_ROLES)
-    suspend fun getGuildRoles(
+    fun getGuildRoles(
         @PathVariable guildId: String
     ): ResponseEntity<List<DiscordGuildRoleBotApiResponse>> {
         val guild = shardManager.getGuildById(guildId)
@@ -138,6 +183,7 @@ class DiscordGuildController(
             DiscordGuildRoleBotApiResponse(
                 id = role.id,
                 name = role.name,
+                // TODO: support fancy colors?
                 color = role.colorRaw,
                 position = role.position
             )

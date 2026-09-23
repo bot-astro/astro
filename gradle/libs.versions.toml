@@ -27,8 +27,9 @@ sentry = "8.52.0"
 kotlin-logging = "8.0.4"
 logback = "1.6.1"
 
-# Database
+# Data
 mongo = "5.9.1"
+s3 = "1.9.4"
 
 # Serialization
 jackson-date = "2.22.1"
@@ -96,6 +97,9 @@ springdoc-openapi-starter-webmvc-scalar = { module = "org.springdoc:springdoc-op
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
 logback = { module = "ch.qos.logback:logback-classic" }
 sentry = { module = "io.sentry:sentry-spring-boot-starter", version.ref = "sentry" }
+
+# Data
+s3 = { module = "aws.sdk.kotlin:s3", version.ref = "s3" }
 
 # Serialization
 jackson-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }

@@ -8,8 +8,9 @@ object CentralApiEndpoint {
 
     const val GUILD_ERRORS = "/v2/guilds/{guildId}/errors"
     const val GUILD_SETTINGS = "/v2/guilds/{guildId}/settings"
-    const val GUILD_GENERATORS = "/v2/guilds/{guildId}/settings/generators"
-    const val GUILD_GENERATOR = "/v2/guilds/{guildId}/settings/generators/{generatorId}"
+    const val GUILD_SETTINGS_PROFILE = "/v2/guilds/{guildId}/settings/profile"
+    const val GUILD_SETTINGS_GENERATORS = "/v2/guilds/{guildId}/settings/generators"
+    const val GUILD_SETTINGS_GENERATOR = "/v2/guilds/{guildId}/settings/generators/{generatorId}"
 
     const val DISCORD_CHANNEL_RELATED_PERMISSIONS = "/v2/discord/constants/permissions"
 

@@ -1,5 +1,6 @@
 package space.astro.api.central.controllers
 
+import io.swagger.v3.oas.annotations.Operation
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -8,14 +9,20 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.api.central.components.GuildPermissionsHelper
 import space.astro.api.central.models.responses.DiscordUserGuild
 import space.astro.api.central.models.requests.GeneratorCreateBody
+import space.astro.api.central.models.requests.GuildProfileUpdateBody
 import space.astro.api.central.models.requests.GuildSettingsUpdateBody
+import space.astro.api.central.services.MediaContentType
+import space.astro.api.central.services.MediaStorageService
+import space.astro.api.central.services.MediaType
 import space.astro.shared.core.clients.BotApiClient
+import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AErrorCode
 import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.exceptions.ANotFoundException
@@ -30,7 +37,8 @@ import java.util.Locale
 @RestController
 class GuildSettingsController(
     private val botApiClient: BotApiClient,
-    private val guildSettingsRepository: GuildSettingsRepository
+    private val guildSettingsRepository: GuildSettingsRepository,
+    private val mediaStorageService: MediaStorageService
 ) {
     @GetMapping(CentralApiEndpoint.GUILD_SETTINGS)
     @CanManageGuildMiddleware
@@ -73,7 +81,48 @@ class GuildSettingsController(
         return ResponseEntity.ok(guildData)
     }
 
-    @PostMapping(CentralApiEndpoint.GUILD_GENERATORS)
+    @Operation(
+        summary = "Updates the bot profile for a guild",
+        description = "Any null value will reset the corresponding field to the default value"
+    )
+    @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_PROFILE)
+    fun updateGuildProfile(
+        @PathVariable guildId: String,
+        @RequestPart("profile", required = false) newGuildProfile: GuildProfileUpdateBody? = null,
+        @RequestPart("avatar", required = false) newAvatar: MultipartFile? = null,
+        @RequestPart("banner", required = false) newBanner: MultipartFile? = null
+    ): ResponseEntity<Void> {
+        val newAvatarUri = newAvatar?.let {
+            mediaStorageService.upload(
+                type = MediaType.PROFILE_AVATAR,
+                guildId = guildId,
+                data = newAvatar.bytes,
+                contentType = MediaContentType.fromMime(
+                    newAvatar.originalFilename?.substringAfterLast(".")
+                        ?: throw ABadRequestException("Missing file name for avatar media")
+                )
+            )
+        }
+
+        val newBannerUri = newBanner?.let {
+            mediaStorageService.upload(
+                type = MediaType.PROFILE_BANNER,
+                guildId = guildId,
+                data = newBanner.bytes,
+                contentType = MediaContentType.fromMime(
+                    newBanner.originalFilename?.substringAfterLast(".")
+                        ?: throw ABadRequestException("Missing file name for banner media")
+                )
+            )
+        }
+        // 1. upload to R2
+        // 2. store in guild settings
+        // 3. update in Discord
+
+        return ResponseEntity.ok().build()
+    }
+
+    @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATORS)
     @CanManageGuildMiddleware
     fun createGenerator(
         @PathVariable guildId: String,
@@ -103,7 +152,7 @@ class GuildSettingsController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @PostMapping(CentralApiEndpoint.GUILD_GENERATORS)
+    @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATORS)
     @CanManageGuildMiddleware
     fun updateGenerator(
         @PathVariable guildId: String,
@@ -121,7 +170,7 @@ class GuildSettingsController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @DeleteMapping(CentralApiEndpoint.GUILD_GENERATOR)
+    @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATOR)
     fun deleteGenerator(
         @PathVariable guildId: String,
         @PathVariable generatorId: String

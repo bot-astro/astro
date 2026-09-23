@@ -36,6 +36,12 @@ management:
       export:
         enabled: true
 
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
 
 springdoc:
   api-docs:
@@ -92,6 +98,12 @@ bot:
 
 frontend:
   base-url: ${FRONTEND_BASE_URL}
+
+r2:
+  endpoint-url: ${R2_ENDPOINT_URL}
+  access-key-id: ${R2_ACCESS_KEY_ID}
+  secret-access-key: ${R2_SECRET_ACCESS_KEY}
+  bucket-name: ${R2_BUCKET_NAME}
 
 ### SERVICE SPECIFIC ###
 

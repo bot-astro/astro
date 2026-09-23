@@ -2,6 +2,7 @@ package space.astro.shared.core.utils.api
 
 object BotApiEndpoint {
     const val DISCORD_GUILD = "/api/v2/guilds/{guildId}"
+    const val DISCORD_GUILD_PROFILE = "/api/v2/guilds/{guildId}/profile"
     const val DISCORD_GUILD_CHANNELS = "/api/v2/guilds/{guildId}/channels"
     const val DISCORD_GUILD_CHANNEL = "/api/v2/guilds/{guildId}/channels/{channelId}"
     const val DISCORD_GUILD_ROLES = "/api/v2/guilds/{guildId}/roles"
