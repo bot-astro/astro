@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.net.url.Url
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
+import space.astro.shared.core.models.database.MediaEntity
 import space.astro.shared.core.properties.R2Properties
 
 @Service
@@ -34,12 +35,12 @@ class MediaStorageService(
      * @return the URL of the uploaded media
      */
     fun upload(
-        type: MediaType,
+        type: MediaEntity.MediaType,
         guildId: String,
         data: ByteArray,
         contentType: MediaContentType,
     ): String {
-        val key = type.formatPath(guildId) + NanoIdUtils.randomNanoId() + "." + contentType.extension
+        val key = type.storagePath(guildId) + NanoIdUtils.randomNanoId() + "." + contentType.extension
 
         runBlocking {
             s3.putObject {
@@ -52,21 +53,6 @@ class MediaStorageService(
 
         return key
     }
-}
-
-/**
- * @param path the path where this type of media is stored in R2
- */
-enum class MediaType(val path: String) {
-    PROFILE_AVATAR("/guilds/{guild_id}/avatar/"),
-    PROFILE_BANNER("/guilds/{guild_id}/banner/");
-
-    /**
-     * Formats the path with the provided parameter
-     *
-     * @return the formatted path
-     */
-    fun formatPath(guildId: String) = path.replace("{guild_id}", guildId)
 }
 
 enum class MediaContentType(val mimeType: String, val extension: String) {

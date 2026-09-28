@@ -88,36 +88,10 @@ class GuildSettingsController(
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_PROFILE)
     fun updateGuildProfile(
         @PathVariable guildId: String,
-        @RequestPart("profile", required = false) newGuildProfile: GuildProfileUpdateBody? = null,
-        @RequestPart("avatar", required = false) newAvatar: MultipartFile? = null,
-        @RequestPart("banner", required = false) newBanner: MultipartFile? = null
+        @RequestBody newProfile: GuildProfileUpdateBody
     ): ResponseEntity<Void> {
-        val newAvatarUri = newAvatar?.let {
-            mediaStorageService.upload(
-                type = MediaType.PROFILE_AVATAR,
-                guildId = guildId,
-                data = newAvatar.bytes,
-                contentType = MediaContentType.fromMime(
-                    newAvatar.originalFilename?.substringAfterLast(".")
-                        ?: throw ABadRequestException("Missing file name for avatar media")
-                )
-            )
-        }
-
-        val newBannerUri = newBanner?.let {
-            mediaStorageService.upload(
-                type = MediaType.PROFILE_BANNER,
-                guildId = guildId,
-                data = newBanner.bytes,
-                contentType = MediaContentType.fromMime(
-                    newBanner.originalFilename?.substringAfterLast(".")
-                        ?: throw ABadRequestException("Missing file name for banner media")
-                )
-            )
-        }
-        // 1. upload to R2
-        // 2. store in guild settings
-        // 3. update in Discord
+        // 1. store in guild settings
+        // 2. update in Discord
 
         return ResponseEntity.ok().build()
     }
