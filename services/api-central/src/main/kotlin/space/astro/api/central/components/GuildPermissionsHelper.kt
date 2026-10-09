@@ -1,12 +1,12 @@
 package space.astro.api.central.components
 
+import org.springframework.stereotype.Component
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import org.springframework.stereotype.Component
 import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.services.DiscordUserGuildsPersistenceService
-import space.astro.shared.core.exceptions.AUnauthorizedException
 import space.astro.shared.core.exceptions.ANotFoundException
+import space.astro.shared.core.exceptions.AUnauthorizedException
 
 @Component("guildPermissionsHelper")
 class GuildPermissionsHelper(

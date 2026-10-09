@@ -3,26 +3,15 @@ package space.astro.api.central.controllers
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.RequestAttribute
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
-import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
+import org.springframework.web.bind.annotation.*
 import space.astro.api.central.components.GuildPermissionsHelper
-import space.astro.api.central.models.responses.DiscordUserGuild
+import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.api.central.models.requests.GeneratorCreateBody
 import space.astro.api.central.models.requests.GuildProfileUpdateBody
 import space.astro.api.central.models.requests.GuildSettingsUpdateBody
-import space.astro.api.central.services.MediaContentType
+import space.astro.api.central.models.responses.DiscordUserGuild
 import space.astro.api.central.services.MediaStorageService
-import space.astro.api.central.services.MediaType
 import space.astro.shared.core.clients.BotApiClient
-import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AErrorCode
 import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.exceptions.ANotFoundException
@@ -32,7 +21,7 @@ import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
-import java.util.Locale
+import java.util.*
 
 @RestController
 class GuildSettingsController(

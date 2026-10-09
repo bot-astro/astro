@@ -2,8 +2,6 @@ package space.astro.api.central.controllers
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -12,11 +10,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.util.UriComponentsBuilder
 import space.astro.api.central.components.OpenApiConfiguration
 import space.astro.api.central.models.auth.AuthPrincipal
@@ -26,7 +20,6 @@ import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.OAuthStateService
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.exceptions.ABadRequestException
-import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.models.database.UserEntity
 import space.astro.shared.core.properties.DiscordOAuthProperties
 import space.astro.shared.core.properties.FrontendProperties
