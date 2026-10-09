@@ -1,4 +1,4 @@
-package space.astro.api.central.components.auth
+package space.astro.api.central.components.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -11,6 +11,8 @@ import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import space.astro.api.central.components.ControllersExceptionHandler
+import space.astro.api.central.components.security.ratelimit.IpRateLimitFilter
+import space.astro.api.central.components.security.ratelimit.UserIdRateLimitFilter
 import space.astro.shared.core.properties.api_central.CentralApiProperties
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
@@ -19,6 +21,7 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 @EnableMethodSecurity
 class SecurityConfig(
     private val authFilter: AuthFilter,
+    private val ipRateLimitFilter: IpRateLimitFilter,
     private val exceptionHandler: ControllersExceptionHandler,
     private val centralApiProperties: CentralApiProperties
 ) {
@@ -41,7 +44,9 @@ class SecurityConfig(
                     exceptionHandler.writeException(response, exception)
                 }
             }
-            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(ipRateLimitFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAfter(authFilter, UserIdRateLimitFilter::class.java)
+//            .addFilterAfter(userIdRateLimitFilter, AuthFilter::class.java)
             .authorizeHttpRequests {
                 it
                     .requestMatchers("/docs/**").permitAll()

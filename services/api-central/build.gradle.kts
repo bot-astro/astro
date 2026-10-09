@@ -14,6 +14,7 @@ dependencies {
     implementation(libs.bundles.db)
     implementation(libs.bundles.cache)
     implementation(libs.s3)
+    implementation(libs.bundles.bucket4j)
 
     implementation(libs.jda) {
         exclude(

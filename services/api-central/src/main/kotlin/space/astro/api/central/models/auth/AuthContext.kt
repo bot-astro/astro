@@ -20,5 +20,5 @@ class AuthContext(
 
     override fun setAuthenticated(isAuthenticated: Boolean) {}
 
-    override fun getName(): String = "User ${authPrincipal.userId}"
+    override fun getName(): String = authPrincipal.userId
 }

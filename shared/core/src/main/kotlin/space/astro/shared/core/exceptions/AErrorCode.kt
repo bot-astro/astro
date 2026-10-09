@@ -6,6 +6,7 @@ enum class AErrorCode {
     UNAUTHENTICATED,
     UNAUTHORIZED,
     NOT_FOUND,
+    TOO_MANY_REQUESTS,
 
     TRANSLATION,
     BOT_NOT_IN_GUILD,

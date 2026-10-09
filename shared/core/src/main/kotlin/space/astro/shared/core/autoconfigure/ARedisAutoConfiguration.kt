@@ -1,9 +1,13 @@
 package space.astro.shared.core.autoconfigure
 
+import com.google.api.client.http.javanet.ConnectionFactory
 import io.lettuce.core.RedisClient
 import io.lettuce.core.api.StatefulRedisConnection
 import io.lettuce.core.api.async.RedisAsyncCommands
 import io.lettuce.core.api.sync.RedisCommands
+import io.lettuce.core.codec.ByteArrayCodec
+import io.lettuce.core.codec.RedisCodec
+import io.lettuce.core.codec.StringCodec
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -19,11 +23,27 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 class ARedisAutoConfiguration {
 
     @Bean
+    fun redisClient(
+        connectionFactory: LettuceConnectionFactory,
+    ): RedisClient {
+        return connectionFactory.requiredNativeClient as RedisClient
+    }
+
+    @Bean
     fun redisConnection(
         connectionFactory: LettuceConnectionFactory
     ): StatefulRedisConnection<String, String> {
         val client = connectionFactory.requiredNativeClient as RedisClient
         return client.connect()
+    }
+
+    @Bean
+    fun redisConnectionByte(
+        connectionFactory: LettuceConnectionFactory,
+    ): StatefulRedisConnection<String, ByteArray> {
+        val client = connectionFactory.requiredNativeClient as RedisClient
+        val redisCodec: RedisCodec<String, ByteArray> = RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE)
+        return client.connect(redisCodec)
     }
 
     @Bean

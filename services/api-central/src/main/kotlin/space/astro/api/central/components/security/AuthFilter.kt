@@ -1,4 +1,4 @@
-package space.astro.api.central.components.auth
+package space.astro.api.central.components.security
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -41,6 +41,8 @@ class AuthFilter(
     }
 
     private fun authenticate(request: HttpServletRequest) {
+        // TODO: k8s auth key check
+
         val cookieValue = request.cookies
             ?.firstOrNull { it.name == centralApiProperties.sessionCookieName }
             ?.value

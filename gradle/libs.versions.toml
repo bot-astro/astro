@@ -39,6 +39,7 @@ coroutines = "1.10.2"
 
 # Security
 jjwt = "0.13.0"
+bucket4j = "8.21.0"
 
 # Caching
 lettuce = "7.6.0.RELEASE"
@@ -112,6 +113,9 @@ coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reacto
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+bucket4j = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4j" }
+bucket4j-redis-common = { module = "com.bucket4j:bucket4j_jdk17-redis-common", version.ref = "bucket4j" }
+bucket4j-lettuce = { module = "com.bucket4j:bucket4j_jdk17-lettuce", version.ref = "bucket4j" }
 
 # Caching
 lettuce = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
@@ -128,11 +132,6 @@ bigquery = { module = "com.google.cloud:google-cloud-bigquery", version.ref = "b
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 
 [bundles]
-icu4j = [
-    "icu4j",
-    "icu4j-charset",
-    "icu4j-localespi"
-]
 service-core=[
     "netty-resolver-dsn",
     "spring-boot-starter",
@@ -163,4 +162,14 @@ web=[
     "jjwt-api",
     "jjwt-impl",
     "jjwt-jackson"
+]
+icu4j = [
+    "icu4j",
+    "icu4j-charset",
+    "icu4j-localespi"
+]
+bucket4j = [
+    "bucket4j",
+    "bucket4j-redis-common",
+    "bucket4j-lettuce"
 ]
