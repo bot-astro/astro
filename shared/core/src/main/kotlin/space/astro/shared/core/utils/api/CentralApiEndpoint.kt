@@ -6,6 +6,9 @@ object CentralApiEndpoint {
     const val ME = "/v2/auth/me"
     const val LOGOUT = "/v2/auth/logout"
 
+    const val ACTUATOR_READINESS = "/actuator/custom/readiness"
+    const val ACTUATOR_SHUTDOWN = "/actuator/custom/shutdown"
+
     const val GUILD_MEDIA = "/v2/guilds/{guildId}/media"
     const val GUILD_ERRORS = "/v2/guilds/{guildId}/errors"
     const val GUILD_SETTINGS = "/v2/guilds/{guildId}/settings"

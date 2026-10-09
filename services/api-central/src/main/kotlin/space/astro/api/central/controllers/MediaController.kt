@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile
 import space.astro.api.central.models.requests.MediaCreateBody
 import space.astro.api.central.services.MediaContentType
 import space.astro.api.central.services.MediaStorageService
+import space.astro.api.central.services.RateLimitingService
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.models.database.MediaEntity
 import space.astro.shared.core.repositories.MediaRepository
@@ -17,7 +18,7 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 @Controller
 class MediaController(
     private val mediaStorageService: MediaStorageService,
-    private val mediaRepository: MediaRepository
+    private val mediaRepository: MediaRepository,
 ) {
     @PostMapping(CentralApiEndpoint.GUILD_MEDIA)
     fun uploadMedia(
@@ -25,6 +26,8 @@ class MediaController(
         @RequestPart("meta", required = true) mediaMeta: MediaCreateBody,
         @RequestPart("media", required = true) media: MultipartFile
     ): ResponseEntity<MediaEntity> {
+        // TODO: Limit about of uploadable media (decide limit rules)
+        
         val mediaUri = mediaStorageService.upload(
             type = mediaMeta.mediaType,
             guildId = guildId,

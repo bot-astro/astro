@@ -105,6 +105,9 @@ r2:
   secret-access-key: ${R2_SECRET_ACCESS_KEY}
   bucket-name: ${R2_BUCKET_NAME}
 
+kube:
+  lifecycle-auth-key: ${KUBE_LIFECYCLE_AUTH_KEY}
+
 ### SERVICE SPECIFIC ###
 
 central:

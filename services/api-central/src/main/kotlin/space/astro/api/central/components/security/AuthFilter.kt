@@ -3,7 +3,6 @@ package space.astro.api.central.components.security
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.http.HttpHeaders
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
@@ -13,9 +12,7 @@ import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.AuthSessionService
 import space.astro.shared.core.clients.DiscordApiClient
-import space.astro.shared.core.exceptions.AUnauthorizedException
 import space.astro.shared.core.properties.DiscordOAuthProperties
-import space.astro.shared.core.properties.KubeProperties
 import space.astro.shared.core.properties.api_central.CentralApiProperties
 
 @Component
@@ -25,8 +22,7 @@ class AuthFilter(
     private val centralApiProperties: CentralApiProperties,
     private val discordOAuthProperties: DiscordOAuthProperties,
     private val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
-    private val discordApiClient: DiscordApiClient,
-    private val kubeProperties: KubeProperties
+    private val discordApiClient: DiscordApiClient
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -45,22 +41,6 @@ class AuthFilter(
     }
 
     private fun authenticate(request: HttpServletRequest) {
-        if (request.requestURI.startsWith("/actuator")) {
-            val authKey = request.getHeader(HttpHeaders.AUTHORIZATION)
-
-            if (authKey != kubeProperties.lifecycleAuthKey) {
-                throw AUnauthorizedException("Invalid auth secret key provided for actuator endpoint")
-            }
-
-            val authContext = AuthContext(
-                authPrincipal = AuthPrincipal("kube_no_session_id", "kube_no_user_id", "kube_no_token"),
-                authorities = emptyList()
-            )
-            SecurityContextHolder.getContext().authentication = authContext
-
-            return
-        }
-
         val cookieValue = request.cookies
             ?.firstOrNull { it.name == centralApiProperties.sessionCookieName }
             ?.value

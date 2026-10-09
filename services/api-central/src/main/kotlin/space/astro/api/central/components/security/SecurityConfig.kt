@@ -1,5 +1,6 @@
 package space.astro.api.central.components.security
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -25,6 +26,15 @@ class SecurityConfig(
     private val exceptionHandler: ControllersExceptionHandler,
     private val centralApiProperties: CentralApiProperties
 ) {
+    // disable automatic registration of filters that are declared in the chain
+    // they would not run twice, but it's cleaner to register them only once
+    @Bean
+    fun authFilterRegistration(filter: AuthFilter) =
+        FilterRegistrationBean(filter).apply { isEnabled = false }
+
+    @Bean
+    fun ipRateLimitFilterRegistration(filter: IpRateLimitFilter) =
+        FilterRegistrationBean(filter).apply { isEnabled = false }
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -50,6 +60,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it
                     .requestMatchers("/docs/**").permitAll()
+                    .requestMatchers("/actuator/**").permitAll() // handled by KubeAuthFilter
                     .requestMatchers(
                         CentralApiEndpoint.DISCORD_LOGIN,
                         CentralApiEndpoint.DISCORD_OAUTH_CALLBACK
