@@ -13,6 +13,7 @@ import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.AuthSessionService
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.properties.DiscordOAuthProperties
+import space.astro.shared.core.properties.KubeProperties
 import space.astro.shared.core.properties.api_central.CentralApiProperties
 
 @Component
@@ -22,7 +23,8 @@ class AuthFilter(
     private val centralApiProperties: CentralApiProperties,
     private val discordOAuthProperties: DiscordOAuthProperties,
     private val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
-    private val discordApiClient: DiscordApiClient
+    private val discordApiClient: DiscordApiClient,
+    private val kubeProperties: KubeProperties
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -41,6 +43,9 @@ class AuthFilter(
     }
 
     private fun authenticate(request: HttpServletRequest) {
+        if (request.requestURI.startsWith("/actuator")) {
+            val authKey =
+        }
         // TODO: k8s auth key check
 
         val cookieValue = request.cookies
