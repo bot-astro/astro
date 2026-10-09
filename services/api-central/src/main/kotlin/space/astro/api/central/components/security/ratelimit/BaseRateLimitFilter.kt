@@ -35,10 +35,10 @@ abstract class BaseRateLimitFilter(
         filterChain: FilterChain
     ) {
         val clientId = resolveClientId(request)
-        val bucket = rateLimitingService.resolveBucket(clientId)
+        val bucket = rateLimitingService.resolveApiGlobalBucket(clientId)
         val probe = bucket.tryConsumeAndReturnRemaining(1)
 
-        response.setHeader("X-Rate-Limit-Limit", RateLimiterConfiguration.BUCKET_CAPACITY.toString())
+        response.setHeader("X-Rate-Limit-Limit", RateLimitingService.BUCKET_API_GLOBAL_CAPACITY.toString())
         response.setHeader(
             "X-Rate-Limit-Remaining",
             probe.remainingTokens.toString()

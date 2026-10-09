@@ -12,7 +12,8 @@ data class MediaEntity(
     @Indexed
     val guildId: String,
     val type: MediaType,
-    val uri: String,
+    val bucket: String,
+    val key: String,
 ) {
     enum class MediaType {
         PROFILE_AVATAR,

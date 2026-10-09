@@ -56,6 +56,7 @@ class ShardManagerFactory(
 
         RestAction.setDefaultFailure(DefaultFailureConsumer(configurationErrorEventPublisher))
 
+        // TODO: handle shared rate limiting (discord asked rxsto)
         return DefaultShardManagerBuilder
             .createLight(
                 discordApplicationProperties.token,

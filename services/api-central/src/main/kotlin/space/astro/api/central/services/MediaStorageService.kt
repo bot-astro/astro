@@ -2,6 +2,9 @@ package space.astro.api.central.services
 
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.S3Client
+import aws.sdk.kotlin.services.s3.deleteObjects
+import aws.sdk.kotlin.services.s3.model.Delete
+import aws.sdk.kotlin.services.s3.model.ObjectIdentifier
 import aws.sdk.kotlin.services.s3.putObject
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.content.ByteStream
@@ -32,7 +35,7 @@ class MediaStorageService(
     /**
      * Uploads a media to Cloudflare R2.
      *
-     * @return the URL of the uploaded media
+     * @return the R2 path key of the uploaded media
      */
     fun upload(
         type: MediaEntity.MediaType,
@@ -52,6 +55,21 @@ class MediaStorageService(
         }
 
         return key
+    }
+
+    /**
+     * Deletes multiple keys from R2
+     */
+    fun deleteAll(keys: Iterable<String>) {
+        runBlocking {
+            s3.deleteObjects {
+                this.bucket = r2Properties.bucketName
+                this.delete = Delete {
+                    objects = keys.map { k -> ObjectIdentifier { this.key = k } }
+                    quiet = true
+                }
+            }
+        }
     }
 }
 
