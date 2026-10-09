@@ -41,7 +41,7 @@ class MediaController(
         @PathVariable("guildId") guildId: String,
         @RequestPart("meta", required = true) mediaMeta: MediaCreateBody,
         @RequestPart("media", required = true) media: MultipartFile
-    ): ResponseEntity<MediaEntity> {
+    ): ResponseEntity<*> {
         // daily rate limit
         val mediaRateLimitBucket = rateLimitingService.resolveMediaBucket(guildId)
         val probe = mediaRateLimitBucket.tryConsumeAndReturnRemaining(1)
@@ -56,7 +56,6 @@ class MediaController(
                     code = AErrorCode.TOO_MANY_REQUESTS,
                     message = "You've hit the media upload limit for today, try again in $retryAfterSeconds seconds.",
                 ))
-                .build()
         }
 
         // total media amount limit
