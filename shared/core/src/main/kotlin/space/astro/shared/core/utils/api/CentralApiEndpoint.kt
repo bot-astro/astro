@@ -15,6 +15,8 @@ object CentralApiEndpoint {
     const val GUILD_SETTINGS_PROFILE = "/v2/guilds/{guildId}/settings/profile"
     const val GUILD_SETTINGS_GENERATORS = "/v2/guilds/{guildId}/settings/generators"
     const val GUILD_SETTINGS_GENERATOR = "/v2/guilds/{guildId}/settings/generators/{generatorId}"
+    const val GUILD_SETTINGS_CONNECTIONS = "/v2/guilds/{guildId}/settings/connections"
+    const val GUILD_SETTINGS_CONNECTION = "/v2/guilds/{guildId}/settings/connections/{connectionId}"
 
     const val DISCORD_CHANNEL_RELATED_PERMISSIONS = "/v2/discord/constants/permissions"
 

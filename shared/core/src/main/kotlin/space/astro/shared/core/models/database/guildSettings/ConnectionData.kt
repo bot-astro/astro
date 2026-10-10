@@ -1,6 +1,7 @@
 package space.astro.shared.core.models.database.guildSettings
 
 import space.astro.shared.core.utils.extensions.isValidSnowflake
+import space.astro.shared.core.utils.validation.Validatable
 import space.astro.shared.core.utils.validation.ValidationResult
 import space.astro.shared.core.utils.validation.asValidationResult
 
@@ -9,15 +10,12 @@ data class ConnectionData(
     var roleID: String,
     var action: ConnectionAction = ConnectionAction.ASSIGN,
     var permanent: Boolean = false
-) {
-    fun validate() : ValidationResult {
-        val idValidation = id.isValidSnowflake().asValidationResult("invalid channel id")
-        val roleIDValidation = roleID.isValidSnowflake().asValidationResult("invalid role id")
+): Validatable {
+    override fun validate(): ValidationResult {
+        val channelValidation = channelId.isValidSnowflake().asValidationResult("Channel id is not a valid Discord id")
+        val roleValidation = roleId.isValidSnowflake().asValidationResult("Role id is not a valid Discord id")
 
-        return ValidationResult.combine(
-            idValidation,
-            roleIDValidation
-        )
+        return ValidationResult.combine(channelValidation, roleValidation)
     }
 
     enum class ConnectionAction {
