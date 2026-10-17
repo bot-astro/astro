@@ -36,7 +36,7 @@ class ControllersExceptionHandler(
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<AErrorResponse> {
         val r = resolve(e)
-        if (r.status >= 500) {
+        if (r.status >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
             log.error(e) { "API request failed" }
         }
         return ResponseEntity
@@ -52,37 +52,46 @@ class ControllersExceptionHandler(
                 Resolved(e.httpStatusCode, e.errorCode, e.message ?: "Request failed.")
 
             is AuthenticationException ->
-                Resolved(401, AErrorCode.UNAUTHORIZED, "Authentication is required.")
+                Resolved(HttpStatus.UNAUTHORIZED.value(), AErrorCode.UNAUTHORIZED, "Authentication is required.")
 
             is AccessDeniedException ->
-                Resolved(403, AErrorCode.UNAUTHORIZED, "Access denied.")
+                Resolved(HttpStatus.FORBIDDEN.value(), AErrorCode.UNAUTHORIZED, "Access denied.")
 
             is MethodArgumentTypeMismatchException ->
-                Resolved(400, AErrorCode.INVALID_REQUEST, "Invalid value for parameter '${e.name}'.")
+                Resolved(HttpStatus.BAD_REQUEST.value(), AErrorCode.INVALID_REQUEST, "Invalid value for parameter '${e.name}'.")
 
             is MissingServletRequestParameterException ->
-                Resolved(400, AErrorCode.INVALID_REQUEST, "Required parameter '${e.parameterName}' is missing or empty.")
+                Resolved(
+                    HttpStatus.BAD_REQUEST.value(),
+                    AErrorCode.INVALID_REQUEST,
+                    "Required parameter '${e.parameterName}' is missing or empty.",
+                )
 
             is HttpMessageNotReadableException ->
-                Resolved(400, AErrorCode.INVALID_REQUEST, "Invalid request body.")
+                Resolved(HttpStatus.BAD_REQUEST.value(), AErrorCode.INVALID_REQUEST, "Invalid request body.")
 
             is TypeMismatchException ->
-                Resolved(400, AErrorCode.INVALID_REQUEST, "Invalid request parameter.")
+                Resolved(HttpStatus.BAD_REQUEST.value(), AErrorCode.INVALID_REQUEST, "Invalid request parameter.")
 
             is ErrorResponse -> {
                 val status = e.statusCode.value()
-                Resolved(status, codeForStatus(status), HttpStatus.resolve(status)?.reasonPhrase ?: "Request failed.", e.headers)
+                Resolved(
+                    status,
+                    codeForStatus(status),
+                    HttpStatus.resolve(status)?.reasonPhrase ?: "Request failed.",
+                    e.headers,
+                )
             }
 
-            else -> Resolved(500, AErrorCode.UNKNOWN, "An unexpected server error occurred.")
+            else -> Resolved(HttpStatus.INTERNAL_SERVER_ERROR.value(), AErrorCode.UNKNOWN, "An unexpected server error occurred.")
         }
 
     private fun codeForStatus(status: Int): AErrorCode =
         when (status) {
-            401 -> AErrorCode.UNAUTHENTICATED
-            403 -> AErrorCode.UNAUTHORIZED
-            404 -> AErrorCode.NOT_FOUND
-            in 400..499 -> AErrorCode.INVALID_REQUEST
+            HttpStatus.UNAUTHORIZED.value() -> AErrorCode.UNAUTHENTICATED
+            HttpStatus.FORBIDDEN.value() -> AErrorCode.UNAUTHORIZED
+            HttpStatus.NOT_FOUND.value() -> AErrorCode.NOT_FOUND
+            in HttpStatus.BAD_REQUEST.value()..<HttpStatus.INTERNAL_SERVER_ERROR.value() -> AErrorCode.INVALID_REQUEST
             else -> AErrorCode.UNKNOWN
         }
 

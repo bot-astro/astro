@@ -59,7 +59,8 @@ class AuthFilter(
                 if (!isExpired) {
                     userDiscordToken.accessToken
                 } else {
-                    val discordTokenDto = discordApiClient.refreshToken(userDiscordToken.refreshToken, discordOAuthProperties)
+                    val discordTokenDto =
+                        discordApiClient.refreshToken(userDiscordToken.refreshToken, discordOAuthProperties)
                     discordUserTokenPersistenceService.upsert(userId, discordTokenDto)
                     discordTokenDto.accessToken
                 }

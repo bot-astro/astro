@@ -60,7 +60,7 @@ class MediaController(
         // total media amount limit
         val mediaOfGuild = mediaRepository.findAllByGuildId(guildId)
         val mediaOfGuildCount = mediaOfGuild.size
-        if (mediaOfGuildCount > 200L) {
+        if (mediaOfGuildCount > MAX_MEDIA_PER_GUILD) {
             throw AException(
                 httpStatusCode = HttpStatus.METHOD_NOT_ALLOWED.value(),
                 errorCode = AErrorCode.INVALID_REQUEST,
@@ -69,7 +69,7 @@ class MediaController(
         }
 
         // cleanup unused media
-        if (mediaOfGuildCount % 20L == 0L) {
+        if (mediaOfGuildCount % MEDIA_CLEANUP_INTERVAL == 0L) {
             val guildSettingsEntity =
                 guildSettingsRepository.findByIdOrNull(guildId)
                     ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
@@ -118,5 +118,10 @@ class MediaController(
 //                add(i.embedStyle.authorIconUrl)
             }
         }
+    }
+
+    private companion object {
+        const val MAX_MEDIA_PER_GUILD = 200L
+        const val MEDIA_CLEANUP_INTERVAL = 20L
     }
 }

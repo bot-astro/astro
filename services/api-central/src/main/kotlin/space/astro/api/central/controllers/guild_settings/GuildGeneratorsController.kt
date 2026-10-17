@@ -71,7 +71,9 @@ class GuildGeneratorsController(
             guildSettings.generators
                 .indexOfFirst { it.id == generatorId }
                 .takeIf { it != -1 }
-                ?: throw ANotFoundException("Generator with ID ${updatedGeneratorSettings.id} not found for guild with id $guildId")
+                ?: throw ANotFoundException(
+                    "Generator with ID ${updatedGeneratorSettings.id} not found for guild with id $guildId",
+                )
 
         guildSettings.generators[generatorIndex] = updatedGeneratorSettings
         guildSettingsRepository.save(guildSettings)

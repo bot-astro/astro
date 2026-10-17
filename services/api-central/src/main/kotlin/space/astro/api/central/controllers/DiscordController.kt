@@ -50,7 +50,12 @@ class DiscordController(
         ApiResponse(
             responseCode = "404",
             description = "The guild was not found by the bot.",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))],
+            content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA),
+                ),
+            ],
         ),
     )
     @GetMapping(CentralApiEndpoint.DISCORD_GUILD_CHANNELS)
@@ -65,7 +70,12 @@ class DiscordController(
         ApiResponse(
             responseCode = "404",
             description = "The guild was not found by the bot.",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))],
+            content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA),
+                ),
+            ],
         ),
     )
     @GetMapping(CentralApiEndpoint.DISCORD_GUILD_ROLES)

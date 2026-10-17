@@ -29,6 +29,7 @@ kotlin {
 
 detekt {
     buildUponDefaultConfig = true
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
     parallel = true
 }
 
