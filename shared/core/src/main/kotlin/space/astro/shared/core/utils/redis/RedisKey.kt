@@ -52,4 +52,5 @@ object RedisKey {
     fun AUTH_SESSION(userId: String, sessionId: String) = "AT:$userId:$sessionId"
     fun DISCORD_USER_TOKEN(userId: String) = "DUT:$userId"
     fun DISCORD_USER_GUILDS() = "DUG"
+    fun TEMPORARY_VCS() = "TEMP_VCS"
 }

@@ -14,5 +14,5 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @ConditionalOnClass(MongoClient::class)
 @ConditionalOnBean(MongoDatabaseFactory::class)
 @AutoConfigureAfter(MongoAutoConfiguration::class, DataMongoAutoConfiguration::class)
-@EnableMongoRepositories(basePackages = ["space.astro.shared.core.repositories"])
+@EnableMongoRepositories(basePackages = ["space.astro.shared.core.repositories.mongo"])
 class AMongoRepositoriesAutoConfiguration

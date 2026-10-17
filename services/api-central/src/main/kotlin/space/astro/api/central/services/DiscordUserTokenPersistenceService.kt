@@ -4,7 +4,7 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import space.astro.shared.core.models.database.DiscordUserTokenEntity
 import space.astro.shared.core.models.discord.DiscordTokenDto
-import space.astro.shared.core.repositories.DiscordUserTokenRepository
+import space.astro.shared.core.repositories.mongo.DiscordUserTokenRepository
 import space.astro.shared.core.utils.redis.RedisKey
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.readValue

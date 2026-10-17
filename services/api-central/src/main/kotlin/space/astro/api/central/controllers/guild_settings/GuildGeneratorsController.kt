@@ -15,7 +15,7 @@ import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.api.bot.request.ChannelCreateBotApiRequest
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
-import space.astro.shared.core.repositories.GuildSettingsRepository
+import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
 @RestController

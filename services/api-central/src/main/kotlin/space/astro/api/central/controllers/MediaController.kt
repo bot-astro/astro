@@ -18,8 +18,8 @@ import space.astro.shared.core.exceptions.*
 import space.astro.shared.core.models.database.MediaEntity
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.properties.R2Properties
-import space.astro.shared.core.repositories.GuildSettingsRepository
-import space.astro.shared.core.repositories.MediaRepository
+import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
+import space.astro.shared.core.repositories.mongo.MediaRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 import kotlin.math.max
 import kotlin.time.Duration.Companion.nanoseconds

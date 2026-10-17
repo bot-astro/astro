@@ -6,12 +6,12 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
-import space.astro.shared.core.repositories.ConfigurationErrorRepository
+import space.astro.shared.core.repositories.mongo.ConfigurationErrorRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 import java.time.Duration
 
 @RestController
-class GuildsErrorsController(
+class GuildErrorsController(
     private val configurationErrorRepository: ConfigurationErrorRepository
 ) {
     @GetMapping(CentralApiEndpoint.GUILD_ERRORS)

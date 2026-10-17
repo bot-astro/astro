@@ -23,7 +23,7 @@ import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.models.database.UserEntity
 import space.astro.shared.core.properties.DiscordOAuthProperties
 import space.astro.shared.core.properties.FrontendProperties
-import space.astro.shared.core.repositories.UserRepository
+import space.astro.shared.core.repositories.mongo.UserRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 import java.net.URI
 

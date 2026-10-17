@@ -8,11 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
-import space.astro.shared.core.clients.BotApiClient
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.models.database.guildSettings.ConnectionData
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
-import space.astro.shared.core.repositories.GuildSettingsRepository
+import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
 @RestController
