@@ -32,6 +32,14 @@ detekt {
     parallel = true
 }
 
+configurations.matching { it.name == "detekt" }.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin") {
+            useVersion(dev.detekt.gradle.plugin.getSupportedKotlinVersion())
+        }
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
 }
