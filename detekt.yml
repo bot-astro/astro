@@ -1,0 +1,19 @@
+style:
+  MaxLineLength:
+    maxLineLength: 140
+  WildcardImport:
+    active: false
+  ReturnCount:
+    active: false
+  ThrowsCount:
+    active: false
+  ForbiddenComment:
+    active: false
+
+naming:
+  PackageNaming:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false

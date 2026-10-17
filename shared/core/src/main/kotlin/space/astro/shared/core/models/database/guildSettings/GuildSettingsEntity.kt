@@ -4,7 +4,7 @@ import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
-import java.util.Locale
+import java.util.*
 
 @Document(collection = "guilds")
 data class GuildSettingsEntity(

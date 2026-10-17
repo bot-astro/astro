@@ -33,6 +33,7 @@ class DiscordUserTokenPersistenceService(
         }
     }
 
+    @Suppress("MagicNumber")
     fun upsert(
         userId: String,
         discordTokenDto: DiscordTokenDto,
@@ -43,16 +44,12 @@ class DiscordUserTokenPersistenceService(
         redisTemplate.opsForValue().set(
             RedisKey.DISCORD_USER_TOKEN(userId),
             jsonMapper.writeValueAsString(tokenEntity),
-            (discordTokenDto.expiresIn - TOKEN_EXPIRY_BUFFER_SECONDS).seconds.toJavaDuration(),
+            (discordTokenDto.expiresIn - 300).seconds.toJavaDuration(),
         )
     }
 
     fun delete(userId: String) {
         discordUserTokenRepository.deleteById(userId)
         redisTemplate.delete(RedisKey.DISCORD_USER_TOKEN(userId))
-    }
-
-    private companion object {
-        const val TOKEN_EXPIRY_BUFFER_SECONDS = 300
     }
 }

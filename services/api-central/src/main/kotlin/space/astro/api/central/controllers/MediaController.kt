@@ -14,8 +14,7 @@ import space.astro.api.central.models.requests.MediaCreateBody
 import space.astro.api.central.services.MediaContentType
 import space.astro.api.central.services.MediaStorageService
 import space.astro.api.central.services.RateLimitingService
-import space.astro.shared.core.exceptions.ABadRequestException
-import space.astro.shared.core.exceptions.ANotFoundException
+import space.astro.shared.core.exceptions.*
 import space.astro.shared.core.models.database.MediaEntity
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.properties.R2Properties
@@ -33,6 +32,11 @@ class MediaController(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val r2Properties: R2Properties,
 ) {
+    private companion object {
+        const val MAX_MEDIA_PER_GUILD = 200L
+        const val MEDIA_CLEANUP_INTERVAL = 20L
+    }
+
     @PostMapping(CentralApiEndpoint.GUILD_MEDIA)
     fun uploadMedia(
         @PathVariable("guildId") guildId: String,
@@ -118,10 +122,5 @@ class MediaController(
 //                add(i.embedStyle.authorIconUrl)
             }
         }
-    }
-
-    private companion object {
-        const val MAX_MEDIA_PER_GUILD = 200L
-        const val MEDIA_CLEANUP_INTERVAL = 20L
     }
 }

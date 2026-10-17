@@ -2,11 +2,7 @@ package space.astro.api.central.controllers.guild_settings
 
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.models.database.guildSettings.ConnectionData

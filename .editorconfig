@@ -3,3 +3,4 @@ root = true
 [*.{kt,kts}]
 ktlint_standard_package-name = disabled
 ktlint_standard_function-naming = disabled
+ktlint_standard_no-wildcard-imports = disabled
