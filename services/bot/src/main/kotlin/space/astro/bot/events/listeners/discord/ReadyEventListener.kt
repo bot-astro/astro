@@ -9,9 +9,7 @@ import org.springframework.stereotype.Component
 private val log = KotlinLogging.logger { }
 
 @Component
-class ReadyEventListener(
-//    private val commandHandler: CommandHandler
-) {
+class ReadyEventListener {
     @EventListener
     fun onReady(event: ReadyEvent) {
         val shardId = event.jda.shardInfo.shardId

@@ -9,11 +9,29 @@ style:
     active: false
   ForbiddenComment:
     active: false
+  MagicNumber:
+    active: false
+  FunctionOnlyReturningConstant:
+    active: false
 
 naming:
   PackageNaming:
     active: false
+  FunctionNaming:
+    active: false
 
 exceptions:
   TooGenericExceptionCaught:
+    active: false
+  TooGenericExceptionThrown:
+    active: false
+  SwallowedException:
+    active: false
+
+complexity:
+  CyclomaticComplexMethod:
+    active: false
+  LongMethod:
+    active: false
+  TooManyFunctions:
     active: false

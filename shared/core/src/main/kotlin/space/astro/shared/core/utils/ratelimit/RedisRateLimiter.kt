@@ -1,10 +1,13 @@
 package space.astro.shared.core.utils.ratelimit
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.lettuce.core.RedisNoScriptException
 import io.lettuce.core.ScriptOutputType
 import io.lettuce.core.api.sync.RedisCommands
 import space.astro.shared.core.utils.redis.RedisKey
 import java.time.Duration
+
+private val log = KotlinLogging.logger { }
 
 /**
  * Rate limiter based on Redis
@@ -63,7 +66,7 @@ class RedisRateLimiter(
                 ttl = data[1],
             )
         } catch (e: RedisNoScriptException) {
-            e.printStackTrace()
+            log.error(e) { "Redis rate limiter script not found, reloading it" }
             // NOTE: recreate script if redis fails to find old one
             scriptHash = commands.scriptLoad(SCRIPT)
 
@@ -72,7 +75,7 @@ class RedisRateLimiter(
                 acquired = true,
             )
         } catch (e: Exception) {
-            e.printStackTrace()
+            log.error(e) { "Redis rate limiter failed" }
 
             // NOTE: try to prevent outage by releasing rate limit temporarily
             RateLimiterAcquireResult(

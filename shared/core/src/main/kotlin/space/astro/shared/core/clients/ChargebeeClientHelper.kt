@@ -22,7 +22,8 @@ class ChargebeeClientHelper(
      * Creates a portal session for the user with the provided [userID]
      *
      * @param userID
-     * @param retry if the request fails and this parameter is set to true, it will try to create the user in Chargebee and then re-perform the request
+     * @param retry if the request fails and this parameter is set to true,
+     * it will try to create the user in Chargebee and then re-perform the request
      *
      * @return the access url for the portal session or null if it failed
      */
