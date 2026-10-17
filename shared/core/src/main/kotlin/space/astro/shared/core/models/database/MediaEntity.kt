@@ -17,16 +17,16 @@ data class MediaEntity(
 ) {
     enum class MediaType {
         PROFILE_AVATAR,
-        PROFILE_BANNER;
+        PROFILE_BANNER,
+        ;
 
         /**
          * @return the storage path for s3 like storages
          */
-        fun storagePath(guildId: String): String {
-            return when (this) {
+        fun storagePath(guildId: String): String =
+            when (this) {
                 PROFILE_BANNER -> "/guilds/$guildId/banner/"
                 PROFILE_AVATAR -> "/guilds/$guildId/avatar/"
             }
-        }
     }
 }

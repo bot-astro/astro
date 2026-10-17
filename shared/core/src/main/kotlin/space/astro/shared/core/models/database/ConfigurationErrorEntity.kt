@@ -5,7 +5,6 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 
-
 @Document(collection = "errors")
 data class ConfigurationErrorEntity(
     @Id
@@ -22,6 +21,6 @@ data class ConfigurationErrorEntity(
         GENERATOR,
         TEMPLATE,
         INTERFACE,
-        VOICE_ROLE
+        VOICE_ROLE,
     }
 }

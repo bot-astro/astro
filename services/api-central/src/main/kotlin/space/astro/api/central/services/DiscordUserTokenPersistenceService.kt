@@ -15,7 +15,7 @@ import kotlin.time.toJavaDuration
 class DiscordUserTokenPersistenceService(
     private val discordUserTokenRepository: DiscordUserTokenRepository,
     private val redisTemplate: StringRedisTemplate,
-    private val jsonMapper: JsonMapper
+    private val jsonMapper: JsonMapper,
 ) {
     /**
      * @return a pair of (isExpired, token entity) or null if not found
@@ -26,13 +26,17 @@ class DiscordUserTokenPersistenceService(
         return if (serializedTokenFromCache != null) {
             Pair(false, jsonMapper.readValue(serializedTokenFromCache))
         } else {
-            val tokenFromDb =  discordUserTokenRepository.findById(userId).orElse(null)
-                ?: return null
+            val tokenFromDb =
+                discordUserTokenRepository.findById(userId).orElse(null)
+                    ?: return null
             Pair(true, tokenFromDb)
         }
     }
 
-    fun upsert(userId: String, discordTokenDto: DiscordTokenDto) {
+    fun upsert(
+        userId: String,
+        discordTokenDto: DiscordTokenDto,
+    ) {
         val tokenEntity = DiscordUserTokenEntity.fromTokenPayload(userId, discordTokenDto)
         discordUserTokenRepository.save(tokenEntity)
 

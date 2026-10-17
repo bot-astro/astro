@@ -22,7 +22,6 @@ class RedisShardSessionController(
     private val shardManagerConfig: ShardManagerConfig,
     redisCommands: RedisCommands<String, String>,
 ) : SessionControllerAdapter() {
-
     companion object {
         // slightly higher than Discord 5s limit
         private val CONNECT_INTERVAL = Duration.ofSeconds(7)
@@ -36,10 +35,13 @@ class RedisShardSessionController(
     // since appending a connection is a blocking operation, because we wait for the rate limiting on the bucket
     // we need to use threads to parallelize this
     // additionally, daemon threads won't prevent JVM shutdown
-    private val threadFactory = Thread.ofPlatform()
-        .daemon(true)
-        .name("session-controller-", 0)
-        .factory()
+    private val threadFactory =
+        Thread
+            .ofPlatform()
+            .daemon(true)
+            .name("session-controller-", 0)
+            .factory()
+
     // we use a cache pool because we don't want shards to wait for other shards that belong to a different bucket
     // if we had a fixed number of threads, a shard might have to wait for a shard of a different bucket to acquire a
     // rate limit
@@ -51,15 +53,16 @@ class RedisShardSessionController(
         val concurrencyBucket: Int = shardId % shardManagerConfig.maxIdentifyConcurrency
         val key = getBucketIdentifier(discordApplicationProperties.id, concurrencyBucket)
 
-        val future: Future<*> = executor.submit {
-            try {
-                rateLimiter.acquire(key)
-                node.run(false)
-            } catch (e: Exception) {
-                log.error("Error while running session connect node", e)
-                appendSession(node)
+        val future: Future<*> =
+            executor.submit {
+                try {
+                    rateLimiter.acquire(key)
+                    node.run(false)
+                } catch (e: Exception) {
+                    log.error("Error while running session connect node", e)
+                    appendSession(node)
+                }
             }
-        }
 
         connectionNodes[node] = future
     }
@@ -68,8 +71,8 @@ class RedisShardSessionController(
         connectionNodes.remove(node)?.cancel(true)
     }
 
-    private fun getBucketIdentifier(applicationId: Long, concurrencyBucket: Int): String {
-        return listOf(applicationId.toString(), concurrencyBucket.toString()).joinToString(":")
-    }
-
+    private fun getBucketIdentifier(
+        applicationId: Long,
+        concurrencyBucket: Int,
+    ): String = listOf(applicationId.toString(), concurrencyBucket.toString()).joinToString(":")
 }

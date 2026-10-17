@@ -6,5 +6,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class BotShardProperties(
     val totalShards: Int = 1,
     val totalPods: Int = 1,
-    val loginFactor: Int = 1
+    val loginFactor: Int = 1,
 )

@@ -14,7 +14,8 @@ import space.astro.api.central.models.requests.MediaCreateBody
 import space.astro.api.central.services.MediaContentType
 import space.astro.api.central.services.MediaStorageService
 import space.astro.api.central.services.RateLimitingService
-import space.astro.shared.core.exceptions.*
+import space.astro.shared.core.exceptions.ABadRequestException
+import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.models.database.MediaEntity
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.properties.R2Properties
@@ -30,13 +31,13 @@ class MediaController(
     private val mediaRepository: MediaRepository,
     private val rateLimitingService: RateLimitingService,
     private val guildSettingsRepository: GuildSettingsRepository,
-    private val r2Properties: R2Properties
+    private val r2Properties: R2Properties,
 ) {
     @PostMapping(CentralApiEndpoint.GUILD_MEDIA)
     fun uploadMedia(
         @PathVariable("guildId") guildId: String,
         @RequestPart("meta", required = true) mediaMeta: MediaCreateBody,
-        @RequestPart("media", required = true) media: MultipartFile
+        @RequestPart("media", required = true) media: MultipartFile,
     ): ResponseEntity<*> {
         // daily rate limit
         val mediaRateLimitBucket = rateLimitingService.resolveMediaBucket(guildId)
@@ -48,10 +49,12 @@ class MediaController(
                 .status(HttpStatus.TOO_MANY_REQUESTS)
                 .header("Retry-After", retryAfterSeconds.toString())
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                .body(AErrorResponse(
-                    code = AErrorCode.TOO_MANY_REQUESTS,
-                    message = "You've hit the media upload limit for today, try again in $retryAfterSeconds seconds.",
-                ))
+                .body(
+                    AErrorResponse(
+                        code = AErrorCode.TOO_MANY_REQUESTS,
+                        message = "You've hit the media upload limit for today, try again in $retryAfterSeconds seconds.",
+                    ),
+                )
         }
 
         // total media amount limit
@@ -61,19 +64,21 @@ class MediaController(
             throw AException(
                 httpStatusCode = HttpStatus.METHOD_NOT_ALLOWED.value(),
                 errorCode = AErrorCode.INVALID_REQUEST,
-                message = "You've uploaded too many media files."
+                message = "You've uploaded too many media files.",
             )
         }
 
         // cleanup unused media
         if (mediaOfGuildCount % 20L == 0L) {
-            val guildSettingsEntity = guildSettingsRepository.findByIdOrNull(guildId)
-                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+            val guildSettingsEntity =
+                guildSettingsRepository.findByIdOrNull(guildId)
+                    ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
             val usedMediaIds = getMediaIdsUsedByGuild(guildSettingsEntity)
-            val outdatedMediaKeys = mediaOfGuild
-                .filter { it.id in (mediaOfGuild.map { media -> media.id }.toSet() - usedMediaIds) }
-                .map { it.key }
+            val outdatedMediaKeys =
+                mediaOfGuild
+                    .filter { it.id in (mediaOfGuild.map { media -> media.id }.toSet() - usedMediaIds) }
+                    .map { it.key }
 
             if (outdatedMediaKeys.isNotEmpty()) {
                 mediaStorageService.deleteAll(outdatedMediaKeys)
@@ -81,22 +86,25 @@ class MediaController(
         }
 
         // save uploaded media
-        val mediaKey = mediaStorageService.upload(
-            type = mediaMeta.mediaType,
-            guildId = guildId,
-            data = media.bytes,
-            contentType = MediaContentType.fromMime(
-                media.originalFilename?.substringAfterLast(".")
-                    ?: throw ABadRequestException("Missing file name for media")
+        val mediaKey =
+            mediaStorageService.upload(
+                type = mediaMeta.mediaType,
+                guildId = guildId,
+                data = media.bytes,
+                contentType =
+                    MediaContentType.fromMime(
+                        media.originalFilename?.substringAfterLast(".")
+                            ?: throw ABadRequestException("Missing file name for media"),
+                    ),
             )
-        )
 
-        val mediaEntity = MediaEntity(
-            guildId = guildId,
-            bucket = r2Properties.bucketName,
-            key = mediaKey,
-            type = mediaMeta.mediaType,
-        )
+        val mediaEntity =
+            MediaEntity(
+                guildId = guildId,
+                bucket = r2Properties.bucketName,
+                key = mediaKey,
+                type = mediaMeta.mediaType,
+            )
 
         mediaRepository.save(mediaEntity)
 

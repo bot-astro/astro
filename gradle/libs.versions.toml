@@ -2,6 +2,8 @@
 # Build tooling
 jib = "3.5.4"
 ksp = "2.3.3"
+ktlint = "14.2.0"
+detekt = "2.0.0-alpha.6"
 
 # Kotlin
 kotlin = "2.4.0"
@@ -63,6 +65,8 @@ kotlin-spring-plugin = { module = "org.jetbrains.kotlin.plugin.spring:org.jetbra
 spring-boot-plugin = { module = "org.springframework.boot:org.springframework.boot.gradle.plugin", version.ref = "springBootPlugin" }
 spring-dependency-management-plugin = { module = "io.spring.dependency-management:io.spring.dependency-management.gradle.plugin", version.ref = "springDependencyManagementPlugin" }
 jib-plugin = { module = "com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin", version.ref = "jib" }
+ktlint-plugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
+detekt-plugin = { module = "dev.detekt:dev.detekt.gradle.plugin", version.ref = "detekt" }
 sentry-plugin = { module = "io.sentry.jvm.gradle:io.sentry.jvm.gradle.gradle.plugin", version.ref = "sentryPlugin" }
 
 # PLATFORM BOMS

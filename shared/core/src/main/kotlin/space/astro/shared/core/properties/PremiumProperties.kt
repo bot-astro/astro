@@ -6,5 +6,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class PremiumProperties(
     var serverSkuId: String,
     var monthlyPlanId: String,
-    var yearlyPlanId: String
+    var yearlyPlanId: String,
 )

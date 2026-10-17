@@ -6,6 +6,8 @@ data class ChannelCreateBotApiRequest(
     val channelType: ChannelCreateType,
 ) {
     enum class ChannelCreateType {
-        TEXT, VOICE, CATEGORY
+        TEXT,
+        VOICE,
+        CATEGORY,
     }
 }

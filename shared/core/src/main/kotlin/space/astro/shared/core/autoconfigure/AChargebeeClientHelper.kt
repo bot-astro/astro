@@ -16,10 +16,7 @@ import space.astro.shared.core.properties.ChargebeeClientProperties
     havingValue = "true",
 )
 class AChargebeeClientHelper {
-
     @Bean
     @ConditionalOnMissingBean
-    fun chargebeeClientHelper(
-        config: ChargebeeClientProperties
-    ) = ChargebeeClientHelper(config)
+    fun chargebeeClientHelper(config: ChargebeeClientProperties) = ChargebeeClientHelper(config)
 }

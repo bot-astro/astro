@@ -18,13 +18,13 @@ class RedisRateLimiter(
     private val commands: RedisCommands<String, String>,
     private val namespace: String,
     private val defaultMaxPerInterval: Int,
-    private val intervalDuration: Duration
+    private val intervalDuration: Duration,
 ) : RateLimiter {
-
     private var scriptHash: String
 
     companion object {
-        private const val SCRIPT = "" +
+        private const val SCRIPT =
+            "" +
                 "local count = redis.call(\"incr\",KEYS[1])\n" +
                 "local ttl = redis.call(\"pttl\",KEYS[1])\n" +
                 "if ttl == -1 then\n" +
@@ -42,11 +42,12 @@ class RedisRateLimiter(
         scriptHash = commands.scriptLoad(SCRIPT)
     }
 
-    override fun tryAcquire(id: String): RateLimiterAcquireResult {
-        return tryAcquire(id, defaultMaxPerInterval)
-    }
+    override fun tryAcquire(id: String): RateLimiterAcquireResult = tryAcquire(id, defaultMaxPerInterval)
 
-    override fun tryAcquire(id: String, maxPerInterval: Int): RateLimiterAcquireResult {
+    override fun tryAcquire(
+        id: String,
+        maxPerInterval: Int,
+    ): RateLimiterAcquireResult {
         val key = RedisKey.RATE_LIMIT(namespace, id)
 
         val keys = arrayOf(key)
@@ -59,7 +60,7 @@ class RedisRateLimiter(
             RateLimiterAcquireResult(
                 acquired = incr <= maxPerInterval,
                 count = incr,
-                ttl = data[1]
+                ttl = data[1],
             )
         } catch (e: RedisNoScriptException) {
             e.printStackTrace()
@@ -68,14 +69,14 @@ class RedisRateLimiter(
 
             // NOTE: try to prevent outage by releasing rate limit temporarily
             RateLimiterAcquireResult(
-                acquired = true
+                acquired = true,
             )
         } catch (e: Exception) {
             e.printStackTrace()
 
             // NOTE: try to prevent outage by releasing rate limit temporarily
             RateLimiterAcquireResult(
-                acquired = true
+                acquired = true,
             )
         }
     }

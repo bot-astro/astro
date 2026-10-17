@@ -10,8 +10,8 @@ import tools.jackson.databind.json.JsonMapper
 @Component
 class UserIdRateLimitFilter(
     rateLimitingService: RateLimitingService,
-    jsonMapper: JsonMapper
-): BaseRateLimitFilter(rateLimitingService, jsonMapper) {
+    jsonMapper: JsonMapper,
+) : BaseRateLimitFilter(rateLimitingService, jsonMapper) {
     override fun resolveClientId(request: HttpServletRequest): String {
         val auth = SecurityContextHolder.getContext().authentication
         val userId = (auth?.principal as? AuthPrincipal)?.userId

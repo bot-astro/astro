@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component
 @Component
 @ConfigurationProperties("shard.manager")
 class ShardManagerConfig {
-
     /** Total number of shards across all pods */
     val totalShards: Int = 1
 

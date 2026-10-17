@@ -11,11 +11,11 @@ data class DiscordTokenDto(
     val refreshToken: String,
     val scope: String?,
     val tokenType: String?,
-    val guild: DiscordTokenGuildDto?
+    val guild: DiscordTokenGuildDto?,
 )
 
 data class DiscordTokenGuildDto(
     val id: String,
     val name: String,
-    val icon: String?
+    val icon: String?,
 )

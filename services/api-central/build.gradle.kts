@@ -19,7 +19,7 @@ dependencies {
     implementation(libs.jda) {
         exclude(
             group = "club.minnced",
-            module = "opus-java"
+            module = "opus-java",
         )
     }
     implementation(libs.nanoid)

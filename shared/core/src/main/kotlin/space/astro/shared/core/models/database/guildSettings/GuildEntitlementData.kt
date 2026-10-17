@@ -10,5 +10,5 @@ package space.astro.shared.core.models.database.guildSettings
 data class GuildEntitlementData(
     val id: String,
     val skuId: String,
-    val endsAt: Long?
+    val endsAt: Long?,
 )

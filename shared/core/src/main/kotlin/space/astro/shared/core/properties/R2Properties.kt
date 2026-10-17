@@ -7,5 +7,5 @@ data class R2Properties(
     val endpointUrl: String,
     val accessKeyId: String,
     val secretAccessKey: String,
-    val bucketName: String
+    val bucketName: String,
 )

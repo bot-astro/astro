@@ -13,7 +13,7 @@ import tools.jackson.module.kotlin.readValue
 import java.security.SecureRandom
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.Base64
 
 @Service
 class AuthSessionService(
@@ -21,7 +21,6 @@ class AuthSessionService(
     private val jsonMapper: JsonMapper,
     private val centralApiProperties: CentralApiProperties,
 ) {
-
     companion object {
         val SESSION_TTL: Duration = Duration.ofDays(60)
     }
@@ -30,41 +29,52 @@ class AuthSessionService(
 
     fun createSession(userId: String): AuthSession {
         val sessionId = createSessionId()
-        val authSession = AuthSession(
-            sessionId = sessionId,
-            userId = userId,
-            expiresAt = Instant.now().plus(SESSION_TTL).toEpochMilli()
-        )
+        val authSession =
+            AuthSession(
+                sessionId = sessionId,
+                userId = userId,
+                expiresAt = Instant.now().plus(SESSION_TTL).toEpochMilli(),
+            )
         redis.opsForValue().set(
             RedisKey.AUTH_SESSION(userId, sessionId),
             jsonMapper.writeValueAsString(authSession),
-            SESSION_TTL
+            SESSION_TTL,
         )
         return authSession
     }
 
-    fun getSession(userId: String, sessionId: String): AuthSession? {
-        return redis.opsForValue().get(RedisKey.AUTH_SESSION(userId, sessionId))
+    fun getSession(
+        userId: String,
+        sessionId: String,
+    ): AuthSession? =
+        redis
+            .opsForValue()
+            .get(RedisKey.AUTH_SESSION(userId, sessionId))
             ?.let {
                 jsonMapper.readValue(it)
             }
-    }
 
-    fun deleteSession(userId: String, sessionId: String) {
+    fun deleteSession(
+        userId: String,
+        sessionId: String,
+    ) {
         redis.delete(RedisKey.AUTH_SESSION(userId, sessionId))
     }
 
     fun createSessionCookie(session: AuthSession): ResponseCookie =
         sessionCookie(
             "${session.userId}:${session.sessionId}",
-            SESSION_TTL
+            SESSION_TTL,
         )
 
-    fun createExpiredSessionCookie(): ResponseCookie =
-        sessionCookie("", Duration.ZERO)
+    fun createExpiredSessionCookie(): ResponseCookie = sessionCookie("", Duration.ZERO)
 
-    private fun sessionCookie(value: String, maxAge: Duration): ResponseCookie =
-        ResponseCookie.from(centralApiProperties.sessionCookieName, value)
+    private fun sessionCookie(
+        value: String,
+        maxAge: Duration,
+    ): ResponseCookie =
+        ResponseCookie
+            .from(centralApiProperties.sessionCookieName, value)
             .maxAge(maxAge)
             .httpOnly(true)
             .secure(centralApiProperties.sessionCookieSecure)
@@ -82,7 +92,7 @@ class AuthSessionService(
             throw AException(
                 httpStatusCode = 401,
                 errorCode = AErrorCode.INVALID_REQUEST,
-                message = "Invalid session cookie format"
+                message = "Invalid session cookie format",
             )
         }
         return Pair(parts[0], parts[1])
@@ -92,7 +102,8 @@ class AuthSessionService(
         val bytes = ByteArray(16)
         secureRandom.nextBytes(bytes)
 
-        return Base64.getUrlEncoder()
+        return Base64
+            .getUrlEncoder()
             .withoutPadding()
             .encodeToString(bytes)
     }

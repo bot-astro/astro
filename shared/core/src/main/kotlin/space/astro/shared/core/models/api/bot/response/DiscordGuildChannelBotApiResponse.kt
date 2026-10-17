@@ -5,5 +5,5 @@ data class DiscordGuildChannelBotApiResponse(
     val name: String?,
     val type: Int,
     val parentId: String?,
-    val parentName: String?
+    val parentName: String?,
 )

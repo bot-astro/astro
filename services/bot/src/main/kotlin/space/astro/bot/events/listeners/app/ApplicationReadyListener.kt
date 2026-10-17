@@ -6,11 +6,11 @@ import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
-private val log = KotlinLogging.logger {  }
+private val log = KotlinLogging.logger { }
 
 @Component
 class ApplicationReadyListener(
-    private val shardManager: ShardManager
+    private val shardManager: ShardManager,
 ) {
     @EventListener(ApplicationReadyEvent::class)
     fun ready() {

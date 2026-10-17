@@ -5,9 +5,8 @@ import org.springframework.security.core.GrantedAuthority
 
 class AuthContext(
     private val authPrincipal: AuthPrincipal,
-    private val authorities: Collection<GrantedAuthority>
+    private val authorities: Collection<GrantedAuthority>,
 ) : Authentication {
-
     override fun getAuthorities(): Collection<GrantedAuthority> = authorities
 
     override fun getCredentials(): Any? = null

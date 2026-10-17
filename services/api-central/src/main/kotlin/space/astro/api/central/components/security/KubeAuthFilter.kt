@@ -11,17 +11,14 @@ import space.astro.shared.core.properties.KubeProperties
 
 @Component
 class KubeAuthFilter(
-    private val kubeProperties: KubeProperties
+    private val kubeProperties: KubeProperties,
 ) : OncePerRequestFilter() {
-
-    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-        return !request.requestURI.startsWith("/actuator")
-    }
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean = !request.requestURI.startsWith("/actuator")
 
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
         val authKey = request.getHeader(HttpHeaders.AUTHORIZATION)
 

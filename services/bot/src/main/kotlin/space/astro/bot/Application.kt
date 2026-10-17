@@ -2,25 +2,25 @@ package space.astro.bot
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.KotlinLoggingConfiguration
-import net.dv8tion.jda.api.requests.RestAction
 import net.dv8tion.jda.api.utils.messages.MessageRequest.setDefaultUseComponentsV2
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
-import space.astro.bot.utils.discord.DefaultFailureConsumer
 import space.astro.shared.core.properties.ShardManagerConfig
 
 @SpringBootApplication(
     exclude = [
-        UserDetailsServiceAutoConfiguration::class
-    ]
+        UserDetailsServiceAutoConfiguration::class,
+    ],
 )
-@ConfigurationPropertiesScan(basePackages = [
-    "space.astro.shared.core.properties.bot",
-    "space.astro.bot.properties"
-])
+@ConfigurationPropertiesScan(
+    basePackages = [
+        "space.astro.shared.core.properties.bot",
+        "space.astro.bot.properties",
+    ],
+)
 @EnableConfigurationProperties(ShardManagerConfig::class)
 class Application
 

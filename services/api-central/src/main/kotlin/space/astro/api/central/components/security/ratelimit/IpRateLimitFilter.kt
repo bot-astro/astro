@@ -8,9 +8,7 @@ import tools.jackson.databind.json.JsonMapper
 @Component
 class IpRateLimitFilter(
     rateLimitingService: RateLimitingService,
-    jsonMapper: JsonMapper
-): BaseRateLimitFilter(rateLimitingService, jsonMapper) {
-    override fun resolveClientId(request: HttpServletRequest): String {
-        return request.remoteAddr
-    }
+    jsonMapper: JsonMapper,
+) : BaseRateLimitFilter(rateLimitingService, jsonMapper) {
+    override fun resolveClientId(request: HttpServletRequest): String = request.remoteAddr
 }

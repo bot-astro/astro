@@ -15,24 +15,19 @@ import kotlin.time.Duration.Companion.nanoseconds
 
 abstract class BaseRateLimitFilter(
     private val rateLimitingService: RateLimitingService,
-    private val jsonMapper: JsonMapper
+    private val jsonMapper: JsonMapper,
 ) : OncePerRequestFilter() {
-
     /**
      * Resolves the identifier used to select the rate-limit bucket.
      */
-    protected abstract fun resolveClientId(
-        request: HttpServletRequest
-    ): String
+    protected abstract fun resolveClientId(request: HttpServletRequest): String
 
-    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-       return request.requestURI.startsWith("/actuator")
-    }
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean = request.requestURI.startsWith("/actuator")
 
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
         val clientId = resolveClientId(request)
         val bucket = rateLimitingService.resolveApiGlobalBucket(clientId)
@@ -41,30 +36,32 @@ abstract class BaseRateLimitFilter(
         response.setHeader("X-Rate-Limit-Limit", RateLimitingService.BUCKET_API_GLOBAL_CAPACITY.toString())
         response.setHeader(
             "X-Rate-Limit-Remaining",
-            probe.remainingTokens.toString()
+            probe.remainingTokens.toString(),
         )
 
         if (!probe.isConsumed) {
-            val retryAfterSeconds = max(
-                1,
-                probe.nanosToWaitForRefill.nanoseconds.inWholeSeconds
-            )
+            val retryAfterSeconds =
+                max(
+                    1,
+                    probe.nanosToWaitForRefill.nanoseconds.inWholeSeconds,
+                )
 
             response.status = HttpStatus.TOO_MANY_REQUESTS.value()
             response.setHeader(
                 "Retry-After",
-                retryAfterSeconds.toString()
+                retryAfterSeconds.toString(),
             )
             response.contentType = MediaType.APPLICATION_JSON_VALUE
 
-            val errorResponse = AErrorResponse(
-                code = AErrorCode.TOO_MANY_REQUESTS,
-                message = "Rate limited, try again in $retryAfterSeconds seconds"
-            )
+            val errorResponse =
+                AErrorResponse(
+                    code = AErrorCode.TOO_MANY_REQUESTS,
+                    message = "Rate limited, try again in $retryAfterSeconds seconds",
+                )
 
             jsonMapper.writeValue(
                 response.writer,
-                errorResponse
+                errorResponse,
             )
 
             return

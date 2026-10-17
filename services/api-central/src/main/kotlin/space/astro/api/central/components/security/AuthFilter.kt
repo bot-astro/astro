@@ -22,13 +22,12 @@ class AuthFilter(
     private val centralApiProperties: CentralApiProperties,
     private val discordOAuthProperties: DiscordOAuthProperties,
     private val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
-    private val discordApiClient: DiscordApiClient
+    private val discordApiClient: DiscordApiClient,
 ) : OncePerRequestFilter() {
-
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
         try {
             authenticate(request)
@@ -41,30 +40,35 @@ class AuthFilter(
     }
 
     private fun authenticate(request: HttpServletRequest) {
-        val cookieValue = request.cookies
-            ?.firstOrNull { it.name == centralApiProperties.sessionCookieName }
-            ?.value
+        val cookieValue =
+            request.cookies
+                ?.firstOrNull { it.name == centralApiProperties.sessionCookieName }
+                ?.value
 
         if (cookieValue != null) {
             val (userId, sessionId) = authSessionService.getUserAndSessionIdFromCookie(cookieValue)
-            val sessionData = authSessionService.getSession(userId, sessionId)
-                ?: return
+            val sessionData =
+                authSessionService.getSession(userId, sessionId)
+                    ?: return
 
-            val (isExpired, userDiscordToken) = discordUserTokenPersistenceService.get(sessionData.userId)
-                ?: return
+            val (isExpired, userDiscordToken) =
+                discordUserTokenPersistenceService.get(sessionData.userId)
+                    ?: return
 
-            val discordAccessToken = if (!isExpired) {
-                userDiscordToken.accessToken
-            } else {
-                val discordTokenDto = discordApiClient.refreshToken(userDiscordToken.refreshToken, discordOAuthProperties)
-                discordUserTokenPersistenceService.upsert(userId, discordTokenDto)
-                discordTokenDto.accessToken
-            }
+            val discordAccessToken =
+                if (!isExpired) {
+                    userDiscordToken.accessToken
+                } else {
+                    val discordTokenDto = discordApiClient.refreshToken(userDiscordToken.refreshToken, discordOAuthProperties)
+                    discordUserTokenPersistenceService.upsert(userId, discordTokenDto)
+                    discordTokenDto.accessToken
+                }
 
-            val authContext = AuthContext(
-                authPrincipal = AuthPrincipal(sessionData.sessionId, sessionData.userId, discordAccessToken),
-                authorities = emptyList()
-            )
+            val authContext =
+                AuthContext(
+                    authPrincipal = AuthPrincipal(sessionData.sessionId, sessionData.userId, discordAccessToken),
+                    authorities = emptyList(),
+                )
             SecurityContextHolder.getContext().authentication = authContext
         }
     }

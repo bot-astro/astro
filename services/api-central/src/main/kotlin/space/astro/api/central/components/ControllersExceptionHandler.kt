@@ -23,8 +23,9 @@ import tools.jackson.databind.json.JsonMapper
 private val log = KotlinLogging.logger { }
 
 @RestControllerAdvice
-class ControllersExceptionHandler(private val jsonMapper: JsonMapper) {
-
+class ControllersExceptionHandler(
+    private val jsonMapper: JsonMapper,
+) {
     private data class Resolved(
         val status: Int,
         val code: AErrorCode,
@@ -38,52 +39,58 @@ class ControllersExceptionHandler(private val jsonMapper: JsonMapper) {
         if (r.status >= 500) {
             log.error(e) { "API request failed" }
         }
-        return ResponseEntity.status(r.status)
+        return ResponseEntity
+            .status(r.status)
             .headers(r.headers)
             .contentType(MediaType.APPLICATION_JSON)
             .body(AErrorResponse(code = r.code, message = r.message))
     }
 
-    private fun resolve(e: Exception): Resolved = when (e) {
-        is AException ->
-            Resolved(e.httpStatusCode, e.errorCode, e.message ?: "Request failed.")
+    private fun resolve(e: Exception): Resolved =
+        when (e) {
+            is AException ->
+                Resolved(e.httpStatusCode, e.errorCode, e.message ?: "Request failed.")
 
-        is AuthenticationException ->
-            Resolved(401, AErrorCode.UNAUTHORIZED, "Authentication is required.")
+            is AuthenticationException ->
+                Resolved(401, AErrorCode.UNAUTHORIZED, "Authentication is required.")
 
-        is AccessDeniedException ->
-            Resolved(403, AErrorCode.UNAUTHORIZED, "Access denied.")
+            is AccessDeniedException ->
+                Resolved(403, AErrorCode.UNAUTHORIZED, "Access denied.")
 
-        is MethodArgumentTypeMismatchException ->
-            Resolved(400, AErrorCode.INVALID_REQUEST, "Invalid value for parameter '${e.name}'.")
+            is MethodArgumentTypeMismatchException ->
+                Resolved(400, AErrorCode.INVALID_REQUEST, "Invalid value for parameter '${e.name}'.")
 
-        is MissingServletRequestParameterException ->
-            Resolved(400, AErrorCode.INVALID_REQUEST, "Required parameter '${e.parameterName}' is missing or empty.")
+            is MissingServletRequestParameterException ->
+                Resolved(400, AErrorCode.INVALID_REQUEST, "Required parameter '${e.parameterName}' is missing or empty.")
 
-        is HttpMessageNotReadableException ->
-            Resolved(400, AErrorCode.INVALID_REQUEST, "Invalid request body.")
+            is HttpMessageNotReadableException ->
+                Resolved(400, AErrorCode.INVALID_REQUEST, "Invalid request body.")
 
-        is TypeMismatchException ->
-            Resolved(400, AErrorCode.INVALID_REQUEST, "Invalid request parameter.")
+            is TypeMismatchException ->
+                Resolved(400, AErrorCode.INVALID_REQUEST, "Invalid request parameter.")
 
-        is ErrorResponse -> {
-            val status = e.statusCode.value()
-            Resolved(status, codeForStatus(status), HttpStatus.resolve(status)?.reasonPhrase ?: "Request failed.", e.headers)
+            is ErrorResponse -> {
+                val status = e.statusCode.value()
+                Resolved(status, codeForStatus(status), HttpStatus.resolve(status)?.reasonPhrase ?: "Request failed.", e.headers)
+            }
+
+            else -> Resolved(500, AErrorCode.UNKNOWN, "An unexpected server error occurred.")
         }
 
-        else -> Resolved(500, AErrorCode.UNKNOWN, "An unexpected server error occurred.")
-    }
-
-    private fun codeForStatus(status: Int): AErrorCode = when (status) {
-        401 -> AErrorCode.UNAUTHENTICATED
-        403 -> AErrorCode.UNAUTHORIZED
-        404 -> AErrorCode.NOT_FOUND
-        in 400..499 -> AErrorCode.INVALID_REQUEST
-        else -> AErrorCode.UNKNOWN
-    }
+    private fun codeForStatus(status: Int): AErrorCode =
+        when (status) {
+            401 -> AErrorCode.UNAUTHENTICATED
+            403 -> AErrorCode.UNAUTHORIZED
+            404 -> AErrorCode.NOT_FOUND
+            in 400..499 -> AErrorCode.INVALID_REQUEST
+            else -> AErrorCode.UNKNOWN
+        }
 
     // Filters run outside controller advice, so use the same response mapping there.
-    fun writeException(response: HttpServletResponse, e: Exception) {
+    fun writeException(
+        response: HttpServletResponse,
+        e: Exception,
+    ) {
         if (response.isCommitted) throw e
 
         val error = handleException(e)

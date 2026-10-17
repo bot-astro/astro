@@ -7,11 +7,9 @@ import space.astro.shared.core.models.database.ConfigurationErrorEntity
 
 @Component
 class ConfigurationErrorEventPublisher(
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
-    fun publishConfigurationErrorEvent(
-        configurationErrorEntity: ConfigurationErrorEntity
-    ) {
+    fun publishConfigurationErrorEvent(configurationErrorEntity: ConfigurationErrorEntity) {
         applicationEventPublisher.publishEvent(ConfigurationErrorEvent(configurationErrorEntity))
     }
 }

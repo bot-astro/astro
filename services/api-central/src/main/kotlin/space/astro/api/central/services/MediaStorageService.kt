@@ -17,20 +17,22 @@ import space.astro.shared.core.properties.R2Properties
 
 @Service
 class MediaStorageService(
-    private val r2Properties: R2Properties
+    private val r2Properties: R2Properties,
 ) {
-    private val s3: S3Client = runBlocking {
-        S3Client.fromEnvironment {
-            region = "auto"
-            endpointUrl = Url.parse(r2Properties.endpointUrl)
-            credentialsProvider = StaticCredentialsProvider(
-                Credentials(
-                    accessKeyId = r2Properties.accessKeyId,
-                    secretAccessKey = r2Properties.secretAccessKey
-                )
-            )
+    private val s3: S3Client =
+        runBlocking {
+            S3Client.fromEnvironment {
+                region = "auto"
+                endpointUrl = Url.parse(r2Properties.endpointUrl)
+                credentialsProvider =
+                    StaticCredentialsProvider(
+                        Credentials(
+                            accessKeyId = r2Properties.accessKeyId,
+                            secretAccessKey = r2Properties.secretAccessKey,
+                        ),
+                    )
+            }
         }
-    }
 
     /**
      * Uploads a media to Cloudflare R2.
@@ -64,29 +66,32 @@ class MediaStorageService(
         runBlocking {
             s3.deleteObjects {
                 this.bucket = r2Properties.bucketName
-                this.delete = Delete {
-                    objects = keys.map { k -> ObjectIdentifier { this.key = k } }
-                    quiet = true
-                }
+                this.delete =
+                    Delete {
+                        objects = keys.map { k -> ObjectIdentifier { this.key = k } }
+                        quiet = true
+                    }
             }
         }
     }
 }
 
-enum class MediaContentType(val mimeType: String, val extension: String) {
+enum class MediaContentType(
+    val mimeType: String,
+    val extension: String,
+) {
     PNG("image/png", "png"),
     JPEG("image/jpeg", "jpg"),
     GIF("image/gif", "gif"),
-    WEBP("image/webp", "webp");
+    WEBP("image/webp", "webp"),
+    ;
 
     companion object {
-
         /**
          * @throws IllegalArgumentException if mime type is not supported
          */
-        fun fromMime(mimeType: String): MediaContentType {
-            return entries.find { it.mimeType == mimeType }
+        fun fromMime(mimeType: String): MediaContentType =
+            entries.find { it.mimeType == mimeType }
                 ?: throw IllegalArgumentException("Unknown mime type: $mimeType")
-        }
     }
 }

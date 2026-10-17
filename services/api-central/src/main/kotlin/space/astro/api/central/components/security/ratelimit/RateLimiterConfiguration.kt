@@ -11,18 +11,14 @@ import kotlin.time.toJavaDuration
 
 @Configuration
 class RateLimiterConfiguration {
-
     @Bean
-    fun lettuceProxyManager(
-        redisConnection: StatefulRedisConnection<String, ByteArray>
-    ): ProxyManager<String> {
-        return Bucket4jLettuce.casBasedBuilder(redisConnection)
+    fun lettuceProxyManager(redisConnection: StatefulRedisConnection<String, ByteArray>): ProxyManager<String> =
+        Bucket4jLettuce
+            .casBasedBuilder(redisConnection)
             .expirationAfterWrite(
                 ExpirationAfterWriteStrategy
                     .basedOnTimeForRefillingBucketUpToMax(
-                2.minutes.toJavaDuration()
-                    )
-            )
-            .build()
-    }
+                        2.minutes.toJavaDuration(),
+                    ),
+            ).build()
 }

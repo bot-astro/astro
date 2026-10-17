@@ -21,32 +21,35 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 @RestController
 class GuildGeneratorsController(
     private val botApiClient: BotApiClient,
-    private val guildSettingsRepository: GuildSettingsRepository
+    private val guildSettingsRepository: GuildSettingsRepository,
 ) {
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATORS)
     @CanManageGuildMiddleware
     fun createGenerator(
         @PathVariable guildId: String,
-        @RequestBody generatorCreateBody: GeneratorCreateBody
+        @RequestBody generatorCreateBody: GeneratorCreateBody,
     ): ResponseEntity<GuildSettingsEntity> {
-        val guildSettings = guildSettingsRepository.findByIdOrNull(guildId)
-            ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+        val guildSettings =
+            guildSettingsRepository.findByIdOrNull(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
-        val generatorDiscordChannel = botApiClient.createChannel(
-            guildId,
-            ChannelCreateBotApiRequest(
-                name = generatorCreateBody.name,
-                categoryId = generatorCreateBody.categoryId,
-                channelType = ChannelCreateBotApiRequest.ChannelCreateType.VOICE
+        val generatorDiscordChannel =
+            botApiClient.createChannel(
+                guildId,
+                ChannelCreateBotApiRequest(
+                    name = generatorCreateBody.name,
+                    categoryId = generatorCreateBody.categoryId,
+                    channelType = ChannelCreateBotApiRequest.ChannelCreateType.VOICE,
+                ),
             )
-        )
 
-        val generatorSettings = GeneratorSettings(
-            id = generatorDiscordChannel.id,
-            defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default"),
-            defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default"),
-            defaultWaitingName = L.t(guildSettings.javaLocale, "temporary.waiting.name.default"),
-        )
+        val generatorSettings =
+            GeneratorSettings(
+                id = generatorDiscordChannel.id,
+                defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default"),
+                defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default"),
+                defaultWaitingName = L.t(guildSettings.javaLocale, "temporary.waiting.name.default"),
+            )
 
         guildSettings.generators.add(generatorSettings)
         guildSettingsRepository.save(guildSettings)
@@ -58,14 +61,17 @@ class GuildGeneratorsController(
     fun updateGenerator(
         @PathVariable guildId: String,
         @PathVariable generatorId: String,
-        @RequestBody updatedGeneratorSettings: GeneratorSettings
+        @RequestBody updatedGeneratorSettings: GeneratorSettings,
     ): ResponseEntity<GuildSettingsEntity> {
-        val guildSettings = guildSettingsRepository.findByIdOrNull(guildId)
-            ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+        val guildSettings =
+            guildSettingsRepository.findByIdOrNull(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
-        val generatorIndex = guildSettings.generators.indexOfFirst { it.id == generatorId }
-            .takeIf { it != -1 }
-            ?: throw ANotFoundException("Generator with ID ${updatedGeneratorSettings.id} not found for guild with id $guildId")
+        val generatorIndex =
+            guildSettings.generators
+                .indexOfFirst { it.id == generatorId }
+                .takeIf { it != -1 }
+                ?: throw ANotFoundException("Generator with ID ${updatedGeneratorSettings.id} not found for guild with id $guildId")
 
         guildSettings.generators[generatorIndex] = updatedGeneratorSettings
         guildSettingsRepository.save(guildSettings)
@@ -75,10 +81,11 @@ class GuildGeneratorsController(
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATOR)
     fun deleteGenerator(
         @PathVariable guildId: String,
-        @PathVariable generatorId: String
+        @PathVariable generatorId: String,
     ): ResponseEntity<GuildSettingsEntity> {
-        val guildSettings = guildSettingsRepository.findByIdOrNull(guildId)
-            ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+        val guildSettings =
+            guildSettingsRepository.findByIdOrNull(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         guildSettings.generators.removeIf { it.id == generatorId }
         try {

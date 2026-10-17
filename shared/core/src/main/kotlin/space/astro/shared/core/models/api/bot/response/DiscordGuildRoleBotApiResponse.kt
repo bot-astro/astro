@@ -4,5 +4,5 @@ data class DiscordGuildRoleBotApiResponse(
     val id: String,
     val name: String,
     val color: Int,
-    val position: Int
+    val position: Int,
 )

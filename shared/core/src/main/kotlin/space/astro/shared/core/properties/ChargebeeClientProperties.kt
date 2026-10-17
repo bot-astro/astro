@@ -7,5 +7,5 @@ data class ChargebeeClientProperties(
     val enabled: Boolean,
     val siteName: String,
     val apiKey: String,
-    val serverUltimatePlanId: String
+    val serverUltimatePlanId: String,
 )

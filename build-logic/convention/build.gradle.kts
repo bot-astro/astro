@@ -11,6 +11,8 @@ dependencies {
     implementation(libs.kotlin.serialization.plugin)
     implementation(libs.kotlin.spring.plugin)
     implementation(libs.jib.plugin)
+    implementation(libs.ktlint.plugin)
+    implementation(libs.detekt.plugin)
     implementation(libs.sentry.plugin)
     implementation(libs.spring.boot.plugin)
     implementation(libs.spring.dependency.management.plugin)

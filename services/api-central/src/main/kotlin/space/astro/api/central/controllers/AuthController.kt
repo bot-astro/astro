@@ -10,7 +10,11 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.util.UriComponentsBuilder
 import space.astro.api.central.components.OpenApiConfiguration
 import space.astro.api.central.models.auth.AuthPrincipal
@@ -27,7 +31,7 @@ import space.astro.shared.core.repositories.mongo.UserRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 import java.net.URI
 
-private val log = KotlinLogging.logger {  }
+private val log = KotlinLogging.logger { }
 
 @RestController
 @RequestMapping
@@ -39,12 +43,12 @@ class AuthController(
     private val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
     private val oAuthStateService: OAuthStateService,
     private val frontendProperties: FrontendProperties,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
-
     @Operation(
         summary = "Login via Discord",
-        description = "Perform Discord OAuth flow, " +
+        description =
+            "Perform Discord OAuth flow, " +
                 "will result in a session cookie on a successful flow + " +
                 "a redirect to the provided `redirect_path` (if it contains `{guild_id}` " +
                 "that will be replaced with the id of the guild the bot was added to.\n" +
@@ -54,7 +58,7 @@ class AuthController(
     @ApiResponses(
         ApiResponse(
             responseCode = "307",
-            description = "Redirect to Discord authorization."
+            description = "Redirect to Discord authorization.",
         ),
     )
     @GetMapping(CentralApiEndpoint.DISCORD_LOGIN)
@@ -65,32 +69,33 @@ class AuthController(
     ): ResponseEntity<Void> {
         val state = oAuthStateService.create(redirectPath)
 
-        val scopes = if (invite || inviteGuildId != null) {
-            "identify email guilds bot applications.commands"
-        } else {
-            "identify email guilds"
-        }
-
-        val uri = UriComponentsBuilder
-            .fromUriString("https://discord.com/oauth2/authorize")
-            .queryParam("client_id", discordOAuthProperties.id)
-            .queryParam("response_type", "code")
-            .queryParam("redirect_uri", discordOAuthProperties.redirectUri)
-            .queryParam("scope", scopes)
-            .queryParam("state", state)
-            .queryParam("prompt", "none")
-            .also {
-                if (invite || inviteGuildId != null) {
-                    it.queryParam("permissions", "8")
-                }
-                if (inviteGuildId != null) {
-                    it.queryParam("disable_guild_select", "true")
-                    it.queryParam("guild_id", inviteGuildId)
-                }
+        val scopes =
+            if (invite || inviteGuildId != null) {
+                "identify email guilds bot applications.commands"
+            } else {
+                "identify email guilds"
             }
-            .build()
-            .encode()
-            .toUri()
+
+        val uri =
+            UriComponentsBuilder
+                .fromUriString("https://discord.com/oauth2/authorize")
+                .queryParam("client_id", discordOAuthProperties.id)
+                .queryParam("response_type", "code")
+                .queryParam("redirect_uri", discordOAuthProperties.redirectUri)
+                .queryParam("scope", scopes)
+                .queryParam("state", state)
+                .queryParam("prompt", "none")
+                .also {
+                    if (invite || inviteGuildId != null) {
+                        it.queryParam("permissions", "8")
+                    }
+                    if (inviteGuildId != null) {
+                        it.queryParam("disable_guild_select", "true")
+                        it.queryParam("guild_id", inviteGuildId)
+                    }
+                }.build()
+                .encode()
+                .toUri()
 
         return ResponseEntity
             .status(HttpStatus.TEMPORARY_REDIRECT)
@@ -101,7 +106,7 @@ class AuthController(
     @Operation(
         summary = "Discord OAuth callback",
         description = "Endpoint called by Discord containing the code & state for the first part of the OAuth flow",
-        hidden = true
+        hidden = true,
     )
     @GetMapping(CentralApiEndpoint.DISCORD_OAUTH_CALLBACK)
     fun discordCallback(
@@ -116,11 +121,12 @@ class AuthController(
                 .build()
         }
 
-        var redirectPath = oAuthStateService.consume(state)
-            ?: return ResponseEntity
-                .status(HttpStatus.FOUND)
-                .location(URI("${frontendProperties.baseUrl}?error_code=invalid_oauth_state"))
-                .build()
+        var redirectPath =
+            oAuthStateService.consume(state)
+                ?: return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(URI("${frontendProperties.baseUrl}?error_code=invalid_oauth_state"))
+                    .build()
 
         try {
             val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
@@ -132,9 +138,10 @@ class AuthController(
 
             val cookie = authSessionService.createSessionCookie(authSession)
 
-            val headers = HttpHeaders().apply {
-                set(HttpHeaders.SET_COOKIE, cookie.toString())
-            }
+            val headers =
+                HttpHeaders().apply {
+                    set(HttpHeaders.SET_COOKIE, cookie.toString())
+                }
 
             val guildId = discordToken.guild?.id
             if (guildId != null) {
@@ -143,12 +150,12 @@ class AuthController(
 
             return ResponseEntity
                 .status(HttpStatus.FOUND)
-                .location(URI("${frontendProperties.baseUrl}${redirectPath}"))
+                .location(URI("${frontendProperties.baseUrl}$redirectPath"))
                 .headers(headers)
                 .build()
         } catch (e: Exception) {
             if (e !is ABadRequestException) {
-                log.error(e) { "Discord OAuth callback failed"}
+                log.error(e) { "Discord OAuth callback failed" }
             }
 
             return ResponseEntity
@@ -161,52 +168,55 @@ class AuthController(
     @Operation(
         summary = "Get logged in user",
         description = "Returns the logged in user entity",
-        security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)]
+        security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)],
     )
     @GetMapping(CentralApiEndpoint.ME)
     fun me(
-        @AuthenticationPrincipal authPrincipal: AuthPrincipal
+        @AuthenticationPrincipal authPrincipal: AuthPrincipal,
     ): ResponseEntity<AuthUserResponse> {
-        val user = userRepository.findByUserID(authPrincipal.userId)
-            ?: run {
-                val userEntity = UserEntity(userID = authPrincipal.userId)
-                userRepository.save(userEntity)
-                userEntity
-            }
+        val user =
+            userRepository.findByUserID(authPrincipal.userId)
+                ?: run {
+                    val userEntity = UserEntity(userID = authPrincipal.userId)
+                    userRepository.save(userEntity)
+                    userEntity
+                }
 
         val discordUser = discordApiClient.getSelfUser(authPrincipal.userDiscordToken)
 
-        return ResponseEntity.ok(AuthUserResponse(
-            id=user.userID,
-            username = discordUser.username,
-            avatar = discordUser.avatar
-        ))
+        return ResponseEntity.ok(
+            AuthUserResponse(
+                id = user.userID,
+                username = discordUser.username,
+                avatar = discordUser.avatar,
+            ),
+        )
     }
 
     @Operation(
         summary = "Logout",
         description = "Logout and delete the session cookie",
         operationId = "logout",
-        security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)]
+        security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)],
     )
     @ApiResponses(
         ApiResponse(
             responseCode = "204",
             description = "Session deleted and session cookie expired.",
-        )
+        ),
     )
     @PostMapping(CentralApiEndpoint.LOGOUT)
     fun logout(
-        @AuthenticationPrincipal authPrincipal: AuthPrincipal
+        @AuthenticationPrincipal authPrincipal: AuthPrincipal,
     ): ResponseEntity<Void> {
         discordUserTokenPersistenceService.delete(authPrincipal.userId)
         authSessionService.deleteSession(authPrincipal.userId, authPrincipal.sessionId)
 
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .header(
                 HttpHeaders.SET_COOKIE,
-                authSessionService.createExpiredSessionCookie().toString()
-            )
-            .build()
+                authSessionService.createExpiredSessionCookie().toString(),
+            ).build()
     }
 }

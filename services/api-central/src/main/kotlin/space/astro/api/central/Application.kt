@@ -15,25 +15,28 @@ import space.astro.shared.core.properties.R2Properties
 
 @SpringBootApplication(
     exclude = [
-        UserDetailsServiceAutoConfiguration::class
-    ]
+        UserDetailsServiceAutoConfiguration::class,
+    ],
 )
-@ConfigurationPropertiesScan(basePackages = [
-    "space.astro.shared.core.properties.api_central",
-    "space.astro.api.central"
-])
+@ConfigurationPropertiesScan(
+    basePackages = [
+        "space.astro.shared.core.properties.api_central",
+        "space.astro.api.central",
+    ],
+)
 @EnableConfigurationProperties(
     DiscordOAuthProperties::class,
     FrontendProperties::class,
     R2Properties::class,
-    KubeProperties::class
+    KubeProperties::class,
 )
 @OpenAPIDefinition(
-    info = Info(
-        title = "Astro API",
-        version = "2.0",
-        description = "Astro REST API mainly used by the web dashboard."
-    )
+    info =
+        Info(
+            title = "Astro API",
+            version = "2.0",
+            description = "Astro REST API mainly used by the web dashboard.",
+        ),
 )
 class Application
 

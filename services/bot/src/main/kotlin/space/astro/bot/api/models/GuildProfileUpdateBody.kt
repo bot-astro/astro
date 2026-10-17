@@ -4,5 +4,5 @@ data class GuildProfileUpdateBody(
     val nickname: String?,
     val bio: String?,
     val avatar: String?,
-    val banner: String?
+    val banner: String?,
 )

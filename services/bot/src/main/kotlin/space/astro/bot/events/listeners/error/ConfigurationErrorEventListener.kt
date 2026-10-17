@@ -7,9 +7,8 @@ import space.astro.shared.core.repositories.mongo.ConfigurationErrorRepository
 
 @Component
 class ConfigurationErrorEventListener(
-    private val configurationErrorRepository: ConfigurationErrorRepository
+    private val configurationErrorRepository: ConfigurationErrorRepository,
 ) {
-
     @EventListener
     fun configurationErrorReceived(event: ConfigurationErrorEvent) {
         configurationErrorRepository.save(event.configurationErrorEntity)

@@ -4,7 +4,6 @@ import java.time.Duration
 import java.time.Instant
 
 interface RateLimiter {
-
     @Throws(InterruptedException::class)
     fun acquire(key: String) {
         while (true) {
@@ -20,7 +19,7 @@ interface RateLimiter {
     fun tryAcquire(
         key: String,
         maxPerInterval: Int,
-        timeout: Duration
+        timeout: Duration,
     ): RateLimiterAcquireResult? {
         val endTime = Instant.now().plus(timeout)
         var lastResult: RateLimiterAcquireResult
@@ -45,6 +44,8 @@ interface RateLimiter {
 
     fun tryAcquire(id: String): RateLimiterAcquireResult
 
-    fun tryAcquire(id: String, maxPerInterval: Int): RateLimiterAcquireResult
-
+    fun tryAcquire(
+        id: String,
+        maxPerInterval: Int,
+    ): RateLimiterAcquireResult
 }

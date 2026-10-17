@@ -38,22 +38,28 @@ class RedisDynamicHashCacheRepository(
     /**
      * Constructs the hash key from the base + dynamic
      */
-    fun keyName(keyValue: String) = "${keyBase}:$keyValue"
+    fun keyName(keyValue: String) = "$keyBase:$keyValue"
 
     /**
      * Get all the fields of a specific key of the hash
      */
-    inline fun <reified T> getAll(keyValue: String): List<T> {
-        return hashOps.values(keyName(keyValue))
+    inline fun <reified T> getAll(keyValue: String): List<T> =
+        hashOps
+            .values(keyName(keyValue))
             .map(jsonMapper::readValue)
-    }
 
-    inline fun <reified T> get(keyValue: String, field: String): T? {
-        return hashOps.get(keyName(keyValue), field)
+    inline fun <reified T> get(
+        keyValue: String,
+        field: String,
+    ): T? =
+        hashOps
+            .get(keyName(keyValue), field)
             ?.let(jsonMapper::readValue)
-    }
 
-    inline fun <reified T> cacheAll(keyValue: String, fieldToDataMap: Map<String, T>) {
+    inline fun <reified T> cacheAll(
+        keyValue: String,
+        fieldToDataMap: Map<String, T>,
+    ) {
         fieldToDataMap
             .mapValues { mapItem -> jsonMapper.writeValueAsString(mapItem.value) }
             .also {
@@ -61,15 +67,25 @@ class RedisDynamicHashCacheRepository(
             }
     }
 
-    inline fun <reified T> cache(keyValue: String, field: String, data: T) {
+    inline fun <reified T> cache(
+        keyValue: String,
+        field: String,
+        data: T,
+    ) {
         hashOps.put(keyName(keyValue), field, jsonMapper.writeValueAsString(data))
     }
 
-    fun delete(keyValue: String, field: String) {
+    fun delete(
+        keyValue: String,
+        field: String,
+    ) {
         hashOps.delete(keyName(keyValue), field)
     }
 
-    fun deleteMultiple(keyValue: String, vararg fields: String) {
+    fun deleteMultiple(
+        keyValue: String,
+        vararg fields: String,
+    ) {
         hashOps.delete(keyName(keyValue), *fields)
     }
 

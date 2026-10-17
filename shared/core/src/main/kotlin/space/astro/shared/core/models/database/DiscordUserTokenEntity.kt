@@ -32,7 +32,7 @@ data class DiscordUserTokenEntity(
             expiresIn = discordTokenDto.expiresIn,
             refreshToken = discordTokenDto.refreshToken,
             scope = discordTokenDto.scope,
-            tokenType = discordTokenDto.tokenType
+            tokenType = discordTokenDto.tokenType,
         )
     }
 }

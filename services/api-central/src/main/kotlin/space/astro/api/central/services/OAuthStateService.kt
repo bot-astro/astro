@@ -4,13 +4,13 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import space.astro.shared.core.utils.redis.RedisKey
 import java.security.SecureRandom
-import java.util.*
+import java.util.Base64
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
 @Service
 class OAuthStateService(
-    private val redis: StringRedisTemplate
+    private val redis: StringRedisTemplate,
 ) {
     private val secureRandom = SecureRandom()
 
@@ -23,14 +23,16 @@ class OAuthStateService(
         val bytes = ByteArray(16)
         secureRandom.nextBytes(bytes)
 
-        val state = Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(bytes)
+        val state =
+            Base64
+                .getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(bytes)
 
         redis.opsForValue().set(
             RedisKey.OAUTH_STATE(state),
             redirectPath,
-            10.minutes.toJavaDuration()
+            10.minutes.toJavaDuration(),
         )
 
         return state
@@ -42,6 +44,5 @@ class OAuthStateService(
      *
      * @return the redirect direct path or null if the state is invalid
      */
-    fun consume(state: String): String? =
-        redis.opsForValue().getAndDelete(RedisKey.OAUTH_STATE(state))
+    fun consume(state: String): String? = redis.opsForValue().getAndDelete(RedisKey.OAUTH_STATE(state))
 }

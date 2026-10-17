@@ -8,14 +8,14 @@ import space.astro.shared.core.exceptions.AException
 
 @RestControllerAdvice
 class ControllersExceptionHandler {
-
     @ExceptionHandler(AException::class)
-    fun handleException(e: AException): ResponseEntity<AErrorResponse> {
-        return ResponseEntity
+    fun handleException(e: AException): ResponseEntity<AErrorResponse> =
+        ResponseEntity
             .status(e.httpStatusCode)
-            .body(AErrorResponse(
-                code = e.errorCode,
-                message = e.message,
-            ))
-    }
+            .body(
+                AErrorResponse(
+                    code = e.errorCode,
+                    message = e.message,
+                ),
+            )
 }

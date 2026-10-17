@@ -22,10 +22,11 @@ class GuildConnectionsController(
     @CanManageGuildMiddleware
     fun createConnection(
         @PathVariable guildId: String,
-        @RequestBody connectionCreateBody: ConnectionData
+        @RequestBody connectionCreateBody: ConnectionData,
     ): ResponseEntity<GuildSettingsEntity> {
-        val guildSettings = guildSettingsRepository.findByIdOrNull(guildId)
-            ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+        val guildSettings =
+            guildSettingsRepository.findByIdOrNull(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         guildSettings.connections.add(connectionCreateBody)
         guildSettingsRepository.save(guildSettings)
@@ -37,14 +38,17 @@ class GuildConnectionsController(
     fun updateConnection(
         @PathVariable guildId: String,
         @PathVariable connectionId: String,
-        @RequestBody updatedConnectionSettings: ConnectionData
+        @RequestBody updatedConnectionSettings: ConnectionData,
     ): ResponseEntity<GuildSettingsEntity> {
-        val guildSettings = guildSettingsRepository.findByIdOrNull(guildId)
-            ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+        val guildSettings =
+            guildSettingsRepository.findByIdOrNull(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
-        val connectionIndex = guildSettings.connections.indexOfFirst { it.id == connectionId }
-            .takeIf { it != -1 }
-            ?: throw ANotFoundException("Connection with ID $connectionId not found in Astro database")
+        val connectionIndex =
+            guildSettings.connections
+                .indexOfFirst { it.id == connectionId }
+                .takeIf { it != -1 }
+                ?: throw ANotFoundException("Connection with ID $connectionId not found in Astro database")
 
         guildSettings.connections[connectionIndex] = updatedConnectionSettings
         guildSettingsRepository.save(guildSettings)
@@ -55,10 +59,11 @@ class GuildConnectionsController(
     @CanManageGuildMiddleware
     fun deleteConnection(
         @PathVariable guildId: String,
-        @PathVariable connectionId: String
+        @PathVariable connectionId: String,
     ): ResponseEntity<GuildSettingsEntity> {
-        val guildSettings = guildSettingsRepository.findByIdOrNull(guildId)
-            ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+        val guildSettings =
+            guildSettingsRepository.findByIdOrNull(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         guildSettings.connections.removeIf { it.id == connectionId }
         guildSettingsRepository.save(guildSettings)

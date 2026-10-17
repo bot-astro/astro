@@ -17,28 +17,25 @@ import space.astro.api.central.components.security.ratelimit.UserIdRateLimitFilt
 import space.astro.shared.core.properties.api_central.CentralApiProperties
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
-
 @Configuration
 @EnableMethodSecurity
 class SecurityConfig(
     private val authFilter: AuthFilter,
     private val ipRateLimitFilter: IpRateLimitFilter,
     private val exceptionHandler: ControllersExceptionHandler,
-    private val centralApiProperties: CentralApiProperties
+    private val centralApiProperties: CentralApiProperties,
 ) {
     // disable automatic registration of filters that are declared in the chain
     // they would not run twice, but it's cleaner to register them only once
     @Bean
-    fun authFilterRegistration(filter: AuthFilter) =
-        FilterRegistrationBean(filter).apply { isEnabled = false }
+    fun authFilterRegistration(filter: AuthFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
 
     @Bean
-    fun ipRateLimitFilterRegistration(filter: IpRateLimitFilter) =
-        FilterRegistrationBean(filter).apply { isEnabled = false }
+    fun ipRateLimitFilterRegistration(filter: IpRateLimitFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
 
     @Bean
-    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        return http
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain =
+        http
             .cors {}
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .requestCache { it.disable() }
@@ -53,31 +50,32 @@ class SecurityConfig(
                 it.accessDeniedHandler { _, response, exception ->
                     exceptionHandler.writeException(response, exception)
                 }
-            }
-            .addFilterBefore(ipRateLimitFilter, UsernamePasswordAuthenticationFilter::class.java)
+            }.addFilterBefore(ipRateLimitFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterAfter(authFilter, UserIdRateLimitFilter::class.java)
 //            .addFilterAfter(userIdRateLimitFilter, AuthFilter::class.java)
             .authorizeHttpRequests {
                 it
-                    .requestMatchers("/docs/**").permitAll()
-                    .requestMatchers("/actuator/**").permitAll() // handled by KubeAuthFilter
+                    .requestMatchers("/docs/**")
+                    .permitAll()
+                    .requestMatchers("/actuator/**")
+                    .permitAll() // handled by KubeAuthFilter
                     .requestMatchers(
                         CentralApiEndpoint.DISCORD_LOGIN,
-                        CentralApiEndpoint.DISCORD_OAUTH_CALLBACK
+                        CentralApiEndpoint.DISCORD_OAUTH_CALLBACK,
                     ).permitAll()
-                    .anyRequest().authenticated()
-            }
-            .build()
-    }
+                    .anyRequest()
+                    .authenticated()
+            }.build()
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
-        val config = CorsConfiguration().apply {
-            allowedOrigins = centralApiProperties.corsAllowedOrigins
-            allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-            allowedHeaders = listOf("authorization", "content-type")
-            allowCredentials = true
-        }
+        val config =
+            CorsConfiguration().apply {
+                allowedOrigins = centralApiProperties.corsAllowedOrigins
+                allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                allowedHeaders = listOf("authorization", "content-type")
+                allowCredentials = true
+            }
 
         return UrlBasedCorsConfigurationSource().apply {
             registerCorsConfiguration("/**", config)

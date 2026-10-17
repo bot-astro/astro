@@ -8,10 +8,11 @@ data class GuildSettingsUpdateBody(
     val allowMissingAdminPerms: Boolean,
     // Language + region
     val locale: String,
-): Validatable {
+) : Validatable {
     override fun validate(): ValidationResult {
-        if (!L.isLocaleSupported(locale))
+        if (!L.isLocaleSupported(locale)) {
             return ValidationResult.invalid("Unsupported locale $locale")
+        }
 
         return ValidationResult.valid()
     }

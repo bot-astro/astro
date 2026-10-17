@@ -9,11 +9,13 @@ import space.astro.shared.core.utils.validation.asValidationResult
 data class GeneratorCreateBody(
     val name: String,
     val categoryId: String?,
-): Validatable {
+) : Validatable {
     override fun validate(): ValidationResult {
-        val nameValidation = (name.isNotBlank() && name.length in 1..VoiceChannel.MAX_NAME_LENGTH)
-            .asValidationResult("Name must be between 1 and ${VoiceChannel.MAX_NAME_LENGTH} characters long")
-        val categoryValidation = categoryId?.isValidSnowflake()?.asValidationResult("Category id is not a valid Discord id") ?: ValidationResult.valid()
+        val nameValidation =
+            (name.isNotBlank() && name.length in 1..VoiceChannel.MAX_NAME_LENGTH)
+                .asValidationResult("Name must be between 1 and ${VoiceChannel.MAX_NAME_LENGTH} characters long")
+        val categoryValidation =
+            categoryId?.isValidSnowflake()?.asValidationResult("Category id is not a valid Discord id") ?: ValidationResult.valid()
 
         return ValidationResult.combine(nameValidation, categoryValidation)
     }

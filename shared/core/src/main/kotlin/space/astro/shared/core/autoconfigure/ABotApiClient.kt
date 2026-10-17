@@ -16,11 +16,10 @@ import space.astro.shared.core.properties.bot.BotShardProperties
     name = ["localhost"],
 )
 class ABotApiClient {
-
     @Bean
     @ConditionalOnMissingBean
     fun botApiClient(
         botEndpointProperties: BotEndpointProperties,
-        botShardProperties: BotShardProperties
+        botShardProperties: BotShardProperties,
     ) = BotApiClient(botEndpointProperties, botShardProperties)
 }

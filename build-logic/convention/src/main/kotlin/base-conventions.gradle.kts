@@ -5,6 +5,8 @@ plugins {
     kotlin("plugin.spring")
     id("io.spring.dependency-management")
     id("org.springframework.boot")
+    id("org.jlleitschuh.gradle.ktlint")
+    id("dev.detekt")
 }
 
 repositories {
@@ -23,6 +25,11 @@ java {
 
 kotlin {
     jvmToolchain(25)
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    parallel = true
 }
 
 tasks.test {

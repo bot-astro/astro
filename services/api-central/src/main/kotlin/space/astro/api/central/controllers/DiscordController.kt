@@ -24,9 +24,8 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 class DiscordController(
     private val discordUserGuildsPersistenceService: DiscordUserGuildsPersistenceService,
     private val discordApiClient: DiscordApiClient,
-    private val botApiClient: BotApiClient
+    private val botApiClient: BotApiClient,
 ) {
-
     @GetMapping(CentralApiEndpoint.DISCORD_SELF_USER)
     fun getSelfUser(
         @AuthenticationPrincipal authPrincipal: AuthPrincipal,
@@ -37,12 +36,13 @@ class DiscordController(
 
     @GetMapping(CentralApiEndpoint.DISCORD_USER_GUILDS)
     fun getUserGuilds(
-        @AuthenticationPrincipal authPrincipal: AuthPrincipal
+        @AuthenticationPrincipal authPrincipal: AuthPrincipal,
     ): ResponseEntity<List<DiscordUserGuild>> {
-        val guilds = discordUserGuildsPersistenceService.fetchFromDiscord(
-            userId = authPrincipal.userId,
-            userDiscordAccessToken = authPrincipal.userDiscordToken
-        )
+        val guilds =
+            discordUserGuildsPersistenceService.fetchFromDiscord(
+                userId = authPrincipal.userId,
+                userDiscordAccessToken = authPrincipal.userDiscordToken,
+            )
         return ResponseEntity.ok(guilds)
     }
 
@@ -50,12 +50,12 @@ class DiscordController(
         ApiResponse(
             responseCode = "404",
             description = "The guild was not found by the bot.",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
+            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))],
         ),
     )
     @GetMapping(CentralApiEndpoint.DISCORD_GUILD_CHANNELS)
     fun getGuildChannels(
-        @PathVariable guildId: String
+        @PathVariable guildId: String,
     ): ResponseEntity<List<DiscordGuildChannelBotApiResponse>> {
         val channels = botApiClient.getGuildChannels(guildId)
         return ResponseEntity.ok(channels)
@@ -65,7 +65,7 @@ class DiscordController(
         ApiResponse(
             responseCode = "404",
             description = "The guild was not found by the bot.",
-            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))]
+            content = [Content(mediaType = "application/json", schema = Schema(ref = OpenApiConfiguration.ERROR_RESPONSE_SCHEMA))],
         ),
     )
     @GetMapping(CentralApiEndpoint.DISCORD_GUILD_ROLES)

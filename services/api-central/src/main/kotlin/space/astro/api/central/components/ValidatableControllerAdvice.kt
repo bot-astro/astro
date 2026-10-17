@@ -10,7 +10,6 @@ import java.lang.reflect.Type
 
 @ControllerAdvice
 class ValidatableControllerAdvice : RequestBodyAdviceAdapter() {
-
     override fun supports(
         methodParameter: MethodParameter,
         targetType: Type,

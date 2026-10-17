@@ -17,7 +17,6 @@ import tools.jackson.databind.json.JsonMapper
     havingValue = "true",
 )
 class ADiscordApiClient {
-
     @Bean
     @ConditionalOnMissingBean
     fun discordApiClient(

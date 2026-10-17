@@ -5,4 +5,3 @@ data class RateLimiterAcquireResult(
     val count: Long = 0,
     val ttl: Long = 0,
 )
-    

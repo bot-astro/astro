@@ -11,7 +11,7 @@ import kotlin.time.toJavaDuration
 
 @Service
 class RateLimitingService(
-    private val proxyManager: ProxyManager<String>
+    private val proxyManager: ProxyManager<String>,
 ) {
     companion object {
         const val BUCKET_API_GLOBAL_CAPACITY: Long = 100
@@ -21,28 +21,28 @@ class RateLimitingService(
     /**
      * @return the rate limit [Bucket] for generic api requests
      */
-    fun resolveApiGlobalBucket(clientId: String): Bucket {
-        return proxyManager.getProxy(RedisKey.RATE_LIMIT("api", clientId)) {
-            BucketConfiguration.builder()
-                .addLimit { l -> l
-                    .capacity(BUCKET_API_GLOBAL_CAPACITY)
-                    .refillGreedy(BUCKET_API_GLOBAL_CAPACITY, 1.minutes.toJavaDuration())
-                }
-                .build()
+    fun resolveApiGlobalBucket(clientId: String): Bucket =
+        proxyManager.getProxy(RedisKey.RATE_LIMIT("api", clientId)) {
+            BucketConfiguration
+                .builder()
+                .addLimit { l ->
+                    l
+                        .capacity(BUCKET_API_GLOBAL_CAPACITY)
+                        .refillGreedy(BUCKET_API_GLOBAL_CAPACITY, 1.minutes.toJavaDuration())
+                }.build()
         }
-    }
 
     /**
      * @return the rate limit [Bucket] for media uploads
      */
-    fun resolveMediaBucket(guildId: String): Bucket {
-        return proxyManager.getProxy(RedisKey.RATE_LIMIT("api_media", guildId)) {
-            BucketConfiguration.builder()
-                .addLimit { l -> l
-                    .capacity(BUCKET_MEDIA_CAPACITY)
-                    .refillGreedy(BUCKET_MEDIA_CAPACITY, 1.days.toJavaDuration())
-                }
-                .build()
+    fun resolveMediaBucket(guildId: String): Bucket =
+        proxyManager.getProxy(RedisKey.RATE_LIMIT("api_media", guildId)) {
+            BucketConfiguration
+                .builder()
+                .addLimit { l ->
+                    l
+                        .capacity(BUCKET_MEDIA_CAPACITY)
+                        .refillGreedy(BUCKET_MEDIA_CAPACITY, 1.days.toJavaDuration())
+                }.build()
         }
-    }
 }

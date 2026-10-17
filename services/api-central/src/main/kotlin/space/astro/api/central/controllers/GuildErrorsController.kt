@@ -12,19 +12,20 @@ import java.time.Duration
 
 @RestController
 class GuildErrorsController(
-    private val configurationErrorRepository: ConfigurationErrorRepository
+    private val configurationErrorRepository: ConfigurationErrorRepository,
 ) {
     @GetMapping(CentralApiEndpoint.GUILD_ERRORS)
     fun getGuildErrors(
         @PathVariable("guildId") guildId: String,
         @RequestParam(value = "from_timestamp", required = false) fromTimestamp: Long?,
-    ) : ResponseEntity<List<ConfigurationErrorEntity>> {
+    ): ResponseEntity<List<ConfigurationErrorEntity>> {
         val sevenDaysAgo = System.currentTimeMillis() - Duration.ofDays(7).toMillis()
         val filterTimestamp = fromTimestamp?.coerceAtLeast(sevenDaysAgo) ?: sevenDaysAgo
-        val errors = configurationErrorRepository.findAllByGuildIdAndTimestampGreaterThanEqual(
-            guildId,
-            filterTimestamp,
-        )
+        val errors =
+            configurationErrorRepository.findAllByGuildIdAndTimestampGreaterThanEqual(
+                guildId,
+                filterTimestamp,
+            )
 
         return ResponseEntity.ok(errors)
     }

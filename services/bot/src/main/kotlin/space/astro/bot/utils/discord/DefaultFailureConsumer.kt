@@ -11,7 +11,6 @@ import java.util.function.Consumer
 class DefaultFailureConsumer(
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
 ) : Consumer<Throwable> {
-
     val log = KotlinLogging.logger { }
 
     override fun accept(t: Throwable) {
@@ -21,7 +20,7 @@ class DefaultFailureConsumer(
 
         if (t is InsufficientPermissionException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                configurationErrorEntity = t.toConfigurationErrorDto(t.guildId.toString())
+                configurationErrorEntity = t.toConfigurationErrorDto(t.guildId.toString()),
             )
             return
         }

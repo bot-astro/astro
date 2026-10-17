@@ -12,6 +12,6 @@ import org.springframework.data.redis.core.StringRedisTemplate
 @ConditionalOnBean(StringRedisTemplate::class)
 @AutoConfigureAfter(ARedisAutoConfiguration::class)
 @ComponentScan(
-    basePackages = ["space.astro.shared.core.repositories.redis"]
+    basePackages = ["space.astro.shared.core.repositories.redis"],
 )
 class ARedisRepositoriesAutoConfiguration

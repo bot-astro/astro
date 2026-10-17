@@ -10,31 +10,40 @@ import tools.jackson.databind.json.JsonMapper
 @Repository
 class TemporaryVCRepository(
     private val redis: StringRedisTemplate,
-    private val jsonMapper: JsonMapper
+    private val jsonMapper: JsonMapper,
 ) {
-    private val cacheManager = RedisDynamicHashCacheRepository(
-        keyBase = RedisKey.TEMPORARY_VCS(),
-        redis = redis,
-        jsonMapper = jsonMapper
-    )
+    private val cacheManager =
+        RedisDynamicHashCacheRepository(
+            keyBase = RedisKey.TEMPORARY_VCS(),
+            redis = redis,
+            jsonMapper = jsonMapper,
+        )
 
-    fun getOfGuild(guildId: String): List<TemporaryVCEntity> {
-        return cacheManager.getAll(guildId)
-    }
+    fun getOfGuild(guildId: String): List<TemporaryVCEntity> = cacheManager.getAll(guildId)
 
-    fun get(guildId: String, vcId: String): TemporaryVCEntity? {
-        return cacheManager.get(guildId, vcId)
-    }
+    fun get(
+        guildId: String,
+        vcId: String,
+    ): TemporaryVCEntity? = cacheManager.get(guildId, vcId)
 
-    fun save(guildId: String, vcEntity: TemporaryVCEntity) {
+    fun save(
+        guildId: String,
+        vcEntity: TemporaryVCEntity,
+    ) {
         cacheManager.cache(guildId, vcEntity.id, vcEntity)
     }
 
-    fun saveAll(guildId: String, vcEntities: List<TemporaryVCEntity>) {
+    fun saveAll(
+        guildId: String,
+        vcEntities: List<TemporaryVCEntity>,
+    ) {
         cacheManager.cacheAll(guildId, vcEntities.associateBy { it.id })
     }
 
-    fun delete(guildId: String, vcId: String) {
+    fun delete(
+        guildId: String,
+        vcId: String,
+    ) {
         cacheManager.delete(guildId, vcId)
     }
 

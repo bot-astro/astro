@@ -9,12 +9,14 @@ import com.chargebee.v4.models.subscription.responses.SubscriptionListResponse
 import space.astro.shared.core.properties.ChargebeeClientProperties
 
 class ChargebeeClientHelper(
-    private val config: ChargebeeClientProperties
+    private val config: ChargebeeClientProperties,
 ) {
-    val client: ChargebeeClient = ChargebeeClient.builder()
-        .apiKey(config.apiKey)
-        .siteName(config.siteName)
-        .build()
+    val client: ChargebeeClient =
+        ChargebeeClient
+            .builder()
+            .apiKey(config.apiKey)
+            .siteName(config.siteName)
+            .build()
 
     /**
      * Creates a portal session for the user with the provided [userID]
@@ -24,16 +26,22 @@ class ChargebeeClientHelper(
      *
      * @return the access url for the portal session or null if it failed
      */
-    fun createPortalSession(userID: String, retry: Boolean = true): String? {
+    fun createPortalSession(
+        userID: String,
+        retry: Boolean = true,
+    ): String? {
         return try {
-            val res = client.portalSessions().create(
-                PortalSessionCreateParams.builder()
-                    .customer(PortalSessionCreateParams.CustomerParams.builder()
-                        .id(userID)
-                        .build()
-                    )
-                    .build()
-            )
+            val res =
+                client.portalSessions().create(
+                    PortalSessionCreateParams
+                        .builder()
+                        .customer(
+                            PortalSessionCreateParams.CustomerParams
+                                .builder()
+                                .id(userID)
+                                .build(),
+                        ).build(),
+                )
 
             return res.portalSession.accessUrl
         } catch (e: Exception) {
@@ -54,12 +62,16 @@ class ChargebeeClientHelper(
      * @return the list of subscriptions
      */
     fun getServerSubscriptionsOfUser(userID: String): List<SubscriptionListResponse.SubscriptionListItem> {
-        val res = client.subscriptions().list(
-            SubscriptionListParams.builder()
-                .customerId().`is`(userID)
-                .itemPriceId().startsWith(config.serverUltimatePlanId)
-                .build()
-        )
+        val res =
+            client.subscriptions().list(
+                SubscriptionListParams
+                    .builder()
+                    .customerId()
+                    .`is`(userID)
+                    .itemPriceId()
+                    .startsWith(config.serverUltimatePlanId)
+                    .build(),
+            )
         return res.list
     }
 
@@ -82,9 +94,10 @@ class ChargebeeClientHelper(
      */
     private fun createUser(userID: String) {
         client.customers().create(
-            CustomerCreateParams.builder()
+            CustomerCreateParams
+                .builder()
                 .id(userID)
-                .build()
+                .build(),
         )
     }
 }

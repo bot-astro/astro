@@ -1,6 +1,5 @@
 package space.astro.shared.core.autoconfigure
 
-import com.google.api.client.http.javanet.ConnectionFactory
 import io.lettuce.core.RedisClient
 import io.lettuce.core.api.StatefulRedisConnection
 import io.lettuce.core.api.async.RedisAsyncCommands
@@ -21,38 +20,25 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 @ConditionalOnBean(LettuceConnectionFactory::class)
 @AutoConfigureAfter(DataRedisAutoConfiguration::class)
 class ARedisAutoConfiguration {
+    @Bean
+    fun redisClient(connectionFactory: LettuceConnectionFactory): RedisClient = connectionFactory.requiredNativeClient as RedisClient
 
     @Bean
-    fun redisClient(
-        connectionFactory: LettuceConnectionFactory,
-    ): RedisClient {
-        return connectionFactory.requiredNativeClient as RedisClient
-    }
-
-    @Bean
-    fun redisConnection(
-        connectionFactory: LettuceConnectionFactory
-    ): StatefulRedisConnection<String, String> {
+    fun redisConnection(connectionFactory: LettuceConnectionFactory): StatefulRedisConnection<String, String> {
         val client = connectionFactory.requiredNativeClient as RedisClient
         return client.connect()
     }
 
     @Bean
-    fun redisConnectionByte(
-        connectionFactory: LettuceConnectionFactory,
-    ): StatefulRedisConnection<String, ByteArray> {
+    fun redisConnectionByte(connectionFactory: LettuceConnectionFactory): StatefulRedisConnection<String, ByteArray> {
         val client = connectionFactory.requiredNativeClient as RedisClient
         val redisCodec: RedisCodec<String, ByteArray> = RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE)
         return client.connect(redisCodec)
     }
 
     @Bean
-    fun redisCommands(
-        connection: StatefulRedisConnection<String, String>
-    ): RedisCommands<String, String> = connection.sync()
+    fun redisCommands(connection: StatefulRedisConnection<String, String>): RedisCommands<String, String> = connection.sync()
 
     @Bean
-    fun redisAsyncCommands(
-        connection: StatefulRedisConnection<String, String>
-    ): RedisAsyncCommands<String, String> = connection.async()
+    fun redisAsyncCommands(connection: StatefulRedisConnection<String, String>): RedisAsyncCommands<String, String> = connection.async()
 }

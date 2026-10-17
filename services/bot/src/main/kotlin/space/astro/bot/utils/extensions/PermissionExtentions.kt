@@ -13,15 +13,17 @@ import space.astro.shared.core.models.database.ConfigurationErrorEntity
 
 fun Long.toPermissionList() = Permission.getPermissions(this)
 
-fun InsufficientPermissionException.toConfigurationErrorDto(guildId: String) = ConfigurationErrorEntity(
-    guildId = guildId,
-    description = "Astro is missing the ${permission.getName()} permission in channel with ID $channelId"
-)
+fun InsufficientPermissionException.toConfigurationErrorDto(guildId: String) =
+    ConfigurationErrorEntity(
+        guildId = guildId,
+        description = "Astro is missing the ${permission.getName()} permission in channel with ID $channelId",
+    )
 
-fun HierarchyException.toConfigurationErrorDto(guildId: String) = ConfigurationErrorEntity(
-    guildId = guildId,
-    description = "Astro is not high enough in the server settings roles hierarchy to assign or remove some roles."
-)
+fun HierarchyException.toConfigurationErrorDto(guildId: String) =
+    ConfigurationErrorEntity(
+        guildId = guildId,
+        description = "Astro is not high enough in the server settings roles hierarchy to assign or remove some roles.",
+    )
 
 /**
  * @throws InsufficientPermissionException
@@ -29,17 +31,18 @@ fun HierarchyException.toConfigurationErrorDto(guildId: String) = ConfigurationE
  *
  * @see [IPermissionContainerManager.putPermissionOverride] for exceptions
  */
-fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
+fun <T : GuildChannel> ChannelAction<T>.modifyPermissionOverride(
     permissionOverride: PermissionOverride?,
     permissionHolder: IPermissionHolder,
     allow: List<Permission> = emptyList(),
     deny: List<Permission> = emptyList(),
-): ChannelAction<T> = modifyPermissionOverride(
-    permissionOverride = permissionOverride,
-    permissionHolder = permissionHolder,
-    allow = Permission.getRaw(allow),
-    deny = Permission.getRaw(deny)
-)
+): ChannelAction<T> =
+    modifyPermissionOverride(
+        permissionOverride = permissionOverride,
+        permissionHolder = permissionHolder,
+        allow = Permission.getRaw(allow),
+        deny = Permission.getRaw(deny),
+    )
 
 /**
  * @throws InsufficientPermissionException
@@ -47,22 +50,23 @@ fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
  *
  * @see [addPermissionOverride] for exceptions
  */
-fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
+fun <T : GuildChannel> ChannelAction<T>.modifyPermissionOverride(
     permissionOverride: PermissionOverride?,
     permissionHolder: IPermissionHolder,
     allow: Long = 0L,
-    deny: Long = 0L
+    deny: Long = 0L,
 ): ChannelAction<T> {
-    val updatedPermissionOverride = computeAllowedAndDeniedPermissionsFromPermissionOverride(
-        permissionOverride = permissionOverride,
-        allow = allow,
-        deny = deny
-    )
+    val updatedPermissionOverride =
+        computeAllowedAndDeniedPermissionsFromPermissionOverride(
+            permissionOverride = permissionOverride,
+            allow = allow,
+            deny = deny,
+        )
 
     return addPermissionOverride(
         permissionHolder,
         updatedPermissionOverride.first,
-        updatedPermissionOverride.second
+        updatedPermissionOverride.second,
     )
 }
 
@@ -72,15 +76,16 @@ fun<T: GuildChannel> ChannelAction<T>.modifyPermissionOverride(
  *
  * @see [putPermissionOverride] for exceptions
  */
-fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionContainerManager<T, M>.modifyPermissionOverride(
+fun <T : IPermissionContainer, M : IPermissionContainerManager<T, M>> IPermissionContainerManager<T, M>.modifyPermissionOverride(
     permissionHolder: IPermissionHolder,
     allow: Collection<Permission> = emptyList(),
-    deny: Collection<Permission> = emptyList()
-): M = modifyPermissionOverride(
-    permissionHolder = permissionHolder,
-    allow = Permission.getRaw(allow),
-    deny = Permission.getRaw(deny)
-)
+    deny: Collection<Permission> = emptyList(),
+): M =
+    modifyPermissionOverride(
+        permissionHolder = permissionHolder,
+        allow = Permission.getRaw(allow),
+        deny = Permission.getRaw(deny),
+    )
 
 /**
  * @throws InsufficientPermissionException
@@ -88,22 +93,23 @@ fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionCo
  *
  * @see [putPermissionOverride] for exceptions
  */
-fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionContainerManager<T, M>.modifyPermissionOverride(
+fun <T : IPermissionContainer, M : IPermissionContainerManager<T, M>> IPermissionContainerManager<T, M>.modifyPermissionOverride(
     permissionHolder: IPermissionHolder,
     allow: Long = 0L,
-    deny: Long = 0L
+    deny: Long = 0L,
 ): M {
     val permissionOverride = this.channel.getPermissionOverride(permissionHolder)
-    val updatedPermissionOverride = computeAllowedAndDeniedPermissionsFromPermissionOverride(
-        permissionOverride = permissionOverride,
-        allow = allow,
-        deny = deny
-    )
+    val updatedPermissionOverride =
+        computeAllowedAndDeniedPermissionsFromPermissionOverride(
+            permissionOverride = permissionOverride,
+            allow = allow,
+            deny = deny,
+        )
 
     return putPermissionOverride(
         permissionHolder,
         updatedPermissionOverride.first,
-        updatedPermissionOverride.second
+        updatedPermissionOverride.second,
     )
 }
 
@@ -113,22 +119,23 @@ fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionCo
  *
  * @see [putPermissionOverride] for exceptions
  */
-fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionContainerManager<T, M>.modifyMemberPermissionOverride(
+fun <T : IPermissionContainer, M : IPermissionContainerManager<T, M>> IPermissionContainerManager<T, M>.modifyMemberPermissionOverride(
     memberId: Long,
     allow: Long = 0L,
-    deny: Long = 0L
+    deny: Long = 0L,
 ): M {
     val permissionOverride = this.channel.memberPermissionOverrides.firstOrNull { it.idLong == memberId }
-    val updatedPermissionOverride = computeAllowedAndDeniedPermissionsFromPermissionOverride(
-        permissionOverride = permissionOverride,
-        allow = allow,
-        deny = deny
-    )
+    val updatedPermissionOverride =
+        computeAllowedAndDeniedPermissionsFromPermissionOverride(
+            permissionOverride = permissionOverride,
+            allow = allow,
+            deny = deny,
+        )
 
     return putMemberPermissionOverride(
         memberId,
         updatedPermissionOverride.first,
-        updatedPermissionOverride.second
+        updatedPermissionOverride.second,
     )
 }
 
@@ -140,7 +147,7 @@ fun<T: IPermissionContainer, M: IPermissionContainerManager<T, M>> IPermissionCo
 private fun computeAllowedAndDeniedPermissionsFromPermissionOverride(
     permissionOverride: PermissionOverride?,
     allow: Long,
-    deny: Long
+    deny: Long,
 ): Pair<Long, Long> {
     var allowedPermissions = permissionOverride?.allowedRaw ?: 0L
     var deniedPermission = permissionOverride?.deniedRaw ?: 0L

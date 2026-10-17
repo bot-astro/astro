@@ -8,7 +8,6 @@ import tools.jackson.databind.PropertyNamingStrategies
 
 @AutoConfiguration
 class AJsonMapperBuilder {
-
     @Bean
     fun jsonMapperBuilderCustomizer(): JsonMapperBuilderCustomizer =
         JsonMapperBuilderCustomizer { builder ->

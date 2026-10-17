@@ -24,6 +24,3 @@ data class GuildSettingsEntity(
 ) {
     val javaLocale = Locale.forLanguageTag(locale)
 }
-
-
-

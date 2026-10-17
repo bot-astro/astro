@@ -48,4 +48,8 @@ fun Long.asRelativeTimestampFromNow() = "<t:${(System.currentTimeMillis() + this
 /**
  * Creates a link with this String as the name and a message link as the value: https://discord.com/channels/$guildId/$channelId/$messageId
  */
-fun String.asMessageMarkdownLink(guildId: String, channelId: String, messageId: String) = "[$this](https://discord.com/channels/$guildId/$channelId/$messageId)"
+fun String.asMessageMarkdownLink(
+    guildId: String,
+    channelId: String,
+    messageId: String,
+) = "[$this](https://discord.com/channels/$guildId/$channelId/$messageId)"

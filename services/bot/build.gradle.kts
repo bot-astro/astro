@@ -16,7 +16,7 @@ dependencies {
     implementation(libs.jda) {
         exclude(
             group = "club.minnced",
-            module = "opus-java"
+            module = "opus-java",
         )
     }
     // NEVER EVER TRUST JDA KTX AND JDA IN THE SAME PROJECT UNLESS YOU ARE 100% SURE THEY USE THE SAME VERSION
@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.jda.ktx) {
         exclude(
             group = "net.dv8tion",
-            module = "JDA"
+            module = "JDA",
         )
     }
 

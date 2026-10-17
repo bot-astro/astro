@@ -19,25 +19,27 @@ import space.astro.shared.core.properties.DiscordOAuthProperties
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
 
-private val log = KotlinLogging.logger {  }
+private val log = KotlinLogging.logger { }
 
 class DiscordApiClient(
     discordApiConfig: DiscordApiProperties,
     jsonMapper: JsonMapper,
 ) {
+    private val discordJsonMapper =
+        jsonMapper
+            .rebuild()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .build()
 
-    private val discordJsonMapper = jsonMapper.rebuild()
-        .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-        .build()
-
-    private val client = RestClient.builder()
-        .baseUrl(discordApiConfig.baseUrl)
-        .configureMessageConverters { converters ->
-            converters.withJsonConverter(
-                JacksonJsonHttpMessageConverter(discordJsonMapper)
-            )
-        }
-        .build()
+    private val client =
+        RestClient
+            .builder()
+            .baseUrl(discordApiConfig.baseUrl)
+            .configureMessageConverters { converters ->
+                converters.withJsonConverter(
+                    JacksonJsonHttpMessageConverter(discordJsonMapper),
+                )
+            }.build()
 
     /**
      * Exchanges a Discord OAuth flow [code] for an access token
@@ -49,7 +51,7 @@ class DiscordApiClient(
      */
     fun getAccessToken(
         code: String,
-        discordOAuthProperties: DiscordOAuthProperties
+        discordOAuthProperties: DiscordOAuthProperties,
     ): DiscordTokenDto {
         val form: MultiValueMap<String, String> = LinkedMultiValueMap()
         form.add("client_id", discordOAuthProperties.id)
@@ -60,7 +62,8 @@ class DiscordApiClient(
         form.add("scope", "identify email guilds")
 
         try {
-            return client.post()
+            return client
+                .post()
                 .uri("/oauth2/token")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(form)
@@ -88,7 +91,7 @@ class DiscordApiClient(
      */
     fun refreshToken(
         refreshToken: String,
-        discordOAuthProperties: DiscordOAuthProperties
+        discordOAuthProperties: DiscordOAuthProperties,
     ): DiscordTokenDto {
         val form: MultiValueMap<String, String> = LinkedMultiValueMap()
         form.add("client_id", discordOAuthProperties.id)
@@ -97,7 +100,8 @@ class DiscordApiClient(
         form.add("refresh_token", refreshToken)
 
         try {
-            return client.post()
+            return client
+                .post()
                 .uri("/oauth2/token")
                 .body(form)
                 .retrieve()
@@ -120,7 +124,8 @@ class DiscordApiClient(
      */
     fun getSelfUser(accessToken: String): DiscordUserDto {
         try {
-            return client.get()
+            return client
+                .get()
                 .uri("/users/@me")
                 .header("Authorization", "Bearer $accessToken")
                 .retrieve()
@@ -143,7 +148,8 @@ class DiscordApiClient(
      */
     fun getGuilds(accessToken: String): List<DiscordPartialGuildDto> {
         try {
-            return client.get()
+            return client
+                .get()
                 .uri("/users/@me/guilds")
                 .header("Authorization", "Bearer $accessToken")
                 .retrieve()
