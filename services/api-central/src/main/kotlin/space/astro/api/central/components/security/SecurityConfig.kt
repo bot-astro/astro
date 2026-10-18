@@ -13,7 +13,6 @@ import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import space.astro.api.central.components.ControllersExceptionHandler
 import space.astro.api.central.components.security.ratelimit.IpRateLimitFilter
-import space.astro.api.central.components.security.ratelimit.UserIdRateLimitFilter
 import space.astro.shared.core.properties.api_central.CentralApiProperties
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
@@ -51,7 +50,7 @@ class SecurityConfig(
                     exceptionHandler.writeException(response, exception)
                 }
             }.addFilterBefore(ipRateLimitFilter, UsernamePasswordAuthenticationFilter::class.java)
-            .addFilterAfter(authFilter, UserIdRateLimitFilter::class.java)
+            .addFilterAfter(authFilter, IpRateLimitFilter::class.java)
 //            .addFilterAfter(userIdRateLimitFilter, AuthFilter::class.java)
             .authorizeHttpRequests {
                 it

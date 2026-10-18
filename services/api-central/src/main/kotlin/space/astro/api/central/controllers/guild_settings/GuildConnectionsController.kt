@@ -1,5 +1,7 @@
 package space.astro.api.central.controllers.guild_settings
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -11,9 +13,11 @@ import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
 @RestController
+@Tag(name = "Connections settings")
 class GuildConnectionsController(
     private val guildSettingsRepository: GuildSettingsRepository,
 ) {
+    @Operation(summary = "Create connection")
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTIONS)
     @CanManageGuildMiddleware
     fun createConnection(
@@ -29,6 +33,7 @@ class GuildConnectionsController(
         return ResponseEntity.ok(guildSettings)
     }
 
+    @Operation(summary = "Update connection")
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTION)
     @CanManageGuildMiddleware
     fun updateConnection(
@@ -51,6 +56,7 @@ class GuildConnectionsController(
         return ResponseEntity.ok(guildSettings)
     }
 
+    @Operation(summary = "Delete connection")
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTION)
     @CanManageGuildMiddleware
     fun deleteConnection(

@@ -1,6 +1,7 @@
 package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -20,11 +21,13 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 import java.util.*
 
 @RestController
+@Tag(name = "Guild settings")
 class GuildSettingsController(
     private val botApiClient: BotApiClient,
     private val guildSettingsRepository: GuildSettingsRepository,
     private val temporaryVCRepository: TemporaryVCRepository,
 ) {
+    @Operation(summary = "Get guild settings")
     @GetMapping(CentralApiEndpoint.GUILD_SETTINGS)
     @CanManageGuildMiddleware
     fun getGuildSettings(
@@ -49,6 +52,7 @@ class GuildSettingsController(
         return ResponseEntity.ok(guildSettings)
     }
 
+    @Operation(summary = "Update guild settings")
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS)
     @CanManageGuildMiddleware
     fun updateGuildSettings(
@@ -69,7 +73,7 @@ class GuildSettingsController(
     }
 
     @Operation(
-        summary = "Updates the bot profile for a guild",
+        summary = "Update bot profile",
         description = "Any null value will reset the corresponding field to the default value",
     )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_PROFILE)
@@ -86,6 +90,7 @@ class GuildSettingsController(
         return ResponseEntity.ok().build()
     }
 
+    @Operation(summary = "Clear temporary VCs cache")
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTIONS)
     @CanManageGuildMiddleware
     fun clearVcsCache(

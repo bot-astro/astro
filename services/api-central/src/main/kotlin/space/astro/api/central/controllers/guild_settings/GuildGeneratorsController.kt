@@ -1,5 +1,7 @@
 package space.astro.api.central.controllers.guild_settings
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -15,10 +17,12 @@ import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
 @RestController
+@Tag(name = "Generators settings")
 class GuildGeneratorsController(
     private val botApiClient: BotApiClient,
     private val guildSettingsRepository: GuildSettingsRepository,
 ) {
+    @Operation(summary = "Create generator")
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATORS)
     @CanManageGuildMiddleware
     fun createGenerator(
@@ -52,6 +56,7 @@ class GuildGeneratorsController(
         return ResponseEntity.ok(guildSettings)
     }
 
+    @Operation(summary = "Update generator")
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATOR)
     @CanManageGuildMiddleware
     fun updateGenerator(
@@ -76,6 +81,7 @@ class GuildGeneratorsController(
         return ResponseEntity.ok(guildSettings)
     }
 
+    @Operation(summary = "Delete generator")
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATOR)
     fun deleteGenerator(
         @PathVariable guildId: String,

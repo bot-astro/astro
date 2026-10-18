@@ -1,5 +1,7 @@
 package space.astro.api.central.controllers.guild_settings
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -14,10 +16,12 @@ import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
 @RestController
+@Tag(name = "Interfaces settings")
 class GuiltInterfaceController(
     private val botApiClient: BotApiClient,
     private val guildSettingsRepository: GuildSettingsRepository,
 ) {
+    @Operation(summary = "Create interface")
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_INTERFACES)
     @CanManageGuildMiddleware
     fun createInterface(
@@ -39,6 +43,7 @@ class GuiltInterfaceController(
         return ResponseEntity.ok(guildSettings)
     }
 
+    @Operation(summary = "Update interface")
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_INTERFACE)
     @CanManageGuildMiddleware
     fun updateInterface(
@@ -63,6 +68,7 @@ class GuiltInterfaceController(
         return ResponseEntity.ok(guildSettings)
     }
 
+    @Operation(summary = "Delete interface")
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_INTERFACE)
     @CanManageGuildMiddleware
     fun deleteInterface(

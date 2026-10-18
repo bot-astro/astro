@@ -12,8 +12,8 @@ data class ConnectionData(
     var permanent: Boolean = false,
 ) : Validatable {
     override fun validate(): ValidationResult {
-        val channelValidation = channelId.isValidSnowflake().asValidationResult("Channel id is not a valid Discord id")
-        val roleValidation = roleId.isValidSnowflake().asValidationResult("Role id is not a valid Discord id")
+        val channelValidation = id.isValidSnowflake().asValidationResult("Channel id is not a valid Discord id")
+        val roleValidation = roleID.isValidSnowflake().asValidationResult("Role id is not a valid Discord id")
 
         return ValidationResult.combine(channelValidation, roleValidation)
     }

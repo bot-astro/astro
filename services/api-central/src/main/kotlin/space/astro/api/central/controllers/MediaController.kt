@@ -1,5 +1,7 @@
 package space.astro.api.central.controllers
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.bson.types.ObjectId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
@@ -25,6 +27,7 @@ import kotlin.math.max
 import kotlin.time.Duration.Companion.nanoseconds
 
 @Controller
+@Tag(name = "Media")
 class MediaController(
     private val mediaStorageService: MediaStorageService,
     private val mediaRepository: MediaRepository,
@@ -37,6 +40,7 @@ class MediaController(
         const val MEDIA_CLEANUP_INTERVAL = 20L
     }
 
+    @Operation(summary = "Upload media")
     @PostMapping(CentralApiEndpoint.GUILD_MEDIA)
     fun uploadMedia(
         @PathVariable("guildId") guildId: String,

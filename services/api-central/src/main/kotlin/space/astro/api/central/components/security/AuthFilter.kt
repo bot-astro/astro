@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import space.astro.api.central.components.ControllersExceptionHandler
 import space.astro.api.central.models.auth.AuthContext
 import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.services.AuthSessionService
@@ -18,7 +17,6 @@ import space.astro.shared.core.properties.api_central.CentralApiProperties
 @Component
 class AuthFilter(
     private val authSessionService: AuthSessionService,
-    private val exceptionHandler: ControllersExceptionHandler,
     private val centralApiProperties: CentralApiProperties,
     private val discordOAuthProperties: DiscordOAuthProperties,
     private val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
@@ -32,9 +30,10 @@ class AuthFilter(
         try {
             authenticate(request)
         } catch (e: Exception) {
+            // the context will have no authenticated user
+            // so it will fail in the securityFilterChain
+            logger.debug("Authentication failed, continuing as anonymous", e)
             SecurityContextHolder.clearContext()
-            exceptionHandler.writeException(response, e)
-            return
         }
         filterChain.doFilter(request, response)
     }
