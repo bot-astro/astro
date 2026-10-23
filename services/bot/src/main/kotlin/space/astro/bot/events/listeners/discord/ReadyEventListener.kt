@@ -4,12 +4,14 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.events.session.ReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-// import space.astro.bot.interactions.handlers.command.CommandHandler
+import space.astro.bot.interactions.SlashCommandRegistrar
 
 private val log = KotlinLogging.logger { }
 
 @Component
-class ReadyEventListener {
+class ReadyEventListener(
+    private val slashCommandRegistrar: SlashCommandRegistrar,
+) {
     @EventListener
     fun onReady(event: ReadyEvent) {
         val shardId = event.jda.shardInfo.shardId
@@ -18,7 +20,7 @@ class ReadyEventListener {
 
         if (shardId == 0) {
             log.info { "Upserting commands because we're on shard 0" }
-//            commandHandler.registerCommands()
+            slashCommandRegistrar.registerCommands(event.jda)
         }
     }
 }

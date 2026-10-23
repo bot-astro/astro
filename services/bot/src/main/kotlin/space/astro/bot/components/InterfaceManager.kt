@@ -98,7 +98,6 @@ class InterfaceManager {
                 messageID = "0",
                 buttons = defaultButtons(),
                 embedStyle = defaultEmbedStyle(),
-                generateEmbedFields = true,
             )
 
         val message = channel.sendMessage(computeMessage(interfaceData)).await()

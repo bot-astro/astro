@@ -2,7 +2,6 @@ package space.astro.bot
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.KotlinLoggingConfiguration
-import net.dv8tion.jda.api.utils.messages.MessageRequest.setDefaultUseComponentsV2
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -33,8 +32,6 @@ fun main(args: Array<String>) {
     Thread.setDefaultUncaughtExceptionHandler { t, e ->
         log.error(e) { "Uncaught exception in thread $t" }
     }
-
-    setDefaultUseComponentsV2(true)
 
     runApplication<Application>(*args)
 }

@@ -74,4 +74,9 @@ object RedisKey {
     fun DISCORD_USER_GUILDS() = "DUG"
 
     fun TEMPORARY_VCS() = "TEMP_VCS"
+
+    fun INTERACTION_COOLDOWN(
+        userId: String,
+        key: String,
+    ) = "IC:$userId:$key"
 }
