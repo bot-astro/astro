@@ -26,14 +26,19 @@ Proposed (lowest manager dependencies, covers all four handler types):
 - Modal: `NameModal`
 Port only the managers they need (`VCNameManager`, region logic).
 
-Status: written (not compiled), in `interactions/vc/` (`NameCommand` (with `name` option) and `NameButton` → `NameModal`, `RegionInteraction` slash+button → `RegionMenu`).
+Status: written (not compiled), in `commands/vc/settings/` (`NameCommand` (with `name` option) and `NameButton` → `NameModal`, `RegionInteraction` slash+button → `RegionMenu`).
 Deviations from the old code: `VCNameManager` only does the user rename (no refresh / rename conditions / position updates / badwords, TODOs in code) and throws `InteractionException`; a trimmed `VariablesManager` (existing-VC names only) lives next to it.
 
 ### 3. Feedback
 Review the slice, adjust the base (interfaces, settings, responder) before porting more.
 
 ### 4. Port the rest
-Remaining interactions per feature, as listed in `MIGRATION.md` items 6-10. Slash + button for the same action share one class.
+Info (written, not compiled), in `commands/info/`: `help` and `dashboard` (the help buttons were already commented out in the legacy code, not ported; Ultimate bits dropped with a TODO). `ui/Links.kt` added.
+Progress (written, not compiled), all handlers now live under the `commands` package (subpackages `vc/settings`, `vc/permissions`, `vc/ownership`, `vc/template`, `vc/chat`, `vc/waiting`, `info`); `interactions` holds only the core. `commands/vc/settings`: `name`, `region`, `limit` and `bitrate` (command + button + modal each, no manager needed).
+Progress (written, not compiled), `commands/vc/permissions`: lock / unlock / hide / unhide (slash + button each), ban / permit (command + button + `BanMenu` / `PermitMenu`), invite (command + button + `InviteMenu`), with `VCPermissionManager`. New core piece: `EntitySelectHandler` (interface, registry map, listener). `/kick` skipped (commented out in legacy). `changeState` saves the entity itself; vc name refresh on state change is a TODO; `/invite` dropped its unused `message` option.
+Progress (written, not compiled), `commands/vc/ownership` (claim command + button, transfer command + button + `TransferMenu`) and `commands/vc/template` (command + button + `TemplateMenu`), with `VCOwnershipManager` / `VCTemplateManager`. Owner role assignment no longer premium gated (TODO), `/template` has no autocomplete yet (accepts name or id), vc name refresh on owner change is still a TODO.
+Progress (written, not compiled), `commands/vc/chat` (`/chat` create/delete/logs, chat button, logs button) and `commands/vc/waiting` (`/waiting-room` create/delete, button), with `VCPrivateChatManager`, `VCWaitingRoomManager`, `VCPositionManager` (name refreshes only mutate the entity and managers, callers save + queue), `PermissionSets` and `VariablesManager.computePrivateChatName` / `computeWaitingRoomName`.
+Not ported yet: item 9 (setup / generator / interface / connection / settings / template-settings commands), pending a decision (port as-is vs. link to the dashboard).
 
 ### 5. Components V2
 Turn `setDefaultUseComponentsV2(true)` back on; replace embed helpers with `Container` / `TextDisplay` helpers; fix `InterfaceManager` (builds embeds, would throw under V2); decide behaviour for old V1 interface messages.
@@ -46,3 +51,4 @@ Turn `setDefaultUseComponentsV2(true)` back on; replace embed helpers with `Cont
 5. Handler interfaces do not share a generic event parameter (`InteractionHandler<C>` only; `SlashHandler`/`ButtonHandler`/... declare their own `handle(event, ctx)`), because Kotlin forbids inheriting the same interface with two type arguments, which a combined slash + button class needs.
 6. Interface-message buttons (`interface=true`) are not special-cased yet: their handlers pick `Ack.DEFER_REPLY_EPHEMERAL`, others `Ack.DEFER_EDIT`.
 7. Slash commands keep their options from the legacy code (e.g. `/name` keeps its `name` option and renames directly instead of opening a modal: much faster than waiting for the modal). The slash command and the button of the same action therefore may differ in behaviour and `Ack`, so they are separate classes sharing a manager/helper (this supersedes decision 4 where the two diverge).
+8. Do not unify logic across handlers for now (e.g. the rename body duplicated in `NameCommand` and `NameModal` stays duplicated, no shared helper): keep each handler self-contained, revisit when porting the rest (step 4).

@@ -3,6 +3,7 @@ package space.astro.bot.interactions.handlers
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import space.astro.bot.interactions.InteractionSettings
@@ -49,6 +50,18 @@ interface StringSelectHandler<C : InteractionContext> : InteractionHandler<C> {
 
     suspend fun handle(
         event: StringSelectInteractionEvent,
+        ctx: C,
+    )
+}
+
+/**
+ * User / role / channel / mentionable select menus, [id] is matched against the part of the component id before the first `?`
+ */
+interface EntitySelectHandler<C : InteractionContext> : InteractionHandler<C> {
+    val id: String
+
+    suspend fun handle(
+        event: EntitySelectInteractionEvent,
         ctx: C,
     )
 }

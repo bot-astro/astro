@@ -1,4 +1,4 @@
-package space.astro.bot.interactions.vc
+package space.astro.bot.commands.vc.settings
 
 import net.dv8tion.jda.api.Region
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent

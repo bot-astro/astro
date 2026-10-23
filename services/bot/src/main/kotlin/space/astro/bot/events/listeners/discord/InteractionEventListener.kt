@@ -9,11 +9,13 @@ import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.handlers.ButtonHandler
+import space.astro.bot.interactions.handlers.EntitySelectHandler
 import space.astro.bot.interactions.handlers.ModalHandler
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.interactions.handlers.StringSelectHandler
@@ -54,6 +56,13 @@ class InteractionEventListener(
     }
 
     @EventListener
+    fun onEntitySelect(event: EntitySelectInteractionEvent) {
+        val key = event.componentId.substringBefore('?')
+        val handler = registry.entitySelects[key] ?: return
+        scope.launch { runEntitySelect(handler, key, event) }
+    }
+
+    @EventListener
     fun onModal(event: ModalInteractionEvent) {
         val key = event.modalId.substringBefore('?')
         val handler = registry.modals[key] ?: return
@@ -75,6 +84,12 @@ class InteractionEventListener(
         handler: StringSelectHandler<C>,
         key: String,
         event: StringSelectInteractionEvent,
+    ) = pipeline.run(event, key, handler) { ctx -> handler.handle(event, ctx) }
+
+    private suspend fun <C : InteractionContext> runEntitySelect(
+        handler: EntitySelectHandler<C>,
+        key: String,
+        event: EntitySelectInteractionEvent,
     ) = pipeline.run(event, key, handler) { ctx -> handler.handle(event, ctx) }
 
     private suspend fun <C : InteractionContext> runModal(

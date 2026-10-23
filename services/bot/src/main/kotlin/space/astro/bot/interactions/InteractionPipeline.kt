@@ -31,13 +31,11 @@ private val log = KotlinLogging.logger { }
  */
 @Component
 class InteractionPipeline(
-    guards: List<InteractionGuard>,
+    // already ordered by @Order
+    private val guards: List<InteractionGuard>,
     private val guildSettingsRepository: GuildSettingsRepository,
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
 ) {
-    // already ordered by @Order
-    private val guards = guards.toList()
-
     suspend fun <E, C : InteractionContext> run(
         event: E,
         key: String,

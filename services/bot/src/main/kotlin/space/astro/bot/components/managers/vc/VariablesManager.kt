@@ -59,6 +59,32 @@ object VariablesManager {
         return formatChannelNameLength(name)
     }
 
+    fun computePrivateChatName(
+        template: String,
+        owner: Member?,
+        temporaryVC: VoiceChannel,
+    ): String =
+        parseOwner(template, owner)
+            .let { parseActivity(it, owner) }
+            .let { parseVc(it, temporaryVC) }
+            .let { formatChannelNameLength(it) }
+
+    fun computeWaitingRoomName(
+        template: String,
+        owner: Member?,
+        temporaryVC: VoiceChannel,
+        incrementalPosition: Int?,
+    ): String {
+        var name =
+            parseOwner(template, owner)
+                .let { parseActivity(it, owner) }
+                .let { parseVc(it, temporaryVC) }
+
+        incrementalPosition?.also { name = parsePosition(name, it) }
+
+        return formatChannelNameLength(name)
+    }
+
     private fun parseOwner(
         template: String,
         owner: Member?,
