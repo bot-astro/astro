@@ -10,6 +10,7 @@ import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.vc.event.VCEvent
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 
@@ -58,7 +59,7 @@ class LeftTemporaryVCHandler(
 
         if (entity.chatLogs) {
             val logChat: GuildMessageChannel = privateChat ?: vc
-            logChat.sendVCLog("*${data.member.asMention} just left the VC.*")
+            logChat.sendVCLog(data.guildSettings.supportedLocale, "vc.log.left", "user" to data.member.asMention)
         }
     }
 

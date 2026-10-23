@@ -6,8 +6,8 @@ import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.ModalHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
@@ -39,8 +39,9 @@ class LimitModal(
 
         if (limit == null || limit < minUserLimit || limit > maxUserLimit) {
             ctx.responder.error(
-                "User limit must be between `$minUserLimit` and `$maxUserLimit`." +
-                    "\n(*Those limits were set by the moderators of the server*)",
+                "vc.limit.out_of_range",
+                "min" to minUserLimit.toString(),
+                "max" to maxUserLimit.toString(),
             )
             return
         }
@@ -50,6 +51,6 @@ class LimitModal(
         vcCtx.markTemporaryVCManagerAsUpdated()
         vcCtx.queueUpdatedManagers()
 
-        ctx.responder.reply(Containers.default("${Emojis.limit.formatted} User limit set to $limit users!"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.limit.set", "emoji" to Emojis.limit.formatted, "limit" to limit.toString())))
     }
 }

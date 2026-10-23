@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.utils.extensions.modifyPermissionOverride
+import space.astro.bot.utils.extensions.supportedLocale
 
 @Component
 class JoinedTemporaryVCHandler {
@@ -39,7 +40,7 @@ class JoinedTemporaryVCHandler {
 
         if (entity.chatLogs) {
             val logChat: GuildMessageChannel = privateChat ?: temporaryVC
-            logChat.sendVCLog("*${member.asMention} just joined the VC!*")
+            logChat.sendVCLog(data.guildSettings.supportedLocale, "vc.log.joined", "user" to member.asMention)
         }
     }
 }

@@ -16,7 +16,8 @@ class BotPermissionsGuard : InteractionGuard {
 
         if (!request.guild.selfMember.hasPermission(required)) {
             throw InteractionException(
-                "Astro needs the following permissions to run this command: ${required.joinToString(", ") { it.getName() }}",
+                "guard.bot_permissions",
+                "permissions" to required.joinToString(", ") { it.getName() },
             )
         }
     }

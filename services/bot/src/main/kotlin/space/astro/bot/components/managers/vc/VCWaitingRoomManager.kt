@@ -12,11 +12,13 @@ import space.astro.bot.exceptions.ConfigurationException
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.utils.extensions.modifyPermissionOverride
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings.InitialPosition
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings.PermissionsInherited
+import java.util.Locale
 
 @Component
 class VCWaitingRoomManager {
@@ -31,6 +33,7 @@ class VCWaitingRoomManager {
         generatorSettings: GeneratorSettings,
         temporaryVC: VoiceChannel,
         temporaryVCIncrementalPosition: Int?,
+        locale: Locale,
     ): VoiceChannel {
         try {
             val guild = owner.guild
@@ -44,6 +47,7 @@ class VCWaitingRoomManager {
             val name =
                 VariablesManager.computeWaitingRoomName(
                     template = generatorSettings.defaultWaitingName,
+                    locale = locale,
                     owner = owner,
                     temporaryVC = temporaryVC,
                     incrementalPosition = temporaryVCIncrementalPosition,
@@ -147,6 +151,7 @@ class VCWaitingRoomManager {
         val newName =
             VariablesManager.computeWaitingRoomName(
                 template = ctx.generatorSettings.defaultWaitingName,
+                locale = ctx.guildSettings.supportedLocale,
                 owner = ctx.temporaryVCOwner,
                 temporaryVC = ctx.temporaryVC,
                 incrementalPosition = entity.incrementalPosition,

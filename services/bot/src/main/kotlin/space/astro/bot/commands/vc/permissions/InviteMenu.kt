@@ -36,7 +36,7 @@ class InviteMenu(
         val members = event.mentions.members.filter { !it.user.isBot }
 
         if (members.isEmpty()) {
-            ctx.responder.error("None of the users you provided are in this server (you also can't invite bots)!")
+            ctx.responder.error("vc.invite.no_valid_users")
             return
         }
 
@@ -57,13 +57,17 @@ class InviteMenu(
                 privateChannel
                     .sendMessageComponents(
                         Containers.default(
-                            "${ctx.member.asMention} has invited you to join their VC in ${ctx.guild.name}!" +
-                                "\n[Accept invitation](${vcInvite.url})",
+                            ctx.t(
+                                "vc.invite.dm",
+                                "inviter" to ctx.member.asMention,
+                                "guild" to ctx.guild.name,
+                                "invite" to vcInvite.url,
+                            ),
                         ),
                     ).queue(null) { }
             }) { }
         }
 
-        ctx.responder.reply(Containers.default("${members.joinToString(", ") { it.asMention }} has been invited to join your VC!"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.invite.invited", "users" to members.joinToString(", ") { it.asMention })))
     }
 }

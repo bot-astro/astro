@@ -4,9 +4,11 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.entities.emoji.Emoji
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 object VariablesManager {
     private val natoAlphabet =
@@ -52,6 +54,7 @@ object VariablesManager {
 
     fun computeVcNameForCreation(
         template: String,
+        locale: Locale,
         owner: Member,
         bitrate: Int,
         userLimit: Int,
@@ -60,7 +63,7 @@ object VariablesManager {
         var name =
             parseOwner(template, owner)
                 .let { parseActivity(it, owner) }
-                .let { parseVcCreation(it, bitrate, userLimit) }
+                .let { parseVcCreation(it, locale, bitrate, userLimit) }
 
         incrementalPosition?.also { name = parsePosition(name, it) }
 
@@ -69,19 +72,21 @@ object VariablesManager {
 
     fun computeChatMessage(
         template: String,
+        locale: Locale,
         owner: Member,
         temporaryVC: VoiceChannel,
     ): String {
         val message =
             parseOwner(template, owner)
                 .let { parseActivity(it, owner) }
-                .let { parseVc(it, temporaryVC) }
+                .let { parseVc(it, temporaryVC, locale) }
 
         return (if (message.length < 2) message + "-".repeat(2) else message).take(2000)
     }
 
     fun computeVcNameForExisting(
         template: String,
+        locale: Locale,
         owner: Member?,
         temporaryVC: VoiceChannel,
         incrementalPosition: Int?,
@@ -89,7 +94,7 @@ object VariablesManager {
         var name =
             parseOwner(template, owner)
                 .let { parseActivity(it, owner) }
-                .let { parseVc(it, temporaryVC) }
+                .let { parseVc(it, temporaryVC, locale) }
 
         incrementalPosition?.also { name = parsePosition(name, it) }
 
@@ -98,16 +103,18 @@ object VariablesManager {
 
     fun computePrivateChatName(
         template: String,
+        locale: Locale,
         owner: Member?,
         temporaryVC: VoiceChannel,
     ): String =
         parseOwner(template, owner)
             .let { parseActivity(it, owner) }
-            .let { parseVc(it, temporaryVC) }
+            .let { parseVc(it, temporaryVC, locale) }
             .let { formatChannelNameLength(it) }
 
     fun computeWaitingRoomName(
         template: String,
+        locale: Locale,
         owner: Member?,
         temporaryVC: VoiceChannel,
         incrementalPosition: Int?,
@@ -115,7 +122,7 @@ object VariablesManager {
         var name =
             parseOwner(template, owner)
                 .let { parseActivity(it, owner) }
-                .let { parseVc(it, temporaryVC) }
+                .let { parseVc(it, temporaryVC, locale) }
 
         incrementalPosition?.also { name = parsePosition(name, it) }
 
@@ -155,22 +162,24 @@ object VariablesManager {
 
     private fun parseVcCreation(
         template: String,
+        locale: Locale,
         bitrate: Int,
         userLimit: Int,
     ): String =
         template
             .replace("{vc_bitrate}", (bitrate / 1000).toString(), true)
-            .replace("{vc_userlimit}", userLimit.takeIf { it > 0 }?.toString() ?: "no limit", true)
+            .replace("{vc_userlimit}", userLimit.takeIf { it > 0 }?.toString() ?: L.t(locale, "vc.variables.no_limit"), true)
             .replace("{vc_users}", "1", true)
 
     private fun parseVc(
         template: String,
         vc: VoiceChannel,
+        locale: Locale,
     ): String =
         template
             .replace("{vc_name}", vc.name, true)
             .replace("{vc_bitrate}", (vc.bitrate / 1000).toString(), true)
-            .replace("{vc_userlimit}", vc.userLimit.takeIf { it > 0 }?.toString() ?: "no limit", true)
+            .replace("{vc_userlimit}", vc.userLimit.takeIf { it > 0 }?.toString() ?: vc.L.t(locale, "vc.variables.no_limit"), true)
             .replace("{vc_users}", vc.members.size.toString(), true)
             .replace("{vc_id}", vc.id, true)
             .replace("{vc_mention}", vc.asMention, true)

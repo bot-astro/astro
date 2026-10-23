@@ -42,9 +42,7 @@ class BanMenu(
             )
 
         if (banned.isEmpty()) {
-            ctx.responder.error(
-                "No users or roles were banned, this may be because they involve a role which is immune to this command!",
-            )
+            ctx.responder.error("vc.ban.none_banned")
             return
         }
 
@@ -52,8 +50,7 @@ class BanMenu(
 
         ctx.responder.reply(
             Containers.default(
-                "The following users and roles have been banned from your voice channel:" +
-                    "\n${banned.joinToString(", ") { it.asMention }}",
+                ctx.t("vc.ban.banned_many", "mentions" to banned.joinToString(", ") { it.asMention }),
             ),
         )
     }

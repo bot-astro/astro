@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.vc.VCPermissionManager
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
@@ -31,7 +32,7 @@ class UnhideInteraction(
     }
 
     override val id = BUTTON_ID
-    override val data = Commands.slash("unhide", "Un-hide your voice channel making it visible to everyone").setContexts(InteractionContextType.GUILD)
+    override val data = Commands.slash("unhide", CommandLocalization.description("unhide")).setContexts(InteractionContextType.GUILD)
     override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
     override val contextResolver =
         contextResolverFactory.create(
@@ -53,6 +54,6 @@ class UnhideInteraction(
         vcPermissionManager.changeState(ctx.vcOperationCTX, TemporaryVCState.UNHIDDEN)
         ctx.vcOperationCTX.queueUpdatedManagers()
 
-        ctx.responder.reply(Containers.default("Your VC has been ${Emojis.unhide.formatted} un-hidden!"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.unhide.done", "emoji" to Emojis.unhide.formatted)))
     }
 }

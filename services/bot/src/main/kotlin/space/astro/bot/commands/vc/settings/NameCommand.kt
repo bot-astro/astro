@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.vc.VCNameManager
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
@@ -26,9 +27,9 @@ class NameCommand(
 
     override val data =
         Commands
-            .slash("name", "Set the name for your VC")
+            .slash("name", CommandLocalization.description("name"))
             .setContexts(InteractionContextType.GUILD)
-            .addOption(OptionType.STRING, NAME_OPTION, "The name for your VC", true, false)
+            .addOption(OptionType.STRING, NAME_OPTION, CommandLocalization.description("name.name"), true, false)
     override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
     override val contextResolver =
         contextResolverFactory.create(
@@ -43,13 +44,13 @@ class NameCommand(
         val name = event.getOption(NAME_OPTION)?.asString
 
         if (name.isNullOrBlank()) {
-            ctx.responder.error("Please provide a valid name")
+            ctx.responder.error("vc.name.invalid")
             return
         }
 
         vcNameManager.performVCRename(ctx.vcOperationCTX, name)
         ctx.vcOperationCTX.queueUpdatedManagers()
 
-        ctx.responder.reply(Containers.default("${Emojis.name.formatted} Name of your VC set to `$name`!"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.name.set", "emoji" to Emojis.name.formatted, "name" to name)))
     }
 }

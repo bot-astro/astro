@@ -34,26 +34,26 @@ class VcContextResolverFactory(
                 ?.channel
                 ?.takeIf { it.type == ChannelType.VOICE }
                 ?.asVoiceChannel()
-                ?: throw InteractionException("You need to be in a VC to use this command!")
+                ?: throw InteractionException("vc.context.not_in_vc")
 
         val guildSettings =
             base.guildSettings
-                ?: throw InteractionException("Astro is not configured in this server!")
+                ?: throw InteractionException("vc.context.not_configured")
 
         val temporaryVCEntities = withContext(Dispatchers.IO) { temporaryVCRepository.getOfGuild(guild.id) }
         val temporaryVCEntity =
             temporaryVCEntities.firstOrNull { it.id == vc.id }
-                ?: throw InteractionException("You must be in a temporary VC to use this!")
+                ?: throw InteractionException("vc.context.not_in_temporary_vc")
 
         if (ownershipRequired && temporaryVCEntity.ownerID != member.id) {
-            throw InteractionException("You need to be the owner of the temporary VC to use this!")
+            throw InteractionException("vc.context.not_owner")
         }
 
         val generatorSettings = guildSettings.generators.firstOrNull { it.id == temporaryVCEntity.generatorID }
         val generator = generatorSettings?.id?.let { guild.getVoiceChannelById(it) }
 
         if (generatorSettings == null || generator == null) {
-            throw InteractionException("The generator of this temporary VC has been deleted!")
+            throw InteractionException("vc.context.generator_deleted")
         }
 
         val privateChat = temporaryVCEntity.chatID?.let { guild.getTextChannelById(it) }

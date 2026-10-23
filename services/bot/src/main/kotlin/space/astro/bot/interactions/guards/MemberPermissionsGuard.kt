@@ -12,7 +12,8 @@ class MemberPermissionsGuard : InteractionGuard {
 
         if (required.isNotEmpty() && !request.member.hasPermission(required)) {
             throw InteractionException(
-                "You need the following permissions to run this command: ${required.joinToString(", ") { it.getName() }}",
+                "guard.member_permissions",
+                "permissions" to required.joinToString(", ") { it.getName() },
             )
         }
     }

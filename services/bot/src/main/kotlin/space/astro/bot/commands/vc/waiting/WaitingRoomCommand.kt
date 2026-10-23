@@ -9,13 +9,14 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.vc.VCWaitingRoomManager
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
+import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
-import space.astro.bot.interactions.handlers.SlashHandler
 
 @Component
 class WaitingRoomCommand(
@@ -30,11 +31,11 @@ class WaitingRoomCommand(
 
     override val data =
         Commands
-            .slash("waiting-room", "Manage the waiting room of your VC")
+            .slash("waiting-room", CommandLocalization.description("waiting-room"))
             .setContexts(InteractionContextType.GUILD)
             .addSubcommands(
-                SubcommandData(CREATE, "Create a waiting room for your VC"),
-                SubcommandData(DELETE, "Delete the waiting room of your VC"),
+                SubcommandData(CREATE, CommandLocalization.description("waiting-room.create")),
+                SubcommandData(DELETE, CommandLocalization.description("waiting-room.delete")),
             )
     override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
     override val contextResolver =
@@ -58,19 +59,19 @@ class WaitingRoomCommand(
         val existingWaitingRoom = vcCtx.waitingRoom
 
         if (existingWaitingRoom != null) {
-            ctx.responder.error("A waiting room already exists: ${existingWaitingRoom.asMention}")
+            ctx.responder.error("vc.waiting_room.already_exists", "room" to existingWaitingRoom.asMention)
             return
         }
 
         val entity = vcCtx.temporaryVCEntity
         val waitingRoom =
-            vcWaitingRoomManager.create(ctx.member, vcCtx.generatorSettings, vcCtx.temporaryVC, entity.incrementalPosition)
+            vcWaitingRoomManager.create(ctx.member, vcCtx.generatorSettings, vcCtx.temporaryVC, entity.incrementalPosition, ctx.locale)
         entity.waitingID = waitingRoom.id
         entity.waitingNameChanges = 0
         entity.lastWaitingNameChange = null
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, entity) }
 
-        ctx.responder.reply(Containers.default("Created a waiting room: ${waitingRoom.asMention}"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.waiting_room.created", "room" to waitingRoom.asMention)))
     }
 
     private suspend fun delete(ctx: VcInteractionContext) {
@@ -84,6 +85,6 @@ class WaitingRoomCommand(
         entity.waitingID = null
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, entity) }
 
-        ctx.responder.reply(Containers.default("Waiting room deleted."))
+        ctx.responder.reply(Containers.default(ctx.t("vc.waiting_room.deleted")))
     }
 }

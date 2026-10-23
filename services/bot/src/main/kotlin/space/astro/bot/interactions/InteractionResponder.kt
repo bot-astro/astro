@@ -4,6 +4,8 @@ import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.components.container.Container
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 import space.astro.bot.ui.Containers
+import space.astro.shared.core.lang.L
+import java.util.Locale
 
 /**
  * Thin wrapper over an interaction used by handlers to respond
@@ -13,7 +15,13 @@ import space.astro.bot.ui.Containers
 class InteractionResponder(
     private val callback: IReplyCallback,
     private val ack: Ack,
+    val locale: Locale,
 ) {
+    fun t(
+        key: String,
+        vararg args: Pair<String, Any?>,
+    ): String = L.t(locale, key, *args)
+
     /**
      * Sends [container] as the response
      *
@@ -51,9 +59,14 @@ class InteractionResponder(
     /**
      * Replies with an error without destroying a message that should stay as it is
      * (component edits keep the message and get an ephemeral follow up)
+     *
+     * @param key translation key of the error message
      */
-    suspend fun error(description: String) {
-        val container = Containers.error(description)
+    suspend fun error(
+        key: String,
+        vararg args: Pair<String, Any?>,
+    ) {
+        val container = Containers.error(t(key, *args))
 
         if (callback.isAcknowledged && (ack == Ack.DEFER_EDIT || ack == Ack.NONE)) {
             followUp(container)

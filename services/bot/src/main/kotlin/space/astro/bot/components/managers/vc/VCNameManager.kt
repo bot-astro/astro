@@ -7,6 +7,7 @@ import space.astro.bot.exceptions.ConfigurationException
 import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.vc.VCOperationCTX.VCOperationOrigin
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
@@ -60,11 +61,7 @@ class VCNameManager(
         val entity = ctx.temporaryVCEntity
 
         if (!entity.canBeRenamed()) {
-            throw InteractionException(
-                "The voice channel has already been renamed twice in the last 10 minutes." +
-                    "\nDiscord allows bots to change the name of a channel a maximum of two times every 10 minutes, " +
-                    "so Astro cannot rename it again yet.",
-            )
+            throw InteractionException("vc.name.rate_limited")
         }
 
         if (!ctx.shouldRenameBasedOnRenameConditions()) {
@@ -76,6 +73,7 @@ class VCNameManager(
         val newName =
             VariablesManager.computeVcNameForExisting(
                 template = nameTemplate,
+                locale = ctx.guildSettings.supportedLocale,
                 owner = ctx.temporaryVCOwner,
                 temporaryVC = ctx.temporaryVC,
                 incrementalPosition = entity.incrementalPosition,

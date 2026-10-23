@@ -8,11 +8,12 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.springframework.stereotype.Component
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.SlashHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
@@ -26,12 +27,12 @@ class BitrateCommand(
 
     override val data =
         Commands
-            .slash("bitrate", "Set the bitrate for your VC")
+            .slash("bitrate", CommandLocalization.description("bitrate"))
             .setContexts(InteractionContextType.GUILD)
             .addSubcommands(
-                SubcommandData("kbps", "Set the bitrate in KBPS")
+                SubcommandData("kbps", CommandLocalization.description("bitrate.kbps"))
                     .addOptions(
-                        OptionData(OptionType.INTEGER, BITRATE_OPTION, "The bitrate expressed in kbps", true)
+                        OptionData(OptionType.INTEGER, BITRATE_OPTION, CommandLocalization.description("bitrate.kbps.bitrate"), true)
                             .setMinValue(8),
                     ),
             )
@@ -53,8 +54,9 @@ class BitrateCommand(
 
         if (bitrate == null || bitrate < minBitrate || bitrate > maxBitrate) {
             ctx.responder.error(
-                "The bitrate must be between `${minBitrate / 1000} kbps` and `${maxBitrate / 1000} kbps`!" +
-                    "\n(*Those bounds were set by the moderators of the server*)",
+                "vc.bitrate.out_of_range",
+                "min" to (minBitrate / 1000).toString(),
+                "max" to (maxBitrate / 1000).toString(),
             )
             return
         }
@@ -64,6 +66,8 @@ class BitrateCommand(
         vcCtx.markTemporaryVCManagerAsUpdated()
         vcCtx.queueUpdatedManagers()
 
-        ctx.responder.reply(Containers.default("${Emojis.bitrate.formatted} Bitrate set to ${bitrate / 1000}kbps"))
+        ctx.responder.reply(
+            Containers.default(ctx.t("vc.bitrate.set", "emoji" to Emojis.bitrate.formatted, "bitrate" to (bitrate / 1000).toString())),
+        )
     }
 }

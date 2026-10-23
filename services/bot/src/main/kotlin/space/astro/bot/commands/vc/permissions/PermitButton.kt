@@ -34,13 +34,13 @@ class PermitButton(
         val menu =
             EntitySelectMenu
                 .create(PermitMenu.MENU_ID, listOf(EntitySelectMenu.SelectTarget.USER, EntitySelectMenu.SelectTarget.ROLE))
-                .setPlaceholder("Choose the users and roles to permit in your voice channel")
+                .setPlaceholder(ctx.t("vc.permit.placeholder"))
                 .setRequiredRange(1, 10)
                 .build()
 
         ctx.responder.reply(
             Containers.default(
-                "Choose the users and roles to permit in your voice channel via the menu below",
+                ctx.t("vc.permit.menu"),
                 ActionRow.of(menu),
             ),
         )

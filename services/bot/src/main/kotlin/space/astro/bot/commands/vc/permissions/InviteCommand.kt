@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.vc.VCPermissionManager
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
@@ -26,11 +27,11 @@ class InviteCommand(
 
     override val data =
         Commands
-            .slash("invite", "Invite up to three users to join your VC by sending a DM with an invite link")
+            .slash("invite", CommandLocalization.description("invite"))
             .setContexts(InteractionContextType.GUILD)
-            .addOption(OptionType.USER, USER_OPTIONS[0], "The user to invite to join your VC", true)
-            .addOption(OptionType.USER, USER_OPTIONS[1], "Another user to invite to join your VC", false)
-            .addOption(OptionType.USER, USER_OPTIONS[2], "Another user to invite to join your VC", false)
+            .addOption(OptionType.USER, USER_OPTIONS[0], CommandLocalization.description("invite.user"), true)
+            .addOption(OptionType.USER, USER_OPTIONS[1], CommandLocalization.description("invite.second-user"), false)
+            .addOption(OptionType.USER, USER_OPTIONS[2], CommandLocalization.description("invite.third-user"), false)
     override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
     override val contextResolver =
         contextResolverFactory.create(
@@ -49,7 +50,7 @@ class InviteCommand(
                 .distinct()
 
         if (members.isEmpty()) {
-            ctx.responder.error("None of the users you provided are in this server (you also can't invite bots)!")
+            ctx.responder.error("vc.invite.no_valid_users")
             return
         }
 
@@ -70,13 +71,17 @@ class InviteCommand(
                 privateChannel
                     .sendMessageComponents(
                         Containers.default(
-                            "${ctx.member.asMention} has invited you to join their VC in ${ctx.guild.name}!" +
-                                "\n[Accept invitation](${vcInvite.url})",
+                            ctx.t(
+                                "vc.invite.dm",
+                                "inviter" to ctx.member.asMention,
+                                "guild" to ctx.guild.name,
+                                "invite" to vcInvite.url,
+                            ),
                         ),
                     ).queue(null) { }
             }) { }
         }
 
-        ctx.responder.reply(Containers.default("${members.joinToString(", ") { it.asMention }} has been invited to join your VC!"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.invite.invited", "users" to members.joinToString(", ") { it.asMention })))
     }
 }

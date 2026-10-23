@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.vc.VCPermissionManager
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
@@ -27,13 +28,13 @@ class PermitCommand(
 
     override val data =
         Commands
-            .slash("permit", "Permit a user or role to join your VC")
+            .slash("permit", CommandLocalization.description("permit"))
             .setContexts(InteractionContextType.GUILD)
             .addSubcommands(
-                SubcommandData(USER_SUBCOMMAND, "Permit a user to join your VC")
-                    .addOption(OptionType.USER, "user", "The user to permit in your channel", true),
-                SubcommandData(ROLE_SUBCOMMAND, "Permit a role to join your VC")
-                    .addOption(OptionType.ROLE, "role", "The role to permit in your channel", true),
+                SubcommandData(USER_SUBCOMMAND, CommandLocalization.description("permit.user"))
+                    .addOption(OptionType.USER, "user", CommandLocalization.description("permit.user.user"), true),
+                SubcommandData(ROLE_SUBCOMMAND, CommandLocalization.description("permit.role"))
+                    .addOption(OptionType.ROLE, "role", CommandLocalization.description("permit.role.role"), true),
             )
     override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
     override val contextResolver =
@@ -53,31 +54,31 @@ class PermitCommand(
                 val member = event.getOption("user")?.asMember
 
                 if (member == null) {
-                    ctx.responder.error("The user you provided is not in this server!")
+                    ctx.responder.error("vc.permissions.user_not_in_server")
                     return
                 }
 
                 vcPermissionManager.permit(vcCtx, memberIds = listOf(member.idLong), roles = emptyList())
                 vcCtx.queueUpdatedManagers()
 
-                ctx.responder.reply(Containers.default("${member.asMention} can now join your VC!"))
+                ctx.responder.reply(Containers.default(ctx.t("vc.permit.permitted_user", "user" to member.asMention)))
             }
 
             ROLE_SUBCOMMAND -> {
                 val role = event.getOption("role")?.asRole
 
                 if (role == null) {
-                    ctx.responder.error("Please provide a valid role")
+                    ctx.responder.error("vc.permissions.invalid_role")
                     return
                 }
 
                 vcPermissionManager.permit(vcCtx, memberIds = emptyList(), roles = listOf(role))
                 vcCtx.queueUpdatedManagers()
 
-                ctx.responder.reply(Containers.default("${role.asMention} role can now join your temporary VC!"))
+                ctx.responder.reply(Containers.default(ctx.t("vc.permit.permitted_role", "role" to role.asMention)))
             }
 
-            else -> ctx.responder.error("Unknown subcommand")
+            else -> ctx.responder.error("vc.permissions.unknown_subcommand")
         }
     }
 }

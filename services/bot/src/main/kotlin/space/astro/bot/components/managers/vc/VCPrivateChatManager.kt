@@ -13,10 +13,12 @@ import space.astro.bot.exceptions.ConfigurationException
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.utils.extensions.modifyPermissionOverride
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings.PermissionsInherited
+import java.util.Locale
 
 @Component
 class VCPrivateChatManager {
@@ -30,11 +32,12 @@ class VCPrivateChatManager {
         owner: Member,
         generatorSettings: GeneratorSettings,
         temporaryVC: VoiceChannel,
+        locale: Locale,
     ): TextChannel {
         try {
             val guild = owner.guild
 
-            val name = VariablesManager.computePrivateChatName(generatorSettings.defaultChatName, owner, temporaryVC)
+            val name = VariablesManager.computePrivateChatName(generatorSettings.defaultChatName, locale, owner, temporaryVC)
             val category = generatorSettings.chatCategory?.let { guild.getCategoryById(it) }
 
             val builder =
@@ -139,6 +142,7 @@ class VCPrivateChatManager {
         val newName =
             VariablesManager.computePrivateChatName(
                 template = ctx.generatorSettings.defaultChatName,
+                locale = ctx.guildSettings.supportedLocale,
                 owner = ctx.temporaryVCOwner,
                 temporaryVC = ctx.temporaryVC,
             )

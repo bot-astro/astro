@@ -37,13 +37,13 @@ class NameModal(
         val name = event.getValue(NAME_INPUT_ID)?.asString
 
         if (name.isNullOrBlank()) {
-            ctx.responder.error("Please provide a valid name")
+            ctx.responder.error("vc.name.invalid")
             return
         }
 
         vcNameManager.performVCRename(ctx.vcOperationCTX, name)
         ctx.vcOperationCTX.queueUpdatedManagers()
 
-        ctx.responder.reply(Containers.default("${Emojis.name.formatted} Name of your VC set to `$name`!"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.name.set", "emoji" to Emojis.name.formatted, "name" to name)))
     }
 }

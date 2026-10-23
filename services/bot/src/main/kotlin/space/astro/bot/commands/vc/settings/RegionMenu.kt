@@ -35,7 +35,7 @@ class RegionMenu(
         val region = Region.fromKey(event.values.firstOrNull() ?: "")
 
         if (region == Region.UNKNOWN) {
-            ctx.responder.error("Unknown region")
+            ctx.responder.error("vc.region.unknown")
             return
         }
 
@@ -47,6 +47,10 @@ class RegionMenu(
             vcCtx.queueUpdatedManagers()
         }
 
-        ctx.responder.reply(Containers.default("${Emojis.region.formatted} Region set to ${region.emoji?.plus(" ") ?: ""}${region.getName()}"))
+        ctx.responder.reply(
+            Containers.default(
+                ctx.t("vc.region.set", "emoji" to Emojis.region.formatted, "region" to "${region.emoji?.plus(" ") ?: ""}${region.getName()}"),
+            ),
+        )
     }
 }

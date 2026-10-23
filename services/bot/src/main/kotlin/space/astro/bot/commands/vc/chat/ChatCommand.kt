@@ -9,13 +9,14 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.vc.VCPrivateChatManager
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
+import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
-import space.astro.bot.interactions.handlers.SlashHandler
 
 @Component
 class ChatCommand(
@@ -31,12 +32,12 @@ class ChatCommand(
 
     override val data =
         Commands
-            .slash("chat", "Manage the private text chat of your VC")
+            .slash("chat", CommandLocalization.description("chat"))
             .setContexts(InteractionContextType.GUILD)
             .addSubcommands(
-                SubcommandData(CREATE, "Create a private text chat for your VC"),
-                SubcommandData(DELETE, "Delete the private text chat of your VC"),
-                SubcommandData(LOGS, "Toggle logs for your VC text chat"),
+                SubcommandData(CREATE, CommandLocalization.description("chat.create")),
+                SubcommandData(DELETE, CommandLocalization.description("chat.delete")),
+                SubcommandData(LOGS, CommandLocalization.description("chat.logs")),
             )
     override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
     override val contextResolver =
@@ -61,11 +62,11 @@ class ChatCommand(
         val existingChat = vcCtx.privateChat
 
         if (existingChat != null) {
-            ctx.responder.error("A private text chat already exists: ${existingChat.asMention}")
+            ctx.responder.error("vc.chat.already_exists", "chat" to existingChat.asMention)
             return
         }
 
-        val privateTextChat = vcPrivateChatManager.create(ctx.member, vcCtx.generatorSettings, vcCtx.temporaryVC)
+        val privateTextChat = vcPrivateChatManager.create(ctx.member, vcCtx.generatorSettings, vcCtx.temporaryVC, ctx.locale)
         val entity = vcCtx.temporaryVCEntity
         entity.chatID = privateTextChat.id
         entity.chatNameChanges = 0
@@ -73,7 +74,7 @@ class ChatCommand(
         entity.chatLogs = false
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, entity) }
 
-        ctx.responder.reply(Containers.default("Created a private text chat: ${privateTextChat.asMention}"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.chat.created", "chat" to privateTextChat.asMention)))
     }
 
     private suspend fun delete(ctx: VcInteractionContext) {
@@ -87,7 +88,7 @@ class ChatCommand(
         entity.chatID = null
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, entity) }
 
-        ctx.responder.reply(Containers.default("Private text chat deleted."))
+        ctx.responder.reply(Containers.default(ctx.t("vc.chat.deleted")))
     }
 
     private suspend fun logs(ctx: VcInteractionContext) {
@@ -95,6 +96,6 @@ class ChatCommand(
         entity.chatLogs = !entity.chatLogs
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, entity) }
 
-        ctx.responder.reply(Containers.default("Logs are now ${if (entity.chatLogs) "enabled" else "disabled"}"))
+        ctx.responder.reply(Containers.default(ctx.t(if (entity.chatLogs) "vc.chat.logs_enabled" else "vc.chat.logs_disabled")))
     }
 }

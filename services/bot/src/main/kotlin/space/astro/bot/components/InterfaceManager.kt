@@ -21,9 +21,11 @@ import org.springframework.stereotype.Component
 import space.astro.bot.ui.Emojis
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.ANotFoundException
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.guildSettings.InterfaceData
 import space.astro.shared.core.models.database.guildSettings.InterfaceData.InterfaceButton
 import java.time.Instant
+import java.util.Locale
 
 @Component
 class InterfaceManager {
@@ -64,11 +66,11 @@ class InterfaceManager {
             defaultButton("button/vc/transfer", Emojis.transferOwner, 3, 3),
         )
 
-    private fun defaultEmbedStyle() =
+    private fun defaultEmbedStyle(locale: Locale) =
         InterfaceData.EmbedStyle(
             url = null,
-            title = "Voice channel interface",
-            description = "Use the buttons below to manage your temporary voice channel",
+            title = L.t(locale, "interface.title"),
+            description = L.t(locale, "interface.description"),
             timestamp = null,
             color = 0x2B2D31,
             thumbnail = null,
@@ -83,22 +85,26 @@ class InterfaceManager {
     suspend fun createInterface(
         guild: Guild,
         channelId: String,
+        locale: Locale,
     ): InterfaceData {
         val channel =
             guild.getTextChannelById(channelId)
                 ?: throw ANotFoundException("Text channel with id $channelId not found")
 
-        return sendInterface(channel)
+        return sendInterface(channel, locale)
     }
 
-    private suspend fun sendInterface(channel: TextChannel): InterfaceData {
+    private suspend fun sendInterface(
+        channel: TextChannel,
+        locale: Locale,
+    ): InterfaceData {
         val interfaceData =
             InterfaceData(
                 channelID = channel.id,
                 // replaced with the real message id once the message is sent
                 messageID = "0",
                 buttons = defaultButtons(),
-                embedStyle = defaultEmbedStyle(),
+                embedStyle = defaultEmbedStyle(locale),
             )
 
         val message = channel.sendMessage(computeMessage(interfaceData)).await()

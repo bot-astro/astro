@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.vc.VCPermissionManager
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
@@ -31,7 +32,7 @@ class LockInteraction(
     }
 
     override val id = BUTTON_ID
-    override val data = Commands.slash("lock", "Lock your channel so that no one can join it").setContexts(InteractionContextType.GUILD)
+    override val data = Commands.slash("lock", CommandLocalization.description("lock")).setContexts(InteractionContextType.GUILD)
     override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
     override val contextResolver =
         contextResolverFactory.create(
@@ -53,6 +54,6 @@ class LockInteraction(
         vcPermissionManager.changeState(ctx.vcOperationCTX, TemporaryVCState.LOCKED)
         ctx.vcOperationCTX.queueUpdatedManagers()
 
-        ctx.responder.reply(Containers.default("Your VC has been ${Emojis.lock.formatted} locked!"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.lock.done", "emoji" to Emojis.lock.formatted)))
     }
 }

@@ -9,10 +9,10 @@ import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
+import space.astro.bot.interactions.handlers.ButtonHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
-import space.astro.bot.interactions.handlers.ButtonHandler
 
 @Component
 class ChatButton(
@@ -36,11 +36,11 @@ class ChatButton(
         val existingChat = vcCtx.privateChat
 
         if (existingChat != null) {
-            ctx.responder.error("A private text chat already exists: ${existingChat.asMention}")
+            ctx.responder.error("vc.chat.already_exists", "chat" to existingChat.asMention)
             return
         }
 
-        val privateTextChat = vcPrivateChatManager.create(ctx.member, vcCtx.generatorSettings, vcCtx.temporaryVC)
+        val privateTextChat = vcPrivateChatManager.create(ctx.member, vcCtx.generatorSettings, vcCtx.temporaryVC, ctx.locale)
         val entity = vcCtx.temporaryVCEntity
         entity.chatID = privateTextChat.id
         entity.chatNameChanges = 0
@@ -48,6 +48,6 @@ class ChatButton(
         entity.chatLogs = false
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, entity) }
 
-        ctx.responder.reply(Containers.default("Created a private text chat: ${privateTextChat.asMention}"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.chat.created", "chat" to privateTextChat.asMention)))
     }
 }

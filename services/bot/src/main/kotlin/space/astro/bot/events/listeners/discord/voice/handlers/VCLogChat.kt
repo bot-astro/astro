@@ -5,11 +5,17 @@ import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.bot.utils.extensions.toPermissionList
+import space.astro.shared.core.lang.L
+import java.util.Locale
 
 /**
  * Sends a log message about a member in the chat of a temporary VC, if Astro is allowed to
  */
-fun GuildMessageChannel.sendVCLog(description: String) {
+fun GuildMessageChannel.sendVCLog(
+    locale: Locale,
+    key: String,
+    vararg args: Pair<String, Any?>,
+) {
     if (!guild.selfMember.hasPermission(this, PermissionSets.astroSendMessagePermissions.toPermissionList())) {
         return
     }
@@ -18,9 +24,9 @@ fun GuildMessageChannel.sendVCLog(description: String) {
         Containers.message(
             Containers.container(
                 guild.selfMember.colorRaw,
-                Containers.title("${Emojis.logs.formatted} Voice channel logs"),
-                Containers.text(description),
-                Containers.footer("You can disable these logs with `/chat logs`"),
+                Containers.title(L.t(locale, "vc.log.title", "emoji" to Emojis.logs.formatted)),
+                Containers.text(L.t(locale, key, *args)),
+                Containers.footer(L.t(locale, "vc.log.footer")),
             ),
         ),
     ).queue()

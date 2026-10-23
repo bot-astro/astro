@@ -13,10 +13,13 @@ import org.springframework.stereotype.Component
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.exceptions.ConfigurationException
 import space.astro.bot.interactions.context.InteractionContext
+import space.astro.bot.interactions.guards.CooldownGuard
 import space.astro.bot.interactions.guards.InteractionGuard
 import space.astro.bot.interactions.guards.InteractionRequest
 import space.astro.bot.interactions.handlers.InteractionHandler
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.bot.utils.extensions.toConfigurationErrorDto
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
@@ -25,12 +28,13 @@ private val log = KotlinLogging.logger { }
 
 /**
  * The flow shared by every interaction:
- * guild checks → guards → context resolution → acknowledge → handler → error mapping
+ * guild checks → cooldown → guild settings → guards → context resolution → acknowledge → handler → error mapping
  *
  * Everything before the acknowledgement must stay fast (Discord expects a response within 3 seconds)
  */
 @Component
 class InteractionPipeline(
+    private val cooldownGuard: CooldownGuard,
     // already ordered by @Order
     private val guards: List<InteractionGuard>,
     private val guildSettingsRepository: GuildSettingsRepository,
@@ -43,18 +47,22 @@ class InteractionPipeline(
         block: suspend (C) -> Unit,
     ) where E : GenericInteractionCreateEvent, E : IReplyCallback {
         val settings = handler.settings
-        val responder = InteractionResponder(event, settings.ack)
+        var responder = InteractionResponder(event, settings.ack, L.default)
 
         val guild = event.guild
         val member = event.member
 
         if (guild == null || member == null) {
-            responder.error("This bot cannot be used outside servers!")
+            responder.error("error.outside_guild")
             return
         }
 
         try {
+            // runs before the guild settings are retrieved so a user on cooldown costs no database read
+            cooldownGuard.check(key, member, settings)
+
             val guildSettings = retrieveGuildSettings(guild.id)
+            responder = InteractionResponder(event, settings.ack, guildSettings.supportedLocale)
 
             val request = InteractionRequest(key, guild, member, guildSettings, settings)
             guards.forEach { it.check(request) }
@@ -69,22 +77,22 @@ class InteractionPipeline(
 
             block(ctx)
         } catch (e: InteractionException) {
-            responder.error(e.message)
+            responder.error(e.key, *e.args)
         } catch (e: ConfigurationException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(e.configurationErrorEntity)
-            responder.error("An error occurred because of an invalid configuration:\n\n${e.configurationErrorEntity.description}")
+            responder.error("error.invalid_configuration", "description" to e.configurationErrorEntity.description)
         } catch (e: InsufficientPermissionException) {
             val configurationError = e.toConfigurationErrorDto(guild.id)
 
             configurationErrorEventPublisher.publishConfigurationErrorEvent(configurationError)
-            responder.error("An error occurred because of missing permissions:\n> ${configurationError.description}")
+            responder.error("error.missing_permissions", "description" to configurationError.description)
         } catch (e: Exception) {
             log.error(e) { "Unhandled exception in interaction $key (guild ${guild.id})" }
 
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
                 ConfigurationErrorEntity(guildId = guild.id, description = e.toString()),
             )
-            responder.error("An unknown error occurred, the developers have been notified and will investigate it.")
+            responder.error("error.unknown")
         }
     }
 

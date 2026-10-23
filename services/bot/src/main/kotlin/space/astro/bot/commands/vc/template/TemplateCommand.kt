@@ -14,12 +14,13 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.vc.VCTemplateManager
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.AutocompleteHandler
 import space.astro.bot.interactions.handlers.SlashHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
@@ -41,12 +42,12 @@ class TemplateCommand(
 
     override val data =
         Commands
-            .slash("template", "Apply a template to your VC")
+            .slash("template", CommandLocalization.description("template"))
             .setContexts(InteractionContextType.GUILD)
             .addOption(
                 OptionType.STRING,
                 TEMPLATE_OPTION,
-                "The name of the template to use, leave blank to see all available templates",
+                CommandLocalization.description("template.template"),
                 false,
                 true,
             )
@@ -81,7 +82,7 @@ class TemplateCommand(
             }
 
         if (availableTemplates.isEmpty()) {
-            ctx.responder.error("This generator doesn't have any available template")
+            ctx.responder.error("vc.template.none_available")
             return
         }
 
@@ -90,11 +91,11 @@ class TemplateCommand(
         if (templateInput == null) {
             ctx.responder.reply(
                 Containers.default(
-                    "Choose a template with the menu below",
+                    ctx.t("vc.template.menu"),
                     ActionRow.of(
                         StringSelectMenu
                             .create(TemplateMenu.MENU_ID)
-                            .setPlaceholder("Use a template for your VC")
+                            .setPlaceholder(ctx.t("vc.template.placeholder"))
                             .addOptions(
                                 availableTemplates.take(25).map { template ->
                                     SelectOption.of(template.name, template.id).withEmoji(Emojis.template)
@@ -109,7 +110,7 @@ class TemplateCommand(
         val template = availableTemplates.firstOrNull { it.id == templateInput || it.name.equals(templateInput, true) }
 
         if (template == null) {
-            ctx.responder.error("Couldn't find a template matching $templateInput")
+            ctx.responder.error("vc.template.not_found", "template" to templateInput)
             return
         }
 
@@ -117,6 +118,6 @@ class TemplateCommand(
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, vcCtx.temporaryVCEntity) }
         vcCtx.queueUpdatedManagers()
 
-        ctx.responder.reply(Containers.default("Template applied!"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.template.applied")))
     }
 }

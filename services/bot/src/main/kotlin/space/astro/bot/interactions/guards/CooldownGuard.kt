@@ -2,26 +2,37 @@ package space.astro.bot.interactions.guards
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.springframework.core.annotation.Order
+import net.dv8tion.jda.api.entities.Member
 import org.springframework.stereotype.Component
 import space.astro.bot.interactions.InteractionCooldownService
 import space.astro.bot.interactions.InteractionException
+import space.astro.bot.interactions.InteractionSettings
 import java.time.Instant
 
+/**
+ * Not an [InteractionGuard]: it runs before the guild settings are retrieved (so a user on cooldown costs no database read)
+ */
 @Component
-@Order(10)
 class CooldownGuard(
     private val interactionCooldownService: InteractionCooldownService,
-) : InteractionGuard {
-    override suspend fun check(request: InteractionRequest) {
+) {
+    /**
+     * @param key slash command name or component / modal id, used to scope cooldowns
+     * @throws InteractionException if the member is still on cooldown
+     */
+    suspend fun check(
+        key: String,
+        member: Member,
+        settings: InteractionSettings,
+    ) {
         val remaining =
             withContext(Dispatchers.IO) {
-                interactionCooldownService.acquire(request.member.id, request.key, request.settings.cooldown)
+                interactionCooldownService.acquire(member.id, key, settings.cooldown)
             }
 
         if (remaining.isPositive()) {
             val availableAt = Instant.now().plusMillis(remaining.inWholeMilliseconds).epochSecond
-            throw InteractionException("This action is on cooldown, you will be able to use it again <t:$availableAt:R>")
+            throw InteractionException("guard.cooldown", "availableAt" to availableAt.toString())
         }
     }
 }

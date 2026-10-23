@@ -36,7 +36,7 @@ class PermitMenu(
         val roles = event.mentions.roles
 
         if (members.isEmpty() && roles.isEmpty()) {
-            ctx.responder.error("You didn't provide valid users / roles")
+            ctx.responder.error("vc.permit.invalid_selection")
             return
         }
 
@@ -49,8 +49,7 @@ class PermitMenu(
 
         ctx.responder.reply(
             Containers.default(
-                "The following users and roles have been permitted in your voice channel:" +
-                    "\n${permitted.joinToString(", ")}",
+                ctx.t("vc.permit.permitted_many", "mentions" to permitted.joinToString(", ")),
             ),
         )
     }

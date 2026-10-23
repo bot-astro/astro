@@ -9,8 +9,8 @@ import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.StringSelectHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 
@@ -43,14 +43,14 @@ class TemplateMenu(
             }
 
         if (availableTemplates.isEmpty()) {
-            ctx.responder.error("This generator doesn't have any available template")
+            ctx.responder.error("vc.template.none_available")
             return
         }
 
         val template = availableTemplates.firstOrNull { it.id == event.values.firstOrNull() }
 
         if (template == null) {
-            ctx.responder.error("The template you selected doesn't exist anymore")
+            ctx.responder.error("vc.template.missing")
             return
         }
 
@@ -58,6 +58,6 @@ class TemplateMenu(
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, vcCtx.temporaryVCEntity) }
         vcCtx.queueUpdatedManagers()
 
-        ctx.responder.reply(Containers.default("Template applied!"))
+        ctx.responder.reply(Containers.default(ctx.t("vc.template.applied")))
     }
 }

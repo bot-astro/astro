@@ -18,6 +18,7 @@ import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.ui.Containers
 import space.astro.bot.utils.extensions.modifyPermissionOverride
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
@@ -57,6 +58,7 @@ class JoinedGeneratorHandler(
         val guild = data.guild
         val owner = data.member
         val settings = event.generatorSettings
+        val locale = data.guildSettings.supportedLocale
 
         val generatorVC =
             data.joinedChannel?.asVoiceChannel()
@@ -147,7 +149,7 @@ class JoinedGeneratorHandler(
                 ?.coerceIn(8000, guild.maxBitrate)
                 ?: 64000
         val userLimit = (settings.userLimit ?: 0).coerceIn(0, VoiceChannel.MAX_USERLIMIT)
-        val name = VariablesManager.computeVcNameForCreation(nameTemplate, owner, bitrate, userLimit, incrementalPosition)
+        val name = VariablesManager.computeVcNameForCreation(nameTemplate, locale, owner, bitrate, userLimit, incrementalPosition)
 
         val temporaryVCBuilder =
             generatorVC
@@ -234,14 +236,14 @@ class JoinedGeneratorHandler(
         // TODO: premium, the legacy code required premium for the automatic private chat and waiting room
         val privateChat =
             if (settings.autoChat) {
-                vcPrivateChatManager.create(owner, settings, temporaryVC)
+                vcPrivateChatManager.create(owner, settings, temporaryVC, locale)
             } else {
                 null
             }
 
         val waitingRoom =
             if (settings.autoWaiting) {
-                vcWaitingRoomManager.create(owner, settings, temporaryVC, incrementalPosition)
+                vcWaitingRoomManager.create(owner, settings, temporaryVC, incrementalPosition, locale)
             } else {
                 null
             }
@@ -308,7 +310,7 @@ class JoinedGeneratorHandler(
         }
 
         val template = settings.defaultChatText ?: return null
-        val content = VariablesManager.computeChatMessage(template, event.vcEventData.member, temporaryVC)
+        val content = VariablesManager.computeChatMessage(template, event.vcEventData.guildSettings.supportedLocale, event.vcEventData.member, temporaryVC)
 
         return Containers.message(
             if (settings.defaultChatTextEmbed) {

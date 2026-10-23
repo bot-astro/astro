@@ -2,18 +2,22 @@ package space.astro.bot.api.controllers
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import space.astro.bot.components.InterfaceManager
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.AUnknownException
 import space.astro.shared.core.models.api.bot.request.InterfaceCreateBotApiRequest
 import space.astro.shared.core.models.database.guildSettings.InterfaceData
+import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.BotApiEndpoint
 
 @RestController
@@ -22,6 +26,7 @@ import space.astro.shared.core.utils.api.BotApiEndpoint
 class InterfaceController(
     private val shardManager: ShardManager,
     private val interfaceManager: InterfaceManager,
+    private val guildSettingsRepository: GuildSettingsRepository,
 ) {
     @Operation(
         summary = "Create interface",
@@ -38,7 +43,9 @@ class InterfaceController(
                 ?: throw ANotFoundException("Guild not found")
 
         try {
-            return ResponseEntity.ok(interfaceManager.createInterface(guild, request.channelId))
+            val guildSettings = withContext(Dispatchers.IO) { guildSettingsRepository.findByGuildID(guildId) }
+
+            return ResponseEntity.ok(interfaceManager.createInterface(guild, request.channelId, guildSettings.supportedLocale))
         } catch (e: AException) {
             throw e
         } catch (e: ErrorResponseException) {

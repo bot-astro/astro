@@ -36,15 +36,15 @@ class NameButton(
         val nameInput =
             TextInput
                 .create(NameModal.NAME_INPUT_ID, TextInputStyle.SHORT)
-                .setPlaceholder("Playing Rocket League")
+                .setPlaceholder(ctx.t("vc.name.placeholder"))
                 .setMinLength(2)
                 .setMaxLength(200)
                 .build()
 
         val modal =
             Modal
-                .create(NameModal.MODAL_ID, "Voice channel editor")
-                .addComponents(Label.of("Voice channel name", nameInput))
+                .create(NameModal.MODAL_ID, ctx.t("vc.modal.title"))
+                .addComponents(Label.of(ctx.t("vc.name.label"), nameInput))
                 .build()
 
         event.replyModal(modal).await()

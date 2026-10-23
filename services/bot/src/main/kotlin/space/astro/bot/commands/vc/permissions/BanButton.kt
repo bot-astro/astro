@@ -34,13 +34,13 @@ class BanButton(
         val menu =
             EntitySelectMenu
                 .create(BanMenu.MENU_ID, listOf(EntitySelectMenu.SelectTarget.USER, EntitySelectMenu.SelectTarget.ROLE))
-                .setPlaceholder("Choose the users and roles to ban from your voice channel")
+                .setPlaceholder(ctx.t("vc.ban.placeholder"))
                 .setRequiredRange(1, 5)
                 .build()
 
         ctx.responder.reply(
             Containers.default(
-                "Choose the users and roles to ban from your voice channel via the menu below",
+                ctx.t("vc.ban.menu"),
                 ActionRow.of(menu),
             ),
         )

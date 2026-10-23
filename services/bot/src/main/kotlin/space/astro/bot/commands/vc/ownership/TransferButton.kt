@@ -9,8 +9,8 @@ import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.ButtonHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
@@ -36,16 +36,14 @@ class TransferButton(
         val members = ctx.vcOperationCTX.temporaryVC.members.filter { !it.user.isBot && it.id != ctx.memberId }
 
         if (members.isEmpty()) {
-            ctx.responder.error(
-                "Cannot find a user in your voice channel that is not a bot.\nRun this command again when someone joins your voice channel",
-            )
+            ctx.responder.error("vc.transfer.no_candidates")
             return
         }
 
         val menu =
             StringSelectMenu
                 .create(TransferMenu.MENU_ID)
-                .setPlaceholder("Choose the new owner of your voice channel")
+                .setPlaceholder(ctx.t("vc.transfer.placeholder"))
                 .addOptions(
                     members.take(25).map {
                         SelectOption
@@ -57,7 +55,7 @@ class TransferButton(
 
         ctx.responder.reply(
             Containers.default(
-                "Choose the new owner of your voice channel with the menu below",
+                ctx.t("vc.transfer.menu"),
                 ActionRow.of(menu),
             ),
         )

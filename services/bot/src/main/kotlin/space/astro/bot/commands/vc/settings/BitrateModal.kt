@@ -6,8 +6,8 @@ import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.ModalHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
@@ -39,8 +39,9 @@ class BitrateModal(
 
         if (bitrate == null || bitrate < minBitrate || bitrate > maxBitrate) {
             ctx.responder.error(
-                "The bitrate must be between `${minBitrate / 1000} kbps` and `${maxBitrate / 1000} kbps`!" +
-                    "\n(*Those bounds were set by the moderators of the server*)",
+                "vc.bitrate.out_of_range",
+                "min" to (minBitrate / 1000).toString(),
+                "max" to (maxBitrate / 1000).toString(),
             )
             return
         }
@@ -50,6 +51,8 @@ class BitrateModal(
         vcCtx.markTemporaryVCManagerAsUpdated()
         vcCtx.queueUpdatedManagers()
 
-        ctx.responder.reply(Containers.default("${Emojis.bitrate.formatted} Bitrate set to ${bitrate / 1000}kbps"))
+        ctx.responder.reply(
+            Containers.default(ctx.t("vc.bitrate.set", "emoji" to Emojis.bitrate.formatted, "bitrate" to (bitrate / 1000).toString())),
+        )
     }
 }

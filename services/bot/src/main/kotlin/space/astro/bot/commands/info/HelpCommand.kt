@@ -1,19 +1,18 @@
 package space.astro.bot.commands.info
 
 import net.dv8tion.jda.api.components.actionrow.ActionRow
-import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Component
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.BaseContextResolver
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.properties.PodProperties
 import space.astro.bot.ui.Buttons
-import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.bot.ui.Links
@@ -26,7 +25,7 @@ class HelpCommand(
 ) : SlashHandler<InteractionContext> {
     override val data =
         Commands
-            .slash("help", "Get help with Astro")
+            .slash("help", CommandLocalization.description("help"))
             .setContexts(InteractionContextType.GUILD)
     override val settings = InteractionSettings(ack = Ack.DEFER_REPLY)
     override val contextResolver = BaseContextResolver
@@ -42,44 +41,51 @@ class HelpCommand(
         ctx.responder.reply(
             Containers.container(
                 Containers.purple,
-                Containers.title("${Emojis.help.formatted} Help"),
-                Containers.text("Astro is a bot that focuses on the voice aspect of Discord, and takes it to the next level with some quality features."),
+                Containers.title(ctx.t("help.title", "emoji" to Emojis.help.formatted)),
+                Containers.text(ctx.t("help.description")),
                 Containers.divider(),
                 Containers.field(
-                    "Features",
-                    "Astro provides the following features:" +
-                        "\n${Emojis.generator.formatted} *Temporary voice channels*" +
-                        "\n${Emojis.voiceRole.formatted} *Voice roles*" +
-                        "\n${Emojis.vcInterface.formatted} *Interfaces*" +
-                        "\n${Emojis.template.formatted} *Templates*" +
-                        "\nTo find out all the cool things you can do with Astro, take a look at the [`Guides`](${Links.GUIDES})!",
+                    ctx.t("help.features.title"),
+                    ctx.t(
+                        "help.features.content",
+                        "generatorEmoji" to Emojis.generator.formatted,
+                        "voiceRoleEmoji" to Emojis.voiceRole.formatted,
+                        "interfaceEmoji" to Emojis.vcInterface.formatted,
+                        "templateEmoji" to Emojis.template.formatted,
+                        "guidesLink" to Links.GUIDES,
+                    ),
                 ),
                 Containers.field(
-                    "Setup & Configuration",
-                    "Use the ${Emojis.dashboard.formatted} [`Dashboard`]($dashboard) to setup Astro and configure its settings!",
+                    ctx.t("help.setup.title"),
+                    ctx.t("help.setup.content", "emoji" to Emojis.dashboard.formatted, "link" to dashboard),
                 ),
                 Containers.field(
-                    "Errors & Issues",
-                    "The ${Emojis.dashboard.formatted} [`Dashboard`]($dashboard) also shows all the errors Astro encounters when working in your server. If something is not working as expected, check the dashboard!",
+                    ctx.t("help.errors.title"),
+                    ctx.t("help.errors.content", "emoji" to Emojis.dashboard.formatted, "link" to dashboard),
                 ),
                 Containers.field(
-                    "Support",
-                    "You can join the ${Emojis.helper.formatted} [`Support server`](${Links.SUPPORT_SERVER}) to ask questions if something is not quite clear to you!",
+                    ctx.t("help.support.title"),
+                    ctx.t("help.support.content", "emoji" to Emojis.helper.formatted, "link" to Links.SUPPORT_SERVER),
                 ),
                 Containers.field(
-                    "Open Source",
-                    "Astro is now open source! You can find the code on [`GitHub`](${Links.GITHUB}) and a story of the project on my [`blog article`](${Links.BLOG_ARTICLE})",
+                    ctx.t("help.open_source.title"),
+                    ctx.t("help.open_source.content", "githubLink" to Links.GITHUB, "blogLink" to Links.BLOG_ARTICLE),
                 ),
                 Containers.divider(),
                 ActionRow.of(
-                    Button.link(dashboard, "Dashboard").withEmoji(Emojis.dashboard),
-                    Buttons.guides,
-                    Buttons.support,
-                    Buttons.github,
+                    Buttons.guildDashboard(ctx.locale, ctx.guildId),
+                    Buttons.guides(ctx.locale),
+                    Buttons.support(ctx.locale),
+                    Buttons.github(ctx.locale),
                 ),
                 Containers.footer(
-                    "Thank you for using Astro • shard ${shardInfo.shardId}/${shardInfo.shardTotal} • " +
-                        "pod ${podProperties.getParsedOrdinal()}/${shardManagerConfig.totalPods}",
+                    ctx.t(
+                        "help.footer",
+                        "shardId" to shardInfo.shardId.toString(),
+                        "shardTotal" to shardInfo.shardTotal.toString(),
+                        "pod" to podProperties.getParsedOrdinal().toString(),
+                        "totalPods" to shardManagerConfig.totalPods.toString(),
+                    ),
                 ),
             ),
         )

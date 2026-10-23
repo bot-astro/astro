@@ -10,8 +10,8 @@ import java.util.*
 object L {
     private val json = JsonMapper.builder().build()
 
-    private val locales: List<Locale>
-    private val default: Locale = Locale.forLanguageTag("en-US")
+    val locales: List<Locale>
+    val default: Locale = Locale.forLanguageTag("en-US")
     private val bundles: Map<Locale, Map<String, String>>
 
     init {
@@ -67,6 +67,15 @@ object L {
     // ///////////////
     // TRANSLATION //
     // ///////////////
+
+    /**
+     * Raw pattern of [key] in [locale] (no fallback to the default locale), null if not translated
+     */
+    fun findPattern(
+        locale: Locale,
+        key: String,
+    ): String? = bundles[locale]?.get(key)
+
     fun t(
         locale: Locale,
         key: String,

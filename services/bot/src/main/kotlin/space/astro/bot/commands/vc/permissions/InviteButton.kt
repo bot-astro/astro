@@ -34,13 +34,13 @@ class InviteButton(
         val menu =
             EntitySelectMenu
                 .create(InviteMenu.MENU_ID, listOf(EntitySelectMenu.SelectTarget.USER))
-                .setPlaceholder("Choose the users to invite in your voice channel")
+                .setPlaceholder(ctx.t("vc.invite.placeholder"))
                 .setRequiredRange(1, 3)
                 .build()
 
         ctx.responder.reply(
             Containers.default(
-                "Choose the users to invite in your voice channel with the menu below",
+                ctx.t("vc.invite.menu"),
                 ActionRow.of(menu),
             ),
         )

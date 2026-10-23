@@ -11,8 +11,8 @@ import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.ButtonHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
 
 /**
  * Opens [LimitModal]
@@ -43,8 +43,8 @@ class LimitButton(
 
         val modal =
             Modal
-                .create(LimitModal.MODAL_ID, "Voice channel editor")
-                .addComponents(Label.of("Voice channel limit", limitInput))
+                .create(LimitModal.MODAL_ID, ctx.t("vc.modal.title"))
+                .addComponents(Label.of(ctx.t("vc.limit.label"), limitInput))
                 .build()
 
         event.replyModal(modal).await()

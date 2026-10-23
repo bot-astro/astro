@@ -9,8 +9,8 @@ import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.ButtonHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
@@ -40,17 +40,17 @@ class TemplateButton(
             }
 
         if (availableTemplates.isEmpty()) {
-            ctx.responder.error("This generator doesn't have any available template")
+            ctx.responder.error("vc.template.none_available")
             return
         }
 
         ctx.responder.reply(
             Containers.default(
-                "Choose a template with the menu below",
+                ctx.t("vc.template.menu"),
                 ActionRow.of(
                     StringSelectMenu
                         .create(TemplateMenu.MENU_ID)
-                        .setPlaceholder("Use a template for your VC")
+                        .setPlaceholder(ctx.t("vc.template.placeholder"))
                         .addOptions(
                             availableTemplates.take(25).map { template ->
                                 SelectOption.of(template.name, template.id).withEmoji(Emojis.template)

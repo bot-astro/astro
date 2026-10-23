@@ -14,13 +14,18 @@ import space.astro.bot.ui.Buttons
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.bot.ui.Links
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.bot.utils.extensions.toPermissionList
+import space.astro.shared.core.lang.L
+import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.Locale
 
 @Component
 class GuildJoinEventListener(
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val guildSettingsRepository: GuildSettingsRepository,
 ) {
     @EventListener
     fun guildJoinReceived(event: GuildJoinEvent) {
@@ -45,10 +50,16 @@ class GuildJoinEventListener(
 
         // TODO: premium, add back the "Ultimate" and "Vote" buttons when premium is implemented
         // TODO: add the "Setup" button depending on what is decided for the setup commands
-        channel?.sendMessage(createWelcomeMessage(guild))?.queue()
+        // the settings exist only if the bot was already in the server in the past
+        val locale = guildSettingsRepository.findByGuildID(guild.id).supportedLocale
+
+        channel?.sendMessage(createWelcomeMessage(guild, locale))?.queue()
     }
 
-    private fun createWelcomeMessage(guild: Guild): MessageCreateData {
+    private fun createWelcomeMessage(
+        guild: Guild,
+        locale: Locale,
+    ): MessageCreateData {
         val selfAvatar = guild.selfMember.user.effectiveAvatarUrl
         val dashboard = Links.guildDashboard(guild.id)
 
@@ -57,34 +68,37 @@ class GuildJoinEventListener(
                 Containers.purple,
                 Containers.section(
                     Thumbnail.fromUrl(guild.iconUrl ?: selfAvatar),
-                    "## Astro just landed in [${guild.name}]($dashboard)!",
-                    "Thanks for inviting Astro in this amazing server, let's get it to the next level now!",
+                    L.t(locale, "welcome.title", "guild" to guild.name, "link" to dashboard),
+                    L.t(locale, "welcome.description"),
                 ),
                 Containers.divider(),
                 Containers.field(
-                    "Features",
-                    "Astro provides the following features:" +
-                        "\n${Emojis.generator.formatted} *Temporary voice channels*" +
-                        "\n${Emojis.voiceRole.formatted} *Voice roles*" +
-                        "\n${Emojis.vcInterface.formatted} *Interfaces*" +
-                        "\n${Emojis.template.formatted} *Templates*" +
-                        "\nTo find out all the cool things you can do with Astro, take a look at the [`Guides`](${Links.GUIDES})!",
+                    L.t(locale, "help.features.title"),
+                    L.t(
+                        locale,
+                        "help.features.content",
+                        "generatorEmoji" to Emojis.generator.formatted,
+                        "voiceRoleEmoji" to Emojis.voiceRole.formatted,
+                        "interfaceEmoji" to Emojis.vcInterface.formatted,
+                        "templateEmoji" to Emojis.template.formatted,
+                        "guidesLink" to Links.GUIDES,
+                    ),
                 ),
                 Containers.field(
-                    "Setup",
-                    "Use the ${Emojis.dashboard.formatted} [`Dashboard`]($dashboard) to setup Astro and configure its settings!",
+                    L.t(locale, "welcome.setup.title"),
+                    L.t(locale, "help.setup.content", "emoji" to Emojis.dashboard.formatted, "link" to dashboard),
                 ),
                 Containers.field(
-                    "Support",
-                    "You can join the ${Emojis.helper.formatted} [`Support server`](${Links.SUPPORT_SERVER}) to ask questions if something is not quite clear to you!",
+                    L.t(locale, "help.support.title"),
+                    L.t(locale, "help.support.content", "emoji" to Emojis.helper.formatted, "link" to Links.SUPPORT_SERVER),
                 ),
                 Containers.divider(),
                 ActionRow.of(
-                    Buttons.guildDashboard(guild.id),
-                    Buttons.guides,
-                    Buttons.support,
+                    Buttons.guildDashboard(locale, guild.id),
+                    Buttons.guides(locale),
+                    Buttons.support(locale),
                 ),
-                Containers.footer("Thank you for using Astro!"),
+                Containers.footer(L.t(locale, "welcome.footer")),
             ),
         )
     }

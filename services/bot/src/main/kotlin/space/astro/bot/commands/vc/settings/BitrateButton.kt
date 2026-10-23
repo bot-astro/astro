@@ -11,8 +11,8 @@ import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.ButtonHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
 
 /**
  * Opens [BitrateModal]
@@ -46,8 +46,8 @@ class BitrateButton(
 
         val modal =
             Modal
-                .create(BitrateModal.MODAL_ID, "Voice channel editor")
-                .addComponents(Label.of("Voice channel bitrate", bitrateInput))
+                .create(BitrateModal.MODAL_ID, ctx.t("vc.modal.title"))
+                .addComponents(Label.of(ctx.t("vc.bitrate.label"), bitrateInput))
                 .build()
 
         event.replyModal(modal).await()

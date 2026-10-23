@@ -19,6 +19,7 @@ import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * All the methods only modify the managers of the [VCOperationCTX] and mark them as updated,
@@ -124,12 +125,12 @@ class VCPermissionManager(
         member: Member,
     ) {
         if (isImmune(ctx, member)) {
-            throw InteractionException("${member.asMention} has a role which is immune to this command!")
+            throw InteractionException("vc.permissions.member_immune", "user" to member.asMention)
         }
 
         if (member.voiceState?.channel?.id == ctx.temporaryVC.id) {
             ctx.guild.kickVoiceMember(member).await()
-            delay(450)
+            delay(450.milliseconds)
         }
 
         ctx.temporaryVCManager.modifyPermissionOverride(member, 0L, Permission.VOICE_CONNECT.rawValue)
@@ -146,7 +147,7 @@ class VCPermissionManager(
         role: Role,
     ) {
         if (ctx.generatorSettings.permissionsImmuneRole == role.id) {
-            throw InteractionException("The ${role.asMention} role is immune to this command!")
+            throw InteractionException("vc.permissions.role_immune", "role" to role.asMention)
         }
 
         ctx.temporaryVCManager.modifyPermissionOverride(role, 0L, Permission.VOICE_CONNECT.rawValue)

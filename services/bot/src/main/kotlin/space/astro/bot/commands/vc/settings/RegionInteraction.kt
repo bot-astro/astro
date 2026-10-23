@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Component
 import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
@@ -32,7 +33,7 @@ class RegionInteraction(
     }
 
     override val id = BUTTON_ID
-    override val data = Commands.slash("region", "Set the region for your VC").setContexts(InteractionContextType.GUILD)
+    override val data = Commands.slash("region", CommandLocalization.description("region")).setContexts(InteractionContextType.GUILD)
     override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
     override val contextResolver =
         contextResolverFactory.create(
@@ -56,7 +57,7 @@ class RegionInteraction(
         val menu =
             StringSelectMenu
                 .create(RegionMenu.MENU_ID)
-                .setPlaceholder("Set the region for your VC")
+                .setPlaceholder(ctx.t("vc.region.placeholder"))
                 .addOptions(
                     regions.map { region ->
                         SelectOption
@@ -67,7 +68,7 @@ class RegionInteraction(
 
         ctx.responder.reply(
             Containers.default(
-                "Set the region of your VC with the menu below",
+                ctx.t("vc.region.menu"),
                 ActionRow.of(menu),
             ),
         )
