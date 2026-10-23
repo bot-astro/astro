@@ -26,6 +26,9 @@ Proposed (lowest manager dependencies, covers all four handler types):
 - Modal: `NameModal`
 Port only the managers they need (`VCNameManager`, region logic).
 
+Status: written (not compiled), in `interactions/vc/` (`NameCommand` (with `name` option) and `NameButton` → `NameModal`, `RegionInteraction` slash+button → `RegionMenu`).
+Deviations from the old code: `VCNameManager` only does the user rename (no refresh / rename conditions / position updates / badwords, TODOs in code) and throws `InteractionException`; a trimmed `VariablesManager` (existing-VC names only) lives next to it.
+
 ### 3. Feedback
 Review the slice, adjust the base (interfaces, settings, responder) before porting more.
 
@@ -42,3 +45,4 @@ Turn `setDefaultUseComponentsV2(true)` back on; replace embed helpers with `Cont
 4. Slash + button for the same action share one class.
 5. Handler interfaces do not share a generic event parameter (`InteractionHandler<C>` only; `SlashHandler`/`ButtonHandler`/... declare their own `handle(event, ctx)`), because Kotlin forbids inheriting the same interface with two type arguments, which a combined slash + button class needs.
 6. Interface-message buttons (`interface=true`) are not special-cased yet: their handlers pick `Ack.DEFER_REPLY_EPHEMERAL`, others `Ack.DEFER_EDIT`.
+7. Slash commands keep their options from the legacy code (e.g. `/name` keeps its `name` option and renames directly instead of opening a modal: much faster than waiting for the modal). The slash command and the button of the same action therefore may differ in behaviour and `Ack`, so they are separate classes sharing a manager/helper (this supersedes decision 4 where the two diverge).
