@@ -13,27 +13,26 @@ Application, sharding (session controller, shard manager), health indicators, re
    Move button ids/emojis here (see TODO in `InterfaceManager`); exceptions likely map to `shared/core` exceptions + `ConfigurationErrorEvent`.
 3. ✅ **Listeners: guild/entitlements/member** (`GuildJoin/Leave`, `Entitlement*`, `MemberUpdateActivities`, `ContextRefreshedListeners`, `ConfigurationErrorEventListener`✅)
    Done: `GuildJoin/Leave` (welcome message has TODOs: channel selection, premium buttons, Setup button, V2). Skipped: entitlements + `MemberUpdateActivities` (premium only), `ContextRefreshedListeners` (= `ApplicationReadyListener`).
-4. ❓ (analytics ✅) **Services/infra** (`CooldownsManager`, `AnalyticsService` + `BigQueryService`, `ConfigurationErrorService`, `AuthWebFilter`, `ApplicationFeaturesConfig`, `DashboardController`, `LifecycleController`)
-   Likely drop: `AuthWebFilter`/`LifecycleController` (replaced by `api/` + health), `ConfigurationErrorService` (replaced by event publisher). **Analytics kept**: `AnalyticsService` + `BigQueryService` ported (`@Scheduled` flush, no receivers, sealed `AnalyticsEventData`; `GUILD_SNAPSHOT` dropped, class was never defined). Still no publisher for slash command / temporary VC / connection events. Cooldowns via Redis?
+4. ✅ **Services/infra** (`CooldownsManager`, `AnalyticsService` + `BigQueryService`, `ConfigurationErrorService`, `AuthWebFilter`, `ApplicationFeaturesConfig`, `DashboardController`, `LifecycleController`)
+   Likely drop: `AuthWebFilter`/`LifecycleController` (replaced by `api/` + health), `ConfigurationErrorService` (replaced by event publisher). **Analytics kept**: `AnalyticsService` + `BigQueryService` ported (`@Scheduled` flush, no receivers, sealed `AnalyticsEventData`; `GUILD_SNAPSHOT` dropped, class was never defined). Publishers wired: slash command (`InteractionEventListener`), temporary VC generation + connection invocation (`VCEventHandler`). Cooldowns: `InteractionCooldownService` (Redis), also used for the generator cooldown.
 5. ✅ **VC core models** (`models/discord`: `PermissionSets`, `SimpleMemberRolesManager`, `vc/VCOperationCTX`, `vc/event/*`)
 6. ✅ **VC managers** (`managers/vc/*`: Name, Ownership, Permission, Position, PrivateChat, Template, WaitingRoom) — split by feature, one at a time. Drop premium checks.
-7. ⬜ **Voice event pipeline** (`GuildVoiceUpdateEventListener`, `VCEventDetector`, `voice/handlers/*`)
-   Candidate to simplify with Spring events from `JdaToSpringEventBridge`.
+7. ✅ **Voice event pipeline** (`GuildVoiceUpdateEventListener`, `VCEventDetector`, `voice/handlers/*`)
+   Handlers are `@Component`s dispatched by `VCEventHandler`; premium checks dropped (TODOs). Analytics only on actual VC creation (legacy also fired on queue/cooldown returns). Ported `SimpleMemberRolesManager`, `VCEvent`/`VCEventData`, creation helpers of `VariablesManager`; added `GuildSettingsRepository.findByGuildID`.
 8. ✅ **VC interactions, by feature** — each = command + button + menu/modal where present:
    - settings: name, limit, bitrate, region, template
    - permissions: lock/unlock, hide/unhide, ban, permit, invite, kick
    - ownership: claim, transfer
    - chat/logs, waiting room
    Decide: keep commands and buttons as separate classes or share one handler per action.
-9. ❓ **Setup / pre-dashboard commands** (`generator`, `generator-waiting`, `interface`, `connection`, `settings`, `template-settings`, `setup` cmd+button, `premium`)
-   Overlaps with the REST API/dashboard (`api-central`). Port as-is, or reduce to a link to the dashboard? Premium command: skip.
+9. 🚫 **Setup / pre-dashboard commands** (decided: not ported, the dashboard covers them) (`generator`, `generator-waiting`, `interface`, `connection`, `settings`, `template-settings`, `setup` cmd+button, `premium`)
 10. ✅ **Info commands** (`help` + 7 help buttons, `dashboard`)
     Help buttons could collapse into one handler; `HelpPremiumButton` skipped.
 11. ⬜ **Tests** (`VariablesManagerTest`) — port alongside whichever manager owns variables.
 
 ## Open questions
-- Autocomplete handler / `CommandChoice` / `CommandCategory`: keep? (autocomplete = `CommandAutoCompleteInteractionEvent`, would get its own small handler type)
-- i18n: use `shared/core` i18n instead of `Messages.kt`?
+- Autocomplete handler / `CommandChoice` / `CommandCategory`: `AutocompleteHandler` added (no pipeline, registered in `InteractionRegistry`), used by `/template`. `CommandChoice`/`CommandCategory` dropped.
+- i18n: use `shared/core` i18n instead of `Messages.kt`: **decided, last step after Components V2.**
 
 ## Item 1 design
 

@@ -4,12 +4,14 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
 import space.astro.bot.exceptions.ConfigurationException
+import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 
 @Component
 class VCOwnershipManager(
+    private val vcNameManager: VCNameManager,
     private val vcPrivateChatManager: VCPrivateChatManager,
     private val vcWaitingRoomManager: VCWaitingRoomManager,
 ) {
@@ -20,8 +22,6 @@ class VCOwnershipManager(
      * **the temporary vc entity must be saved by the caller**
      *
      * **This doesn't handle owner roles!** For that see [handleOwnerRoleMigration]
-     *
-     * TODO: refresh the vc name (needs the rename conditions in `VCNameManager`)
      *
      * @throws ConfigurationException
      * @throws InsufficientPermissionException
@@ -59,6 +59,11 @@ class VCOwnershipManager(
 
         // channel names
         if (generatorSettings.renameConditions.ownerChange) {
+            try {
+                vcNameManager.performVCNameRefresh(ctx)
+            } catch (_: InteractionException) {
+                // rename rate limited, keep the current name
+            }
             vcPrivateChatManager.performPrivateChatNameRefresh(ctx)
             vcWaitingRoomManager.performWaitingRoomNameRefresh(ctx)
         }

@@ -26,12 +26,11 @@ import space.astro.shared.core.repositories.redis.TemporaryVCRepository
  */
 @Component
 class VCPermissionManager(
+    private val vcNameManager: VCNameManager,
     private val temporaryVCRepository: TemporaryVCRepository,
 ) {
     /**
      * Changes the state of the temporary vc and saves the entity
-     *
-     * TODO: refresh the vc name on state change (see TODO in [VCNameManager.performVCRename])
      *
      * @throws InsufficientPermissionException
      * @throws ConfigurationException if the target role of the generator does not exist anymore
@@ -75,6 +74,12 @@ class VCPermissionManager(
         }
 
         ctx.markTemporaryVCManagerAsUpdated()
+
+        try {
+            vcNameManager.performVCNameRefresh(ctx)
+        } catch (_: InteractionException) {
+            // rename rate limited, keep the current name
+        }
 
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guild.id, entity) }
     }

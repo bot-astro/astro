@@ -1,6 +1,7 @@
 package space.astro.bot.interactions
 
 import org.springframework.stereotype.Component
+import space.astro.bot.interactions.handlers.AutocompleteHandler
 import space.astro.bot.interactions.handlers.ButtonHandler
 import space.astro.bot.interactions.handlers.EntitySelectHandler
 import space.astro.bot.interactions.handlers.ModalHandler
@@ -17,12 +18,14 @@ class InteractionRegistry(
     stringSelectHandlers: List<StringSelectHandler<*>>,
     entitySelectHandlers: List<EntitySelectHandler<*>>,
     modalHandlers: List<ModalHandler<*>>,
+    autocompleteHandlers: List<AutocompleteHandler>,
 ) {
     val slash = index("slash command", slashHandlers) { it.data.name }
     val buttons = index("button", buttonHandlers) { it.id }
     val stringSelects = index("string select", stringSelectHandlers) { it.id }
     val entitySelects = index("entity select", entitySelectHandlers) { it.id }
     val modals = index("modal", modalHandlers) { it.id }
+    val autocompletes = index("autocomplete", autocompleteHandlers) { it.command }
 
     private fun <T> index(
         kind: String,

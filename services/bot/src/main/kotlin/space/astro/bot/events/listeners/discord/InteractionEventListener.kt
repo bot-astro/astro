@@ -1,5 +1,6 @@
 package space.astro.bot.interactions
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -7,10 +8,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.interactions.context.InteractionContext
@@ -19,6 +22,12 @@ import space.astro.bot.interactions.handlers.EntitySelectHandler
 import space.astro.bot.interactions.handlers.ModalHandler
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.interactions.handlers.StringSelectHandler
+import space.astro.bot.models.analytics.SlashCommandInvocationEventData
+import tools.jackson.databind.json.JsonMapper
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+
+private val log = KotlinLogging.logger { }
 
 /**
  * Routes JDA interaction events to the matching handler through the [InteractionPipeline]
@@ -27,6 +36,8 @@ import space.astro.bot.interactions.handlers.StringSelectHandler
 class InteractionEventListener(
     private val registry: InteractionRegistry,
     private val pipeline: InteractionPipeline,
+    private val applicationEventPublisher: ApplicationEventPublisher,
+    private val jsonMapper: JsonMapper,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -69,10 +80,47 @@ class InteractionEventListener(
         scope.launch { runModal(handler, key, event) }
     }
 
+    @EventListener
+    fun onAutocomplete(event: CommandAutoCompleteInteractionEvent) {
+        val handler = registry.autocompletes[event.fullCommandName.replace(' ', '.')] ?: return
+
+        scope.launch {
+            try {
+                handler.handle(event)
+            } catch (e: Exception) {
+                log.error(e) { "Unhandled exception in autocomplete of ${event.fullCommandName}" }
+            }
+        }
+    }
+
     private suspend fun <C : InteractionContext> runSlash(
         handler: SlashHandler<C>,
         event: SlashCommandInteractionEvent,
-    ) = pipeline.run(event, event.name, handler) { ctx -> handler.handle(event, ctx) }
+    ) = pipeline.run(event, event.name, handler) { ctx ->
+        publishSlashCommandInvocation(event)
+        handler.handle(event, ctx)
+    }
+
+    private fun publishSlashCommandInvocation(event: SlashCommandInteractionEvent) {
+        val guild = event.guild ?: return
+        val options = event.options
+
+        applicationEventPublisher.publishEvent(
+            SlashCommandInvocationEventData(
+                name = event.fullCommandName.replace(' ', '.'),
+                guildId = guild.idLong,
+                channelId = event.channelIdLong,
+                userId = event.user.idLong,
+                mainOptionName = options.firstOrNull()?.name,
+                mainOptionValue = options.firstOrNull()?.asString,
+                rawOptions =
+                    options
+                        .takeIf { it.isNotEmpty() }
+                        ?.let { jsonMapper.writeValueAsString(mapOf("options" to it.map { o -> mapOf("name" to o.name, "value" to o.asString) })) },
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString(),
+            ),
+        )
+    }
 
     private suspend fun <C : InteractionContext> runButton(
         handler: ButtonHandler<C>,

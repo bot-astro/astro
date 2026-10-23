@@ -1,6 +1,7 @@
 package space.astro.bot.interactions.handlers
 
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent
@@ -73,4 +74,17 @@ interface ModalHandler<C : InteractionContext> : InteractionHandler<C> {
         event: ModalInteractionEvent,
         ctx: C,
     )
+}
+
+/**
+ * Autocomplete of a slash command option, can be implemented by the same class of the [SlashHandler]
+ *
+ * Doesn't go through the pipeline (no guards, context or ack): reply with `event.replyChoices` within 3 seconds
+ *
+ * [command] is the full command path joined by dots, e.g. `template` or `chat.logs`
+ */
+interface AutocompleteHandler {
+    val command: String
+
+    suspend fun handle(event: CommandAutoCompleteInteractionEvent)
 }

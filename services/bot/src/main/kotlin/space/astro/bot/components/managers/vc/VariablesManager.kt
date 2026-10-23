@@ -4,10 +4,10 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.entities.emoji.Emoji
+import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import java.text.SimpleDateFormat
 import java.util.Date
 
-// TODO: only what renaming an existing temporary VC needs, port the creation / chat / waiting room computations with their managers
 object VariablesManager {
     private val natoAlphabet =
         listOf(
@@ -42,6 +42,43 @@ object VariablesManager {
     private val incrementalVariables = listOf("{n}", "{nato}", "{roman}")
 
     fun doesTemplateRequireVCPositionalData(template: String) = incrementalVariables.any { it in template.lowercase() }
+
+    fun getNameTemplateForCreation(generatorSettings: GeneratorSettings): String =
+        when (generatorSettings.initialState) {
+            GeneratorSettings.VCState.UNLOCKED, GeneratorSettings.VCState.UNHIDDEN -> generatorSettings.defaultName
+            GeneratorSettings.VCState.LOCKED -> generatorSettings.defaultLockedName
+            GeneratorSettings.VCState.HIDDEN -> generatorSettings.defaultHiddenName
+        } ?: generatorSettings.defaultName
+
+    fun computeVcNameForCreation(
+        template: String,
+        owner: Member,
+        bitrate: Int,
+        userLimit: Int,
+        incrementalPosition: Int?,
+    ): String {
+        var name =
+            parseOwner(template, owner)
+                .let { parseActivity(it, owner) }
+                .let { parseVcCreation(it, bitrate, userLimit) }
+
+        incrementalPosition?.also { name = parsePosition(name, it) }
+
+        return formatChannelNameLength(name)
+    }
+
+    fun computeChatMessage(
+        template: String,
+        owner: Member,
+        temporaryVC: VoiceChannel,
+    ): String {
+        val message =
+            parseOwner(template, owner)
+                .let { parseActivity(it, owner) }
+                .let { parseVc(it, temporaryVC) }
+
+        return (if (message.length < 2) message + "-".repeat(2) else message).take(2000)
+    }
 
     fun computeVcNameForExisting(
         template: String,
@@ -115,6 +152,16 @@ object VariablesManager {
             .replace("{activity_type}", type ?: "", true)
             .replace("{activity_link}", activity?.url ?: "", true)
     }
+
+    private fun parseVcCreation(
+        template: String,
+        bitrate: Int,
+        userLimit: Int,
+    ): String =
+        template
+            .replace("{vc_bitrate}", (bitrate / 1000).toString(), true)
+            .replace("{vc_userlimit}", userLimit.takeIf { it > 0 }?.toString() ?: "no limit", true)
+            .replace("{vc_users}", "1", true)
 
     private fun parseVc(
         template: String,

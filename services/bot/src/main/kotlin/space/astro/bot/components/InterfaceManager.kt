@@ -161,7 +161,7 @@ class InterfaceManager {
         }
     }
 
-    private fun computeMessage(interfaceData: InterfaceData): MessageCreateData =
+    fun computeMessage(interfaceData: InterfaceData): MessageCreateData =
         MessageCreateBuilder()
             .setEmbeds(computeEmbed(interfaceData))
             .setComponents(computeComponents(interfaceData))

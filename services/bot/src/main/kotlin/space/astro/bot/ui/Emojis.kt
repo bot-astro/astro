@@ -20,6 +20,7 @@ object Emojis {
     val generator = Emoji.fromCustom("generator", 1029823573201780846, false)
     val vcInterface = Emoji.fromCustom("interface", 1029823580902543360, false)
     val voiceRole = Emoji.fromCustom("connection", 1029823562552463480, false)
+    val logs = Emoji.fromCustom("logs", 1029823587315626124, false)
     val help = Emoji.fromCustom("help", 1029823576141987941, false)
     val developer = Emoji.fromCustom("developer", 1029823567170379877, false)
     val helper = Emoji.fromCustom("helper", 1029828557632979025, false)

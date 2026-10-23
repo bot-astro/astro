@@ -5,6 +5,8 @@ import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 
 interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String> {
+    fun findByGuildID(guildID: String): GuildSettingsEntity?
+
     fun createNewGuildSettings(
         guildID: String,
         locale: String,

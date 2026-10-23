@@ -1,4 +1,4 @@
-package space.astro.bot.events.listeners.guild
+package space.astro.bot.events.listeners.discord.guild
 
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent
 import org.springframework.context.ApplicationEventPublisher
