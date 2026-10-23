@@ -9,7 +9,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.handlers.StringSelectHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
 @Component
@@ -47,6 +47,6 @@ class RegionMenu(
             vcCtx.queueUpdatedManagers()
         }
 
-        ctx.responder.reply(Embeds.default("${Emojis.region.formatted} Region set to ${region.emoji?.plus(" ") ?: ""}${region.getName()}"))
+        ctx.responder.reply(Containers.default("${Emojis.region.formatted} Region set to ${region.emoji?.plus(" ") ?: ""}${region.getName()}"))
     }
 }

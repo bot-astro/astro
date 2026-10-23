@@ -10,6 +10,7 @@ import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoCon
 import org.springframework.scheduling.annotation.EnableScheduling
 import space.astro.shared.core.properties.PremiumProperties
 import space.astro.shared.core.properties.ShardManagerConfig
+import net.dv8tion.jda.api.utils.messages.MessageRequest
 
 @SpringBootApplication(
     exclude = [
@@ -33,6 +34,8 @@ fun main(args: Array<String>) {
     Thread.setDefaultUncaughtExceptionHandler { t, e ->
         log.error(e) { "Uncaught exception in thread $t" }
     }
+
+    MessageRequest.setDefaultUseComponentsV2(true)
 
     runApplication<Application>(*args)
 }

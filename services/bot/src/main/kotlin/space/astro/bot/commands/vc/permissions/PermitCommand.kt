@@ -13,7 +13,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 
 @Component
 class PermitCommand(
@@ -60,7 +60,7 @@ class PermitCommand(
                 vcPermissionManager.permit(vcCtx, memberIds = listOf(member.idLong), roles = emptyList())
                 vcCtx.queueUpdatedManagers()
 
-                ctx.responder.reply(Embeds.default("${member.asMention} can now join your VC!"))
+                ctx.responder.reply(Containers.default("${member.asMention} can now join your VC!"))
             }
 
             ROLE_SUBCOMMAND -> {
@@ -74,7 +74,7 @@ class PermitCommand(
                 vcPermissionManager.permit(vcCtx, memberIds = emptyList(), roles = listOf(role))
                 vcCtx.queueUpdatedManagers()
 
-                ctx.responder.reply(Embeds.default("${role.asMention} role can now join your temporary VC!"))
+                ctx.responder.reply(Containers.default("${role.asMention} role can now join your temporary VC!"))
             }
 
             else -> ctx.responder.error("Unknown subcommand")

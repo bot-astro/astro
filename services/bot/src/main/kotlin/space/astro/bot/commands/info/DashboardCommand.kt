@@ -11,7 +11,7 @@ import space.astro.bot.interactions.context.BaseContextResolver
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.ui.Buttons
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.bot.ui.Links
 
@@ -29,10 +29,10 @@ class DashboardCommand : SlashHandler<InteractionContext> {
         ctx: InteractionContext,
     ) {
         ctx.responder.reply(
-            Embeds.default(
+            Containers.default(
                 "Setup Astro and configure all of its settings on the ${Emojis.dashboard.formatted} [`Dashboard`](${Links.DASHBOARD})",
+                ActionRow.of(Buttons.dashboard),
             ),
-            listOf(ActionRow.of(Buttons.dashboard)),
         )
     }
 }

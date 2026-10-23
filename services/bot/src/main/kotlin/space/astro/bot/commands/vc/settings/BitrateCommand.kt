@@ -13,7 +13,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.SlashHandler
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
 @Component
@@ -64,6 +64,6 @@ class BitrateCommand(
         vcCtx.markTemporaryVCManagerAsUpdated()
         vcCtx.queueUpdatedManagers()
 
-        ctx.responder.reply(Embeds.default("${Emojis.bitrate.formatted} Bitrate set to ${bitrate / 1000}kbps"))
+        ctx.responder.reply(Containers.default("${Emojis.bitrate.formatted} Bitrate set to ${bitrate / 1000}kbps"))
     }
 }

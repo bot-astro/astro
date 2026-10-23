@@ -13,7 +13,7 @@ import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.handlers.ButtonHandler
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
 
@@ -53,6 +53,6 @@ class HideInteraction(
         vcPermissionManager.changeState(ctx.vcOperationCTX, TemporaryVCState.HIDDEN)
         ctx.vcOperationCTX.queueUpdatedManagers()
 
-        ctx.responder.reply(Embeds.default("Your VC has been ${Emojis.hide.formatted} hidden!"))
+        ctx.responder.reply(Containers.default("Your VC has been ${Emojis.hide.formatted} hidden!"))
     }
 }

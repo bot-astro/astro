@@ -9,7 +9,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.handlers.EntitySelectHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 
 @Component
 class PermitMenu(
@@ -48,7 +48,7 @@ class PermitMenu(
         val permitted = members.map { it.asMention } + roles.map { it.asMention }
 
         ctx.responder.reply(
-            Embeds.default(
+            Containers.default(
                 "The following users and roles have been permitted in your voice channel:" +
                     "\n${permitted.joinToString(", ")}",
             ),

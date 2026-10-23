@@ -10,7 +10,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.handlers.ButtonHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 
 /**
  * Replies with a menu handled by [BanMenu]
@@ -39,8 +39,10 @@ class BanButton(
                 .build()
 
         ctx.responder.reply(
-            Embeds.default("Choose the users and roles to ban from your voice channel via the menu below"),
-            listOf(ActionRow.of(menu)),
+            Containers.default(
+                "Choose the users and roles to ban from your voice channel via the menu below",
+                ActionRow.of(menu),
+            ),
         )
     }
 }

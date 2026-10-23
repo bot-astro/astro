@@ -13,7 +13,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
 @Component
@@ -61,7 +61,7 @@ class BanCommand(
                 vcPermissionManager.kickAndBanMember(vcCtx, member)
                 vcCtx.queueUpdatedManagers()
 
-                ctx.responder.reply(Embeds.default("${member.asMention} has been banned from your temporary VC!"))
+                ctx.responder.reply(Containers.default("${member.asMention} has been banned from your temporary VC!"))
             }
 
             ROLE_SUBCOMMAND -> {
@@ -76,7 +76,7 @@ class BanCommand(
                 vcCtx.queueUpdatedManagers()
 
                 ctx.responder.reply(
-                    Embeds.default("${role.asMention} role has been ${Emojis.ban.formatted} banned from your temporary VC!"),
+                    Containers.default("${role.asMention} role has been ${Emojis.ban.formatted} banned from your temporary VC!"),
                 )
             }
 

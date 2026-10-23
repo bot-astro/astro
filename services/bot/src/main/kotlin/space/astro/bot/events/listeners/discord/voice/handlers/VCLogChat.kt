@@ -1,8 +1,8 @@
 package space.astro.bot.events.listeners.discord.voice.handlers
 
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel
 import space.astro.bot.models.discord.PermissionSets
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.bot.utils.extensions.toPermissionList
 
@@ -14,13 +14,14 @@ fun GuildMessageChannel.sendVCLog(description: String) {
         return
     }
 
-    // TODO: components v2, replace the embed (last step of the migration)
-    sendMessageEmbeds(
-        EmbedBuilder()
-            .setColor(guild.selfMember.colorRaw)
-            .setTitle("${Emojis.logs.formatted} Voice channel logs")
-            .setDescription(description)
-            .setFooter("You can disable these logs with `/chat logs`")
-            .build(),
-    ).useComponentsV2(false).queue()
+    sendMessage(
+        Containers.message(
+            Containers.container(
+                guild.selfMember.colorRaw,
+                Containers.title("${Emojis.logs.formatted} Voice channel logs"),
+                Containers.text(description),
+                Containers.footer("You can disable these logs with `/chat logs`"),
+            ),
+        ),
+    ).queue()
 }

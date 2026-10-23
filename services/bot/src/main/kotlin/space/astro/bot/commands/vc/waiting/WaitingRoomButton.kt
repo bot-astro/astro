@@ -10,7 +10,7 @@ import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 import space.astro.bot.interactions.handlers.ButtonHandler
 
@@ -48,6 +48,6 @@ class WaitingRoomButton(
         entity.lastWaitingNameChange = null
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, entity) }
 
-        ctx.responder.reply(Embeds.default("Created a waiting room: ${waitingRoom.asMention}"))
+        ctx.responder.reply(Containers.default("Created a waiting room: ${waitingRoom.asMention}"))
     }
 }

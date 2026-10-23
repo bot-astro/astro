@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder
 import org.springframework.stereotype.Component
 import space.astro.bot.ui.Emojis
 import space.astro.shared.core.exceptions.ABadRequestException
@@ -113,9 +114,13 @@ class InterfaceManager {
         val message = retrieveMessage(guild, interfaceData)
 
         message
-            .editMessageEmbeds(computeEmbed(interfaceData))
-            .setComponents(computeComponents(interfaceData))
-            .await()
+            .editMessage(
+                MessageEditBuilder()
+                    .useComponentsV2(false)
+                    .setEmbeds(computeEmbed(interfaceData))
+                    .setComponents(computeComponents(interfaceData))
+                    .build(),
+            ).await()
     }
 
     suspend fun deleteInterface(
@@ -163,6 +168,7 @@ class InterfaceManager {
 
     fun computeMessage(interfaceData: InterfaceData): MessageCreateData =
         MessageCreateBuilder()
+            .useComponentsV2(false)
             .setEmbeds(computeEmbed(interfaceData))
             .setComponents(computeComponents(interfaceData))
             .build()

@@ -20,7 +20,7 @@ import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.AutocompleteHandler
 import space.astro.bot.interactions.handlers.SlashHandler
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
@@ -89,8 +89,8 @@ class TemplateCommand(
 
         if (templateInput == null) {
             ctx.responder.reply(
-                Embeds.default("Choose a template with the menu below"),
-                listOf(
+                Containers.default(
+                    "Choose a template with the menu below",
                     ActionRow.of(
                         StringSelectMenu
                             .create(TemplateMenu.MENU_ID)
@@ -117,6 +117,6 @@ class TemplateCommand(
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, vcCtx.temporaryVCEntity) }
         vcCtx.queueUpdatedManagers()
 
-        ctx.responder.reply(Embeds.default("Template applied!"))
+        ctx.responder.reply(Containers.default("Template applied!"))
     }
 }

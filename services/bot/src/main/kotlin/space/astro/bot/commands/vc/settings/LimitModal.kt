@@ -8,7 +8,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.ModalHandler
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
 @Component
@@ -50,6 +50,6 @@ class LimitModal(
         vcCtx.markTemporaryVCManagerAsUpdated()
         vcCtx.queueUpdatedManagers()
 
-        ctx.responder.reply(Embeds.default("${Emojis.limit.formatted} User limit set to $limit users!"))
+        ctx.responder.reply(Containers.default("${Emojis.limit.formatted} User limit set to $limit users!"))
     }
 }

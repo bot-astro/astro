@@ -4,7 +4,6 @@ import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.springframework.stereotype.Component
 import space.astro.bot.components.InterfaceManager
@@ -17,7 +16,7 @@ import space.astro.bot.interactions.InteractionCooldownService
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity
@@ -311,16 +310,13 @@ class JoinedGeneratorHandler(
         val template = settings.defaultChatText ?: return null
         val content = VariablesManager.computeChatMessage(template, event.vcEventData.member, temporaryVC)
 
-        // TODO: components v2, replace the embed (last step of the migration)
-        return MessageCreateBuilder()
-            .useComponentsV2(false)
-            .apply {
-                if (settings.defaultChatTextEmbed) {
-                    setEmbeds(Embeds.default(content))
-                } else {
-                    setContent(content)
-                }
-            }.build()
+        return Containers.message(
+            if (settings.defaultChatTextEmbed) {
+                Containers.default(content)
+            } else {
+                Containers.text(content)
+            },
+        )
     }
 
     private fun unknownError(

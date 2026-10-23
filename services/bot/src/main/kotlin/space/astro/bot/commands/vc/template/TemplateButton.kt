@@ -11,7 +11,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.ButtonHandler
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 
 /**
@@ -45,8 +45,8 @@ class TemplateButton(
         }
 
         ctx.responder.reply(
-            Embeds.default("Choose a template with the menu below"),
-            listOf(
+            Containers.default(
+                "Choose a template with the menu below",
                 ActionRow.of(
                     StringSelectMenu
                         .create(TemplateMenu.MENU_ID)

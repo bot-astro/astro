@@ -13,7 +13,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 
 @Component
 class InviteCommand(
@@ -68,8 +68,8 @@ class InviteCommand(
         members.forEach { member ->
             member.user.openPrivateChannel().queue({ privateChannel ->
                 privateChannel
-                    .sendMessageEmbeds(
-                        Embeds.default(
+                    .sendMessageComponents(
+                        Containers.default(
                             "${ctx.member.asMention} has invited you to join their VC in ${ctx.guild.name}!" +
                                 "\n[Accept invitation](${vcInvite.url})",
                         ),
@@ -77,6 +77,6 @@ class InviteCommand(
             }) { }
         }
 
-        ctx.responder.reply(Embeds.default("${members.joinToString(", ") { it.asMention }} has been invited to join your VC!"))
+        ctx.responder.reply(Containers.default("${members.joinToString(", ") { it.asMention }} has been invited to join your VC!"))
     }
 }

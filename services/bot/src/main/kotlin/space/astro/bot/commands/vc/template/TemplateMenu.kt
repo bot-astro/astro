@@ -11,7 +11,7 @@ import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.interactions.handlers.StringSelectHandler
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 
 @Component
@@ -58,6 +58,6 @@ class TemplateMenu(
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, vcCtx.temporaryVCEntity) }
         vcCtx.queueUpdatedManagers()
 
-        ctx.responder.reply(Embeds.default("Template applied!"))
+        ctx.responder.reply(Containers.default("Template applied!"))
     }
 }

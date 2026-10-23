@@ -17,7 +17,7 @@ import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.handlers.ButtonHandler
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 
 /**
  * `/region` and the region button: both reply with a menu handled by [RegionMenu]
@@ -66,8 +66,10 @@ class RegionInteraction(
                 ).build()
 
         ctx.responder.reply(
-            Embeds.default("Set the region of your VC with the menu below"),
-            listOf(ActionRow.of(menu)),
+            Containers.default(
+                "Set the region of your VC with the menu below",
+                ActionRow.of(menu),
+            ),
         )
     }
 }

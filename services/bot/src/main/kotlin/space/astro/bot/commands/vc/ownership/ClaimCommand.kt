@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import org.springframework.stereotype.Component
 import space.astro.bot.components.managers.vc.VCOwnershipManager
 import space.astro.bot.interactions.Ack
@@ -13,7 +12,7 @@ import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.VcContextResolverFactory
 import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.ui.Embeds
+import space.astro.bot.ui.Containers
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 import space.astro.shared.core.utils.extensions.asRoleMention
 import space.astro.bot.interactions.handlers.SlashHandler
@@ -43,7 +42,7 @@ class ClaimCommand(
 
         // already owner
         if (vcCtx.temporaryVCEntity.ownerID == ctx.memberId) {
-            ctx.responder.reply(Embeds.default("You are already the owner of the voice channel"))
+            ctx.responder.reply(Containers.default("You are already the owner of the voice channel"))
             return
         }
 
@@ -54,7 +53,7 @@ class ClaimCommand(
             withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, vcCtx.temporaryVCEntity) }
             vcOwnershipManager.handleOwnerRoleMigration(vcCtx, null, ctx.member)
 
-            ctx.responder.reply(Embeds.default("You are now the owner of the vc (the previous owner left)."))
+            ctx.responder.reply(Containers.default("You are now the owner of the vc (the previous owner left)."))
             return
         }
 
@@ -69,7 +68,7 @@ class ClaimCommand(
             vcOwnershipManager.handleOwnerRoleMigration(vcCtx, oldOwner, ctx.member)
 
             ctx.responder.reply(
-                Embeds.default(
+                Containers.default(
                     "You are now the owner of the vc." +
                         "\n\n*This operation was instant because you have the moderator role: ${immuneRoleId.asRoleMention()}*",
                 ),
@@ -78,18 +77,20 @@ class ClaimCommand(
         }
 
         // send instructions on how to transfer the ownership
-        ctx.responder.reply(Embeds.default("A claim request has been sent in ${vcCtx.temporaryVC.asMention}"))
+        ctx.responder.reply(Containers.default("A claim request has been sent in ${vcCtx.temporaryVC.asMention}"))
+
+        val ownerMention = vcCtx.temporaryVCOwner?.asMention ?: return
 
         vcCtx.temporaryVC
             .sendMessage(
-                MessageCreateBuilder()
-                    .setContent(vcCtx.temporaryVCOwner?.asMention ?: "")
-                    .setEmbeds(
-                        Embeds.default(
-                            "${ctx.member.asMention} asked for ownership of the voice channel." +
-                                "\nTo accept their request run the following command: `/transfer user:@${ctx.member.effectiveName}`",
-                        ),
-                    ).build(),
+                Containers.message(
+                    // mention outside of the container so the owner gets pinged
+                    Containers.text(ownerMention),
+                    Containers.default(
+                        "${ctx.member.asMention} asked for ownership of the voice channel." +
+                            "\nTo accept their request run the following command: `/transfer user:@${ctx.member.effectiveName}`",
+                    ),
+                ),
             ).queue()
     }
 }
