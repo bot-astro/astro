@@ -12,15 +12,21 @@ data class GuildSettingsEntity(
     val id: ObjectId = ObjectId.get(),
     @Indexed
     val guildID: String,
+    var nickname: String? = null,
+    var bio: String? = null,
+    var avatarUrl: String? = null,
+    var bannerUrl: String? = null,
+    /**
+     * Language + region
+     */
+    var locale: String = "en-US",
+    var allowMissingAdminPerm: Boolean = false,
     var upgradedByUserID: String? = null,
     val entitlements: MutableList<GuildEntitlementData> = mutableListOf(),
     val templates: MutableList<TemplateData> = mutableListOf(),
     val connections: MutableList<ConnectionData> = mutableListOf(),
     val generators: MutableList<GeneratorSettings> = mutableListOf(),
     var interfaces: MutableList<InterfaceData> = mutableListOf(),
-    var allowMissingAdminPerm: Boolean = false,
-    // Language + region
-    var locale: String = "en-US",
 ) {
-    val javaLocale = Locale.forLanguageTag(locale)
+    val javaLocale: Locale = Locale.forLanguageTag(locale)
 }

@@ -14,6 +14,7 @@ import space.astro.shared.core.clients.BotApiClient
 import space.astro.shared.core.exceptions.AErrorCode
 import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.exceptions.ANotFoundException
+import space.astro.shared.core.models.api.bot.request.GuildProfileUpdateBotApiRequest
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
@@ -59,17 +60,17 @@ class GuildSettingsController(
         @PathVariable guildId: String,
         @RequestBody newGuildSettings: GuildSettingsUpdateBody,
     ): ResponseEntity<GuildSettingsEntity> {
-        val guildData =
+        val guildSettings =
             guildSettingsRepository.findByIdOrNull(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found Astro database")
 
-        guildData.apply {
+        guildSettings.apply {
             allowMissingAdminPerm = newGuildSettings.allowMissingAdminPerms
             locale = Locale.forLanguageTag(newGuildSettings.locale).toLanguageTag()
         }
-        guildSettingsRepository.save(guildData)
+        guildSettingsRepository.save(guildSettings)
 
-        return ResponseEntity.ok(guildData)
+        return ResponseEntity.ok(guildSettings)
     }
 
     @Operation(
@@ -78,14 +79,30 @@ class GuildSettingsController(
     )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_PROFILE)
     @CanManageGuildMiddleware
-    @Suppress("UnusedParameter") // TODO
     fun updateGuildProfile(
         @PathVariable guildId: String,
         @RequestBody newProfile: GuildProfileUpdateBody,
     ): ResponseEntity<Void> {
-        // TODO
-        // 1. store in guild settings
-        // 2. update in Discord
+        val guildSettings =
+            guildSettingsRepository.findByIdOrNull(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found Astro database")
+
+        guildSettings.nickname = newProfile.nickname
+        guildSettings.bio = newProfile.bio
+        guildSettings.avatarUrl = newProfile.avatarUrl
+        guildSettings.bannerUrl = newProfile.bannerUrl
+
+        guildSettingsRepository.save(guildSettings)
+
+        botApiClient.updateGuildProfile(
+            guildId,
+            GuildProfileUpdateBotApiRequest(
+                nickname = newProfile.nickname,
+                bio = newProfile.bio,
+                avatarUrl = newProfile.avatarUrl,
+                bannerUrl = newProfile.bannerUrl,
+            ),
+        )
 
         return ResponseEntity.ok().build()
     }

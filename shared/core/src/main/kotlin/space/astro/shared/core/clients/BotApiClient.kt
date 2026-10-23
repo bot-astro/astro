@@ -7,6 +7,7 @@ import org.springframework.web.client.body
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.AUnknownException
 import space.astro.shared.core.models.api.bot.request.ChannelCreateBotApiRequest
+import space.astro.shared.core.models.api.bot.request.GuildProfileUpdateBotApiRequest
 import space.astro.shared.core.models.api.bot.request.InterfaceCreateBotApiRequest
 import space.astro.shared.core.models.api.bot.response.DiscordGuildBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
@@ -52,6 +53,26 @@ class BotApiClient(
             }
 
             throw AUnknownException("Failed to fetch guild", e)
+        }
+    }
+
+    fun updateGuildProfile(
+        guildId: String,
+        request: GuildProfileUpdateBotApiRequest,
+    ) {
+        try {
+            client
+                .post()
+                .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD_PROFILE, guildId)
+                .body(request)
+                .retrieve()
+                .toBodilessEntity()
+        } catch (e: RestClientException) {
+            if (e is RestClientResponseException && e.statusCode.value() == 404) {
+                throw ANotFoundException("Guild with id $guildId not found")
+            }
+
+            throw AUnknownException("Failed to update guild profile", e)
         }
     }
 

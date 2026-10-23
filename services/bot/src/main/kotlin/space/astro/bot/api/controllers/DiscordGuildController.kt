@@ -3,7 +3,6 @@ package space.astro.bot.api.controllers
 import dev.minn.jda.ktx.coroutines.await
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import net.dv8tion.jda.api.entities.Icon
 import net.dv8tion.jda.api.entities.channel.attribute.ICategorizableChannel
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
@@ -11,15 +10,17 @@ import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import space.astro.bot.api.models.GuildProfileUpdateBody
+import space.astro.bot.utils.discord.iconFromUrl
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.AUnknownException
 import space.astro.shared.core.models.api.bot.request.ChannelCreateBotApiRequest
+import space.astro.shared.core.models.api.bot.request.GuildProfileUpdateBotApiRequest
 import space.astro.shared.core.models.api.bot.response.DiscordGuildBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildRoleBotApiResponse
 import space.astro.shared.core.utils.api.BotApiEndpoint
+import java.io.IOException
 
 @RestController
 @RequestMapping
@@ -50,19 +51,42 @@ class DiscordGuildController(
         return ResponseEntity.ok(response)
     }
 
+    @Operation(
+        summary = "Update bot profile",
+        description = "Updates the bot's guild profile, any null value resets the field to the default",
+        operationId = "updateGuildProfile",
+    )
     @PostMapping(BotApiEndpoint.DISCORD_GUILD_PROFILE)
-    fun updateGuildProfile(
+    suspend fun updateGuildProfile(
         @PathVariable guildId: String,
-        @RequestBody newProfile: GuildProfileUpdateBody,
+        @RequestBody newProfile: GuildProfileUpdateBotApiRequest,
     ): ResponseEntity<Void> {
         val guild =
             shardManager.getGuildById(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found")
 
-        guild.selfMember.manager.setNickname(newProfile.nickname)
-        guild.selfMember.manager.setBio(newProfile.bio)
-        guild.selfMember.manager.setAvatar(Icon)
-        guild.selfMember.manager.setNickname(newProfile.nickname)
+        try {
+            val avatar = newProfile.avatarUrl?.let { iconFromUrl(it) }
+            val banner = newProfile.bannerUrl?.let { iconFromUrl(it) }
+
+            guild.selfMember.manager
+                .setNickname(newProfile.nickname)
+                .setBio(newProfile.bio)
+                .setAvatar(avatar)
+                .setBanner(banner)
+                .reason("Profile update triggered from the dashboard")
+                .await()
+        } catch (e: ErrorResponseException) {
+            throw ABadRequestException(e.message ?: "Error from Discord API", e)
+        } catch (e: InsufficientPermissionException) {
+            throw ABadRequestException("Insufficient permissions to update profile", e)
+        } catch (e: IOException) {
+            throw ABadRequestException("Failed to download profile image", e)
+        } catch (e: Exception) {
+            throw AUnknownException("An unexpected error occurred", e)
+        }
+
+        return ResponseEntity.noContent().build()
     }
 
     @Operation(
