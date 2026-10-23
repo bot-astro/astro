@@ -10,12 +10,14 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.springframework.stereotype.Component
+import space.astro.bot.ui.Emojis
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.models.database.guildSettings.InterfaceData
@@ -27,17 +29,15 @@ class InterfaceManager {
     private val maxActionRows = 5
     private val maxButtonsPerRow = 5
 
-    // TODO: move button ids and emojis to a shared place once interactions are ported to the new bot
     private fun defaultButton(
         id: String,
-        emojiName: String,
-        emojiId: Long,
+        emoji: CustomEmoji,
         row: Int,
         column: Int,
     ) = InterfaceButton(
         id = id,
         name = null,
-        emoji = "<:$emojiName:$emojiId>",
+        emoji = emoji.asMention,
         buttonStyleKey = ButtonStyle.SECONDARY.key,
         buttonDisabled = false,
         position = Pair(row, column),
@@ -45,22 +45,22 @@ class InterfaceManager {
 
     private fun defaultButtons() =
         mutableListOf(
-            defaultButton("button/vc/lock", "lock", 1029831342575325225, 0, 0),
-            defaultButton("button/vc/unlock", "unlock", 1029831345884647554, 0, 1),
-            defaultButton("button/vc/hide", "hide", 1029831340595626056, 0, 2),
-            defaultButton("button/vc/unhide", "unhide", 1029831344278220833, 0, 3),
-            defaultButton("button/vc/limit", "limit", 1029823585801478154, 1, 0),
-            defaultButton("button/vc/invite", "invite", 1029823584287338496, 1, 1),
-            defaultButton("button/vc/ban", "ban", 1029823553077510327, 1, 2),
-            defaultButton("button/vc/permit", "permit", 1029823602071191563, 1, 3),
-            defaultButton("button/vc/name", "name", 1029823591329579039, 2, 0),
-            defaultButton("button/vc/bitrate", "bitrate", 1029823554574884997, 2, 1),
-            defaultButton("button/vc/region", "region", 1029823605346930809, 2, 2),
-            defaultButton("button/vc/template", "template", 1038794746249875567, 2, 3),
-            defaultButton("button/vc/chat", "chat", 1029823561063464960, 3, 0),
-            defaultButton("button/vc/waiting-room", "waiting", 1146421350819450920, 3, 1),
-            defaultButton("button/vc/claim", "owner", 1030227494630076448, 3, 2),
-            defaultButton("button/vc/transfer", "transfer_owner", 1030227495892557826, 3, 3),
+            defaultButton("button/vc/lock", Emojis.lock, 0, 0),
+            defaultButton("button/vc/unlock", Emojis.unlock, 0, 1),
+            defaultButton("button/vc/hide", Emojis.hide, 0, 2),
+            defaultButton("button/vc/unhide", Emojis.unhide, 0, 3),
+            defaultButton("button/vc/limit", Emojis.limit, 1, 0),
+            defaultButton("button/vc/invite", Emojis.invite, 1, 1),
+            defaultButton("button/vc/ban", Emojis.ban, 1, 2),
+            defaultButton("button/vc/permit", Emojis.permit, 1, 3),
+            defaultButton("button/vc/name", Emojis.name, 2, 0),
+            defaultButton("button/vc/bitrate", Emojis.bitrate, 2, 1),
+            defaultButton("button/vc/region", Emojis.region, 2, 2),
+            defaultButton("button/vc/template", Emojis.template, 2, 3),
+            defaultButton("button/vc/chat", Emojis.chat, 3, 0),
+            defaultButton("button/vc/waiting-room", Emojis.waitingRoom, 3, 1),
+            defaultButton("button/vc/claim", Emojis.owner, 3, 2),
+            defaultButton("button/vc/transfer", Emojis.transferOwner, 3, 3),
         )
 
     private fun defaultEmbedStyle() =

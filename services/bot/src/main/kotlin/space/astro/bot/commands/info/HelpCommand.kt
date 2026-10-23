@@ -13,6 +13,7 @@ import space.astro.bot.interactions.context.BaseContextResolver
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.properties.PodProperties
+import space.astro.bot.ui.Buttons
 import space.astro.bot.ui.Embeds
 import space.astro.bot.ui.Emojis
 import space.astro.bot.ui.Links
@@ -76,9 +77,9 @@ class HelpCommand(
             listOf(
                 ActionRow.of(
                     Button.link(dashboard, "Dashboard").withEmoji(Emojis.dashboard),
-                    Button.link(Links.GUIDES, "Guides").withEmoji(Emojis.help),
-                    Button.link(Links.SUPPORT_SERVER, "Support").withEmoji(Emojis.helper),
-                    Button.link(Links.GITHUB, "GitHub").withEmoji(Emojis.developer),
+                    Buttons.guides,
+                    Buttons.support,
+                    Buttons.github,
                 ),
             ),
         )

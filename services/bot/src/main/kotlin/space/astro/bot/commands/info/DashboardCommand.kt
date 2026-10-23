@@ -1,7 +1,6 @@
 package space.astro.bot.commands.info
 
 import net.dv8tion.jda.api.components.actionrow.ActionRow
-import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
@@ -11,6 +10,7 @@ import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.BaseContextResolver
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.handlers.SlashHandler
+import space.astro.bot.ui.Buttons
 import space.astro.bot.ui.Embeds
 import space.astro.bot.ui.Emojis
 import space.astro.bot.ui.Links
@@ -32,7 +32,7 @@ class DashboardCommand : SlashHandler<InteractionContext> {
             Embeds.default(
                 "Setup Astro and configure all of its settings on the ${Emojis.dashboard.formatted} [`Dashboard`](${Links.DASHBOARD})",
             ),
-            listOf(ActionRow.of(Button.link(Links.DASHBOARD, "Dashboard").withEmoji(Emojis.dashboard))),
+            listOf(ActionRow.of(Buttons.dashboard)),
         )
     }
 }

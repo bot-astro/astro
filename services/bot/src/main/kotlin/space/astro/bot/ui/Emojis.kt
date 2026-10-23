@@ -2,7 +2,6 @@ package space.astro.bot.ui
 
 import net.dv8tion.jda.api.entities.emoji.Emoji
 
-// TODO: port the remaining emojis with the interactions that use them
 object Emojis {
     val name = Emoji.fromCustom("name", 1029823591329579039, false)
     val limit = Emoji.fromCustom("limit", 1029823585801478154, false)
@@ -20,6 +19,10 @@ object Emojis {
     val generator = Emoji.fromCustom("generator", 1029823573201780846, false)
     val vcInterface = Emoji.fromCustom("interface", 1029823580902543360, false)
     val voiceRole = Emoji.fromCustom("connection", 1029823562552463480, false)
+    val chat = Emoji.fromCustom("chat", 1029823561063464960, false)
+    val waitingRoom = Emoji.fromCustom("waiting", 1146421350819450920, false)
+    val owner = Emoji.fromCustom("owner", 1030227494630076448, false)
+    val transferOwner = Emoji.fromCustom("transfer_owner", 1030227495892557826, false)
     val logs = Emoji.fromCustom("logs", 1029823587315626124, false)
     val help = Emoji.fromCustom("help", 1029823576141987941, false)
     val developer = Emoji.fromCustom("developer", 1029823567170379877, false)

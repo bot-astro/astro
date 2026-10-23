@@ -8,9 +8,9 @@ Application, sharding (session controller, shard manager), health indicators, re
 ## Items (suggested order)
 
 1. ✅ **Interaction framework** (decided, see [Item 1 design](#item-1-design))
-2. ⬜ **Core UI** (`core/ui`: Buttons, Embeds, Emojis, Messages) + `core/exceptions` (ConfigurationException, VcOperationException)
+2. ✅ **Core UI** except Components V2 (`core/ui`: Buttons, Embeds, Emojis, Messages) + `core/exceptions`
    **Decided: Components V2 (helpers replacing `Embeds`, interface message) is done as the very last step**; until then new code keeps using embeds with a `TODO: components v2`.
-   Move button ids/emojis here (see TODO in `InterfaceManager`); exceptions likely map to `shared/core` exceptions + `ConfigurationErrorEvent`.
+   Done: all emojis in `ui/Emojis`, link buttons in `ui/Buttons` (dashboard, guides, support, github), `InterfaceManager` default buttons use `Emojis`. `ConfigurationException` maps to the shared entity; `VcOperationException` dropped (replaced by `InteractionException`). Premium/vote/confirmation buttons not ported. `Messages` goes with i18n (last step).
 3. ✅ **Listeners: guild/entitlements/member** (`GuildJoin/Leave`, `Entitlement*`, `MemberUpdateActivities`, `ContextRefreshedListeners`, `ConfigurationErrorEventListener`✅)
    Done: `GuildJoin/Leave` (welcome message has TODOs: channel selection, premium buttons, Setup button, V2). Skipped: entitlements + `MemberUpdateActivities` (premium only), `ContextRefreshedListeners` (= `ApplicationReadyListener`).
 4. ✅ **Services/infra** (`CooldownsManager`, `AnalyticsService` + `BigQueryService`, `ConfigurationErrorService`, `AuthWebFilter`, `ApplicationFeaturesConfig`, `DashboardController`, `LifecycleController`)
@@ -28,7 +28,7 @@ Application, sharding (session controller, shard manager), health indicators, re
 9. 🚫 **Setup / pre-dashboard commands** (decided: not ported, the dashboard covers them) (`generator`, `generator-waiting`, `interface`, `connection`, `settings`, `template-settings`, `setup` cmd+button, `premium`)
 10. ✅ **Info commands** (`help` + 7 help buttons, `dashboard`)
     Help buttons could collapse into one handler; `HelpPremiumButton` skipped.
-11. ⬜ **Tests** (`VariablesManagerTest`) — port alongside whichever manager owns variables.
+11. 🚫 **Tests** (`VariablesManagerTest` only covers `containsPremiumVariable`, premium-only, not ported).
 
 ## Open questions
 - Autocomplete handler / `CommandChoice` / `CommandCategory`: `AutocompleteHandler` added (no pipeline, registered in `InteractionRegistry`), used by `/template`. `CommandChoice`/`CommandCategory` dropped.
