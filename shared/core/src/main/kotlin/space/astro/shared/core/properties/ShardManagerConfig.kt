@@ -11,10 +11,4 @@ class ShardManagerConfig {
 
     /** Total number of pods */
     val totalPods: Int = 1
-
-    /** Number of IDENTIFY requests allowed per 5 seconds
-     *
-     * See [Discord API docs](https://docs.discord.com/developers/events/gateway#sharding)
-     */
-    val maxIdentifyConcurrency: Int = 1
 }

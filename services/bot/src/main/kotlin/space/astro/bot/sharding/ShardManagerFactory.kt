@@ -53,11 +53,11 @@ class ShardManagerFactory(
             } (total: ${shardList.size}/${shardManagerConfig.totalShards})"
         }
 
-        val activity = Activity.of(discordApplicationProperties.getActivityType(), discordApplicationProperties.activityText)
+        val activity =
+            Activity.of(discordApplicationProperties.getActivityType(), discordApplicationProperties.activityText)
 
         RestAction.setDefaultFailure(DefaultFailureConsumer(configurationErrorEventPublisher))
 
-        // TODO: handle shared rate limiting (discord asked rxsto)
         return DefaultShardManagerBuilder
             .createLight(
                 discordApplicationProperties.token,

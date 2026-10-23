@@ -47,10 +47,20 @@ package space.astro.shared.core.utils.redis
 // }
 
 object RedisKey {
+    fun SHARD_BUCKET_ID(
+        applicationId: String,
+        bucketId: String,
+    ) = "JDA_SESSION:$applicationId:$bucketId"
+
     fun RATE_LIMIT(
         namespace: String,
         key: String,
     ) = "RL:$namespace:$key"
+
+    fun GLOBAL_RATE_LIMIT(
+        applicationId: Long,
+        type: String,
+    ) = "GRL:$applicationId:$type"
 
     fun OAUTH_STATE(state: String) = "OS:$state"
 
