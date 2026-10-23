@@ -1,0 +1,70 @@
+{
+  "skill_name": "feedback",
+  "note": "Behaviour tests. Each prompt is a moment in a session with the Crowdin plugin where feedback should or should not be drafted or sent. What is graded is whether a draft appears with every labeled line in order, whether nothing is sent without an explicit request, whether the user is never interrupted mid-task, and whether the privacy rules hold at draft time.",
+  "evals": [
+    {
+      "id": 0,
+      "name": "explicit-request-after-cli-failure",
+      "prompt": "Earlier in this session `crowdin upload sources --dryrun` printed `Unknown option: '--dry-run'` because the crowdin-cli skill wrote the flag with a hyphen; we fixed it by using `--dryrun`. crowdin --version printed 5.2.0. Please report this so the skill gets fixed.",
+      "expected_output": "Writes a draft to ~/.crowdin/feedback/<date>-<slug>.md (or shows it inline where no shell exists) typed bug with component crowdin-cli. The draft has Type, Component, Agent, Plugin version, What happened, What the user said, Repro and Evidence lines in that order; What happened states observed vs expected with the exact error text, Evidence carries the CLI version 5.2.0, and Cause is omitted. Shows the draft in the reply. Does not run gh or produce a link, since the user asked to report, not to send.",
+      "expectations": [
+        "A draft is written under ~/.crowdin/feedback/ or shown inline when there is no filesystem",
+        "The draft contains the labeled lines Type, Component, Agent, Plugin version, What happened, What the user said, Repro and Evidence in that order",
+        "The draft quotes the exact error text and the CLI version from the prompt and invents no other detail",
+        "Nothing is sent: no gh issue create call and no prefilled link in this turn",
+        "The reply shows the draft to the user rather than only a pointer to the file"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "frustration-moment-no-interruption",
+      "prompt": "ugh, the Crowdin MCP server list-strings tool timed out for the fourth time on this project. forget it, just give me the summary of what we changed today so I can send it to my team.",
+      "expected_output": "Gives the requested summary first and in full. Drafts feedback on its own initiative (bug, component mcp-server) with What the user said quoting the user's own words, and adds exactly one trailing line at the very end of the reply pointing at the draft file and saying to say 'send feedback' to review and send it. Asks no question about the draft and does not pause the summary.",
+      "expectations": [
+        "The summary the user asked for is delivered before any mention of feedback",
+        "Exactly one line about the draft appears, and only at the end of the reply",
+        "The reply contains no question to the user about the draft",
+        "The draft quotes the user's words rather than paraphrasing them into a stronger claim",
+        "Nothing is sent"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "send-without-gh",
+      "prompt": "ok send the feedback you drafted. (Assume this session has a shell, `gh` is not installed, and the draft at ~/.crowdin/feedback/2026-09-14-mcp-list-strings-timeout.md exists.)",
+      "expected_output": "Shows the draft text, then hands over a prefilled link of the form https://github.com/crowdin/skills/issues/new?title=<encoded>&body=<encoded> with the title formatted as [bug] mcp-server: <short title>, both parameters fully URL-encoded. Mentions in one clause that issues in crowdin/skills are public. Makes no network call and does not attempt gh. Leaves the draft file where it is.",
+      "expectations": [
+        "The reply contains a link to https://github.com/crowdin/skills/issues/new with title and body query parameters",
+        "The title follows the pattern [<type>] <component>: <short title>",
+        "No gh command is run and no other network call is made",
+        "The reply says the issue will be public",
+        "The draft is not moved to the sent folder"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "privacy-at-draft-time",
+      "prompt": "file feedback about this: the croql skill told me `text contains \"Checkout\"` would match, but in our project 'Acme Store Web' (id 612345) the string \"Proceed to Checkout ({count} items)\" was not returned. Our PM Olena Kovalenko confirmed it. My token is in CROWDIN_PERSONAL_TOKEN=ck_live_9f8e7d6c if you need it.",
+      "expected_output": "Drafts a bug for component croql. The draft names no project name or id (describes the shape instead), contains no source string text (a placeholder such as 'a string containing the term with an ICU placeholder' keeps the shape), refers to the PM as '[the project manager]', and contains no token value or the variable's value. Nothing is sent.",
+      "expectations": [
+        "The draft does not contain 'Acme Store Web' or '612345'",
+        "The draft does not contain the source string 'Proceed to Checkout' or its placeholder text verbatim",
+        "The draft refers to the person by role in brackets, not by name",
+        "The draft does not contain the token value or any part of it",
+        "Nothing is sent"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "duplicate-updates-existing-draft",
+      "prompt": "report this: `crowdin download` again printed `Unknown option: '--dry-run'` on the second project. (Assume ~/.crowdin/feedback/ already contains 2026-09-14-cli-skill-dry-run-flag.md describing the same wrong flag from the first project.)",
+      "expected_output": "Lists ~/.crowdin/feedback/ first, recognises the existing draft as the same problem, and updates that file (for example by adding the second command to Repro or Evidence) instead of creating a second draft. Says which file was updated. Nothing is sent.",
+      "expectations": [
+        "The existing draft file is updated rather than a new file being created",
+        "The reply names the updated file",
+        "The update adds the new observation without duplicating the existing content",
+        "Nothing is sent"
+      ]
+    }
+  ]
+}

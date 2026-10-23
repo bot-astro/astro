@@ -1,0 +1,9 @@
+{"file":"src/locales/de/messages.po","key":"Hello {name}","source":"Hello {name}","target":"Hallo {Name}"}
+{"file":"src/locales/de/messages.po","key":"welcome","source":"Welcome <0>here</0>","target":"Willkommen hier"}
+{"file":"res/values-uk/strings.xml","key":"items_count","source":{"one":"%d item","other":"%d items"},"target":{"one":"%d елемент","other":"елементи"}}
+{"file":"res/values-uk/strings.xml","key":"shape","source":"{count} files","target":{"one":"{count} файл","few":"{count} файли","many":"{count} файлів","other":"{count} файлу"}}
+{"file":"res/values-de/strings.xml","key":"pct","source":"100%% of %d","target":"100% von %d"}
+{"file":"src/locales/de/messages.json","key":"gender","source":{"male":"He","other":"They"},"target":{"other":"Sie"}}
+{"file":"src/locales/de/messages.po","key":"seats","source":{"one":"{1} of # seat used","other":"{2} of # seats used"},"target":{"one":"{2} von # Platz belegt","other":"{2} von # Plätzen belegt"}}
+{"file":"src/locales/uk/messages.po","key":"stray","source":{"one":"{count} file","other":"{count} files"},"target":{"one":"{count} файл","few":"{count} {x} файли","many":"{count} файлів","other":"{count} файлу"}}
+{"file":"src/locales/uk/messages.po","key":"devices","source":{"one":"One other device is signed in.","other":"# other devices are signed in."},"target":{"one":"Ще один пристрій увійшов у систему.","few":"Ще пристрої увійшли в систему.","many":"Ще # пристроїв увійшли в систему.","other":"Ще # пристрою увійшли в систему."}}

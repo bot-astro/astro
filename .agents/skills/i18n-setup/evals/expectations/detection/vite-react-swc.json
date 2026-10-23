@@ -1,0 +1,19 @@
+{
+  "match": {
+    "language": "js-ts",
+    "framework": "vite",
+    "compiler": "swc",
+    "react": true,
+    "typescript": true,
+    "packageManager": "npm",
+    "existing": {
+      "library": "none",
+      "configured": false,
+      "stringsWrapped": "no",
+      "crowdinYml": false,
+      "workflow": false
+    }
+  },
+  "ignore": ["candidateFiles", "localeSignals", "git", "sourceDir"],
+  "softAssert": { "candidateFilesMustContain": ["src/data/plans.ts"] }
+}

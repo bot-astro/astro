@@ -1,0 +1,23 @@
+{
+  "variant": "js-ts-lingui",
+  "planStepsContain": [
+    "write_crowdin_yml",
+    "config_lint",
+    "config_translations",
+    "upload_dryrun",
+    "context_download",
+    "write_workflow",
+    "prove_round_trip",
+    "commit_connect"
+  ],
+  "planStepsAbsent": [
+    "create_config",
+    "install_packages",
+    "extract_smoke",
+    "catalogs_current"
+  ],
+  "phasesAbsent": [
+    "Phase 3",
+    "Phase 4"
+  ]
+}

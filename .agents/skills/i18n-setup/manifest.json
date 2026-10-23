@@ -1,0 +1,62 @@
+{
+  "$schema": "./manifest.schema.json",
+  "version": 1,
+  "stacks": [
+    {
+      "variant": "js-ts-lingui",
+      "match": { "language": "js-ts", "library": "lingui" },
+      "supportLevel": "stable",
+      "catalog": "lingui-po",
+      "skills": {
+        "plugin": "lingui",
+        "install": "npx skills add lingui/skills",
+        "installClaudeCode": "/plugin marketplace add lingui/skills && /plugin install lingui@lingui-skills",
+        "setup": ["lingui-framework-setup"],
+        "convert": ["lingui-best-practices", "enhanced-message-context"],
+        "recall": ["find-unwrapped-strings"]
+      },
+      "references": {
+        "adapter": ["references/libraries/lingui/crowdin.md"],
+        "rulesTemplate": ["references/libraries/lingui/rules.template.md"]
+      }
+    }
+  ],
+  "catalogs": [
+    {
+      "id": "lingui-po",
+      "model": "compile-time-extraction",
+      "detect": { "deps": ["@lingui/core"], "files": ["lingui.config.js", "lingui.config.ts"] },
+      "source": "/src/locales/en/messages.po",
+      "translation": "/src/locales/%locale%/%original_file_name%",
+      "type": "po",
+      "docs": "https://store.crowdin.com/gettext"
+    },
+    {
+      "id": "next-intl-json",
+      "model": "runtime-catalog",
+      "detect": { "deps": ["next-intl"], "files": [] },
+      "source": "/messages/en.json",
+      "translation": "/messages/%locale%.json",
+      "type": "json",
+      "docs": "https://store.crowdin.com/json"
+    },
+    {
+      "id": "vue-i18n-json",
+      "model": "runtime-catalog",
+      "detect": { "deps": ["vue-i18n"], "files": [] },
+      "source": "/src/locales/en.json",
+      "translation": "/src/locales/%locale%.json",
+      "type": "json",
+      "docs": "https://store.crowdin.com/json"
+    },
+    {
+      "id": "i18next-json",
+      "model": "runtime-catalog",
+      "detect": { "deps": ["i18next"], "files": [] },
+      "source": "/public/locales/en/*.json",
+      "translation": "/public/locales/%locale%/%original_file_name%",
+      "type": "json",
+      "docs": "https://store.crowdin.com/json"
+    }
+  ]
+}

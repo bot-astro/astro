@@ -1,0 +1,18 @@
+{
+  "skill_name": "crowdin-cli",
+  "note": "Covers the hand-off to integration-sync for app calls.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "app-command-hands-off",
+      "prompt": "I ran `crowdin app api webflow crowdin-update -F projectId=12345 -f 'entryIds[]=abc'` and it failed with \"Application 'webflow' declares 'crowdin-update' for POST, not GET. Pass -X POST or --input\". Why, and what should I run?",
+      "expected_output": "crowdin-cli loads on the pasted crowdin app api command and hands off to integration-sync, whose CLI reference explains the verb rule and gives the jq-built --input command.",
+      "files": [],
+      "expectations": [
+        "crowdin-cli is loaded",
+        "integration-sync is loaded before the answer",
+        "The answer does not restate the integration loop from crowdin-cli's own text"
+      ]
+    }
+  ]
+}

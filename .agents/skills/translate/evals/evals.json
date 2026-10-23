@@ -1,0 +1,111 @@
+{
+  "skill_name": "translate",
+  "note": "Behaviour specification. `prompt` is what a developer types in a terminal with the Crowdin CLI available. What is graded: the skill triggers only for resource files (never prose), syncs before drafting, keeps placeholders and target-language plural categories intact, treats glossary do-not-translate terms as binding, writes every draft to the ledger and runs the check, uploads without approving, and warns rather than refuses on large runs.",
+  "evals": [
+    {
+      "id": 0,
+      "name": "increment-into-one-language",
+      "prompt": "I just added a few strings to the app. Translate the new ones to German. We use Lingui, catalogs are in src/locales/<locale>/messages.po and crowdin.yml is set up.",
+      "expected_output": "Runs lingui check sync --locale en (and lingui extract if it fails), then crowdin upload sources --cache, then crowdin download translations -l de --skip-untranslated-strings after checking the de catalog holds no unsaved translation work in git (whitespace, header stamps and extract's own rewrite do not count); counts the empty msgstr entries; fetches the assigned glossary (crowdin glossary list --assigned, glossary download); drafts each string into the ledger and then the .po file, reading the #: references when a string is ambiguous; runs scripts/check-drafts.sh with the categories from crowdin language list --verbose; shows a table; uploads with crowdin upload translations -l de and no --auto-approve-imported; reports that the suggestions are unapproved and under the token owner's account.",
+      "expectations": [
+        "upload sources runs before download translations, and download translations carries --skip-untranslated-strings",
+        "The glossary is listed with --assigned and downloaded before drafting",
+        "Every draft appears in .crowdin/translate/drafts-de.jsonl and check-drafts.sh runs on it",
+        "upload translations is called with -l de and never with --auto-approve-imported; --import-eq-suggestions appears only if the ledger holds a draft identical to its source, and the report lists those",
+        "The report says the suggestions are unapproved and appear under the token owner's account",
+        "lingui check sync --locale <source locale> runs before upload sources, never over the target locales, and lingui check missing --locale de --mode catalog runs after the write, or the agent notes that the project's Lingui predates the check command and applies the gap rule by hand"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "placeholder-survives",
+      "prompt": "Translate `You have {count} unread messages` and `Hello {{user}}, <0>read more</0>` into French in our JSON catalog.",
+      "expected_output": "The French drafts keep {count}, {{user}}, <0> and </0> byte-identical; the ledger lines carry both; check-drafts.sh passes. The agent may reorder the placeholders to fit French grammar but never renames them.",
+      "expectations": [
+        "Every placeholder from the source appears unchanged in the target",
+        "The check script runs and exits 0 before upload"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "plural-categories-from-cli",
+      "prompt": "Translate the plural string `{count, plural, one {# item} other {# items}}` into Ukrainian and Japanese. Catalogs are JSON per locale.",
+      "expected_output": "Runs crowdin language list --verbose to read the categories; the Ukrainian draft has one, few, many and other branches, the Japanese draft has only other; each branch keeps #. The ledger holds branch texts by category and check-drafts.sh is run with --categories one,few,many,other for uk and --categories other for ja.",
+      "expectations": [
+        "Plural categories are taken from crowdin language list --verbose, not assumed",
+        "Ukrainian has four forms and Japanese has one",
+        "# is present in every plural form"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "glossary-do-not-translate",
+      "prompt": "Translate the missing Spanish strings. Our glossary marks `BrewLog` and `Cafe pro` as product names that must stay in English.",
+      "expected_output": "Downloads the assigned glossary, keeps BrewLog and Cafe pro verbatim in every Spanish draft, and does not add a Spanish term for them to the glossary or the TM.",
+      "expectations": [
+        "Do-not-translate glossary terms appear verbatim in the drafts",
+        "No glossary translation is invented or uploaded"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "dirty-target-stops-before-download",
+      "prompt": "Fill in the missing Polish translations. (git status shows src/locales/pl/messages.po modified and uncommitted.)",
+      "expected_output": "Stops before crowdin download translations and asks what to do with the uncommitted Polish catalog — commit, discard, or skip the sync — rather than stashing or overwriting it silently.",
+      "expectations": [
+        "download translations does not run while the target file is dirty",
+        "The user is asked, and nothing is stashed or discarded on their behalf"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "no-crowdin-yml",
+      "prompt": "Translate src/locales/en.json into German for me.",
+      "expected_output": "There is no crowdin.yml, so the skill stops: it says it would be drafting with no glossary, no TM and no review in Crowdin, and offers the i18n-setup connect-only path. It does not write German into the file.",
+      "expectations": [
+        "No translation is written when crowdin.yml is absent",
+        "The i18n-setup connect-only path is offered"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "large-run-warns-and-proceeds",
+      "prompt": "We added Portuguese, Italian and Dutch to the project. Translate the whole catalog (about 900 strings) into all three.",
+      "expected_output": "Shows the count table (about 2,700 translations), says that cost scales with the count and later strings get less care in one pass, names crowdin auto-translate --method ai as the cheaper bulk route owned by crowdin-cli, and waits for a yes. On yes it proceeds where subagents exist with one worker per language and one per chunk of 100 to 150 strings within a language, each chunk a consecutive slice of a gap list the main thread wrote once, behind a conventions sheet the main thread writes first, and never refuses on size.",
+      "expectations": [
+        "The count and the warning appear before drafting starts",
+        "auto-translate --method ai is named as the alternative",
+        "The run proceeds after a yes rather than refusing"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "unlisted-format-fallback",
+      "prompt": "Translate the missing strings in lib/l10n/app_en.arb into Turkish.",
+      "expected_output": "Applies the gap rule to the ARB file (keys missing from app_tr.arb), keeps ICU placeholders, does not copy @key metadata into the target unless existing targets carry it, and validates with jq. It does not refuse the format.",
+      "expectations": [
+        "The ARB file is handled by the format rule, not refused",
+        "@key metadata blocks are not duplicated into the target"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "not-for-prose",
+      "prompt": "Translate this README.md into Spanish.",
+      "expected_output": "Does not use the translate skill: a README is a document, not a resource file. The agent translates or declines on its own terms without syncing, fetching resources or uploading anything to Crowdin.",
+      "expectations": [
+        "No crowdin command runs",
+        "Nothing is uploaded to Crowdin"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "server-side-pre-translation-is-not-this-skill",
+      "prompt": "Pre-translate the whole project from our TM.",
+      "expected_output": "Routes to crowdin auto-translate --method tm through the crowdin-cli skill; no local drafting happens.",
+      "expectations": [
+        "crowdin auto-translate is named and no local file is edited"
+      ]
+    }
+  ]
+}

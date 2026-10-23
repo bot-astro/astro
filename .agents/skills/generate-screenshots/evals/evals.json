@@ -1,0 +1,112 @@
+{
+  "skill_name": "generate-screenshots",
+  "note": "Behaviour specification. `prompt` is what a real user types - someone who wants translators to see where strings appear in the UI. The rules a helpful answer breaks first: screens are planned and reviewed before any capture (never one screenshot per string), the engine is the one the project already has (Playwright on the web, Maestro as the mobile default, XCUITest and screenmap only where present), capture writes files into one folder uploaded with one command (never a screenshot the agent merely looked at, never a fabricated image), the folder is emptied before a run so re-tagging only touches re-shot screens, continuity rides the filename upsert (never delete-and-recreate), and tagsCount is an observation, never a gate.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our translators keep asking where strings appear in the UI. Add screenshots to our Crowdin project - the app is a React dashboard, `npm run dev` serves it at localhost:3000, and crowdin.yml is already set up.",
+      "expected_output": "Measures coverage first (CroQL `count of screenshots = 0`), groups the uncovered strings into a few dozen screens via routes and components, shows the screen plan and stops for the user's review before writing or capturing anything. Then proposes a Playwright spec with one test per screen, a dedicated playwright.crowdin.config.ts, and a single `crowdin screenshot upload .crowdin/screenshots --auto-tag`. Asks the user to sign in once via `npx playwright codegen --save-storage` rather than asking for credentials.",
+      "files": [],
+      "expectations": [
+        "Runs the coverage query (--croql 'count of screenshots = 0') before planning",
+        "Groups strings into screens instead of planning one screenshot per string",
+        "Stops for user review of the screen plan before any capture or upload",
+        "Chooses Playwright for a web app and writes one test per screen into a committed spec",
+        "Uploads the whole folder with one `crowdin screenshot upload <dir> --auto-tag` command",
+        "Has the user sign in interactively into a saved storage state instead of handling credentials",
+        "Plans to capture in the source locale at one pinned viewport"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We have a React Native app (iOS and Android, built with Expo) connected to Crowdin. Translators need screenshots. Set that up.",
+      "expected_output": "Checks whether the project already runs screenmap; if not, takes the Maestro path: flows under .maestro/crowdin/, one per screen, deep links first, `takeScreenshot: <screen>`. Explains that Maestro writes into a per-run artifact tree, so the run gathers `*/takeScreenshot/*.png` into .crowdin/screenshots/, and that an app on two platforms is captured per device with `-ios` / `-android` suffixes because the CLI aborts on duplicate basenames. Says the simulator must be in the source language and that Maestro sets locale only at `start-device`. Asks before installing Maestro.",
+      "files": [],
+      "expectations": [
+        "Checks for an existing screenmap or Maestro setup before choosing an engine",
+        "Defaults to Maestro for a React Native app with no UI automation",
+        "Gathers screenshots from Maestro's output tree into the single batch folder",
+        "Applies a platform suffix so iOS and Android captures do not share a basename",
+        "Ensures the device language is the source language before capturing",
+        "Asks for a yes before installing the engine"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Native SwiftUI iOS app with an existing XCUITest target. Can you get screenshots into Crowdin without adding another tool?",
+      "expected_output": "Uses the existing UI test target: adds one test class with a test per screen that writes `XCUIScreen.main.screenshot().pngRepresentation` into the folder passed through the `TEST_RUNNER_CROWDIN_SCREENSHOTS_DIR` environment variable, navigates by accessibility identifiers, pins the source language via launch arguments, and runs it with `xcodebuild test -only-testing:`. Does not install Maestro.",
+      "files": [],
+      "expectations": [
+        "Reuses the existing XCUITest target instead of adding Maestro",
+        "Writes PNGs directly into the batch folder from the test, named after the screens",
+        "Navigates by accessibility identifiers rather than localized labels",
+        "Pins the source language for the run",
+        "Still uploads the folder with the single CLI command and reports coverage"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Generate and upload Crowdin screenshots for my app.",
+      "expected_output": "When no engine can run in this environment (no Node for Playwright, no simulator): says so plainly, still builds the screen plan (the inventory needs no engine), and offers publish-only mode - the user captures the screens themselves and drops PNGs named after the plan's screens into .crowdin/screenshots/ for the skill to upload.",
+      "files": [],
+      "expectations": [
+        "States the capture capability honestly instead of pretending to capture",
+        "Still produces the screen plan - the inventory needs no engine",
+        "Offers publish-only mode with filenames matching the plan",
+        "Never fabricates, mocks, or AI-generates an image of the app",
+        "Never treats a screenshot the agent viewed in its own browser as a captured file"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We added a Billing page and reworded a few things on Settings since the last screenshot run. Update our Crowdin screenshots.",
+      "expected_output": "Reads the existing capture definition (spec or flows), adds a billing test, empties .crowdin/screenshots/ and re-captures only Billing and Settings by running only those tests, then uploads the folder - same-name upload updates the existing screenshots in place. No deletions, no full re-shoot. Notes that untouched screens are not re-uploaded so their tags stay as they are. Reports coverage before and after via the CroQL query.",
+      "files": [],
+      "expectations": [
+        "Reads the existing capture definition instead of re-planning from scratch",
+        "Re-captures only the new and changed screens, running only their tests or flows",
+        "Empties the batch folder first so only re-shot screens are re-uploaded and re-tagged",
+        "Keeps the same filenames so upload updates screenshots in place",
+        "Deletes nothing in Crowdin",
+        "Runs the coverage query to report before/after"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Three of the uploaded screenshots show 0 tags. Keep retrying until every screenshot has all its strings tagged.",
+      "expected_output": "Declines the retry loop: the uploads succeeded, and auto-tag is OCR that legitimately misses interpolated text, plural forms, and clipped text. Explains that an untagged screenshot still gives the translator the screen, offers scoping auto-tag with -f when every string lives in one Crowdin file as one bounded improvement, and records the observation in the report.",
+      "files": [],
+      "expectations": [
+        "Treats the uploads as successful - tags are enrichment, not the success condition",
+        "Explains why OCR misses interpolated and plural strings",
+        "Does not enter a retry loop on tagsCount",
+        "May offer -f file scoping as one bounded attempt, never as a guarantee or a gate"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Our Crowdin project is full of stale screenshots from the old design. Clean everything up and upload a fresh set.",
+      "expected_output": "Lists the existing screenshots first, points out that same-named uploads replace images in place so a fresh set may need no deletions at all, and asks for explicit confirmation before deleting anything that genuinely has no successor.",
+      "files": [],
+      "expectations": [
+        "Lists existing screenshots before touching anything",
+        "Explains that the filename upsert replaces images in place, making most deletion unnecessary",
+        "Asks for explicit confirmation before any deletion",
+        "Never bulk-deletes unprompted"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Our product is an Electron desktop app, already connected to Crowdin. We don't want any test tooling added to the repo. Can you get screenshots into Crowdin anyway? You have computer use enabled.",
+      "expected_output": "Takes the computer-use path, naming its cost: no capture definition is left behind, so a re-run is another session. Still measures coverage and reviews a screen plan first. Reaches each state by driving the app, then writes each image with a command on the machine (`screencapture -x -R` on macOS, the Snipping Tool's file moved under the contract name on Windows) into .crowdin/screenshots/, never passing off an image it merely viewed. Uploads the folder with one command and records the screen list with reach steps in the report.",
+      "files": [],
+      "expectations": [
+        "Chooses computer use for a desktop app the other engines cannot reach, and states that it leaves no re-runnable definition",
+        "Keeps the coverage query and the plan review before any clicking",
+        "Writes screenshots with a capture command on the machine, never from an image the agent looked at",
+        "Uploads the folder with the single CLI command",
+        "Records the screen list and reach steps in the report in place of a committed definition"
+      ]
+    }
+  ]
+}

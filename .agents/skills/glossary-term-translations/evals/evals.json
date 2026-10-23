@@ -1,0 +1,104 @@
+{
+  "skill_name": "glossary-term-translations",
+  "note": "Behaviour specification. `prompt` is what a real user types to an assistant with the Crowdin connector, in a project whose strings are already translated into several languages. The rules that matter most are the ones a helpful answer breaks first: nothing is written before the round is shown and confirmed, every counterpart comes from the project's final translations and is never invented, a term rendered with different roots is put to the user, and the only write is a Draft add_term into the project's default glossary. A user who cannot see the glossary is never asked for its ID. Run against a real project with writes recorded instead of executed, three runs each: 177 of 177 checks passed in Claude Code and 176 of 177 in Crowdin Copilot, against 74 of 177 for Claude Code without the skill.",
+  "evals": [
+    {
+      "id": 0,
+      "name": "new-terms-drafts",
+      "prompt": "Add 'price' and 'password' to our glossary with the translations we already use in this project. Ukrainian, German, French and Polish are enough.",
+      "expected_output": "Checks the default glossary for an exact match of each term first, finds the strings that contain each term, reads their final translations with one list_language_translations call per language, and shows one table per term (language, proposed translation, how many strings use it, other translations) before asking. Apply offers writing drafts or skipping. After the user agrees, writes the English term without a conceptId, then each translation with the conceptId the first write returned, all as Draft, nouns with their gender, and links every concept in the reply with a hint to filter the Terms tab by Draft.",
+      "files": [],
+      "expectations": [
+        "Checks the glossary for each term with list_terms and limit 500 before writing",
+        "Reads final translations with list_language_translations, not list_translations",
+        "Shows a table per term before the first question",
+        "Writes only add_term calls with status draft into the project's default glossary",
+        "Gives each translation the conceptId returned for its English term",
+        "Writes nouns with partOfSpeech noun, type full form and the gender each language gives them",
+        "Writes nothing outside Ukrainian, German, French and Polish",
+        "Links every new concept and says how to review all drafts at once"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "backfill-named-concepts",
+      "prompt": "Our glossary has receipt, category and delete only in Ukrainian and German. Fill in French, Polish and Spanish from the project's translations.",
+      "expected_output": "Finds the existing concepts for receipt, category and delete and adds only the French, Polish and Spanish terms to them, never a second Ukrainian or German term. A language whose strings use two different words for the term (for example recibo in most strings and ticket in one) is asked about before that term is written. Delete is written as a verb in the infinitive without gender.",
+      "files": [],
+      "expectations": [
+        "Writes into the existing concepts only, never a new concept",
+        "Writes nothing in Ukrainian or German",
+        "Asks which word to keep when a language uses two roots for the same term, before writing it",
+        "Writes the verb delete in the infinitive with no gender",
+        "Links the three concepts in the reply"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "conflicting-renderings-in-users-language",
+      "prompt": "Додай у глосарій термін «item» з перекладами з проекту: українська, німецька, французька.",
+      "expected_output": "Translators rendered item with different roots in every language (товар and позиція, Artikel and Element, article and élément). The table shows each with its string count, and a conflict question in Ukrainian offers the majority pick first, then leaving those languages empty, then skipping the term. Apply is a separate question, asked last.",
+      "files": [],
+      "expectations": [
+        "Shows the competing renderings with their string counts",
+        "Asks one conflict question for the term: recommended pick first, then leave empty, then skip",
+        "Keeps Apply a separate question, asked last",
+        "Words every question in Ukrainian",
+        "Writes the majority picks as Draft nouns after the user accepts them"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "translator-without-glossary",
+      "prompt": "Add 'account' to the glossary with our Ukrainian and German translations.",
+      "expected_output": "The user is a translator: get_project has no defaultGlossaryId and list_glossaries answers 403. The assistant never asks for a glossary ID and makes no glossary reads, still finds the strings and reads the Ukrainian and German translations, shows what they say (обліковий запис, Konto), and says that a project manager or someone with glossary access has to write them. Nothing is written.",
+      "files": [],
+      "expectations": [
+        "Never asks the user for a glossary ID",
+        "Writes nothing",
+        "Makes no list_terms or get_glossary call",
+        "Shows the translations the project uses for the term",
+        "Says that a project manager or someone with glossary access has to write the terms"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "backfill-one-language-just-go",
+      "prompt": "Fill in the missing Spanish translations across our project glossary. Just go, don't ask me about every round.",
+      "expected_output": "Lists the glossary's terms in the source language and in Spanish, paging with limit 500, to find the concepts that lack Spanish, and fills only those. Does not show every round, but still asks about each term whose Spanish strings use two different roots before writing that term. Writes Spanish Draft terms and links every concept it wrote.",
+      "files": [],
+      "expectations": [
+        "Passes limit 500 to every list_terms call",
+        "Fills only the concepts that lack Spanish",
+        "Asks about a conflicting term before writing it, although the user said just go",
+        "Writes Spanish Draft terms only",
+        "Links every concept it wrote"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "five-conflicting-terms-batches",
+      "prompt": "Add item, product, name, amount and expense to our glossary with their Ukrainian, German and Spanish translations from the project.",
+      "expected_output": "Every term has a root conflict in at least one language. With a question tool, the conflict questions go out in batches of at most three, Apply rides as the last question of the call that holds the last batch, and no call holds more than four questions. Without one, the tables and every question come in one message, Apply last.",
+      "files": [],
+      "expectations": [
+        "With a question tool, no call holds more than three conflict questions or more than four questions",
+        "Apply is asked last, together with the last conflict question",
+        "Shows the round's tables before the first question",
+        "Writes only Draft terms"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "translator-backfill",
+      "prompt": "Fill in the missing Ukrainian translations in our glossary.",
+      "expected_output": "The user is a translator who cannot see the glossary, so a backfill cannot run: only the glossary knows which concepts lack a language. The assistant says so, says a project manager or someone with glossary access can run it, offers to look up terms the user names, never asks for a glossary ID and writes nothing.",
+      "files": [],
+      "expectations": [
+        "Never asks the user for a glossary ID",
+        "Writes nothing and makes no list_terms or get_glossary call",
+        "Explains that the backfill needs glossary access or a project manager"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "skill_name": "glossary-terms-extraction",
+  "note": "Behaviour specification. `prompt` is what a real user types - someone who wants their Crowdin glossary seeded or topped up with consistent terminology. Evals 1-4 run in a terminal with the Crowdin CLI and a crowdin.yml; evals 5-7 run with the Crowdin connector's tools (as in Crowdin Copilot) and no shell. The two rules that matter most hold on both paths and are the ones a helpful answer breaks first: nothing is written to the glossary before the user reviews it, and translations are never invented. On the CLI path the idempotency prompt matters next: `glossary upload` without --id silently creates a second glossary, so `glossary list` must come first. On the connector path, every added term gets its definition on the concept, not on the term.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Generate a starting glossary for my Crowdin project. The app is BrewLog, a coffee-brewing log where home baristas track brews, log cups, and pick a plan (Home barista or Cafe pro). Source strings are in src/locales/en/messages.po.",
+      "expected_output": "A reviewed draft drawn from the source catalog, not from the code, holding only terms a translator could get wrong - product and plan names marked keep-in-English even where they appear once, each description saying what the term is in this product and whether to translate it - and the agent stops for the user's review instead of uploading.",
+      "files": [],
+      "expectations": [
+        "Reads the source catalog (the .po file) as the term source, not the source tree",
+        "Checks for an existing assigned glossary before drafting, so known terms are not proposed",
+        "Keeps the draft to terms a translator could get wrong, with no target count, leaving out ordinary UI words",
+        "Includes the product name and plan names with do-not-translate guidance, even a plan name that appears only once",
+        "Descriptions are practical (what it is in this product, translate or not), not dictionary definitions",
+        "No translations are invented - source-language terms only",
+        "Stops for explicit user review before any upload",
+        "Draft CSV header uses Crowdin language ids (term_en, description_en)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "The terms look good, upload them. Heads up: I think someone on the team may have already created a glossary for this project a while ago.",
+      "expected_output": "Runs `crowdin glossary list` before anything else. If a glossary exists, offers to import into it with --id rather than creating a second one, and says plainly that the import merges into an asset someone may have curated. Only creates a new glossary when none exists, passing --language, --scheme and --first-line-contains-header.",
+      "files": [],
+      "expectations": [
+        "Runs crowdin glossary list before uploading",
+        "Offers --id import into the existing glossary instead of creating a second one",
+        "Warns that importing merges into a possibly curated asset and lets the user decline",
+        "Never runs a bare upload (no --id) while an existing glossary is unaccounted for"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "While you're at it, fill in the Ukrainian and Spanish translations for each glossary term so the translators don't have to.",
+      "expected_output": "Declines to invent translations: without paired material (the user's own content with its translation) the glossary holds source-language terms only, and a machine-guessed glossary entry carries the authority of a decision. Offers the source-only entries now, and translations later from paired material.",
+      "files": [],
+      "expectations": [
+        "Refuses to machine-generate glossary translations",
+        "Explains that a wrong glossary entry teaches every translator the wrong answer",
+        "Offers to proceed with source-language-only entries",
+        "Mentions that translations can be lifted from paired material instead"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We added a bunch of new strings since last time. Update the project glossary with any new terms. Last run you created glossary #142 for this project.",
+      "expected_output": "Downloads or reads glossary 142 to skip the terms it already has, drafts only the new candidate terms for review, then imports into the existing glossary with --id 142 rather than creating a new one.",
+      "files": [],
+      "expectations": [
+        "Skips terms glossary 142 already holds",
+        "Passes --id 142 on upload instead of creating a second glossary",
+        "Still drafts and shows the new terms for review before uploading"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Our project 'Acme Help Center' has a glossary with maybe 6 terms. Help me figure out what else should go in. Our public docs are at https://docs.acme.example.",
+      "expected_output": "Lists the project's glossaries and their terms, asks only what is still open (which glossary to add to, rounds or autonomous fill), fetches only the given docs URL, then proposes about ten candidates as one numbered table - category, dictionary-form term, practical definition, do-not-translate marker - excluding the terms already present, and asks for edits in writing before writing anything.",
+      "files": [],
+      "expectations": [
+        "Reads the existing glossaries and terms (list_glossaries / list_terms) before proposing",
+        "Asks where terms should land and how to pace the work, and nothing the prompt already answered",
+        "Fetches only https://docs.acme.example, without crawling its links unasked",
+        "Proposes about ten candidates in one markdown table with row numbers, category, term, definition and DNT",
+        "Leaves out the six terms already in the glossary",
+        "Ends by asking the user to reply with rows to drop, wording to change, or terms to add",
+        "Calls no write tool (add_term, update_concept, add_glossary) before the user replies"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Looks good. Drop row 4, change row 2's definition to 'A saved answer reused across tickets', and apply the rest.",
+      "expected_output": "Applies the edited round: add_term for each source term, then update_concept with the approved definition for every one, translatable false plus a 'Do not translate' note for brand entries, row 2's new wording and no row 4. Reports the result in one line and asks how to continue, keeping the round size.",
+      "files": [],
+      "expectations": [
+        "Skips row 4 and uses the user's wording for row 2",
+        "Calls update_concept with the definition for every added term, not description on add_term",
+        "Marks brand entries non-translatable through update_concept (translatable: false)",
+        "Invents no translations",
+        "Reports how many terms were added and to which glossary, naming any failures",
+        "Asks how to continue without enlarging the next round on its own"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I attached our English onboarding guide and its Ukrainian version. Pull glossary terms from them with the Ukrainian translations.",
+      "expected_output": "Aligns the two documents, takes each term's Ukrainian translation from the Ukrainian guide in dictionary form, flags any term rendered with different words or roots in different places and asks which is canonical, and proposes the round for review before adding the source term, its concept definition and the linked Ukrainian term.",
+      "files": [],
+      "expectations": [
+        "Takes translations from the Ukrainian guide rather than generating them",
+        "Uses dictionary forms for both the English and the Ukrainian terms",
+        "Flags a term translated with different words or roots and asks which is canonical",
+        "Proposes the candidates for review before writing",
+        "On apply, links each Ukrainian term to the source term's conceptId"
+      ]
+    }
+  ]
+}

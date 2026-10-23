@@ -1,0 +1,76 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-08-14 14:03+0300\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+
+#: src/App.tsx:40
+msgid "{cups, plural, one {You logged # cup today} other {You logged # cups today}}"
+msgstr "{cups, plural, one {You logged # cup today} other {You logged # cups today}}"
+
+#: src/App.tsx:24
+msgid "Beans"
+msgstr "Beans"
+
+#: src/App.tsx:17
+msgid "BrewLog keeps your coffee experiments in one place."
+msgstr "BrewLog keeps your coffee experiments in one place."
+
+#: src/data/plans.ts:18
+msgid "Cafe pro"
+msgstr "Cafe pro"
+
+#: src/components/PlanCard.tsx:11
+msgid "Choose this plan"
+msgstr "Choose this plan"
+
+#: src/components/PlanCard.tsx:12
+msgid "Get started"
+msgstr "Get started"
+
+#: src/data/plans.ts:13
+msgid "Home barista"
+msgstr "Home barista"
+
+#: src/App.tsx:21
+msgid "Journal"
+msgstr "Journal"
+
+#: src/App.tsx:37
+msgid "Log a cup"
+msgstr "Log a cup"
+
+#: src/data/plans.ts:14
+msgid "Log up to 20 brews a month and keep simple tasting notes."
+msgstr "Log up to 20 brews a month and keep simple tasting notes."
+
+#: src/App.tsx:19
+msgid "Main navigation"
+msgstr "Main navigation"
+
+#: src/App.tsx:44
+msgid "Pick a plan"
+msgstr "Pick a plan"
+
+#: src/App.tsx:32
+msgid "Search brews"
+msgstr "Search brews"
+
+#: src/App.tsx:31
+msgid "Search your brews…"
+msgstr "Search your brews…"
+
+#: src/App.tsx:27
+msgid "Settings"
+msgstr "Settings"
+
+#: src/App.tsx:14
+msgid "Track every brew you make"
+msgstr "Track every brew you make"
+
+#: src/data/plans.ts:19
+msgid "Unlimited brews, recipe sharing, and water chemistry tracking."
+msgstr "Unlimited brews, recipe sharing, and water chemistry tracking."

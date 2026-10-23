@@ -1,0 +1,347 @@
+{
+  "skill_name": "create-app",
+  "note": "Behaviour specification for the skill, written in the voice of its target users - a translator or a localization manager, neither of whom writes code or knows what the platform can do. `prompt` is what such a person actually types; `tests` names the platform rule it probes; `pass` says what good looks like, including where the obvious-seeming answer is wrong. `observed: true` marks the scenarios that have been run end to end against a live Crowdin Enterprise organization and behaved as described; the rest are unrun and aspirational. Running these is not free: most of them register a real app, and there is no CLI command to delete one. Substitute a project name that exists in the organization you run against wherever a prompt names one.",
+  "evals": [
+    {
+      "id": 0,
+      "name": "editor-tm-concordance",
+      "group": "happy-path",
+      "prompt": "when im on a string, show me how we translated this same phrase before, right there next to it",
+      "tests": "editor-right-panel, all editor modes declared, project needed for preview, TM concordance",
+      "pass": "Published app on editor-right-panel with every mode declared, preview opened in a project that actually has TM data, link handed over. No question about modes or module types.",
+      "observed": true
+    },
+    {
+      "id": 1,
+      "name": "my-words-this-month",
+      "group": "happy-path",
+      "prompt": "I invoice per month and right now I go into every project and add up the words in a notepad. I want one page that shows how many words I translated this month across all my projects.",
+      "tests": "organization-level placement, edition dependency, report scopes",
+      "pass": "Placement matches the user's edition, scopes narrow, published, link handed over. No money or rates invented.",
+      "observed": true
+    },
+    {
+      "id": 2,
+      "name": "translated-not-proofread",
+      "group": "happy-path",
+      "prompt": "Small tab inside a project please: which languages are fully translated but proofreading is not finished yet. Literally just that list, nothing else.",
+      "tests": "project-level placement, single screen, empty state when everything is proofread",
+      "pass": "Numbers agree with the project progress page, and a real message instead of a blank area when nothing matches."
+    },
+    {
+      "id": 3,
+      "name": "what-the-proofreader-changed",
+      "group": "happy-path",
+      "prompt": "ok so heres my problem. ive been translating for the same client for two years, three projects, thousands of strings each, and after me a proofreader goes over everything. she changes my translations quite often but i only find out by accident, when i reopen the same file a month later and its not my text anymore. and thats the worst part, because all that time i kept writing the same way and made the same mistake a hundred times. i want one place where i can see my strings that got changed after me, what i had and what it became, so i can write myself some rules and stop doing it",
+      "tests": "string revision history, time window, deriving the data source from a rambling request",
+      "pass": "One project first, as the user themselves suggested. Shows before/after with a date, says so plainly when there are no changes."
+    },
+    {
+      "id": 4,
+      "name": "overdue-tasks-portfolio",
+      "group": "happy-path",
+      "prompt": "Every Monday I go through 14 projects by hand and build a spreadsheet of what is overdue. I want to open one place and see all tasks that are past due or due this week - project, language, who it is assigned to, date.",
+      "tests": "organization-level, tasks data, audience is managers only",
+      "pass": "Overdue separated from due-this-week, click through to the task, audience set to managers rather than everyone."
+    },
+    {
+      "id": 5,
+      "name": "vague-project-progress",
+      "group": "placement-ambiguity",
+      "prompt": "I want something in the project so we can see how the translation is going.",
+      "tests": "two ask-triggers fire at once - placement (Tools vs Reports) and shape (chart / table / single number)",
+      "pass": "Asks about placement first, described as places rather than module types, with a recommendation attached. Does not silently guess the most expensive decision.",
+      "observed": true
+    },
+    {
+      "id": 6,
+      "name": "profile-page-on-enterprise",
+      "group": "edition-lock",
+      "prompt": "Could you put a page with my own settings for this app on my profile? Here is where I work: https://acme.crowdin.com/u/projects",
+      "tests": "profile-settings-menu and profile-resources-menu are crowdin.com only; on an Enterprise login the edition must be derived from the link, not asked",
+      "pass": "Recognises from the link that this is Crowdin Enterprise before scaffolding, explains that profile pages are a crowdin.com-only slot, and offers the organization settings page instead. Never asks the user which edition they are on.",
+      "observed": true
+    },
+    {
+      "id": 7,
+      "name": "untouched-scaffold-trap",
+      "group": "edition-lock",
+      "prompt": "Just make me a simple app that lists my projects. I don't care where it lives, as long as it works.",
+      "tests": "the scaffold ships two edition-locked modules; a bare preview throws, and one of the pair is dead on any given edition",
+      "pass": "Deletes profile-resources-menu - the module that cannot work on Enterprise - from both manifest.json and src/index.tsx, keeps organization-menu, pushes, and previews with an explicit --module. Never runs a bare preview.",
+      "observed": true
+    },
+    {
+      "id": 8,
+      "name": "glossary-context-menu-modal",
+      "group": "no-preview-link",
+      "prompt": "I'd like a right-click option on a glossary called \"Check duplicates\", and it should open a little window with the result.",
+      "tests": "context-menu + modal, the options triple, redirect target constraints, no previewable page for either type",
+      "pass": "Says up front that this placement cannot be opened by a link, so the handover will be navigation steps. Builds both modules with the correct single-pair options.module, registers both at top level.",
+      "observed": true
+    },
+    {
+      "id": 9,
+      "name": "revision-history-under-translations",
+      "group": "no-preview-link",
+      "prompt": "While I'm translating, down where the translations are, I want to see the history of changes for that string.",
+      "tests": "editor-translations-panel is reachable but not linkable",
+      "pass": "Names the trade-off before scaffolding and offers the right-hand panel as the linkable alternative. If the user keeps this slot, hands over exact navigation instead of pretending a link exists."
+    },
+    {
+      "id": 10,
+      "name": "silent-background-checker",
+      "group": "no-preview-link",
+      "prompt": "I want the app to quietly check terminology in the background while I translate, and not show me anything.",
+      "tests": "editor-background-worker renders nothing anywhere, so the finish line is unreachable by design",
+      "pass": "Says plainly that nothing would be visible and there would be no way to show it working, and proposes pairing it with a panel that displays what the worker found. Gets an explicit go-ahead first."
+    },
+    {
+      "id": 11,
+      "name": "context-menu-on-a-folder",
+      "group": "no-preview-link",
+      "prompt": "Add a right-click option on a folder of files to count the words in it.",
+      "tests": "the context-menu location enum has no folder value",
+      "pass": "States the places a right-click entry can actually live, then offers the nearest workable placements. Does not quietly substitute a source file and put the entry somewhere the user never asked for."
+    },
+    {
+      "id": 12,
+      "name": "persistent-notes-and-reminder",
+      "group": "storage",
+      "prompt": "I want to leave myself notes right on the strings, like \"ask the client what this heading is\" or \"wrong gender here\", and they shouldn't disappear the next day. And it'd be nice if something reminded me in the morning that I have five of these hanging.",
+      "tests": "per-user persistence via Crowdin Storage, plus the scheduling gate that remains",
+      "pass": "The notes persist for real - per-user records in Crowdin Storage (kv.user.*, the user: prefix), private to their author, with no \"your manager will see them\" compromise and no plain shared key that other users could read. The morning reminder is still not possible in this kind of app; the counter-offer is the list of open notes shown when the app opens."
+    },
+    {
+      "id": 13,
+      "name": "monthly-cost-with-our-rates",
+      "group": "storage",
+      "prompt": "Once a month someone asks me how much new content came in and what it will cost. I want a page where I pick a period and see new words per project and per language plus an approximate total at our rates. Our rates differ by language and vendor and I don't want to retype them every time.",
+      "tests": "the user: prefix decision in a financial context",
+      "pass": "The rates are remembered between sessions - stored per-user in Crowdin Storage (kv.user.*), never in a plain shared key where everyone the app is visible to could read and overwrite the team's financial data. No retyping, and no scope wider than application.storage invented for it."
+    },
+    {
+      "id": 14,
+      "name": "thursday-status-by-email",
+      "group": "backend-gate",
+      "prompt": "I have a status call with leadership every Thursday. I want a \"where we are today\" page for the whole portfolio, and it would be great if a copy landed in my inbox on Thursday morning.",
+      "tests": "scheduling and outbound email gate",
+      "pass": "Builds the page, and says immediately - not at the end - that scheduled email is not possible here, pointing at Crowdin's own notification settings. Page has to be readable when screen-shared.",
+      "observed": true
+    },
+    {
+      "id": 15,
+      "name": "deepl-key-in-the-app",
+      "group": "backend-gate",
+      "prompt": "I need an app that translates our strings through DeepL - I have an API key from them, I'll give it to you.",
+      "tests": "third-party secret; Crowdin Storage does not rescue it, because everyone the translate feature serves could read the key; must be caught before the irreversible create, and the key must never be accepted in chat",
+      "pass": "Never asks for or accepts the key, and never puts it in the app. Explains in one plain sentence that the app is code the browser downloads, so whoever the translation feature serves could extract the key - which is why Crowdin Storage is not the fix here either, even module-scoped. Points the user at Crowdin built-in DeepL MT settings, which keep the key out of the browser entirely. Building the buildable part - a button that triggers pre-translation once DeepL is connected - is a pass, not a failure: the counter-offer is the point. Registering an app that would hold the key would be the failure.",
+      "observed": true
+    },
+    {
+      "id": 16,
+      "name": "custom-mt-engine",
+      "group": "backend-gate",
+      "prompt": "We have our own machine translation engine in-house. I want it to show up in the MT list next to the others.",
+      "tests": "custom-mt is a platform extension point Crowdin calls over HTTP and is not a valid module type here",
+      "pass": "Explains the mechanism rather than just refusing - Crowdin calls the engine, and an app in an iframe has no address to be called at. Detected from the request, not from a failed validate."
+    },
+    {
+      "id": 17,
+      "name": "shared-checklist",
+      "group": "storage",
+      "prompt": "I want a checklist app: the manager ticks off stages and the translators see what's already done.",
+      "tests": "shared state is now buildable via Crowdin Storage; probes whether the run names the missing write control",
+      "pass": "Builds it: the checklist lives in Crowdin Storage shared records (a module: prefix keeping the records on the checklist module's surface beats a plain key), and the UI shows the ticking controls to managers only, derived from the viewer's role. Says plainly that the platform does not enforce that split - anyone who can read a shared record can also write it - so a determined translator could change the state. Does not fall back to bending labels or comments into a checklist."
+    },
+    {
+      "id": 18,
+      "name": "huge-tmx-cleanup",
+      "group": "backend-gate",
+      "prompt": "I have an 800 MB TMX. I want an app that cleans the duplicates out of it and uploads it back.",
+      "tests": "work that must outlive the tab",
+      "pass": "Warns before building that this runs entirely in a browser tab and a file that size will not survive it. Offers the built-in TM import plus duplicate handling, or the same work on a size that fits, with the limit agreed."
+    },
+    {
+      "id": 19,
+      "name": "embed-our-internal-site",
+      "group": "backend-gate",
+      "prompt": "We already have an internal reporting site. I just want to show it inside Crowdin so I don't have to switch tabs.",
+      "tests": "the manifest forbids baseUrl and per-module url",
+      "pass": "Explains that a serverless app is the bundle Crowdin serves, not a pointer at a site. Offers fetching the data if the endpoint is public and CORS-friendly, rendered with the Crowdin UI kit. Does not scaffold a manifest with a module url and let validate reject it."
+    },
+    {
+      "id": 20,
+      "name": "project-named-not-identified",
+      "group": "user-vocabulary",
+      "prompt": "Please make me a report in the \"Marketing Website\" project - how many strings are still untranslated in each language.",
+      "tests": "the user names a project; the agent must not ask for an identifier or a numeric id",
+      "pass": "Asks for a link to the project or resolves the name another way, and never uses the words identifier or id in a question. The report opens in the project the user actually meant.",
+      "observed": true
+    },
+    {
+      "id": 21,
+      "name": "short-name-and-key",
+      "group": "user-vocabulary",
+      "prompt": "Call it \"TM\" and let the key be the same, shorter is better.",
+      "tests": "module key pattern and 3-character minimum, and the app label the user explicitly asked for",
+      "pass": "Keeps the display name the user wants where the schema allows it, explains in one sentence that the internal key is latin and at least three characters and never shown, and proposes one. Validates offline before pushing."
+    },
+    {
+      "id": 22,
+      "name": "proofreader-modes",
+      "group": "user-vocabulary",
+      "prompt": "I'm a proofreader, I work in review mode and sometimes side-by-side. Put our style rules in a panel next to the string.",
+      "tests": "editor modes - the module is absent from any mode its manifest omits",
+      "pass": "Declares every mode rather than the two the user named, so the panel is never mysteriously missing. Does not ask the user to choose from the mode enum."
+    },
+    {
+      "id": 23,
+      "name": "empty-organization",
+      "group": "empty-data",
+      "prompt": "Make an app that shows all our translation memories and how big each one is. We've only just started with Crowdin so there's almost nothing in there yet.",
+      "tests": "data-dependent empty screens",
+      "pass": "Designs an explicit empty state that explains itself, rather than rendering a bare zero the user reads as broken. The user's own warning about having little data is picked up.",
+      "observed": true
+    },
+    {
+      "id": 24,
+      "name": "panel-for-the-whole-team",
+      "group": "visibility",
+      "prompt": "My translators keep asking me in chat whether some text has been translated before and whether there are term requirements. I want them to see, right next to the string they're working on, whether there's a glossary term, a similar translation and our comment. So they stop coming to me with every question.",
+      "tests": "audience derived from the request; the acceptance criterion is that a translator sees it",
+      "pass": "Audience set to everyone without asking, because the request names it. Reads the installed app's actual permissions afterwards and closes the loop, rather than declaring success on a link that only works for the creator.",
+      "observed": true
+    },
+    {
+      "id": 25,
+      "name": "vendor-scoped-page",
+      "group": "visibility",
+      "prompt": "I need a single page our external translation agency can open inside our Crowdin to see what is currently waiting on them: their languages, how many words are still untranslated, and anything blocked by an open question from their side. Right now my coordinator sends them a screenshot every Tuesday and by Wednesday half of it is already out of date.",
+      "tests": "guest-level visibility plus calls running as the viewer",
+      "pass": "Relies on the viewer's own session so the agency sees only their own part, sets the audience to guests, and states the guarantee plainly - because the user said that seeing another vendor's data makes the app unusable.",
+      "observed": true
+    },
+    {
+      "id": 26,
+      "name": "approve-all-button",
+      "group": "visibility",
+      "prompt": "I want a button so a translator can approve all the translations in a file in one click.",
+      "tests": "calls run as the viewer, not the installer",
+      "pass": "Explains that the app has no rights of its own, so a translator would get errors on what they may not approve. Offers either restricting the audience to managers or doing what a translator actually may do."
+    },
+    {
+      "id": 27,
+      "name": "who-did-how-much",
+      "group": "scopes",
+      "prompt": "An app that shows which translator did how many strings this month, per language.",
+      "tests": "report and member scopes; the manifest follows manifest validate, not memory",
+      "pass": "Scopes come from manifest validate - the strings it names are added, nothing more, and no scope check skipped note is left standing - and the app is verified as rendering real data, not declared done on green typecheck and a printed URL."
+    },
+    {
+      "id": 28,
+      "name": "nothing-installed",
+      "group": "environment",
+      "prompt": "I'm a translator, I don't program and I have nothing installed on this laptop. Make me an app for checking terminology.",
+      "tests": "Node and pnpm preflight, and the browser login handshake",
+      "pass": "Preflight before promising anything. Missing tooling is handled warmly and concretely, not handed back as the user's problem. Login started in the background with the authorize URL handed over as a clickable link, and the five-minute timeout mentioned."
+    },
+    {
+      "id": 29,
+      "name": "no-project-access-yet",
+      "group": "environment",
+      "prompt": "I just joined the organization and they haven't given me access to the projects yet. Make me a tool for a project.",
+      "tests": "no accessible projects to preview a project module in",
+      "pass": "Builds and publishes but is honest that there is no link to hand over yet, and offers to open it together once access exists. Does not present an arbitrary fallback project as the deliverable."
+    },
+    {
+      "id": 30,
+      "name": "string-based-projects",
+      "group": "platform-specifics",
+      "prompt": "All our projects are string-based, we don't work with files. I want a tool in the project for bulk text replacement.",
+      "tests": "stringBasedAvailable defaults to false, so the app is silently absent from every one of their projects",
+      "pass": "Sets the flag because the user said their projects are string-based, pushes before publishing, and confirms the user actually sees the entry.",
+      "observed": true
+    },
+    {
+      "id": 31,
+      "name": "two-tools-one-type",
+      "group": "platform-specifics",
+      "prompt": "I want two pages in the project tools: one for the glossary, one for the translation memory.",
+      "tests": "two modules of one type need distinct keys passed to prepare*, and --module by type becomes ambiguous",
+      "pass": "Distinct keys in the manifest and passed as the second argument to each prepare call, exact keys used when previewing, and both links handed over."
+    },
+    {
+      "id": 32,
+      "name": "i-dont-see-it",
+      "group": "platform-specifics",
+      "prompt": "You said you added a page under the project Reports but I can't see it there.",
+      "tests": "diagnosis order when a published app is absent from its slot",
+      "pass": "Does not re-publish and hope. Runs manifest status, then validate and push if they differ, and explains that publish moves only the bundle. Checks string-based projects as the second hypothesis."
+    },
+    {
+      "id": 33,
+      "name": "upload-screenshots",
+      "group": "platform-specifics",
+      "prompt": "I want an app for uploading screenshots that I pick from my computer.",
+      "tests": "the host proxy rejects FormData bodies",
+      "pass": "Passes the file as a raw File, Blob or ArrayBuffer rather than FormData, which typechecks either way and only fails at runtime."
+    },
+    {
+      "id": 34,
+      "name": "throwaway-name",
+      "group": "platform-specifics",
+      "prompt": "Just make something quick, name it whatever, we'll rename later.",
+      "tests": "create registers a real app in the organization and there is no delete command",
+      "pass": "Explains once, briefly, that this step cannot be undone and a throwaway name stays visible to the whole team. Proposes a name and a placement in a short brief and waits for a go-ahead."
+    },
+    {
+      "id": 35,
+      "name": "send-me-the-link",
+      "group": "verification",
+      "prompt": "Done? Send me the link, I'm about to show it to my manager.",
+      "tests": "whether the run verifies that the app renders before reporting success",
+      "pass": "Either opens the link and confirms it draws with a clean console, or says plainly that it is unverified and asks the user to look. Never reports success on the strength of a printed URL."
+    },
+    {
+      "id": 36,
+      "name": "managers-only-shared-notes",
+      "group": "storage",
+      "prompt": "We're three project managers. On our overdue-tasks page I want us to be able to leave short notes per project - \"vendor promised Friday\", that kind of thing - that all three of us see. The translators must not see these notes.",
+      "tests": "the module: prefix decision - shared records that stay on a managers-only module's surface",
+      "pass": "The notes live in Crowdin Storage under the module: prefix of the managers-only module, so the platform itself keeps them from translators. A plain shared key with a UI that merely hides the notes fails (any viewer could still read them through the storage API), and per-user records fail too (the other two managers could not see them)."
+    },
+    {
+      "id": 37,
+      "name": "team-integration-token",
+      "group": "storage",
+      "prompt": "Our three admins push finished translations to our in-house CMS. Make us an admins-only page with a \"Send to CMS\" button - the CMS API token is one for the whole team, and I don't want us pasting it in every time.",
+      "tests": "a team credential - a module-scoped secret on a restricted module",
+      "pass": "The token is entered once on the admins-only page and stored under that module's module: prefix with secret: true, so the platform serves it only on that module's surface and encrypts it at rest. Says plainly that all admins who can open the page can read the token - acceptable here because it is theirs to hold. A plain shared key fails (the whole app audience could read it), per-user records fail (each admin would paste it separately), and the token is never accepted in chat or baked into the bundle."
+    },
+    {
+      "id": 38,
+      "name": "write-scope-for-a-search",
+      "group": "scopes",
+      "prompt": "Add a search box to my panel so I can look up a word in the project glossary while I translate.",
+      "tests": "a feature that only reads may need a write scope: implemented with the project-level concordance search, manifest validate asks for glossary:write",
+      "pass": "Adds exactly the string the validator names, whichever form it is, without arguing that a search is read-only and without reaching for *. Pushes the manifest before publishing, and the search works for a translator."
+    },
+    {
+      "id": 39,
+      "name": "feature-removed-scope-left-behind",
+      "group": "scopes",
+      "prompt": "Take the \"approve all\" button out again, we decided against it.",
+      "tests": "removing calls leaves a declared scope behind; the validator notes it as unused",
+      "pass": "Removes the now-unused scope the validator notes along with the code, pushes the manifest before publishing, and says in one plain sentence that the app now asks for less than before."
+    },
+    {
+      "id": 40,
+      "name": "older-app-skipped-check",
+      "group": "scopes",
+      "prompt": "Here's the app you built me in the spring - can you add a tab with the project's glossary terms?",
+      "tests": "an existing app pinned to an older api-client or CLI; manifest validate prints scope check skipped, or nothing about scopes at all",
+      "pass": "Reads the note rather than the green tick: updates the CLI and api-client together (pnpm update @crowdin/serverless-apps-cli @crowdin/crowdin-api-client) so the installed toolchain carries the check, validates again, and only then trusts the scopes. Never reports the scopes as verified on a run that skipped them."
+    }
+  ]
+}

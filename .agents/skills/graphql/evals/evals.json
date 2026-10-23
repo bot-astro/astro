@@ -1,0 +1,158 @@
+{
+  "skill_name": "graphql",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I am in Crowdin GraphQL Playground and this fails: translations(languageId: \"uk\", first: 4500, createdAfter: \"2026-04-01T00:00:00Z\", createdBefore: \"2026-04-02T00:00:00Z\"). Errors say Unknown argument createdAfter/createdBefore. Rewrite this query correctly and explain what changed.",
+      "expected_output": "A corrected query removes unsupported arguments, keeps valid pagination arguments, and clearly explains that date filtering must use only schema-supported filter inputs (or be declared unsupported on this field).",
+      "files": [],
+      "expectations": [
+        "The corrected query does not pass createdAfter or createdBefore to translations.",
+        "The corrected translations call uses first (or last) and languageId: \"uk\" plus optional cursor arguments only where the schema defines them.",
+        "translations is selected under a project context reachable from viewer (for example viewer.projects → node or a documented project field), not via an unsupported root field.",
+        "The explanation states that those date arguments are not on the translations field in the schema and that time windows require introspection, client-side filtering, or another API when no filter exists.",
+        "The example uses a Relay-style connection shape for translations: edges { node { ... } } and pageInfo for pagination guidance."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write a Crowdin GraphQL query to list my projects created after 2024-01-01, sorted by last activity ascending, 20 per page. Include cursor pagination fields and variables.",
+      "expected_output": "A valid projects query from viewer with first/after pagination, filter.createdAt gt, order by lastActivityAt asc, and pageInfo fields.",
+      "files": [],
+      "expectations": [
+        "Uses viewer.projects with first and optional after for cursor pagination.",
+        "Applies filter.createdAt with a greater-than predicate for the post-2024-01-01 requirement.",
+        "Uses order with lastActivityAt ascending.",
+        "Declares GraphQL variables for page size, the date threshold, and after when applicable.",
+        "Includes pageInfo (for example hasNextPage and endCursor) and per-edge cursor fields on the connection."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need a safe query for project -> files -> strings and also project translations for uk language, but I keep hitting node limits. Give me a rewritten version that stays valid and explain how to estimate query cost and node usage.",
+      "expected_output": "A reduced-fanout query with explicit first values, valid connection pagination, plus a concise explanation of node-limit and rate-limit awareness.",
+      "files": [],
+      "expectations": [
+        "Explains multiplicative node growth across nested connections and Crowdin's approximate per-request node ceiling (~10,000).",
+        "Recommends lowering first/last per level, using pageInfo and cursors, and/or splitting work across multiple operations.",
+        "Every illustrated connection includes required first or last pagination arguments.",
+        "Shows Ukrainian translations with languageId \"uk\" on a project-level translations example.",
+        "Covers how to estimate or observe GraphQL cost or rate limit impact (for example rateLimit fields and/or documented point-scoring rules)."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "My query fails because I tried `projects(limit: 20, offset: 40)`. Can you rewrite this using proper Crowdin GraphQL pagination and include how to request the next page?",
+      "expected_output": "A valid cursor-based query using first/after (not limit/offset), returning pageInfo and cursor fields, plus a brief next-page instruction using endCursor.",
+      "files": [],
+      "expectations": [
+        "Does not use limit or offset on viewer.projects; uses first with after (or last with before).",
+        "Explains that Crowdin list fields are cursor-based Relay connections, not offset pagination.",
+        "Instructs to pass pageInfo.endCursor (or equivalent documented cursor) as after for the following page.",
+        "Example query includes edges { cursor, node { ... } } and pageInfo on the projects connection."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Please write one query that returns my username and current GraphQL rate limit status (limit, cost, remaining, resetAt). Keep it minimal but production-safe.",
+      "expected_output": "A valid query selecting viewer.username and rateLimit fields limit/cost/remaining/resetAt, with no unsupported fields.",
+      "files": [],
+      "expectations": [
+        "Selects viewer.username (or viewer { username }).",
+        "Selects root rateLimit with fields limit, cost, remaining, and resetAt.",
+        "Keeps the document free of heavy nested connections that would defeat a minimal, production-safe query.",
+        "Uses a named operation and avoids extra selection fields beyond username and the four rateLimit scalars requested."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need projects filtered to created after 2025-01-01 and visibility private, ordered by name descending, first 15 records. Include variables and pageInfo.",
+      "expected_output": "A valid viewer.projects query with first/after pagination, filter combining createdAt gt and visibility private, order by name desc, variables, and pageInfo.",
+      "files": [],
+      "expectations": [
+        "Uses viewer.projects with first set to 15 (or an equivalent variable) and after for forward pagination.",
+        "Combines created after 2025-01-01 with private visibility using ProjectFilterInput-style predicates (including and-combination if used).",
+        "Uses order with name descending.",
+        "Includes pageInfo on the projects connection.",
+        "Provides a variables example aligned with the declared operation variables."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Fix this broken query and explain errors: `query { viewer { projects(first: 20) { nodes { id name } } } }`",
+      "expected_output": "A corrected connection query using edges/node shape (or schema-valid equivalent for Crowdin), plus a concise explanation that the original selection set mismatched connection structure.",
+      "files": [],
+      "expectations": [
+        "Replaces projects { nodes { ... } } with edges { node { ... } } (or another schema-documented connection access pattern for Crowdin).",
+        "Includes first or last on the projects connection.",
+        "Explains that viewer.projects returns a connection object whose supported list shape uses edges and node, not a top-level nodes field as written.",
+        "Includes pageInfo and/or cursors in at least one presented corrected query to support pagination."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I need translations in Ukrainian for a project, but only latest page of 50 items before a cursor. Please provide backward pagination and keep fields minimal.",
+      "expected_output": "A valid query using last/before pagination pattern on a supported translations connection with language scoping via supported argument(s), minimal fields, and pageInfo for reverse navigation.",
+      "files": [],
+      "expectations": [
+        "Uses backward pagination on translations via last: 50 together with before (or an equivalent documented backward pattern).",
+        "Scopes translations to Ukrainian using languageId \"uk\".",
+        "Includes pageInfo with cursor fields and hasPreviousPage or hasNextPage for continued paging.",
+        "Keeps translation node selections minimal via small inline fragments or a short field list.",
+        "Scopes translations under a single project (filter, single edge, or documented project field)."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Can you rewrite my expensive query to stay under Crowdin node limits? Right now it requests projects(first: 100) -> files(first: 100) -> strings(first: 100) and times out.",
+      "expected_output": "A safer rewritten query with reduced fan-out and/or split strategy, explicit first values, and a short node-count rationale referencing Crowdin node constraints.",
+      "files": [],
+      "expectations": [
+        "Explains that multiplying 100×100×100 across nested connections exceeds Crowdin's per-request node budget or risks timeouts.",
+        "Recommends materially smaller first/last values per level and/or splitting into separate paginated queries as the main fix.",
+        "Shows rewritten examples using schema-valid connection arguments and edges/pageInfo patterns.",
+        "Addresses independent cursors per nested connection when multiple files or projects are involved.",
+        "Does not propose limit/offset for these GraphQL connections."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I asked for date filtering on translations and got unknown argument errors. Give me a corrected query and, if date filtering is unavailable on this field, show the nearest valid alternative approach.",
+      "expected_output": "A corrected schema-valid query without fabricated arguments and a clear explanation of field-level filtering limitations plus a practical alternative.",
+      "files": [],
+      "expectations": [
+        "Removes unsupported date-style arguments from the translations field in the corrected example.",
+        "Uses documented translations arguments such as first/after or last/before and languageId in the fixed query.",
+        "States that server-side date filtering on translations is not assumed without schema evidence and lists practical alternatives.",
+        "Nests translations under a project using viewer.projects or a documented project selection.",
+        "Uses edges/node and pageInfo in the corrected translations connection example."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Build a query for projects where language access policy is moderate and sort by lastActivityAt ascending. Also include totalCount and cursors.",
+      "expected_output": "A valid projects query using filter.languageAccessPolicy equals moderate and order lastActivityAt asc, including totalCount, edges cursor, and pageInfo.",
+      "files": [],
+      "expectations": [
+        "Filters projects with languageAccessPolicy equal to moderate.",
+        "Orders by lastActivityAt ascending.",
+        "Selects totalCount on the projects connection.",
+        "Includes edges.cursor and pageInfo cursor-related fields.",
+        "Uses first and optional after for forward pagination on viewer.projects."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "I need a debugging-style answer: root cause + fixed query + why this works. Error says unknown argument `updatedSince` on a nested field. Keep the response format strict.",
+      "expected_output": "Response follows required debug format (cause, fixed query, why-this-works bullets), removes unsupported updatedSince argument, and uses only schema-supported args.",
+      "files": [],
+      "expectations": [
+        "States root cause: updatedSince is not declared on the nested field where it was used, so GraphQL rejects it.",
+        "The fixed query removes updatedSince from that nested connection and uses only schema-listed arguments such as first/after.",
+        "Explains per-field argument validation and points to supported filters on parent types or client-side handling when needed.",
+        "Uses clearly separated sections for cause, fixed query, and why the fix works (debugging-style structure).",
+        "Notes verifying the exact parent path and field arguments in GraphQL Playground when the failing query context may vary."
+      ]
+    }
+  ]
+}

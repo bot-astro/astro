@@ -1,0 +1,27 @@
+{
+  "variant": "js-ts-lingui",
+  "match": { "language": "js-ts", "library": "lingui" },
+  "supportLevel": "stable",
+  "catalog": "lingui-po",
+  "skills": {
+    "plugin": "lingui",
+    "install": "npx skills add lingui/skills",
+    "installClaudeCode": "/plugin marketplace add lingui/skills && /plugin install lingui@lingui-skills",
+    "setup": ["lingui-framework-setup"],
+    "convert": ["lingui-best-practices", "enhanced-message-context"],
+    "recall": ["find-unwrapped-strings"]
+  },
+  "references": {
+    "adapter": ["references/libraries/lingui/crowdin.md"],
+    "rulesTemplate": ["references/libraries/lingui/rules.template.md"]
+  },
+  "catalogRow": {
+    "id": "lingui-po",
+    "model": "compile-time-extraction",
+    "detect": { "deps": ["@lingui/core"], "files": ["lingui.config.js", "lingui.config.ts"] },
+    "source": "/src/locales/en/messages.po",
+    "translation": "/src/locales/%locale%/%original_file_name%",
+    "type": "po",
+    "docs": "https://store.crowdin.com/gettext"
+  }
+}

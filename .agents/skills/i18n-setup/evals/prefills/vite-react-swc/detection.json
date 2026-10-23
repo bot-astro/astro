@@ -1,0 +1,23 @@
+{
+  "language": "js-ts",
+  "framework": "vite",
+  "compiler": "swc",
+  "react": true,
+  "typescript": true,
+  "packageManager": "npm",
+  "sourceDir": "src",
+  "git": { "isRepo": true, "branch": "main", "remote": "" },
+  "existing": {
+    "library": "none",
+    "configured": false,
+    "stringsWrapped": "no",
+    "crowdinYml": false,
+    "workflow": false
+  },
+  "candidateFiles": [
+    { "path": "src/App.tsx", "matchCount": 11 },
+    { "path": "src/components/PlanCard.tsx", "matchCount": 2 },
+    { "path": "src/data/plans.ts", "matchCount": 4 }
+  ],
+  "localeSignals": { "existingLocaleDirs": [], "readmeHints": [] }
+}

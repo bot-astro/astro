@@ -1,0 +1,84 @@
+{
+  "skill_name": "github-action",
+  "note": "Behaviour specification for the skill. `prompt` is what a real user types - a developer wiring Crowdin into CI, or one whose workflow already misbehaves. `expected_output` describes the shape of a good answer; `expectations` are the individually checkable claims. The debugging prompts matter most: the action's defaults (upload_sources true, download_translations false) and its git behaviour (force-push, git add ., PR base from the triggering ref) are where answers written from memory go wrong.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up Crowdin in our repo. English source strings live in src/locales/en/*.json and translations should land in src/locales/<lang>/. I want sources pushed to Crowdin whenever main changes, and a pull request with new translations once a day. Project id is 654321.",
+      "expected_output": "A crowdin.yml plus workflow(s): sources uploaded on push to main, translations downloaded on a cron schedule with a PR. The download step disables upload_sources explicitly, the job declares write permissions, and both the secrets and the repository setting that allow PR creation are called out.",
+      "files": [],
+      "expectations": [
+        "crowdin.yml uses project_id_env/api_token_env (or the secrets are passed via env) rather than a literal token",
+        "crowdin.yml sets preserve_hierarchy: true",
+        "The download step sets upload_sources: false, noting the input defaults to true",
+        "The download job declares permissions: contents: write and pull-requests: write",
+        "pull_request_base_branch_name is set explicitly",
+        "runs-on is a Linux runner",
+        "Instructs the user to create CROWDIN_PROJECT_ID and CROWDIN_PERSONAL_TOKEN as Actions secrets",
+        "Mentions the 'Allow GitHub Actions to create and approve pull requests' repository setting"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this workflow before I merge it. It's supposed to open a translations PR when we publish a release.\n\n```yaml\nname: Crowdin\non:\n  release:\n    types: [published]\n\njobs:\n  sync:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci && npm run build\n      - uses: crowdin/github-action@v2\n        with:\n          download_translations: true\n          create_pull_request: true\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}\n          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}\n```",
+      "expected_output": "A review naming the concrete defects: no permissions block, PR base resolves to refs/tags/... on a release trigger, upload_sources silently true, and the build step's artifacts getting committed by git add .. Followed by a corrected workflow.",
+      "files": [],
+      "expectations": [
+        "Flags the missing permissions block (contents: write, pull-requests: write)",
+        "Flags that on: release makes the PR base an invalid tag ref unless pull_request_base_branch_name is set",
+        "Flags that upload_sources defaults to true so this step also uploads sources",
+        "Flags that the npm build output will be committed into the translation PR because the action runs git add .",
+        "Provides a corrected workflow rather than only prose"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "our crowdin action job has been green for a week but no translation PR ever appears. the crowdin project itself shows 100% for german and spanish. what do i look at",
+      "expected_output": "A diagnosis ordered by likelihood, anchored on the step log's stage markers: whether a download ran at all (download_translations defaults to false), NOTHING TO COMMIT when the export matches the repo, push_translations/create_pull_request being off, and an already-open PR for the same branch producing no new one.",
+      "files": [],
+      "expectations": [
+        "Says download_translations defaults to false and must be enabled explicitly",
+        "Explains the NOTHING TO COMMIT case (downloaded files identical to committed ones)",
+        "Mentions that an existing open PR for the localization branch means no new PR is created",
+        "Points at the step log's stage output (UPLOAD SOURCES / DOWNLOAD TRANSLATIONS / PUSH TO BRANCH / NOTHING TO COMMIT) as the way to tell these apart",
+        "Does not invent causes absent from the action's behaviour"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "The Crowdin action opens our l10n PR fine but none of our CI checks ever run on it, so it can't be merged (we require checks to pass). We use secrets.GITHUB_TOKEN. Adding pull-requests: write didn't help.",
+      "expected_output": "Identifies the platform rule - pull requests opened with the default GITHUB_TOKEN don't trigger workflows, and no permission changes that - then gives the GitHub App token setup (with persist-credentials: false) as the recommended fix and a classic PAT as the alternative.",
+      "files": [],
+      "expectations": [
+        "States that PRs created with the default GITHUB_TOKEN do not trigger workflow runs",
+        "Confirms that permissions cannot fix it",
+        "Recommends a GitHub App token (actions/create-github-app-token) passed as GH_TOKEN, or a classic PAT with repo scope",
+        "Notes that actions/checkout needs persist-credentials: false when using a GitHub App token"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want the action to pre-translate everything from our TM after it uploads sources, and only then download. I tried putting command: 'pre-translate' with upload_sources and download_translations on the same step and it just ran the pre-translate.",
+      "expected_output": "Explains that a command step replaces the pipeline and exits, so the sequence needs three separate steps, and warns that the action's config inputs are not forwarded to a command step.",
+      "files": [],
+      "expectations": [
+        "States that setting command makes the step run only that command and skip upload/download/push/PR",
+        "Provides three separate action steps: upload, pre-translate command, download",
+        "Passes the TM method through command_args (e.g. --method tm)",
+        "Notes that config/token/project_id/base_url inputs are not passed to a command step, so credentials go through env and other flags through command_args"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "we're on a string-based crowdin project (no source files, strings added in the UI) and download_translations: true downloads absolutely nothing. the action exits 0. we do have a bundle configured, id 4.",
+      "expected_output": "Explains that download_translations does not apply to string-based projects and that a bundle download is the supported path, with a workflow using download_bundle: 4.",
+      "files": [],
+      "expectations": [
+        "States that download_translations does not work for string-based projects",
+        "Uses download_bundle: 4 in the corrected step",
+        "Keeps push/PR behaviour working with the bundle download",
+        "Notes that crowdin_branch_name is not applied to a bundle download"
+      ]
+    }
+  ]
+}

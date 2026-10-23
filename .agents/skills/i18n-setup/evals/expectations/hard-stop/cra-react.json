@@ -1,0 +1,6 @@
+{
+  "messageContains": "Create React App",
+  "mustCreate": [".crowdin/detection.json"],
+  "mustNotCreate": [".crowdin/plan.md", "crowdin.yml"],
+  "depsMustBeUnchanged": true
+}

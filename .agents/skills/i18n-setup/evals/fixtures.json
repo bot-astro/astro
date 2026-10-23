@@ -1,0 +1,35 @@
+{
+  "vite-react-swc": {
+    "category": "positive",
+    "type": "local",
+    "path": "fixtures/vite-react-swc",
+    "variant": "js-ts-lingui",
+    "expectedDetection": "expectations/detection/vite-react-swc.json",
+    "expectedPlan": "expectations/plan/vite-react-swc.json"
+  },
+  "cra-react": {
+    "category": "hard-stop",
+    "type": "local",
+    "path": "fixtures/hard-stop/cra-react",
+    "variant": null,
+    "expectedHardStop": "expectations/hard-stop/cra-react.json"
+  },
+  "lingui-configured": {
+    "category": "connect-only",
+    "type": "derived",
+    "base": "fixtures/vite-react-swc",
+    "overlays": ["fixtures/overlays/lingui-configured"],
+    "variant": "js-ts-lingui",
+    "expectedDetection": "expectations/detection/lingui-configured.json",
+    "expectedPlan": "expectations/plan/lingui-configured.json"
+  },
+  "already-connected": {
+    "category": "collapse",
+    "type": "derived",
+    "base": "fixtures/vite-react-swc",
+    "overlays": ["fixtures/overlays/lingui-configured", "fixtures/overlays/already-connected"],
+    "variant": "js-ts-lingui",
+    "expectedDetection": "expectations/detection/lingui-configured.json",
+    "expectedPlan": "expectations/plan/already-connected.json"
+  }
+}

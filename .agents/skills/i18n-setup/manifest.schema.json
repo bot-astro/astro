@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "i18n-setup stack manifest",
+  "description": "Shape of skills/i18n-setup/manifest.json. Describes what is true today: a new field earns its schema entry in the same commit that introduces it. Path resolution and cross-file invariants are checked by evals/verify-manifest.sh, not by this schema.",
+  "type": "object",
+  "required": ["version", "stacks", "catalogs"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "stacks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/stack" }
+    },
+    "catalogs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/catalog" }
+    }
+  },
+  "$defs": {
+    "kebabName": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "referencePath": {
+      "type": "string",
+      "pattern": "^references/.+\\.md$",
+      "description": "Relative to skills/i18n-setup/. Whether it resolves on disk is verify-manifest.sh's job."
+    },
+    "referenceList": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/referencePath" }
+    },
+    "roleList": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Skill names, or references/*.md paths for a role satisfied by internal reference files."
+    },
+    "stack": {
+      "type": "object",
+      "required": ["variant", "match", "supportLevel", "catalog", "skills", "references"],
+      "additionalProperties": false,
+      "properties": {
+        "variant": { "$ref": "#/$defs/kebabName" },
+        "match": {
+          "type": "object",
+          "description": "Compared against the equally-named fields of detection.json. Language and library only — framework, compiler, and the rest are context handed to the delegation, never routing keys.",
+          "required": ["language", "library"],
+          "additionalProperties": false,
+          "properties": {
+            "language": { "type": "string", "minLength": 1 },
+            "library": { "type": "string", "minLength": 1 }
+          }
+        },
+        "supportLevel": {
+          "enum": ["stable", "beta", "experimental"],
+          "description": "Anything but stable is said plainly to the user at plan approval."
+        },
+        "catalog": {
+          "$ref": "#/$defs/kebabName",
+          "description": "id of a catalogs[] row. Resolution is checked by verify-manifest.sh."
+        },
+        "skills": {
+          "type": "object",
+          "required": ["setup", "convert", "recall"],
+          "additionalProperties": false,
+          "properties": {
+            "plugin": { "type": "string", "minLength": 1 },
+            "install": { "type": "string", "minLength": 1 },
+            "installClaudeCode": { "type": "string", "minLength": 1 },
+            "setup": { "$ref": "#/$defs/roleList" },
+            "convert": { "$ref": "#/$defs/roleList" },
+            "recall": { "$ref": "#/$defs/roleList" }
+          }
+        },
+        "references": {
+          "type": "object",
+          "required": ["adapter", "rulesTemplate"],
+          "additionalProperties": false,
+          "properties": {
+            "adapter": { "$ref": "#/$defs/referenceList" },
+            "rulesTemplate": { "$ref": "#/$defs/referenceList" }
+          }
+        }
+      }
+    },
+    "catalog": {
+      "type": "object",
+      "required": ["id", "model", "detect", "source", "translation", "type", "docs"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/kebabName" },
+        "model": { "enum": ["compile-time-extraction", "runtime-catalog"] },
+        "detect": {
+          "type": "object",
+          "required": ["deps", "files"],
+          "additionalProperties": false,
+          "properties": {
+            "deps": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "files": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          }
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^/",
+          "not": { "pattern": "%locale%" },
+          "description": "Project-relative path or glob of the source-locale catalog. A literal path — the language placeholder belongs to translation only."
+        },
+        "translation": {
+          "type": "string",
+          "pattern": "%locale%",
+          "description": "Project-relative translation pattern. %locale% is the language placeholder, always."
+        },
+        "type": { "enum": ["po", "json"] },
+        "docs": {
+          "type": "string",
+          "pattern": "^https://"
+        }
+      }
+    }
+  }
+}
