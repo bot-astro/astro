@@ -18,10 +18,6 @@ import space.astro.bot.ui.Emojis
 import space.astro.bot.ui.Links
 import space.astro.shared.core.properties.ShardManagerConfig
 
-/**
- * The old help sub commands and buttons (general, generators, ...) were already commented out in the legacy code,
- * so only the base command is ported
- */
 @Component
 class HelpCommand(
     private val podProperties: PodProperties,

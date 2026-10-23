@@ -8,17 +8,18 @@ Application, sharding (session controller, shard manager), health indicators, re
 ## Items (suggested order)
 
 1. ✅ **Interaction framework** (decided, see [Item 1 design](#item-1-design))
-2. ❓ **Core UI** (`core/ui`: Buttons, Embeds, Emojis, Messages) + `core/exceptions` (ConfigurationException, VcOperationException)
+2. ⬜ **Core UI** (`core/ui`: Buttons, Embeds, Emojis, Messages) + `core/exceptions` (ConfigurationException, VcOperationException)
+   **Decided: Components V2 (helpers replacing `Embeds`, interface message) is done as the very last step**; until then new code keeps using embeds with a `TODO: components v2`.
    Move button ids/emojis here (see TODO in `InterfaceManager`); exceptions likely map to `shared/core` exceptions + `ConfigurationErrorEvent`.
-3. ⬜ **Listeners: guild/entitlements/member** (`GuildJoin/Leave`, `Entitlement*`, `MemberUpdateActivities`, `ContextRefreshedListeners`, `ConfigurationErrorEventListener`✅)
-   Entitlements/premium: not implemented → skip or TODO. Check whether `ContextRefreshedListeners` is replaced by `ApplicationReadyListener`.
-4. ❓ **Services/infra** (`CooldownsManager`, `AnalyticsService` + `BigQueryService`, `ConfigurationErrorService`, `AuthWebFilter`, `ApplicationFeaturesConfig`, `DashboardController`, `LifecycleController`)
-   Likely drop: `AuthWebFilter`/`LifecycleController` (replaced by `api/` + health), `ConfigurationErrorService` (replaced by event publisher). Keep analytics? Cooldowns via Redis?
-5. ⬜ **VC core models** (`models/discord`: `PermissionSets`, `SimpleMemberRolesManager`, `vc/VCOperationCTX`, `vc/event/*`)
-6. ⬜ **VC managers** (`managers/vc/*`: Name, Ownership, Permission, Position, PrivateChat, Template, WaitingRoom) — split by feature, one at a time. Drop premium checks.
+3. ✅ **Listeners: guild/entitlements/member** (`GuildJoin/Leave`, `Entitlement*`, `MemberUpdateActivities`, `ContextRefreshedListeners`, `ConfigurationErrorEventListener`✅)
+   Done: `GuildJoin/Leave` (welcome message has TODOs: channel selection, premium buttons, Setup button, V2). Skipped: entitlements + `MemberUpdateActivities` (premium only), `ContextRefreshedListeners` (= `ApplicationReadyListener`).
+4. ❓ (analytics ✅) **Services/infra** (`CooldownsManager`, `AnalyticsService` + `BigQueryService`, `ConfigurationErrorService`, `AuthWebFilter`, `ApplicationFeaturesConfig`, `DashboardController`, `LifecycleController`)
+   Likely drop: `AuthWebFilter`/`LifecycleController` (replaced by `api/` + health), `ConfigurationErrorService` (replaced by event publisher). **Analytics kept**: `AnalyticsService` + `BigQueryService` ported (`@Scheduled` flush, no receivers, sealed `AnalyticsEventData`; `GUILD_SNAPSHOT` dropped, class was never defined). Still no publisher for slash command / temporary VC / connection events. Cooldowns via Redis?
+5. ✅ **VC core models** (`models/discord`: `PermissionSets`, `SimpleMemberRolesManager`, `vc/VCOperationCTX`, `vc/event/*`)
+6. ✅ **VC managers** (`managers/vc/*`: Name, Ownership, Permission, Position, PrivateChat, Template, WaitingRoom) — split by feature, one at a time. Drop premium checks.
 7. ⬜ **Voice event pipeline** (`GuildVoiceUpdateEventListener`, `VCEventDetector`, `voice/handlers/*`)
    Candidate to simplify with Spring events from `JdaToSpringEventBridge`.
-8. ⬜ **VC interactions, by feature** — each = command + button + menu/modal where present:
+8. ✅ **VC interactions, by feature** — each = command + button + menu/modal where present:
    - settings: name, limit, bitrate, region, template
    - permissions: lock/unlock, hide/unhide, ban, permit, invite, kick
    - ownership: claim, transfer
@@ -26,7 +27,7 @@ Application, sharding (session controller, shard manager), health indicators, re
    Decide: keep commands and buttons as separate classes or share one handler per action.
 9. ❓ **Setup / pre-dashboard commands** (`generator`, `generator-waiting`, `interface`, `connection`, `settings`, `template-settings`, `setup` cmd+button, `premium`)
    Overlaps with the REST API/dashboard (`api-central`). Port as-is, or reduce to a link to the dashboard? Premium command: skip.
-10. ⬜ **Info commands** (`help` + 7 help buttons, `dashboard`)
+10. ✅ **Info commands** (`help` + 7 help buttons, `dashboard`)
     Help buttons could collapse into one handler; `HelpPremiumButton` skipped.
 11. ⬜ **Tests** (`VariablesManagerTest`) — port alongside whichever manager owns variables.
 

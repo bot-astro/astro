@@ -6,7 +6,7 @@ import java.awt.Color
 
 // TODO: replaced by components v2 helpers, see INTERACTION-MIGRATION.md step 5
 object Embeds {
-    private val purple = Color.decode("#B125EA")
+    val purple = Color.decode("#B125EA")
     private val red = Color.decode("#F04747")
 
     fun default(description: String): MessageEmbed =

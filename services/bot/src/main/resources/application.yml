@@ -85,3 +85,11 @@ discord:
     token: ${DISCORD_APPLICATION_TOKEN:}
     activity-type: ${DISCORD_APPLICATION_ACTIVITY_TYPE:CUSTOM_STATUS}
     activity-text: ${DISCORD_APPLICATION_ACTIVITY_TEXT:/help | astro-bot.space}
+
+bigquery:
+  enabled: ${BIGQUERY_ENABLED:false}
+  dataset-name: ${BIGQUERY_DATASET_NAME:astro_local}
+  max-events-entry: 10000
+  # seconds, used by the scheduled dispatch
+  delay: 10
+  interval: 15

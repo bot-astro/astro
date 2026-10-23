@@ -29,6 +29,7 @@ dependencies {
     }
 
     implementation(libs.nanoid)
+    implementation(libs.bigquery)
 
     testImplementation(libs.junit)
     testImplementation(kotlin("test"))
