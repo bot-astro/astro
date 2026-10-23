@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
 import org.springframework.scheduling.annotation.EnableScheduling
+import space.astro.shared.core.properties.PremiumProperties
 import space.astro.shared.core.properties.ShardManagerConfig
 
 @SpringBootApplication(
@@ -21,7 +22,7 @@ import space.astro.shared.core.properties.ShardManagerConfig
         "space.astro.bot.properties",
     ],
 )
-@EnableConfigurationProperties(ShardManagerConfig::class)
+@EnableConfigurationProperties(ShardManagerConfig::class, PremiumProperties::class)
 @EnableScheduling
 class Application
 

@@ -86,6 +86,11 @@ discord:
     activity-type: ${DISCORD_APPLICATION_ACTIVITY_TYPE:CUSTOM_STATUS}
     activity-text: ${DISCORD_APPLICATION_ACTIVITY_TEXT:/help | astro-bot.space}
 
+premium:
+  server-sku-id: ${PREMIUM_SERVER_SKU_ID:}
+  monthly-plan-id: ${PREMIUM_MONTHLY_PLAN_ID:}
+  yearly-plan-id: ${PREMIUM_YEARLY_PLAN_ID:}
+
 bigquery:
   enabled: ${BIGQUERY_ENABLED:false}
   dataset-name: ${BIGQUERY_DATASET_NAME:astro_local}
