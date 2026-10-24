@@ -13,6 +13,7 @@ object PermissionSets {
         Permission.MANAGE_CHANNEL,
         Permission.VOICE_CONNECT,
         Permission.VOICE_SPEAK,
+        Permission.VOICE_SET_STATUS,
         Permission.CREATE_INSTANT_INVITE,
         Permission.MESSAGE_SEND,
         Permission.MESSAGE_EMBED_LINKS,
