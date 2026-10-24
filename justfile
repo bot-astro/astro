@@ -18,24 +18,24 @@ generate-env env="dev":
 run service env="dev":
     infisical run --env={{env}} -- ./gradlew --console=plain :services:{{service}}:bootRun
 
-bot env="dev": (run "bot" env)
+run-bot env="dev": (run "bot" env)
 
-api-central env="dev": (run "api-central" env)
+run-api-central env="dev": (run "api-central" env)
 
-support-bot env="dev": (run "support-bot" env)
+run-support-bot env="dev": (run "support-bot" env)
 
-entitlements-expiration-job env="dev": (run "entitlements-expiration-job" env)
+run-entitlements-expiration-job env="dev": (run "entitlements-expiration-job" env)
 
 
 # --- docker compose (mongo, redis + ui tools) ---
 
-up *services:
+docker-up *services:
     docker compose up -d {{services}}
 
-down:
+docker-down:
     docker compose down
 
-logs *services:
+docker-logs *services:
     docker compose logs -f {{services}}
 
 # --- quality ---

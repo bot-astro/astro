@@ -52,7 +52,7 @@ class ControllersExceptionHandler(
                 Resolved(e.httpStatusCode, e.errorCode, e.message ?: "Request failed.")
 
             is AuthenticationException ->
-                Resolved(HttpStatus.UNAUTHORIZED.value(), AErrorCode.UNAUTHORIZED, "Authentication is required.")
+                Resolved(HttpStatus.UNAUTHORIZED.value(), AErrorCode.UNAUTHENTICATED, "Authentication is required.")
 
             is AccessDeniedException ->
                 Resolved(HttpStatus.FORBIDDEN.value(), AErrorCode.UNAUTHORIZED, "Access denied.")
