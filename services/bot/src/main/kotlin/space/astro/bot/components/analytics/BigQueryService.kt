@@ -14,6 +14,7 @@ import space.astro.bot.models.analytics.TemporaryVCGenerationEventData
 import space.astro.bot.properties.BigQueryProperties
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.convertValue
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit

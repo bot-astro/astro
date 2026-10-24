@@ -179,7 +179,7 @@ object VariablesManager {
         template
             .replace("{vc_name}", vc.name, true)
             .replace("{vc_bitrate}", (vc.bitrate / 1000).toString(), true)
-            .replace("{vc_userlimit}", vc.userLimit.takeIf { it > 0 }?.toString() ?: vc.L.t(locale, "vc.variables.no_limit"), true)
+            .replace("{vc_userlimit}", vc.userLimit.takeIf { it > 0 }?.toString() ?: L.t(locale, "vc.variables.no_limit"), true)
             .replace("{vc_users}", vc.members.size.toString(), true)
             .replace("{vc_id}", vc.id, true)
             .replace("{vc_mention}", vc.asMention, true)

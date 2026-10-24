@@ -85,7 +85,7 @@ class JoinedGeneratorHandler(
                 }
 
             if (availableTemporaryVC != null) {
-                guild.moveVoiceMember(owner, availableTemporaryVC).reason(L.t(locale, "reason.vc.moved_queue")).queue()
+                guild.moveVoiceMember(owner, availableTemporaryVC).queue()
                 return false
             }
         }
@@ -116,7 +116,6 @@ class JoinedGeneratorHandler(
             // TODO: premium, the legacy code required premium to use a fallback generator
             guild
                 .moveVoiceMember(owner, fallbackGenerator)
-                .reason(L.t(locale, "reason.vc.moved_fallback"))
                 .queueAfter(1, TimeUnit.SECONDS)
 
             return false
@@ -229,7 +228,7 @@ class JoinedGeneratorHandler(
             }
 
         try {
-            guild.moveVoiceMember(owner, temporaryVC).reason(L.t(locale, "reason.vc.moved_created")).await()
+            guild.moveVoiceMember(owner, temporaryVC).await()
         } catch (e: Exception) {
             temporaryVC.delete().reason(L.t(locale, "reason.vc.deleted_move_failed")).queueAfter(1, TimeUnit.SECONDS)
             throw unknownError(guild.id, "moving a user (${owner.id}) into a temporary VC: ${e.message}")
