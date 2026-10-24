@@ -6,7 +6,7 @@ info:
 
 
 server:
-  port: ${BOT_API_PORT:9000}
+  port: ${BOT_API_PORT}
 
 management:
   endpoints:
@@ -56,7 +56,7 @@ scalar:
 ##############
 logging:
   level:
-    root: ${LOG_LEVEL:INFO}
+    root: ${BOT__LOG_LEVEL}
 
 
 sentry:
@@ -67,24 +67,41 @@ sentry:
 
 spring:
   mongodb:
-    uri: ${MONGODB_URI:mongodb://localhost:27017/AstroLocal}
+    uri: ${MONGODB_URI}
   data:
     mongodb:
       auto-index-creation: true
     redis:
       client-name: bot
       client-type: lettuce
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      database: ${REDIS_DATABASE:0}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
       password: ${REDIS_PASSWORD:}
+
+bot:
+  endpoint:
+    localhost: ${BOT_ENDPOINT_LOCALHOST}
+    port: ${BOT_API_PORT}
+    pod-name: ${BOT_ENDPOINT_POD_NAME}
+    service-name: ${BOT_ENDPOINT_SERVICE_NAME}
+    namespace: ${BOT_ENDPOINT_NAMESPACE}
+  shard:
+    manager:
+      total-shards: ${BOT_SHARD_MANAGER_TOTAL_SHARDS}
+      total-pods: ${BOT_SHARD_MANAGER_TOTAL_PODS}
+      login-factor: ${BOT_SHARD_MANAGER_LOGIN_FACTOR}
+
+pod:
+  hostname: ${BOT__POD_HOSTNAME}
+  ordinal: ${BOT__POD_ORDINAL}
 
 discord:
   application:
-    id: ${DISCORD_APPLICATION_ID:788708323867885568}
-    token: ${DISCORD_APPLICATION_TOKEN:}
-    activity-type: ${DISCORD_APPLICATION_ACTIVITY_TYPE:CUSTOM_STATUS}
-    activity-text: ${DISCORD_APPLICATION_ACTIVITY_TEXT:/help | astro-bot.space}
+    id: ${BOT__DISCORD_APPLICATION_ID}
+    token: ${BOT__DISCORD_APPLICATION_TOKEN}
+    activity-type: ${BOT__DISCORD_APPLICATION_ACTIVITY_TYPE}
+    activity-text: ${BOT__DISCORD_APPLICATION_ACTIVITY_TEXT}
 
 premium:
   server-sku-id: ${PREMIUM_SERVER_SKU_ID:}
@@ -92,8 +109,8 @@ premium:
   yearly-plan-id: ${PREMIUM_YEARLY_PLAN_ID:}
 
 bigquery:
-  enabled: ${BIGQUERY_ENABLED:false}
-  dataset-name: ${BIGQUERY_DATASET_NAME:astro_local}
+  enabled: ${BOT__BIGQUERY_ENABLED}
+  dataset-name: ${BOT__BIGQUERY_DATASET_NAME}
   max-events-entry: 10000
   # seconds, used by the scheduled dispatch
   delay: 10

@@ -37,6 +37,14 @@ management:
         enabled: true
 
 spring:
+  data:
+    redis:
+      client-name: api-central
+      client-type: lettuce
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
+      password: ${REDIS_PASSWORD:}
   servlet:
     multipart:
       max-file-size: 5MB

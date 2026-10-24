@@ -16,12 +16,12 @@ import space.astro.bot.ui.Buttons
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.bot.ui.Links
-import space.astro.shared.core.properties.ShardManagerConfig
+import space.astro.shared.core.properties.bot.BotShardProperties
 
 @Component
 class HelpCommand(
     private val podProperties: PodProperties,
-    private val shardManagerConfig: ShardManagerConfig,
+    private val botShardProperties: BotShardProperties,
 ) : SlashHandler<InteractionContext> {
     override val data =
         Commands
@@ -84,7 +84,7 @@ class HelpCommand(
                         "shardId" to shardInfo.shardId.toString(),
                         "shardTotal" to shardInfo.shardTotal.toString(),
                         "pod" to podProperties.getParsedOrdinal().toString(),
-                        "totalPods" to shardManagerConfig.totalPods.toString(),
+                        "totalPods" to botShardProperties.totalPods.toString(),
                     ),
                 ),
             ),

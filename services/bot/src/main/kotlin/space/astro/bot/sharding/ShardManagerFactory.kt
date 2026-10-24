@@ -16,13 +16,13 @@ import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.properties.DiscordApplicationProperties
 import space.astro.bot.properties.PodProperties
 import space.astro.bot.utils.discord.DefaultFailureConsumer
-import space.astro.shared.core.properties.ShardManagerConfig
+import space.astro.shared.core.properties.bot.BotShardProperties
 
 private val log = KotlinLogging.logger { }
 
 @Component
 class ShardManagerFactory(
-    private val shardManagerConfig: ShardManagerConfig,
+    private val botShardProperties: BotShardProperties,
     private val discordApplicationProperties: DiscordApplicationProperties,
     private val jdaToSpringEventBridge: JdaToSpringEventBridge,
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
@@ -38,7 +38,7 @@ class ShardManagerFactory(
         podProperties: PodProperties,
         redisShardSessionController: RedisShardSessionController,
     ): ShardManager {
-        val shardsPerPod = shardManagerConfig.totalShards / shardManagerConfig.totalPods
+        val shardsPerPod = botShardProperties.totalShards / botShardProperties.totalPods
         val shardList =
             IntRange(
                 podProperties.getParsedOrdinal() * shardsPerPod,
@@ -50,7 +50,7 @@ class ShardManagerFactory(
                 shardList.joinToString(
                     ", ",
                 )
-            } (total: ${shardList.size}/${shardManagerConfig.totalShards})"
+            } (total: ${shardList.size}/${botShardProperties.totalShards})"
         }
 
         val activity =
@@ -65,7 +65,7 @@ class ShardManagerFactory(
             ).setMemberCachePolicy(MemberCachePolicy.VOICE)
             .enableCache(CacheFlag.VOICE_STATE, CacheFlag.MEMBER_OVERRIDES, CacheFlag.ACTIVITY)
             .setSessionController(redisShardSessionController)
-            .setShardsTotal(shardManagerConfig.totalShards)
+            .setShardsTotal(botShardProperties.totalShards)
             .setShards(shardList)
             .setActivity(activity)
             .addEventListeners(jdaToSpringEventBridge)
