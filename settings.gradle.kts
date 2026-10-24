@@ -20,8 +20,8 @@ include(
     // standalone
     "services:bot",
     "services:api-central",
-//    "services:support-bot",
-//    "services:entitlements-expiration-job",
+    "services:support-bot",
+    "services:entitlements-expiration-job",
     // shared
     "shared:core"
 )

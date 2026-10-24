@@ -1,19 +1,19 @@
 info:
   app:
-    name: "Support bot with an API"
-    description: "A Discord bot that handles the support server of Astro, includes an API for reacting to various events, mainly premium."
+    name: "Support bot"
+    description: "Discord bot of the Astro support server, with an API to react to premium events."
     version: "1.0.0"
 
-server:
-  port: ${SUPPORT_BOT_API_PORT:9002}
+logging:
+  level:
+    root: ${SB__LOG_LEVEL}
 
+server:
+  port: ${SB__PORT}
 
 management:
   endpoints:
     web:
-      cors:
-        allowed-origins: "*"
-        allowed-methods: GET, POST
       exposure:
         include:
           - health
@@ -21,8 +21,6 @@ management:
           - metrics
           - prometheus
   endpoint:
-    prometheus:
-      enabled: true
     health:
       probes:
         enabled: true
@@ -30,6 +28,7 @@ management:
         readiness:
           include:
             - readinessState
+            - shardsReadiness
         liveness:
           include:
             - livenessState
@@ -38,17 +37,69 @@ management:
       export:
         enabled: true
 
+spring:
+  data:
+    redis:
+      client-name: support-bot
+      client-type: lettuce
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
+      password: ${REDIS_PASSWORD:}
 
-##############
-### SHARED ###
-##############
-logging:
-  level:
-    root: ${LOG_LEVEL:INFO}
+springdoc:
+  api-docs:
+    path: /docs/openapi.json
 
+scalar:
+  enabled: true
+  url: /docs/openapi.json
+  path: /docs
+  page-title: "Astro Support Bot API Reference"
+  operation-sorter: method
 
 sentry:
   dsn: https://fd05f462a5f47e39c3cd927fc63a3021@o4506708022263808.ingest.sentry.io/4506708030128128
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
   traces-sample-rate: 0.05
+
+
+#####################
+# CUSTOM PROPERTIES #
+#####################
+
+### SHARED ###
+
+# the discord section is below, since it also holds the service specific properties
+chargebee:
+  enabled: true
+  site-name: ${CHARGEBEE_SITE_NAME}
+  api-key: ${CHARGEBEE_API_KEY}
+  server-ultimate-plan-id: ${CHARGEBEE_SERVER_PREMIUM_PLAN_ID}
+
+kube:
+  lifecycle-auth-key: ${KUBE_LIFECYCLE_AUTH_KEY}
+
+### SERVICE SPECIFIC ###
+
+discord:
+  api:
+    base-url: ${DISCORD_API_BASE_URL}
+    enabled: true
+  application:
+    token: ${SB__DISCORD_APPLICATION_TOKEN}
+    activity-type: ${SB__DISCORD_APPLICATION_ACTIVITY_TYPE}
+    activity-text: ${SB__DISCORD_APPLICATION_ACTIVITY_TEXT}
+
+support:
+  bot:
+    api:
+      auth: ${SB__API_AUTH}
+  server:
+    guild-id: ${SB__SERVER_GUILD_ID}
+    premium-role-id: ${SB__SERVER_PREMIUM_ROLE_ID}
+    premium-sku-id: ${SB__SERVER_PREMIUM_SKU_ID}
+    # application whose user entitlements for the premium SKU also grant the role
+    entitlements-application-id: ${SB__SERVER_ENTITLEMENTS_APPLICATION_ID}
+    entitlements-application-token: ${SB__SERVER_ENTITLEMENTS_APPLICATION_TOKEN}

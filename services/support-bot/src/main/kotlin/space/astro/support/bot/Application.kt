@@ -1,29 +1,38 @@
 package space.astro.support.bot
 
-import org.springframework.boot.actuate.autoconfigure.metrics.mongo.MongoMetricsAutoConfiguration
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLoggingConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
-import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+import space.astro.shared.core.properties.KubeProperties
 
-@EnableScheduling
 @SpringBootApplication(
-    scanBasePackages = [
-        "space.astro.support.bot",
-        "space.astro.shared.core.configs",
-        "space.astro.shared.core.components.coroutine",
-        "space.astro.shared.core.components.io",
-        "space.astro.shared.core.services.redis",
-        "space.astro.shared.core.services.discord",
-        "space.astro.shared.core.services.chargebee"
-    ],
     exclude = [
-        MongoAutoConfiguration::class,
-        MongoMetricsAutoConfiguration::class
-    ]
+        UserDetailsServiceAutoConfiguration::class,
+    ],
+    // the support bot doesn't use the database
+    excludeName = [
+        "org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration",
+    ],
 )
+@ConfigurationPropertiesScan(
+    basePackages = [
+        "space.astro.support.bot.properties",
+    ],
+)
+@EnableConfigurationProperties(KubeProperties::class)
 class Application
 
 fun main(args: Array<String>) {
+    KotlinLoggingConfiguration.logStartupMessage = false
+    val log = KotlinLogging.logger { }
+
+    Thread.setDefaultUncaughtExceptionHandler { t, e ->
+        log.error(e) { "Uncaught exception in thread $t" }
+    }
+
     runApplication<Application>(*args)
 }

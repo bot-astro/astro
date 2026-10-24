@@ -30,15 +30,6 @@ spec:
         envFrom:
           - configMapRef:
               name: {{ .Values.config }}
-        env:
-        - name: POD_HOSTNAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        - name: POD_ORDINAL
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
         resources:
           requests:
             cpu: {{ .Values.resources.requests.cpu }}
@@ -47,7 +38,7 @@ spec:
             memory: {{ .Values.resources.limits.memory }}
         readinessProbe:
           httpGet:
-            path: /ready
+            path: /actuator/health/readiness
             port: {{ .Values.port }}
             httpHeaders:
               - name: Authorization
@@ -67,14 +58,6 @@ spec:
           initialDelaySeconds: 30
           periodSeconds: 10
           failureThreshold: 10
-        lifecycle:
-          preStop:
-            httpGet:
-              path: /shutdown
-              port: {{ .Values.port }}
-              httpHeaders:
-                - name: Authorization
-                  value: {{ .Values.auth }}
       imagePullSecrets:
       - name: docker-registry
       terminationGracePeriodSeconds: 30

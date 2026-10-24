@@ -11,6 +11,7 @@ import org.springframework.web.client.body
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.exceptions.AUnknownException
+import space.astro.shared.core.models.discord.DiscordEntitlementDto
 import space.astro.shared.core.models.discord.DiscordPartialGuildDto
 import space.astro.shared.core.models.discord.DiscordTokenDto
 import space.astro.shared.core.models.discord.DiscordUserDto
@@ -18,8 +19,11 @@ import space.astro.shared.core.properties.DiscordApiProperties
 import space.astro.shared.core.properties.DiscordOAuthProperties
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
+import java.util.Optional
 
 private val log = KotlinLogging.logger { }
+
+private const val ENTITLEMENTS_PAGE_SIZE = 100
 
 class DiscordApiClient(
     discordApiConfig: DiscordApiProperties,
@@ -160,6 +164,57 @@ class DiscordApiClient(
                 }
         } catch (e: RestClientResponseException) {
             throw AUnknownException("Failed to fetch Discord user guilds", e)
+        }
+    }
+
+    /**
+     * Fetches the entitlements of the application with id [applicationId], following the pagination
+     *
+     * @param applicationId id of the application that owns the entitlements
+     * @param botToken token of the bot of the application
+     * @param userId optional filter, only entitlements of this user
+     * @param guildId optional filter, only entitlements of this guild
+     * @return the list of entitlements, including the ones that already ended
+     * @throws AException
+     */
+    fun getEntitlements(
+        applicationId: String,
+        botToken: String,
+        userId: String? = null,
+        guildId: String? = null,
+    ): List<DiscordEntitlementDto> {
+        try {
+            val entitlements = mutableListOf<DiscordEntitlementDto>()
+            var after: String? = null
+
+            do {
+                val page =
+                    client
+                        .get()
+                        .uri { uriBuilder ->
+                            uriBuilder
+                                .path("/applications/{applicationId}/entitlements")
+                                .queryParam("limit", ENTITLEMENTS_PAGE_SIZE)
+                                .queryParamIfPresent("after", Optional.ofNullable(after))
+                                .queryParamIfPresent("user_id", Optional.ofNullable(userId))
+                                .queryParamIfPresent("guild_id", Optional.ofNullable(guildId))
+                                .build(applicationId)
+                        }.header("Authorization", "Bot $botToken")
+                        .retrieve()
+                        .body<List<DiscordEntitlementDto>>()
+                        ?: run {
+                            log.error { "Discord returned an empty entitlements response" }
+                            throw AUnknownException("Failed to fetch Discord entitlements of application $applicationId")
+                        }
+
+                entitlements += page
+                // pages are paginated by entitlement id (a snowflake), the next one starts after the highest id
+                after = page.maxOfOrNull { it.id.toLong() }?.toString()
+            } while (page.size == ENTITLEMENTS_PAGE_SIZE)
+
+            return entitlements
+        } catch (e: RestClientResponseException) {
+            throw AUnknownException("Failed to fetch Discord entitlements of application $applicationId", e)
         }
     }
 }

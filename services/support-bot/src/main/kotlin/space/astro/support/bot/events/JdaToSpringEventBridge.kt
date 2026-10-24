@@ -1,4 +1,4 @@
-package space.astro.support.bot.components.jda
+package space.astro.support.bot.events
 
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.hooks.EventListener
@@ -7,11 +7,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class JdaToSpringEventBridge(
-    private val applicationEventPublisher: ApplicationEventPublisher
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) : EventListener {
-
     override fun onEvent(event: GenericEvent) {
         applicationEventPublisher.publishEvent(event)
     }
-
 }

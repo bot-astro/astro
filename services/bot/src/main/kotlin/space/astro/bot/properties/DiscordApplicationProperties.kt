@@ -7,8 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class DiscordApplicationProperties(
     val id: Long,
     val token: String,
-    val activityType: String,
-    val activityText: String,
+    val activityType: String = "WATCHING",
+    val activityText: String = "",
 ) {
     fun getActivityType(): Activity.ActivityType = Activity.ActivityType.valueOf(activityType)
 }
