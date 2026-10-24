@@ -19,6 +19,7 @@ import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.ui.Containers
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
@@ -84,7 +85,7 @@ class JoinedGeneratorHandler(
                 }
 
             if (availableTemporaryVC != null) {
-                guild.moveVoiceMember(owner, availableTemporaryVC).queue()
+                guild.moveVoiceMember(owner, availableTemporaryVC).reason(L.t(locale, "reason.vc.moved_queue")).queue()
                 return false
             }
         }
@@ -113,7 +114,10 @@ class JoinedGeneratorHandler(
                     )
 
             // TODO: premium, the legacy code required premium to use a fallback generator
-            guild.moveVoiceMember(owner, fallbackGenerator).queueAfter(1, TimeUnit.SECONDS)
+            guild
+                .moveVoiceMember(owner, fallbackGenerator)
+                .reason(L.t(locale, "reason.vc.moved_fallback"))
+                .queueAfter(1, TimeUnit.SECONDS)
 
             return false
         }
@@ -159,6 +163,7 @@ class JoinedGeneratorHandler(
                 .setUserlimit(userLimit)
                 .setBitrate(bitrate)
                 .setPosition(rawPosition)
+                .reason(L.t(locale, "reason.vc.created"))
 
         // permissions
         val permissionOverrides: List<PermissionOverride> =
@@ -224,9 +229,9 @@ class JoinedGeneratorHandler(
             }
 
         try {
-            guild.moveVoiceMember(owner, temporaryVC).await()
+            guild.moveVoiceMember(owner, temporaryVC).reason(L.t(locale, "reason.vc.moved_created")).await()
         } catch (e: Exception) {
-            temporaryVC.delete().reason("Unknown error moving a user into a temporary VC").queueAfter(1, TimeUnit.SECONDS)
+            temporaryVC.delete().reason(L.t(locale, "reason.vc.deleted_move_failed")).queueAfter(1, TimeUnit.SECONDS)
             throw unknownError(guild.id, "moving a user (${owner.id}) into a temporary VC: ${e.message}")
         }
 
@@ -261,7 +266,7 @@ class JoinedGeneratorHandler(
         ///////////////////////////////
         // check if user is still in the created temporary vc before saving the data
         if (owner.voiceState?.channel?.id != temporaryVC.id) {
-            val reason = "User left the generated temporary VC too quickly"
+            val reason = L.t(locale, "reason.vc.deleted_left_too_quickly")
 
             waitingRoom?.delete()?.reason(reason)?.queueAfter(1, TimeUnit.SECONDS)
             privateChat?.delete()?.reason(reason)?.queueAfter(2, TimeUnit.SECONDS)

@@ -61,7 +61,10 @@ class InviteCommand(
                 .retrieveInvites()
                 .await()
                 .firstOrNull()
-                ?: vcCtx.temporaryVC.createInvite().await()
+                ?: vcCtx.temporaryVC
+                    .createInvite()
+                    .reason(ctx.t("reason.vc.invite_created"))
+                    .await()
 
         vcPermissionManager.permitMembers(vcCtx, members)
         vcCtx.queueUpdatedManagers()

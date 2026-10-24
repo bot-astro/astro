@@ -80,7 +80,7 @@ class WaitingRoomCommand(
 
         vcCtx.waitingRoom
             ?.delete()
-            ?.reason("user requested waiting room deletion")
+            ?.reason(ctx.t("reason.vc.waiting_room_deleted"))
             ?.queue()
         entity.waitingID = null
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, entity) }

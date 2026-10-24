@@ -15,6 +15,8 @@ import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.utils.extensions.modifyMemberPermissionOverride
 import space.astro.bot.utils.extensions.modifyPermissionOverride
+import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
@@ -129,7 +131,7 @@ class VCPermissionManager(
         }
 
         if (member.voiceState?.channel?.id == ctx.temporaryVC.id) {
-            ctx.guild.kickVoiceMember(member).await()
+            ctx.guild.kickVoiceMember(member).reason(L.t(ctx.guildSettings.supportedLocale, "reason.vc.kicked")).await()
             delay(450.milliseconds)
         }
 
@@ -186,7 +188,7 @@ class VCPermissionManager(
         // Those delays are to prevent spam and because when a user exits a temp vc its permissions get removed,
         // but we also need to explicitly deny some other perms after
         membersToKick.forEach {
-            ctx.guild.kickVoiceMember(it).await()
+            ctx.guild.kickVoiceMember(it).reason(L.t(ctx.guildSettings.supportedLocale, "reason.vc.kicked")).await()
             delay(250)
         }
         delay(200)

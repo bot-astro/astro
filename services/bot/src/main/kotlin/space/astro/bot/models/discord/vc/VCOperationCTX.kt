@@ -5,6 +5,8 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager
+import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
@@ -74,22 +76,24 @@ data class VCOperationCTX(
         success: ((managerType: ManagerType) -> Unit)? = null,
         failure: ((managerType: ManagerType, throwable: Throwable) -> Unit)? = null,
     ) {
+        val reason = L.t(guildSettings.supportedLocale, vcOperationOrigin.reasonKey)
+
         if (temporaryVCManagerUpdated) {
-            temporaryVCManager.queue(
+            temporaryVCManager.reason(reason).queue(
                 { success?.invoke(ManagerType.TEMPORARY_VC) },
                 { throwable -> failure?.invoke(ManagerType.TEMPORARY_VC, throwable) },
             )
         }
 
         if (privateChatManagerUpdated) {
-            privateChatManager?.queue(
+            privateChatManager?.reason(reason)?.queue(
                 { success?.invoke(ManagerType.PRIVATE_CHAT) },
                 { throwable -> failure?.invoke(ManagerType.PRIVATE_CHAT, throwable) },
             )
         }
 
         if (waitingRoomManagerUpdated) {
-            waitingRoomManager?.queue(
+            waitingRoomManager?.reason(reason)?.queue(
                 { success?.invoke(ManagerType.WAITING_ROOM) },
                 { throwable -> failure?.invoke(ManagerType.WAITING_ROOM, throwable) },
             )
@@ -104,11 +108,13 @@ data class VCOperationCTX(
         WAITING_ROOM("waiting room"),
     }
 
-    enum class VCOperationOrigin {
-        USER_RENAME,
-        STATE_CHANGE,
-        OWNER_CHANGE,
-        ACTIVITY_CHANGE,
-        UNKNOWN,
+    enum class VCOperationOrigin(
+        val reasonKey: String,
+    ) {
+        USER_RENAME("reason.vc.update.user_rename"),
+        STATE_CHANGE("reason.vc.update.state_change"),
+        OWNER_CHANGE("reason.vc.update.owner_change"),
+        ACTIVITY_CHANGE("reason.vc.update.activity_change"),
+        UNKNOWN("reason.vc.update.unknown"),
     }
 }

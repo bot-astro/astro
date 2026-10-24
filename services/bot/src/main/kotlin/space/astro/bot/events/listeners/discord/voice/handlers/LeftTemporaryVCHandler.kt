@@ -11,6 +11,7 @@ import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 
@@ -34,9 +35,10 @@ class LeftTemporaryVCHandler(
         val privateChat = entity.chatID?.let { guild.getTextChannelById(it) }
         val waitingRoom = entity.waitingID?.let { guild.getVoiceChannelById(it) }
         val newOwner = vc.members.firstOrNull { !it.user.isBot }
+        val locale = data.guildSettings.supportedLocale
 
         if (newOwner == null) {
-            val reason = "Deleting temporary vc, detected ${vc.members.size} users, none of them is a non bot"
+            val reason = L.t(locale, "reason.vc.deleted_empty", "count" to vc.members.size)
 
             temporaryVCRepository.delete(guild.id, entity.id)
 
@@ -51,10 +53,11 @@ class LeftTemporaryVCHandler(
             changeOwner(event, newOwner, vc, privateChat, waitingRoom, memberRolesManager)
         } else {
             val memberId = data.member.idLong
+            val reason = L.t(locale, "reason.vc.member_left")
 
-            vc.manager.removePermissionOverride(memberId).queue()
-            privateChat?.manager?.removePermissionOverride(memberId)?.queue()
-            waitingRoom?.manager?.removePermissionOverride(memberId)?.queue()
+            vc.manager.removePermissionOverride(memberId).reason(reason).queue()
+            privateChat?.manager?.removePermissionOverride(memberId)?.reason(reason)?.queue()
+            waitingRoom?.manager?.removePermissionOverride(memberId)?.reason(reason)?.queue()
         }
 
         if (entity.chatLogs) {
@@ -114,6 +117,11 @@ class LeftTemporaryVCHandler(
         )
         temporaryVCRepository.save(guild.id, ctx.temporaryVCEntity)
 
-        ownerRole?.also { guild.addRoleToMember(newOwner, it).queue() }
+        ownerRole?.also {
+            guild
+                .addRoleToMember(newOwner, it)
+                .reason(L.t(data.guildSettings.supportedLocale, "reason.vc.owner_role_added"))
+                .queue()
+        }
     }
 }

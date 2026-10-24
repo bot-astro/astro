@@ -133,13 +133,14 @@ class InterfaceManager {
         guild: Guild,
         channelId: String,
         messageId: String,
+        locale: Locale,
     ) {
         val channel =
             guild.getTextChannelById(channelId)
                 ?: return
 
         try {
-            channel.deleteMessageById(messageId).await()
+            channel.deleteMessageById(messageId).reason(L.t(locale, "reason.dashboard.interface_delete")).await()
         } catch (e: ErrorResponseException) {
             if (e.errorResponse == ErrorResponse.UNKNOWN_MESSAGE) {
                 return

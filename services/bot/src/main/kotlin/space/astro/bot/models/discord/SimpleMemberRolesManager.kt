@@ -3,6 +3,8 @@ package space.astro.bot.models.discord
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Role
+import space.astro.shared.core.lang.L
+import java.util.Locale
 
 /**
  * Simple member roles manager that allows to set roles to add and to remove from a member
@@ -10,6 +12,7 @@ import net.dv8tion.jda.api.entities.Role
 class SimpleMemberRolesManager(
     private val guild: Guild,
     private val member: Member,
+    private val locale: Locale,
 ) {
     private val rolesToAdd = mutableListOf<Role>()
     private val rolesToRemove = mutableListOf<Role>()
@@ -43,7 +46,7 @@ class SimpleMemberRolesManager(
 
         guild
             .modifyMemberRoles(member, rolesToAdd, rolesToRemove)
-            .reason("applied the necessary roles based on the generator and connection features settings")
+            .reason(L.t(locale, "reason.roles.features"))
             .queue()
     }
 }

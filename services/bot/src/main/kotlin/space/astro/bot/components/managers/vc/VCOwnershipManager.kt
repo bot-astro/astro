@@ -8,6 +8,8 @@ import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.utils.extensions.modifyPermissionOverride
+import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.lang.L
 
 @Component
 class VCOwnershipManager(
@@ -83,9 +85,17 @@ class VCOwnershipManager(
             ctx.generatorSettings.ownerRole?.let { ctx.guild.getRoleById(it) }
                 ?: return
 
+        val locale = ctx.guildSettings.supportedLocale
+
         if (oldOwner != null && oldOwner.roles.any { it.id == ownerRole.id }) {
-            ctx.guild.removeRoleFromMember(oldOwner.user, ownerRole).queue()
+            ctx.guild
+                .removeRoleFromMember(oldOwner.user, ownerRole)
+                .reason(L.t(locale, "reason.vc.owner_role_removed"))
+                .queue()
         }
-        ctx.guild.addRoleToMember(newOwner.user, ownerRole).queue()
+        ctx.guild
+            .addRoleToMember(newOwner.user, ownerRole)
+            .reason(L.t(locale, "reason.vc.owner_role_added"))
+            .queue()
     }
 }

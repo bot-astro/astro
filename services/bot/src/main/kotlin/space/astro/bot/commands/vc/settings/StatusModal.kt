@@ -38,6 +38,7 @@ class StatusModal(
 
         ctx.vcOperationCTX.temporaryVC
             .modifyStatus(status)
+            .reason(ctx.t("reason.vc.status_updated"))
             .await()
 
         val reply =

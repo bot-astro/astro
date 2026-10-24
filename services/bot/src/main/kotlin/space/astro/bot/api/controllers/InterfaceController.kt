@@ -101,7 +101,7 @@ class InterfaceController(
                 ?: throw ANotFoundException("Guild not found")
 
         try {
-            interfaceManager.deleteInterface(guild, channelId, messageId)
+            interfaceManager.deleteInterface(guild, channelId, messageId, guildSettingsRepository.findByGuildID(guild.id).supportedLocale)
             return ResponseEntity.noContent().build()
         } catch (e: AException) {
             throw e

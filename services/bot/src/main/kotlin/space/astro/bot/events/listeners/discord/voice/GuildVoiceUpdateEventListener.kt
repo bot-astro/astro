@@ -17,6 +17,7 @@ import space.astro.bot.events.listeners.discord.voice.handlers.VCEventHandler
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEventData
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.bot.utils.extensions.toConfigurationErrorDto
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
@@ -68,7 +69,7 @@ class GuildVoiceUpdateEventListener(
             )
 
         val events = vcEventDetector.detectAstroVCEvents(vcEventData)
-        val memberRolesManager = SimpleMemberRolesManager(event.guild, event.member)
+        val memberRolesManager = SimpleMemberRolesManager(event.guild, event.member, guildSettings.supportedLocale)
 
         vcEventHandler.handleEvents(events, memberRolesManager)
 

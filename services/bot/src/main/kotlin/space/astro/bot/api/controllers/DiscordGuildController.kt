@@ -11,14 +11,17 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import space.astro.bot.utils.discord.iconFromUrl
+import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.AUnknownException
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.api.bot.request.ChannelCreateBotApiRequest
 import space.astro.shared.core.models.api.bot.request.GuildProfileUpdateBotApiRequest
 import space.astro.shared.core.models.api.bot.response.DiscordGuildBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildRoleBotApiResponse
+import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.BotApiEndpoint
 import java.io.IOException
 
@@ -27,6 +30,7 @@ import java.io.IOException
 @Tag(name = "Discord Guild")
 class DiscordGuildController(
     private val shardManager: ShardManager,
+    private val guildSettingsRepository: GuildSettingsRepository,
 ) {
     @Operation(
         summary = "Get guild",
@@ -74,7 +78,7 @@ class DiscordGuildController(
                 .setBio(newProfile.bio)
                 .setAvatar(avatar)
                 .setBanner(banner)
-                .reason("Profile update triggered from the dashboard")
+                .reason(L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.profile_update"))
                 .await()
         } catch (e: ErrorResponseException) {
             throw ABadRequestException(e.message ?: "Error from Discord API", e)
@@ -142,15 +146,17 @@ class DiscordGuildController(
                 guild.getCategoryById(it) ?: throw ANotFoundException("Category with id $it not found")
             }
 
+        val reason = L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_create")
+
         try {
             val channel =
                 when (request.channelType) {
                     ChannelCreateBotApiRequest.ChannelCreateType.TEXT ->
-                        guild.createTextChannel(request.name).apply { category?.let { setParent(it) } }.await()
+                        guild.createTextChannel(request.name).apply { category?.let { setParent(it) } }.reason(reason).await()
                     ChannelCreateBotApiRequest.ChannelCreateType.VOICE ->
-                        guild.createVoiceChannel(request.name).apply { category?.let { setParent(it) } }.await()
+                        guild.createVoiceChannel(request.name).apply { category?.let { setParent(it) } }.reason(reason).await()
                     ChannelCreateBotApiRequest.ChannelCreateType.CATEGORY ->
-                        guild.createCategory(request.name).await()
+                        guild.createCategory(request.name).reason(reason).await()
                 }
 
             val response =
@@ -185,7 +191,7 @@ class DiscordGuildController(
             guild.channels
                 .find { it.id == channelId }
                 ?.delete()
-                ?.reason("Channel deletion triggered from the dashboard")
+                ?.reason(L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_delete"))
                 ?.await()
         } catch (e: ErrorResponseException) {
             when (e.errorResponse) {

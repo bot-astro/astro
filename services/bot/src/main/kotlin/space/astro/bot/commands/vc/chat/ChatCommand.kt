@@ -83,7 +83,7 @@ class ChatCommand(
 
         vcCtx.privateChat
             ?.delete()
-            ?.reason("delete private text chat from 'chat delete' command")
+            ?.reason(ctx.t("reason.vc.chat_deleted"))
             ?.queue()
         entity.chatID = null
         withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guildId, entity) }

@@ -6,6 +6,7 @@ import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.lang.L
 
 @Component
 class JoinedTemporaryVCHandler {
@@ -14,6 +15,7 @@ class JoinedTemporaryVCHandler {
         val guild = data.guild
         val member = data.member
         val entity = event.temporaryVCEntity
+        val reason = L.t(data.guildSettings.supportedLocale, "reason.vc.member_joined")
 
         val temporaryVC =
             data.joinedChannel?.asVoiceChannel()
@@ -25,7 +27,8 @@ class JoinedTemporaryVCHandler {
             .modifyPermissionOverride(
                 permissionHolder = member,
                 allow = PermissionSets.userTemporaryVCPermissions,
-            ).queue()
+            ).reason(reason)
+            .queue()
 
         // allow user to see the private text chat of the temporary VC if existing
         val privateChat =
@@ -35,6 +38,7 @@ class JoinedTemporaryVCHandler {
                     it
                         .upsertPermissionOverride(member)
                         .grant(PermissionSets.userTemporaryVCChatPermissions)
+                        .reason(reason)
                         .queue()
                 }
 

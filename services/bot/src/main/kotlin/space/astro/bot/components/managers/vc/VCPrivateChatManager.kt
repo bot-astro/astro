@@ -14,6 +14,7 @@ import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
@@ -48,7 +49,7 @@ class VCPrivateChatManager {
                     .apply {
                         generatorSettings.chatTopic?.let { setTopic(it) }
                         category?.let { setParent(it) }
-                    }
+                    }.reason(L.t(locale, "reason.vc.chat_created"))
 
             // add bot permissions
             builder.addMemberPermissionOverride(
