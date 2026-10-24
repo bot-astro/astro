@@ -9,7 +9,7 @@ global_job_config:
   prologue:
     commands:
       - checkout
-      - sem-version java 17
+      - sem-version java 25
 
 blocks:
   # bot
@@ -17,15 +17,13 @@ blocks:
     dependencies: []
     run:
       when: |
-        change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        branch = 'master' and change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml', '/build-logic/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
     task:
       secrets:
         - name: github
         - name: sentry
       prologue:
         commands:
-          - sudo apt-get update -y
-          - sudo apt-get install -y lftp
           - cache restore gradle-caches_bot
           - cache restore gradle-wrapper_bot
           - checkout
@@ -33,7 +31,6 @@ blocks:
         - name: Build, test and push bot
           commands:
             - ./gradlew :services:bot:build
-            - ./gradlew :services:bot:test
             - ./gradlew :services:bot:jib -Djib.httpTimeout=60000
       epilogue:
         on_pass:
@@ -48,15 +45,13 @@ blocks:
     dependencies: []
     run:
       when: |
-        change_in(['/services/api-central/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        branch = 'master' and change_in(['/services/api-central/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml', '/build-logic/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
     task:
       secrets:
         - name: github
         - name: sentry
       prologue:
         commands:
-          - sudo apt-get update -y
-          - sudo apt-get install -y lftp
           - cache restore gradle-caches_api-central
           - cache restore gradle-wrapper_api-central
           - checkout
@@ -64,7 +59,6 @@ blocks:
         - name: Build, test and push api-central
           commands:
             - ./gradlew :services:api-central:build
-            - ./gradlew :services:api-central:test
             - ./gradlew :services:api-central:jib -Djib.httpTimeout=60000
       epilogue:
         on_pass:
@@ -79,15 +73,13 @@ blocks:
     dependencies: []
     run:
       when: |
-        change_in(['/services/support-bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        branch = 'master' and change_in(['/services/support-bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml', '/build-logic/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
     task:
       secrets:
         - name: github
         - name: sentry
       prologue:
         commands:
-          - sudo apt-get update -y
-          - sudo apt-get install -y lftp
           - cache restore gradle-caches_support-bot
           - cache restore gradle-wrapper_support-bot
           - checkout
@@ -95,7 +87,6 @@ blocks:
         - name: Build, test and push support-bot
           commands:
             - ./gradlew :services:support-bot:build
-            - ./gradlew :services:support-bot:test
             - ./gradlew :services:support-bot:jib -Djib.httpTimeout=60000
       epilogue:
         on_pass:
@@ -110,15 +101,13 @@ blocks:
     dependencies: []
     run:
       when: |
-        change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        branch = 'master' and change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml', '/build-logic/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
     task:
       secrets:
         - name: github
         - name: sentry
       prologue:
         commands:
-          - sudo apt-get update -y
-          - sudo apt-get install -y lftp
           - cache restore gradle-caches_entitlements-expiration-job
           - cache restore gradle-wrapper_entitlements-expiration-job
           - checkout
@@ -126,7 +115,6 @@ blocks:
         - name: Build, test and push entitlements-expiration-job
           commands:
             - ./gradlew :services:entitlements-expiration-job:build
-            - ./gradlew :services:entitlements-expiration-job:test
             - ./gradlew :services:entitlements-expiration-job:jib -Djib.httpTimeout=60000
       epilogue:
         on_pass:
@@ -142,7 +130,7 @@ promotions:
     pipeline_file: deploy/bot/staging.yml
     auto_promote:
       when: |
-        result = 'passed' and change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        result = 'passed' and branch = 'master' and change_in(['/services/bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml', '/build-logic/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
   - name: Deploy bot to production
     pipeline_file: deploy/bot/production.yml
 
@@ -151,7 +139,7 @@ promotions:
     pipeline_file: deploy/api-central/staging.yml
     auto_promote:
       when: |
-        result = 'passed' and change_in(['/services/api-central/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        result = 'passed' and branch = 'master' and change_in(['/services/api-central/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml', '/build-logic/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
   - name: Deploy api-central to production
     pipeline_file: deploy/api-central/production.yml
 
@@ -160,7 +148,7 @@ promotions:
     pipeline_file: deploy/support-bot/staging.yml
     auto_promote:
       when: |
-        result = 'passed' and change_in(['/services/support-bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        result = 'passed' and branch = 'master' and change_in(['/services/support-bot/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml', '/build-logic/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
   - name: Deploy support-bot to production
     pipeline_file: deploy/support-bot/production.yml
 
@@ -169,6 +157,6 @@ promotions:
     pipeline_file: deploy/entitlements-expiration-job/staging.yml
     auto_promote:
       when: |
-        result = 'passed' and change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+        result = 'passed' and branch = 'master' and change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml', '/build-logic/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
   - name: Deploy entitlements-expiration-job to production
     pipeline_file: deploy/entitlements-expiration-job/production.yml

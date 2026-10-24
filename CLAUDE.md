@@ -12,13 +12,12 @@ Code under `*-old` modules (`bot-old`, `central-api-old`, `shared/old-core`) is 
 - [x] enable git precommit hooks again and run them + fix issues they report
 - [x] clean up `./docs` and move `./ignored/notes/redis-migration.md` inside docs
 - [x] make sure all skills in `.claude` are symlinks to `.agents`
-- [ ] create useful skills (will detail this more)
-- [ ] update README.md
-- [ ] verify semaphore pipelines are correct, and the infra too, in depth
-- [ ] stuff is currently deployed with old infra & bot version, write a clear step by step guide on how to deploy everything new, including `../infra` (do not miss any detail, I'm ok with some downtime on the bot, the gport repo has terraform code that defines Longhorn and other stuff so it's important that the migration is done right).
-- [ ] clear error objects in db during migration
-- [ ] add chargebee new webhooks in chargebee configs
-- [ ] symlink .CLAUDE to README.md
+- [x] create useful skills (will detail this more)
+- [x] update README.md
+- [x] verify semaphore pipelines are correct, and the infra too, in depth
+- [x] stuff is currently deployed with old infra & bot version, write a clear step by step guide on how to deploy everything new, including `../infra` (do not miss any detail, I'm ok with some downtime on the bot, the gport repo has terraform code that defines Longhorn and other stuff so it's important that the migration is done right).
+- [ ] deploy, see `docs/deploy-hyperion.md`
+- [ ] try improving memory JVM, see `docs/memory-improvement-plan.md`
 
 
 ## Workflow

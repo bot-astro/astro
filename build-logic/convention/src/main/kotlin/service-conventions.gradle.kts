@@ -39,8 +39,8 @@ jib {
         jvmFlags = listOf(
             "-XX:+PrintCommandLineFlags",
             "-XshowSettings:vm",
-            "-XX:MinRAMPercentage=50.0",
-            "-XX:MaxRAMPercentage=50.0"
+            "-XX:MinRAMPercentage=60.0",
+            "-XX:MaxRAMPercentage=60.0"
 //            "-XX:+PrintFlagsFinal",
 //            "-Xlog:os+container=trace"
         )

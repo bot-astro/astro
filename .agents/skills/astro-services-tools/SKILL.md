@@ -43,7 +43,7 @@ JVM internals of a running bot pod: attach a JDK ephemeral container with `kubec
 | Service | Use it for | Tool |
 |---|---|---|
 | GitHub | Code, PRs, Actions | `gh` CLI |
-| GitHub Container Registry | Service images | `gh`/web UI |
+| GitHub Container Registry | Service images | `gh` CLI /web UI |
 | Semaphore | CI pipelines, promotions to staging/production | Web UI (and the `sem` CLI if installed) |
 | Gradle | Build, test, lint | `./gradlew`, wrapped by `just`; the user compiles and tests themselves, see `CLAUDE.md` |
 | pre-commit | Hooks (ktlint, detekt) | `prek`, via `just hooks` |
