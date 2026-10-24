@@ -79,6 +79,108 @@
       "skillPath": "skills/i18n-setup/SKILL.md",
       "computedHash": "8ec97f95573d84b12d6a0ac375b77562f708e274759c9edd05fce7ee231d6df9"
     },
+    "infisical-access-control": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-access-control/SKILL.md",
+      "computedHash": "4291a10a8a21ad659b0e17c03ec2ed11f4dfd66e7a6e58fec1f19474f34cdb54"
+    },
+    "infisical-agent": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-agent/SKILL.md",
+      "computedHash": "8a1707b6a774410fd2865812fe3e199bed27f8b25e0eea6cb638e73fd7492ad6"
+    },
+    "infisical-api": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-api/SKILL.md",
+      "computedHash": "02b06fbf0b0022df245691e3400000feb39455cb06e4321655a6947218d19862"
+    },
+    "infisical-app-connections": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-app-connections/SKILL.md",
+      "computedHash": "d278eecebe20d42746a14e95e1d0a4ff5eb29147acf175399d64eb078e8ba485"
+    },
+    "infisical-dynamic-secrets": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-dynamic-secrets/SKILL.md",
+      "computedHash": "42b68c664bcbf08411bc13900bd1878a8d9e8588e92fb35e349c5b2ac1e8153e"
+    },
+    "infisical-gateway": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-gateway/SKILL.md",
+      "computedHash": "ba38c35eec47906ad63af20e550a0a423314e147835b1fca0dcfcd44d0c33491"
+    },
+    "infisical-kms": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-kms/SKILL.md",
+      "computedHash": "cf1644b783768ca7ddb1ab9e0b2daa85d4491537d453346ecc91efffc013fc9f"
+    },
+    "infisical-kubernetes-operator": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-kubernetes-operator/SKILL.md",
+      "computedHash": "dbbbb0f16ee27221ceb8a4c8e4e3648ffaf541195dd5f4fc22911e54e9e4b2b2"
+    },
+    "infisical-pam": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-pam/SKILL.md",
+      "computedHash": "4451f734d8368194a6acc725d5493a1e6bd09b20b6eff1b1380b76a25617e605"
+    },
+    "infisical-pki": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-pki/SKILL.md",
+      "computedHash": "e342b52fe678d571bc0f86da270f37b20eba3123cae76c368d2a8eec6b3d865f"
+    },
+    "infisical-secret-rotation": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-secret-rotation/SKILL.md",
+      "computedHash": "632551d1e75e530b6ba59c101c7c4d82bc68231da993d0af5aea9f9916bc768a"
+    },
+    "infisical-secret-scanning": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-secret-scanning/SKILL.md",
+      "computedHash": "d2ba8d86455c114a12af64975eff3f24c268acf5f832a5f046e08a7ced8bce73"
+    },
+    "infisical-secret-syncs": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-secret-syncs/SKILL.md",
+      "computedHash": "ce3b946e9559395e29c5bddf8fed44c880eaa81cd4aa9b7db3317b5115635fde"
+    },
+    "infisical-self-host": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-self-host/SKILL.md",
+      "computedHash": "dae4233dd6bda42f73d1cf79c3c5487c49a2ac8390873827168e1a452515045c"
+    },
+    "infisical-setup": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-setup/SKILL.md",
+      "computedHash": "0cd679c75f703c276689310bcb2afb7114b877d4f1b09913a8abfdb1fba3b72f"
+    },
+    "infisical-sso": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-sso/SKILL.md",
+      "computedHash": "71917c0962bfd3bcc0d629c8ff4d49c021891a43fae6224e3f5e461dd8dfdc14"
+    },
+    "infisical-terraform": {
+      "source": "Infisical/ai-skills",
+      "sourceType": "github",
+      "skillPath": "skills/infisical-terraform/SKILL.md",
+      "computedHash": "e2a06e7cd8dc07f9dee7a24ecc15d392e290f0314690e46519f3dcf7b7dd2521"
+    },
     "integration-sync": {
       "source": "crowdin/skills",
       "sourceType": "github",
