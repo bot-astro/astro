@@ -92,6 +92,7 @@ class GuildGeneratorsController(
 
     @Operation(summary = "Delete generator")
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATOR)
+    @CanManageGuildMiddleware
     fun deleteGenerator(
         @PathVariable guildId: String,
         @PathVariable generatorId: String,

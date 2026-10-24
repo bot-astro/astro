@@ -108,7 +108,7 @@ class GuildSettingsController(
     }
 
     @Operation(summary = "Clear temporary VCs cache")
-    @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTIONS)
+    @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_VC_CACHE)
     @CanManageGuildMiddleware
     fun clearVcsCache(
         @PathVariable guildId: String,
