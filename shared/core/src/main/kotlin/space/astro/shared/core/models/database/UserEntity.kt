@@ -2,6 +2,7 @@ package space.astro.shared.core.models.database
 
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
+import space.astro.shared.core.models.database.userSettings.UserGuildUpgradeData
 
 @Document(collection = "users")
 data class UserEntity(
@@ -13,7 +14,7 @@ data class UserEntity(
 //    val settings: UserSettingsData = UserSettingsData(),
 //    val createdFirstVC: Boolean = false,
 //    var premium: Boolean = false,
-//    val guildActiveUpgrades: MutableList<UserGuildUpgradeData> = mutableListOf(),
+    val guildActiveUpgrades: MutableList<UserGuildUpgradeData> = mutableListOf(),
 ) {
 //    val hasUltimate = entitlements.any { it.isActive(System.currentTimeMillis()) } || guildActiveUpgrades.isNotEmpty()
 }

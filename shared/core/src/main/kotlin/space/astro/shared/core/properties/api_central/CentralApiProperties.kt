@@ -11,4 +11,6 @@ data class CentralApiProperties(
     val sessionCookieSecure: Boolean,
     val sessionCookieSameSite: String,
     val corsAllowedOrigins: List<String>,
+    /** Password of the basic auth that Chargebee uses when calling the webhooks */
+    val chargebeeWebhookToken: String,
 )

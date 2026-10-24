@@ -112,6 +112,13 @@ premium:
   yearly-plan-id: ${PREMIUM_YEARLY_PLAN_ID:}
   restrictions: ${PREMIUM_RESTRICTIONS:true}
 
+support:
+  bot:
+    endpoint:
+      enabled: true
+      base-url: ${SUPPORT_BOT_ENDPOINT_BASE_URL}
+      auth: ${SUPPORT_BOT_ENDPOINT_AUTH}
+
 discord:
   api:
     base-url: ${DISCORD_API_BASE_URL}
@@ -155,3 +162,4 @@ central:
     session-cookie-same-site: ${CA__SESSION_COOKIE_SAME_SITE}
     cors-allowed-origins:
       - ${CA__CORS_ALLOWED_ORIGIN}
+    chargebee-webhook-token: ${CA__CHARGEBEE_WEBHOOK_TOKEN}

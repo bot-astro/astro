@@ -14,17 +14,19 @@ import net.dv8tion.jda.api.events.entitlement.EntitlementDeleteEvent
 import net.dv8tion.jda.api.events.entitlement.EntitlementUpdateEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import space.astro.shared.core.clients.SupportBotApiClient
+import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.models.database.guildSettings.GuildEntitlementData
 import space.astro.shared.core.properties.PremiumProperties
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 
 private val log = KotlinLogging.logger { }
 
-// TODO: premium, the legacy listeners also added/removed the premium role of the user in the support server (SupportBotApiService)
 @Component
 class EntitlementEventListener(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val premiumProperties: PremiumProperties,
+    private val supportBotApiClient: SupportBotApiClient,
 ) {
     // IO because the repositories are blocking
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -54,6 +56,15 @@ class EntitlementEventListener(
                 }
             } catch (e: Exception) {
                 log.error(e) { "Unhandled exception while handling an entitlement event in guild $guildId" }
+            }
+
+            // failures are only logged, when the user is not in the support server the support bot calculates the role on join
+            try {
+                supportBotApiClient.removePremiumRole(entitlement.userId)
+            } catch (_: ANotFoundException) {
+                // not in the support server
+            } catch (e: Exception) {
+                log.error(e) { "Failed to remove the premium role of user ${entitlement.userId}" }
             }
         }
     }
@@ -90,6 +101,15 @@ class EntitlementEventListener(
                 guildSettingsRepository.save(guildSettings)
             } catch (e: Exception) {
                 log.error(e) { "Unhandled exception while handling an entitlement event in guild $guildId" }
+            }
+
+            // failures are only logged, when the user is not in the support server the support bot calculates the role on join
+            try {
+                supportBotApiClient.addPremiumRole(entitlement.userId)
+            } catch (_: ANotFoundException) {
+                // not in the support server
+            } catch (e: Exception) {
+                log.error(e) { "Failed to add the premium role of user ${entitlement.userId}" }
             }
         }
     }

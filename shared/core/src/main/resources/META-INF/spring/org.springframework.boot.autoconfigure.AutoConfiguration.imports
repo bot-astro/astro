@@ -3,6 +3,7 @@ space.astro.shared.core.autoconfigure.AMongoRepositoriesAutoConfiguration
 space.astro.shared.core.autoconfigure.ABotApiClient
 space.astro.shared.core.autoconfigure.APremiumManager
 space.astro.shared.core.autoconfigure.AChargebeeClientHelper
+space.astro.shared.core.autoconfigure.ASupportBotApiClient
 space.astro.shared.core.autoconfigure.ADiscordApiClient
 space.astro.shared.core.autoconfigure.AJsonMapperBuilder
 space.astro.shared.core.autoconfigure.ARedisRepositoriesAutoConfiguration

@@ -6,8 +6,8 @@ Code under `*-old` modules (`bot-old`, `central-api-old`, `shared/old-core`) is 
 ## Steps
 - [x] port over premium gates
 - [x] verify sentry is implemented correctly
-- [ ] verify we have telemetry setup
-- [ ] update `../../Giuliopime/gport` migrating with the info from `./docs/infra-cost-migration.md`
+- [x] verify we have telemetry setup
+- [x] update `../../Giuliopime/gport` migrating with the info from `./docs/infra-cost-migration.md`…
 - [ ] enable git precommit hooks again and run them + fix issues they report
 - [ ] clean up `./docs` and move `./ignored/notes/redis-migration.md` inside docs
 - [ ] make sure all skills in `.claude` are symlinks to `.agents`
@@ -17,6 +17,7 @@ Code under `*-old` modules (`bot-old`, `central-api-old`, `shared/old-core`) is 
 - [ ] update justfile with useful tasks (run each service, run docker compose, etc..)
 - [ ] stuff is currently deployed with old infra & bot version, write a clear step by step guide on how to deploy everything new, including `../infra` (do not miss any detail, I'm ok with some downtime on the bot, the gport repo has terraform code that defines Longhorn and other stuff so it's important that the migration is done right).
 - [ ] clear error objects in db during migration
+- [ ] add chargebee new webhooks
 - [ ] symlink .CLAUDE to README.md
 
 

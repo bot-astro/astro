@@ -21,6 +21,14 @@ object CentralApiEndpoint {
     const val GUILD_SETTINGS_CONNECTIONS = "/v2/guilds/{guildId}/settings/connections"
     const val GUILD_SETTINGS_CONNECTION = "/v2/guilds/{guildId}/settings/connections/{connectionId}"
 
+    const val GUILD_PREMIUM_UPGRADE = "/v2/guilds/{guildId}/premium/upgrade"
+
+    const val CHARGEBEE_PORTAL_SESSION = "/v2/chargebee/portal-session"
+    const val CHARGEBEE_CHECKOUT = "/v2/chargebee/checkout"
+    const val CHARGEBEE_SUBSCRIPTIONS = "/v2/chargebee/subscriptions"
+    const val CHARGEBEE_EVENT_SUBSCRIPTION_CREATE = "/v2/chargebee/events/subscription/create"
+    const val CHARGEBEE_EVENT_SUBSCRIPTION_CANCEL = "/v2/chargebee/events/subscription/cancel"
+
     const val DISCORD_CHANNEL_RELATED_PERMISSIONS = "/v2/discord/constants/permissions"
 
     const val DISCORD_SELF_USER = "/v2/discord/users/@me"
