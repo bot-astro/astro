@@ -7,11 +7,11 @@ Code under `*-old` modules (`bot-old`, `central-api-old`, `shared/old-core`) is 
 - [x] port over premium gates
 - [x] verify sentry is implemented correctly
 - [x] verify we have telemetry setup
-- [x] update `../../Giuliopime/gport` migrating with the info from `./docs/infra-cost-migration.md`…
+- [x] update `../../Giuliopime/gport` migrating with the info from `./docs/infrastructure.md`…
 - [x] update justfile with useful tasks (run each service, run docker compose, etc..)
 - [x] enable git precommit hooks again and run them + fix issues they report
-- [ ] clean up `./docs` and move `./ignored/notes/redis-migration.md` inside docs
-- [ ] make sure all skills in `.claude` are symlinks to `.agents`
+- [x] clean up `./docs` and move `./ignored/notes/redis-migration.md` inside docs
+- [x] make sure all skills in `.claude` are symlinks to `.agents`
 - [ ] create useful skills (will detail this more)
 - [ ] update README.md
 - [ ] verify semaphore pipelines are correct, and the infra too, in depth
