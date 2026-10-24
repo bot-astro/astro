@@ -5,6 +5,16 @@ plugins {
     id("io.sentry.jvm.gradle")
 }
 
+sentry {
+    // Uploads a source bundle so stack traces show source context.
+    // The Sentry project slug must match the Gradle project (service) name.
+    includeSourceContext = true
+
+    org = "bot-astro"
+    projectName = project.name
+    authToken = System.getenv("SENTRY_AUTH_TOKEN")
+}
+
 jib {
     from {
         image = "amazoncorretto:25-al2023-headless"
