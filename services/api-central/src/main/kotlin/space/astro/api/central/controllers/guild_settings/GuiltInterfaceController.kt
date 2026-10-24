@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.api.central.models.requests.InterfaceCreateBody
 import space.astro.shared.core.clients.BotApiClient
+import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.exceptions.ANotFoundException
+import space.astro.shared.core.exceptions.APremiumRequiredException
 import space.astro.shared.core.models.api.bot.request.InterfaceCreateBotApiRequest
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.models.database.guildSettings.InterfaceData
@@ -20,6 +22,7 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 class GuiltInterfaceController(
     private val botApiClient: BotApiClient,
     private val guildSettingsRepository: GuildSettingsRepository,
+    private val premiumManager: PremiumManager,
 ) {
     @Operation(summary = "Create interface")
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_INTERFACES)
@@ -31,6 +34,10 @@ class GuiltInterfaceController(
         val guildSettings =
             guildSettingsRepository.findByIdOrNull(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+
+        if (!premiumManager.canCreateInterface(guildSettings)) {
+            throw APremiumRequiredException("Upgrade the server to create more than ${PremiumManager.FREE_MAX_INTERFACES} interface")
+        }
 
         val interfaceData =
             botApiClient.createInterface(
@@ -60,6 +67,20 @@ class GuiltInterfaceController(
                 .indexOfFirst { it.messageID == interfaceId }
                 .takeIf { it != -1 }
                 ?: throw ANotFoundException("Interface with ID $interfaceId not found for guild with id $guildId")
+
+        val currentInterface = guildSettings.interfaces[interfaceIndex]
+
+        if (currentInterface.embedStyle != updatedInterfaceData.embedStyle &&
+            !premiumManager.canEditInterfaceMessage(guildSettings)
+        ) {
+            throw APremiumRequiredException("Upgrade the server to edit the interface message")
+        }
+
+        if (currentInterface.buttonPositions() != updatedInterfaceData.buttonPositions() &&
+            !premiumManager.canEditInterfaceButtonOrder(guildSettings)
+        ) {
+            throw APremiumRequiredException("Upgrade the server to edit the order of the interface buttons")
+        }
 
         botApiClient.updateInterface(guildId, updatedInterfaceData)
 
@@ -94,3 +115,5 @@ class GuiltInterfaceController(
         return ResponseEntity.ok(guildSettings)
     }
 }
+
+private fun InterfaceData.buttonPositions() = buttons.associate { it.id to it.position }

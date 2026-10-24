@@ -9,6 +9,9 @@ server:
   port: ${BOT_API_PORT}
 
 management:
+  server:
+    # separate port for the Kubernetes probes and metrics, it must not be exposed outside the cluster
+    port: ${BOT__MANAGEMENT_PORT:9100}
   endpoints:
     web:
       cors:
@@ -107,6 +110,7 @@ premium:
   server-sku-id: ${PREMIUM_SERVER_SKU_ID:}
   monthly-plan-id: ${PREMIUM_MONTHLY_PLAN_ID:}
   yearly-plan-id: ${PREMIUM_YEARLY_PLAN_ID:}
+  restrictions: ${PREMIUM_RESTRICTIONS:true}
 
 bigquery:
   enabled: ${BOT__BIGQUERY_ENABLED}

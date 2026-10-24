@@ -15,6 +15,7 @@ import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.ConfigurationErrorCode
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings.InitialPosition
@@ -123,18 +124,17 @@ class VCWaitingRoomManager {
 
             return builder.await()
         } catch (e: ErrorResponseException) {
-            val description =
-                when (e.errorResponse) {
-                    ErrorResponse.MAX_CHANNELS ->
-                        "Your server has reached the maximum amount of channels" +
-                            "\nEncountered in: creating the waiting room of a temporary VC"
-
-                    else ->
-                        "An unknown error occurred!" +
-                            "\nEncountered in: creating the waiting room of a temporary VC: ${e.meaning}"
-                }
-
-            throw ConfigurationException(ConfigurationErrorEntity(guildId = owner.guild.id, description = description))
+            throw ConfigurationException(
+                if (e.errorResponse == ErrorResponse.MAX_CHANNELS) {
+                    ConfigurationErrorEntity(guildId = owner.guild.id, code = ConfigurationErrorCode.MAX_CHANNELS_WAITING_ROOM)
+                } else {
+                    ConfigurationErrorEntity(
+                        guildId = owner.guild.id,
+                        code = ConfigurationErrorCode.UNKNOWN,
+                        args = mapOf("encounteredIn" to "creating the waiting room of a temporary VC", "details" to e.meaning),
+                    )
+                },
+            )
         }
     }
 

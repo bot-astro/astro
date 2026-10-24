@@ -12,6 +12,9 @@ server:
 
 
 management:
+  server:
+    # separate port for the Kubernetes probes and metrics, it must not be exposed outside the cluster
+    port: ${CA__MANAGEMENT_PORT:9101}
   endpoints:
     web:
       exposure:
@@ -82,6 +85,12 @@ chargebee:
   api-key: ${CHARGEBEE_API_KEY}
   server-ultimate-plan-id: ${CHARGEBEE_SERVER_PREMIUM_PLAN_ID}
 
+premium:
+  server-sku-id: ${PREMIUM_SERVER_SKU_ID:}
+  monthly-plan-id: ${PREMIUM_MONTHLY_PLAN_ID:}
+  yearly-plan-id: ${PREMIUM_YEARLY_PLAN_ID:}
+  restrictions: ${PREMIUM_RESTRICTIONS:true}
+
 discord:
   api:
     base-url: ${DISCORD_API_BASE_URL}
@@ -112,9 +121,6 @@ r2:
   access-key-id: ${R2_ACCESS_KEY_ID}
   secret-access-key: ${R2_SECRET_ACCESS_KEY}
   bucket-name: ${R2_BUCKET_NAME}
-
-kube:
-  lifecycle-auth-key: ${KUBE_LIFECYCLE_AUTH_KEY}
 
 ### SERVICE SPECIFIC ###
 

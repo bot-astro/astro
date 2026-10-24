@@ -11,7 +11,9 @@ import space.astro.bot.components.managers.vc.VCPositionManager
 import space.astro.bot.components.managers.vc.VCPrivateChatManager
 import space.astro.bot.components.managers.vc.VCWaitingRoomManager
 import space.astro.bot.components.managers.vc.VariablesManager
+import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.exceptions.ConfigurationException
+import space.astro.bot.exceptions.PremiumConfigurationErrors
 import space.astro.bot.interactions.InteractionCooldownService
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.SimpleMemberRolesManager
@@ -19,8 +21,10 @@ import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.ui.Containers
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.ConfigurationErrorCode
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
@@ -39,6 +43,8 @@ class JoinedGeneratorHandler(
     private val vcPrivateChatManager: VCPrivateChatManager,
     private val vcWaitingRoomManager: VCWaitingRoomManager,
     private val interfaceManager: InterfaceManager,
+    private val premiumManager: PremiumManager,
+    private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
 ) {
     companion object {
         private val GENERATOR_COOLDOWN = 3.seconds
@@ -59,13 +65,16 @@ class JoinedGeneratorHandler(
         val guild = data.guild
         val owner = data.member
         val settings = event.generatorSettings
-        val locale = data.guildSettings.supportedLocale
+        val guildSettings = data.guildSettings
+        val locale = guildSettings.supportedLocale
 
         val generatorVC =
             data.joinedChannel?.asVoiceChannel()
                 ?: throw IllegalStateException("Received joined generator event with a null joined channel")
 
-        // TODO: premium, the legacy code checked the maximum amount of generators here
+        if (premiumManager.exceededMaximumGeneratorAmount(guildSettings)) {
+            throw PremiumConfigurationErrors.maximumAmountOfGenerators(guild.id)
+        }
 
         //////////////
         /// QUEUES ///
@@ -104,16 +113,15 @@ class JoinedGeneratorHandler(
                     ?: throw ConfigurationException(
                         ConfigurationErrorEntity(
                             guildId = guild.id,
-                            description =
-                                "Your category for temporary VCs is full and you haven't configured a fallback generator." +
-                                    "\nThis means Astro could not generate a temporary VC because the category was already full, " +
-                                    "consider creating a fallback generator." +
-                                    "\nEncountered in: ${generatorVC.name} generator",
-                            guide = ConfigurationErrorEntity.Guide.GENERATOR,
+                            code = ConfigurationErrorCode.GENERATOR_CATEGORY_FULL,
+                            args = mapOf("generator" to generatorVC.name),
                         ),
                     )
 
-            // TODO: premium, the legacy code required premium to use a fallback generator
+            if (!premiumManager.canUseFallbackGenerator(guildSettings)) {
+                throw PremiumConfigurationErrors.fallbackGenerator(guild.id)
+            }
+
             guild
                 .moveVoiceMember(owner, fallbackGenerator)
                 .queueAfter(1, TimeUnit.SECONDS)
@@ -131,8 +139,14 @@ class JoinedGeneratorHandler(
         /////////////////////////////
         /// TEMPORARY VC SETTINGS ///
         /////////////////////////////
-        // TODO: premium, the legacy code required premium for some name variables
         val nameTemplate = VariablesManager.getNameTemplateForCreation(settings)
+
+        if (!premiumManager.canUseVCNameTemplate(guildSettings, nameTemplate)) {
+            throw PremiumConfigurationErrors.premiumVariables(
+                guildId = guild.id,
+                encounteredIn = "generating a temporary VC with the name $nameTemplate",
+            )
+        }
 
         val incrementalPosition =
             if (VariablesManager.doesTemplateRequireVCPositionalData(nameTemplate)) {
@@ -186,10 +200,8 @@ class JoinedGeneratorHandler(
                     ?: throw ConfigurationException(
                         ConfigurationErrorEntity(
                             guildId = guild.id,
-                            description =
-                                "The generator ${generatorVC.name} has a target role set " +
-                                    "but Astro couldn't find that role in your server!",
-                            guide = ConfigurationErrorEntity.Guide.GENERATOR,
+                            code = ConfigurationErrorCode.GENERATOR_TARGET_ROLE_MISSING,
+                            args = mapOf("generator" to generatorVC.name),
                         ),
                     )
 
@@ -224,22 +236,25 @@ class JoinedGeneratorHandler(
             try {
                 temporaryVCBuilder.await()
             } catch (e: Exception) {
-                throw unknownError(guild.id, "creating a temporary VC: ${e.message}")
+                throw unknownError(guild.id, "creating a temporary VC", e)
             }
 
         try {
             guild.moveVoiceMember(owner, temporaryVC).await()
         } catch (e: Exception) {
             temporaryVC.delete().reason(L.t(locale, "reason.vc.deleted_move_failed")).queueAfter(1, TimeUnit.SECONDS)
-            throw unknownError(guild.id, "moving a user (${owner.id}) into a temporary VC: ${e.message}")
+            throw unknownError(guild.id, "moving a user (${owner.id}) into a temporary VC", e)
         }
 
         ///////////////////////////////
         /// TEXT & WAITING CREATION ///
         ///////////////////////////////
-        // TODO: premium, the legacy code required premium for the automatic private chat and waiting room
         val privateChat =
             if (settings.autoChat) {
+                if (!premiumManager.canCreatePrivateChatOnVCGeneration(guildSettings)) {
+                    throw PremiumConfigurationErrors.autoPrivateChat(guild.id)
+                }
+
                 vcPrivateChatManager.create(owner, settings, temporaryVC, locale)
             } else {
                 null
@@ -247,6 +262,10 @@ class JoinedGeneratorHandler(
 
         val waitingRoom =
             if (settings.autoWaiting) {
+                if (!premiumManager.canCreateWaitingRoomOnVCGeneration(guildSettings)) {
+                    throw PremiumConfigurationErrors.autoWaitingRoom(guild.id)
+                }
+
                 vcWaitingRoomManager.create(owner, settings, temporaryVC, incrementalPosition, locale)
             } else {
                 null
@@ -255,9 +274,14 @@ class JoinedGeneratorHandler(
         ////////////////////
         /// CHAT MESSAGE ///
         ////////////////////
-        // TODO: premium, the legacy code required premium to send the creation message
         computeCreationMessage(event, temporaryVC)?.also { message ->
-            (privateChat ?: temporaryVC).sendMessage(message).queue()
+            if (premiumManager.canSendMessageInVCChatOnVCGeneration(guildSettings)) {
+                (privateChat ?: temporaryVC).sendMessage(message).queue()
+            } else {
+                configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                    PremiumConfigurationErrors.creationChatMessage(guild.id).configurationErrorEntity,
+                )
+            }
         }
 
         ///////////////////////////////
@@ -290,10 +314,15 @@ class JoinedGeneratorHandler(
         //////////////////
         /// OWNER ROLE ///
         //////////////////
-        // TODO: premium, the legacy code required premium to assign the owner role
         settings.ownerRole
             ?.let { guild.getRoleById(it) }
-            ?.also { memberRolesManager.add(it) }
+            ?.also {
+                if (!premiumManager.canAssignTemporaryVCOwnerRole(guildSettings)) {
+                    throw PremiumConfigurationErrors.ownerRole(guild.id)
+                }
+
+                memberRolesManager.add(it)
+            }
 
         return true
     }
@@ -328,10 +357,12 @@ class JoinedGeneratorHandler(
     private fun unknownError(
         guildId: String,
         encounteredIn: String,
+        cause: Exception,
     ) = ConfigurationException(
         ConfigurationErrorEntity(
             guildId = guildId,
-            description = "An unknown error occurred!\nEncountered in: $encounteredIn",
+            code = ConfigurationErrorCode.UNKNOWN,
+            args = mapOf("encounteredIn" to encounteredIn, "details" to (cause.message ?: "")),
         ),
     )
 }

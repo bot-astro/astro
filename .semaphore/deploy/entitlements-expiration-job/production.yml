@@ -7,28 +7,20 @@ agent:
     os_image: ubuntu2404
 
 blocks:
-  - name: Execute helm commands
+  - name: Update the image tag in the infra repo
     task:
       secrets:
-        - name: kube
-        - name: helm_entitlements-expiration-job
+        - name: infra-deploy-key
       env_vars:
-        - name: KUBECONFIG
-          value: /home/semaphore/.kube/config
-        - name: HELMVALUES
-          value: /home/semaphore/.values/entitlements-expiration-job/production.yaml
-        - name: NAMESPACE
-          value: astro
-        - name: RELEASE_NAME
+        - name: APP
           value: entitlements-expiration-job
-        - name: CHART_LOCATION
-          value: ./services/entitlements-expiration-job/chart
+        - name: ENVIRONMENT
+          value: astro
       jobs:
-        - name: Deploy to Kubernetes
+        - name: Push to bot-astro/infra, ArgoCD does the rest
           commands:
-            - checkout
-            - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-            - helm upgrade -i $RELEASE_NAME $CHART_LOCATION
-              --set image.tag=${SEMAPHORE_GIT_SHA}
-              --namespace $NAMESPACE
-              --values $HELMVALUES
+            - command -v yq || (sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64 && sudo chmod +x /usr/local/bin/yq)
+            - chmod 600 ~/.ssh/infra_deploy_key
+            - export GIT_SSH_COMMAND="ssh -i ~/.ssh/infra_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+            - git clone --depth 1 git@github.com:bot-astro/infra.git
+            - cd infra && ./scripts/deploy.sh $APP $ENVIRONMENT $SEMAPHORE_GIT_SHA

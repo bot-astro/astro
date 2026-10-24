@@ -4,11 +4,13 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
 import space.astro.bot.exceptions.ConfigurationException
+import space.astro.bot.exceptions.PremiumConfigurationErrors
 import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.lang.L
 
 @Component
@@ -16,6 +18,7 @@ class VCOwnershipManager(
     private val vcNameManager: VCNameManager,
     private val vcPrivateChatManager: VCPrivateChatManager,
     private val vcWaitingRoomManager: VCWaitingRoomManager,
+    private val premiumManager: PremiumManager,
 ) {
     /**
      * Changes the owner of a temporary vc and refreshes the names
@@ -74,7 +77,7 @@ class VCOwnershipManager(
     /**
      * Migrates the owner role of the generator from [oldOwner] to [newOwner]
      *
-     * TODO: premium is not implemented yet, the legacy code required premium to assign the owner role
+     * @throws ConfigurationException if the guild is not premium
      */
     fun handleOwnerRoleMigration(
         ctx: VCOperationCTX,
@@ -84,6 +87,10 @@ class VCOwnershipManager(
         val ownerRole =
             ctx.generatorSettings.ownerRole?.let { ctx.guild.getRoleById(it) }
                 ?: return
+
+        if (!premiumManager.canAssignTemporaryVCOwnerRole(ctx.guildSettings)) {
+            throw PremiumConfigurationErrors.ownerRole(ctx.guild.id)
+        }
 
         val locale = ctx.guildSettings.supportedLocale
 

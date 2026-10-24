@@ -10,7 +10,6 @@ import org.springframework.boot.runApplication
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
 import space.astro.shared.core.properties.DiscordOAuthProperties
 import space.astro.shared.core.properties.FrontendProperties
-import space.astro.shared.core.properties.KubeProperties
 import space.astro.shared.core.properties.R2Properties
 
 @SpringBootApplication(
@@ -28,7 +27,6 @@ import space.astro.shared.core.properties.R2Properties
     DiscordOAuthProperties::class,
     FrontendProperties::class,
     R2Properties::class,
-    KubeProperties::class,
 )
 @OpenAPIDefinition(
     info =

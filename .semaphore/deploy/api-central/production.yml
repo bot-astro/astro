@@ -1,0 +1,26 @@
+version: v1.0
+name: Deploy api-central to production
+
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu2404
+
+blocks:
+  - name: Update the image tag in the infra repo
+    task:
+      secrets:
+        - name: infra-deploy-key
+      env_vars:
+        - name: APP
+          value: api-central
+        - name: ENVIRONMENT
+          value: astro
+      jobs:
+        - name: Push to bot-astro/infra, ArgoCD does the rest
+          commands:
+            - command -v yq || (sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64 && sudo chmod +x /usr/local/bin/yq)
+            - chmod 600 ~/.ssh/infra_deploy_key
+            - export GIT_SSH_COMMAND="ssh -i ~/.ssh/infra_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+            - git clone --depth 1 git@github.com:bot-astro/infra.git
+            - cd infra && ./scripts/deploy.sh $APP $ENVIRONMENT $SEMAPHORE_GIT_SHA

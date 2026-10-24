@@ -2,17 +2,28 @@ package space.astro.bot.events.listeners.discord.voice.handlers
 
 import net.dv8tion.jda.api.entities.Role
 import org.springframework.stereotype.Component
+import space.astro.bot.exceptions.ConfigurationException
+import space.astro.bot.exceptions.PremiumConfigurationErrors
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
+import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.models.database.guildSettings.ConnectionData.ConnectionAction
 
 @Component
-class ConnectedVCHandler {
+class ConnectedVCHandler(
+    private val premiumManager: PremiumManager,
+) {
+    /**
+     * @throws ConfigurationException
+     */
     fun handleJoined(
         event: VCEvent.JoinedConnectedVC,
         memberRolesManager: SimpleMemberRolesManager,
     ) {
-        // TODO: premium, the legacy code checked the maximum amount of connections here
+        if (premiumManager.exceededMaximumConnectionsAmount(event.vcEventData.guildSettings)) {
+            throw PremiumConfigurationErrors.maximumAmountOfConnections(event.vcEventData.guild.id)
+        }
+
         val role = event.vcEventData.guild.getRoleById(event.connectionData.roleID) ?: return
 
         when (event.connectionData.action) {

@@ -4,10 +4,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.KotlinLoggingConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
-import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
-import space.astro.shared.core.properties.KubeProperties
 
 @SpringBootApplication(
     exclude = [
@@ -23,7 +21,6 @@ import space.astro.shared.core.properties.KubeProperties
         "space.astro.support.bot.properties",
     ],
 )
-@EnableConfigurationProperties(KubeProperties::class)
 class Application
 
 fun main(args: Array<String>) {

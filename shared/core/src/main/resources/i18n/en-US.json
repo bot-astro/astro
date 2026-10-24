@@ -177,5 +177,22 @@
   "reason.vc.update.state_change": "Temporary VC updated after a change requested by a user",
   "reason.vc.update.owner_change": "Temporary VC updated after an owner change",
   "reason.vc.update.activity_change": "Temporary VC updated after an activity change of a member",
-  "reason.vc.update.unknown": "Temporary VC updated"
+  "reason.vc.update.unknown": "Temporary VC updated",
+  "configuration_error.unknown": "An unknown error occurred!\nEncountered in: {encounteredIn}\nDetails: {details}",
+  "configuration_error.missing_permission": "Astro is missing the {permission} permission in channel with ID {channelId}",
+  "configuration_error.role_hierarchy": "Astro is not high enough in the server settings roles hierarchy to assign or remove some roles.",
+  "configuration_error.invalid_vc_name": "Invalid temporary vc name: {name}",
+  "configuration_error.max_channels_private_chat": "Your server has reached the maximum amount of channels\nEncountered in: creating the private chat of a temporary VC",
+  "configuration_error.max_channels_waiting_room": "Your server has reached the maximum amount of channels\nEncountered in: creating the waiting room of a temporary VC",
+  "configuration_error.update_manager_failed": "An unknown error occurred while updating the {manager}: {message}",
+  "configuration_error.generator_category_full": "Your category for temporary VCs is full and you haven't configured a fallback generator.\nThis means Astro could not generate a temporary VC because the category was already full, consider creating a fallback generator.\nEncountered in: {generator} generator",
+  "configuration_error.generator_target_role_missing": "The generator {generator} has a target role set but Astro couldn't find that role in your server!",
+  "configuration_error.premium_variables": "You are trying to use ultimate variables and your server isn't upgraded to ultimate!\nEncountered in: {encounteredIn}",
+  "configuration_error.premium_max_connections": "Your server has exceeded the maximum amount of voice roles.\nEither upgrade to ultimate or delete one or more voice role!",
+  "configuration_error.premium_max_generators": "Your server has exceeded the maximum amount of temporary VC generators.\nEither upgrade to ultimate or delete one or more generators!",
+  "configuration_error.premium_fallback_generator": "Your generator has a fallback generator configured, but ultimate is required to use it.\nEither upgrade to ultimate or remove the fallback generator!",
+  "configuration_error.premium_auto_private_chat": "Your generator has automatic private chat creation enabled, but ultimate is required to use it.\nEither upgrade to ultimate or disable private chat creation!",
+  "configuration_error.premium_auto_waiting_room": "Your generator has automatic waiting room creation enabled, but ultimate is required to use it.\nEither upgrade to ultimate or disable waiting room creation!",
+  "configuration_error.premium_creation_chat_message": "Your generator has a default creation message, but ultimate is required to use it.\nEither upgrade to ultimate or remove it!",
+  "configuration_error.premium_owner_role": "Your generator has an owner role configured, but ultimate is required to use it.\nEither upgrade to ultimate or remove it!"
 }

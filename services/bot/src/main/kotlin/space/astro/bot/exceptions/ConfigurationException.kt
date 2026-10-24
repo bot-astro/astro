@@ -4,4 +4,4 @@ import space.astro.shared.core.models.database.ConfigurationErrorEntity
 
 class ConfigurationException(
     val configurationErrorEntity: ConfigurationErrorEntity,
-) : Exception(configurationErrorEntity.description)
+) : Exception("${configurationErrorEntity.code} ${configurationErrorEntity.args}")

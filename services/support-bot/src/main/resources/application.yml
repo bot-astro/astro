@@ -12,6 +12,9 @@ server:
   port: ${SB__PORT}
 
 management:
+  server:
+    # separate port for the Kubernetes probes and metrics, it must not be exposed outside the cluster
+    port: ${SB__MANAGEMENT_PORT:9102}
   endpoints:
     web:
       exposure:
@@ -77,9 +80,6 @@ chargebee:
   site-name: ${CHARGEBEE_SITE_NAME}
   api-key: ${CHARGEBEE_API_KEY}
   server-ultimate-plan-id: ${CHARGEBEE_SERVER_PREMIUM_PLAN_ID}
-
-kube:
-  lifecycle-auth-key: ${KUBE_LIFECYCLE_AUTH_KEY}
 
 ### SERVICE SPECIFIC ###
 

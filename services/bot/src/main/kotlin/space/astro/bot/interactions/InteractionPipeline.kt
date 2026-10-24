@@ -21,6 +21,8 @@ import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.bot.utils.extensions.toConfigurationErrorDto
 import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.lang.localizedDescription
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 
@@ -80,17 +82,21 @@ class InteractionPipeline(
             responder.error(e.key, *e.args)
         } catch (e: ConfigurationException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(e.configurationErrorEntity)
-            responder.error("error.invalid_configuration", "description" to e.configurationErrorEntity.description)
+            responder.error("error.invalid_configuration", "description" to e.configurationErrorEntity.localizedDescription(responder.locale))
         } catch (e: InsufficientPermissionException) {
             val configurationError = e.toConfigurationErrorDto(guild.id)
 
             configurationErrorEventPublisher.publishConfigurationErrorEvent(configurationError)
-            responder.error("error.missing_permissions", "description" to configurationError.description)
+            responder.error("error.missing_permissions", "description" to configurationError.localizedDescription(responder.locale))
         } catch (e: Exception) {
             log.error(e) { "Unhandled exception in interaction $key (guild ${guild.id})" }
 
             configurationErrorEventPublisher.publishConfigurationErrorEvent(
-                ConfigurationErrorEntity(guildId = guild.id, description = e.toString()),
+                ConfigurationErrorEntity(
+                    guildId = guild.id,
+                    code = ConfigurationErrorCode.UNKNOWN,
+                    args = mapOf("encounteredIn" to "interaction $key", "details" to e.toString()),
+                ),
             )
             responder.error("error.unknown")
         }

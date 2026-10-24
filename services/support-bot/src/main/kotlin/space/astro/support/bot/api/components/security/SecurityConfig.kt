@@ -35,6 +35,8 @@ class SecurityConfig(
                 it
                     .requestMatchers("/docs/**")
                     .permitAll()
+                    .requestMatchers("/actuator/**")
+                    .permitAll() // served on the management port, not exposed by the ingress
                     .anyRequest()
                     .authenticated()
             }.build()

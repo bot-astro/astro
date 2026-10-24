@@ -19,13 +19,14 @@ import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.exceptions.ConfigurationException
 import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.ConfigurationErrorCode
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 
 private val log = KotlinLogging.logger { }
 
-// TODO: premium, the legacy listener only ran for premium guilds
 @Component
 class MemberUpdateActivitiesEventListener(
     private val temporaryVCRepository: TemporaryVCRepository,
@@ -34,6 +35,7 @@ class MemberUpdateActivitiesEventListener(
     private val vcPrivateChatManager: VCPrivateChatManager,
     private val vcWaitingRoomManager: VCWaitingRoomManager,
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
+    private val premiumManager: PremiumManager,
 ) {
     // IO because the repositories are blocking
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -80,7 +82,10 @@ class MemberUpdateActivitiesEventListener(
                 ?.takeIf { it.ownerID == member.id }
                 ?: return
 
-        val guildSettings = guildSettingsRepository.findByGuildID(guild.id) ?: return
+        val guildSettings = guildSettingsRepository
+                .findByGuildID(guild.id)
+                ?.takeIf { premiumManager.isGuildPremium(it) }
+                ?: return
 
         val generatorSettings =
             guildSettings.generators
@@ -126,7 +131,8 @@ class MemberUpdateActivitiesEventListener(
                 configurationErrorEventPublisher.publishConfigurationErrorEvent(
                     ConfigurationErrorEntity(
                         guildId = guild.id,
-                        description = "An unknown error occurred while updating the ${managerType.readableName} name: ${e.message ?: ""}",
+                        code = ConfigurationErrorCode.UPDATE_MANAGER_FAILED,
+                        args = mapOf("manager" to managerType.readableName, "message" to (e.message ?: "")),
                     ),
                 )
             },

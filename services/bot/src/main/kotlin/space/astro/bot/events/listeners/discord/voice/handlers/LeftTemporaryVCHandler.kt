@@ -13,6 +13,7 @@ import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.ConfigurationErrorCode
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 
 @Component
@@ -110,7 +111,8 @@ class LeftTemporaryVCHandler(
                 configurationErrorEventPublisher.publishConfigurationErrorEvent(
                     ConfigurationErrorEntity(
                         guildId = guild.id,
-                        description = "An unknown error occurred while updating the ${managerType.readableName}: ${e.message ?: ""}",
+                        code = ConfigurationErrorCode.UPDATE_MANAGER_FAILED,
+                        args = mapOf("manager" to managerType.readableName, "message" to (e.message ?: "")),
                     ),
                 )
             },

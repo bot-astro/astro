@@ -6,7 +6,9 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
+import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.exceptions.ANotFoundException
+import space.astro.shared.core.exceptions.APremiumRequiredException
 import space.astro.shared.core.models.database.guildSettings.ConnectionData
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
@@ -16,6 +18,7 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 @Tag(name = "Connections settings")
 class GuildConnectionsController(
     private val guildSettingsRepository: GuildSettingsRepository,
+    private val premiumManager: PremiumManager,
 ) {
     @Operation(summary = "Create connection")
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTIONS)
@@ -27,6 +30,10 @@ class GuildConnectionsController(
         val guildSettings =
             guildSettingsRepository.findByIdOrNull(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+
+        if (!premiumManager.canCreateConnection(guildSettings)) {
+            throw APremiumRequiredException("Upgrade the server to create more than ${PremiumManager.FREE_MAX_CONNECTIONS} voice role")
+        }
 
         guildSettings.connections.add(connectionCreateBody)
         guildSettingsRepository.save(guildSettings)

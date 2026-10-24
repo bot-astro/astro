@@ -32,7 +32,7 @@ Info commands: help, dashboard. Configuration is done mostly through the web das
 - Legacy model is **feature gating plus count caps** (see `PremiumRequirementDetector` in `shared/old-core`):
   - Free caps: 2 generators, 1 interface, 1 connection, 3 templates
   - Premium-only: fallback generator, auto private chat, auto waiting room, bot message in VC chat, owner role assignment, editing interface message / button order, bad-word validation, premium name variables (`{n}`, `{nato}`, `{roman}`, `{activity_*}`)
-- **In the rewrite premium is not implemented yet** (see `CLAUDE.md`): don't port the limit checks.
+- In the rewrite the same rules live in `PremiumManager` (`shared/core`): runtime gates in `bot` (generator/connection handlers, owner role, name variables) and request gates in `api-central` (create/update controllers, `APremiumRequiredException`). `premium.restrictions=false` disables them.
 
 ## Analytics (BigQuery, `bot/components/analytics`)
 

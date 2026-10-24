@@ -4,11 +4,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
 import space.astro.bot.exceptions.ConfigurationException
+import space.astro.bot.exceptions.PremiumConfigurationErrors
 import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.vc.VCOperationCTX.VCOperationOrigin
 import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.ConfigurationErrorCode
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
@@ -18,6 +21,7 @@ import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 class VCNameManager(
     private val temporaryVCRepository: TemporaryVCRepository,
     private val vcPositionManager: VCPositionManager,
+    private val premiumManager: PremiumManager,
 ) {
     /**
      * Renames a temporary vc, the change is applied once [VCOperationCTX.queueUpdatedManagers] is called
@@ -68,6 +72,13 @@ class VCNameManager(
             return false
         }
 
+        if (!premiumManager.canUseVCNameTemplate(ctx.guildSettings, nameTemplate)) {
+            throw PremiumConfigurationErrors.premiumVariables(
+                guildId = ctx.guild.id,
+                encounteredIn = "applying the name $nameTemplate to a temporary VC",
+            )
+        }
+
         performPositionUpdates(ctx, nameTemplate)
 
         val newName =
@@ -89,7 +100,8 @@ class VCNameManager(
             throw ConfigurationException(
                 ConfigurationErrorEntity(
                     guildId = ctx.guild.id,
-                    description = "Invalid temporary vc name: $newName",
+                    code = ConfigurationErrorCode.INVALID_VC_NAME,
+                    args = mapOf("name" to newName),
                 ),
             )
         }

@@ -57,7 +57,7 @@ class SecurityConfig(
                     .requestMatchers("/docs/**")
                     .permitAll()
                     .requestMatchers("/actuator/**")
-                    .permitAll() // handled by KubeAuthFilter
+                    .permitAll() // served on the management port, not exposed by the ingress
                     .requestMatchers(
                         CentralApiEndpoint.DISCORD_LOGIN,
                         CentralApiEndpoint.DISCORD_OAUTH_CALLBACK,

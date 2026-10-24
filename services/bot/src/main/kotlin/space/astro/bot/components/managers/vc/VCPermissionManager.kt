@@ -16,6 +16,7 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.utils.extensions.modifyMemberPermissionOverride
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.ConfigurationErrorCode
 import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
@@ -55,10 +56,8 @@ class VCPermissionManager(
                     ?: throw ConfigurationException(
                         ConfigurationErrorEntity(
                             guildId = ctx.guild.id,
-                            description =
-                                "The generator ${ctx.generator.name} has a target role set " +
-                                    "but Astro couldn't find that role in your server!",
-                            guide = ConfigurationErrorEntity.Guide.GENERATOR,
+                            code = ConfigurationErrorCode.GENERATOR_TARGET_ROLE_MISSING,
+                            args = mapOf("generator" to ctx.generator.name),
                         ),
                     )
             }

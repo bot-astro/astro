@@ -46,3 +46,13 @@ class ANotFoundException(
         message = message,
         cause = cause,
     )
+
+class APremiumRequiredException(
+    message: String,
+    cause: Throwable? = null,
+) : AException(
+        httpStatusCode = 403,
+        errorCode = AErrorCode.PREMIUM_REQUIRED,
+        message = message,
+        cause = cause,
+    )
