@@ -46,7 +46,12 @@ class StatusCommand(
         ctx: VcInteractionContext,
     ) {
         // omitting the option unsets the status
-        val status = event.getOption(STATUS_OPTION)?.asString?.trim().orEmpty()
+        val status =
+            event
+                .getOption(STATUS_OPTION)
+                ?.asString
+                ?.trim()
+                .orEmpty()
 
         ctx.vcOperationCTX.temporaryVC
             .modifyStatus(status)

@@ -71,7 +71,7 @@ class VCEventDetector {
             - Joined channel is connected (normal or generator doesn't matter)
             - Joined channel is under connected category
             - Joined channel is a temporary VC generated from a connected generator
-        */
+         */
         vcEventData.joinedChannel?.also { joinedVC ->
             joinedConnection =
                 vcEventData.connections.firstOrNull { connection ->

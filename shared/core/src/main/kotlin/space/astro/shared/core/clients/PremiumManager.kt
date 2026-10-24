@@ -44,9 +44,9 @@ class PremiumManager(
 
     private fun GuildEntitlementData.isActive(now: Long) = endsAt == null || endsAt > now
 
-    //////////////
-    /// LIMITS ///
-    //////////////
+    // ////////////
+    // / LIMITS ///
+    // ////////////
 
     fun canCreateConnection(guildSettings: GuildSettingsEntity) =
         isGuildPremium(guildSettings) || guildSettings.connections.size < FREE_MAX_CONNECTIONS
@@ -66,9 +66,9 @@ class PremiumManager(
     fun exceededMaximumGeneratorAmount(guildSettings: GuildSettingsEntity) =
         guildSettings.generators.size > EXCEEDED_MAX_GENERATORS && !isGuildPremium(guildSettings)
 
-    //////////////
-    /// NAMES ///
-    //////////////
+    // ////////////
+    // / NAMES ///
+    // ////////////
 
     fun canUseVCNameTemplate(
         guildSettings: GuildSettingsEntity,
@@ -77,9 +77,9 @@ class PremiumManager(
 
     fun containsPremiumVariable(template: String) = premiumVariablesRegex.containsMatchIn(template)
 
-    /////////////////
-    /// FEATURES ///
-    /////////////////
+    // ///////////////
+    // / FEATURES ///
+    // ///////////////
 
     fun canUseFallbackGenerator(guildSettings: GuildSettingsEntity) = isGuildPremium(guildSettings)
 

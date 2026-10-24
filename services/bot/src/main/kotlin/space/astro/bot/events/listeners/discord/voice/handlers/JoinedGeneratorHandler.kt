@@ -23,8 +23,8 @@ import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.lang.L
-import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
@@ -76,9 +76,9 @@ class JoinedGeneratorHandler(
             throw PremiumConfigurationErrors.maximumAmountOfGenerators(guild.id)
         }
 
-        //////////////
-        /// QUEUES ///
-        //////////////
+        // ////////////
+        // / QUEUES ///
+        // ////////////
         if (settings.queueMode) {
             val generatorTemporaryVCIds =
                 data.temporaryVCEntities
@@ -99,9 +99,9 @@ class JoinedGeneratorHandler(
             }
         }
 
-        /////////////////////////////////////////
-        /// CATEGORY CALCULATION AND FALLBACK ///
-        /////////////////////////////////////////
+        // ///////////////////////////////////////
+        // / CATEGORY CALCULATION AND FALLBACK ///
+        // ///////////////////////////////////////
         val category = settings.category?.let { guild.getCategoryById(it) }
 
         if (category != null && category.channels.size >= MAX_CATEGORY_CHANNELS) {
@@ -129,16 +129,16 @@ class JoinedGeneratorHandler(
             return false
         }
 
-        ////////////////
-        /// COOLDOWN ///
-        ////////////////
+        // //////////////
+        // / COOLDOWN ///
+        // //////////////
         if (interactionCooldownService.acquire(data.userId, GENERATOR_COOLDOWN_KEY, GENERATOR_COOLDOWN) > Duration.ZERO) {
             return false
         }
 
-        /////////////////////////////
-        /// TEMPORARY VC SETTINGS ///
-        /////////////////////////////
+        // ///////////////////////////
+        // / TEMPORARY VC SETTINGS ///
+        // ///////////////////////////
         val nameTemplate = VariablesManager.getNameTemplateForCreation(settings)
 
         if (!premiumManager.canUseVCNameTemplate(guildSettings, nameTemplate)) {
@@ -229,9 +229,9 @@ class JoinedGeneratorHandler(
             deny = 0L,
         )
 
-        /////////////////////////////
-        /// TEMPORARY VC CREATION ///
-        /////////////////////////////
+        // ///////////////////////////
+        // / TEMPORARY VC CREATION ///
+        // ///////////////////////////
         val temporaryVC =
             try {
                 temporaryVCBuilder.await()
@@ -246,9 +246,9 @@ class JoinedGeneratorHandler(
             throw unknownError(guild.id, "moving a user (${owner.id}) into a temporary VC", e)
         }
 
-        ///////////////////////////////
-        /// TEXT & WAITING CREATION ///
-        ///////////////////////////////
+        // /////////////////////////////
+        // / TEXT & WAITING CREATION ///
+        // /////////////////////////////
         val privateChat =
             if (settings.autoChat) {
                 if (!premiumManager.canCreatePrivateChatOnVCGeneration(guildSettings)) {
@@ -271,9 +271,9 @@ class JoinedGeneratorHandler(
                 null
             }
 
-        ////////////////////
-        /// CHAT MESSAGE ///
-        ////////////////////
+        // //////////////////
+        // / CHAT MESSAGE ///
+        // //////////////////
         computeCreationMessage(event, temporaryVC)?.also { message ->
             if (premiumManager.canSendMessageInVCChatOnVCGeneration(guildSettings)) {
                 (privateChat ?: temporaryVC).sendMessage(message).queue()
@@ -284,9 +284,9 @@ class JoinedGeneratorHandler(
             }
         }
 
-        ///////////////////////////////
-        /// STORE TEMPORARY VC DATA ///
-        ///////////////////////////////
+        // /////////////////////////////
+        // / STORE TEMPORARY VC DATA ///
+        // /////////////////////////////
         // check if user is still in the created temporary vc before saving the data
         if (owner.voiceState?.channel?.id != temporaryVC.id) {
             val reason = L.t(locale, "reason.vc.deleted_left_too_quickly")
@@ -311,9 +311,9 @@ class JoinedGeneratorHandler(
             ),
         )
 
-        //////////////////
-        /// OWNER ROLE ///
-        //////////////////
+        // ////////////////
+        // / OWNER ROLE ///
+        // ////////////////
         settings.ownerRole
             ?.let { guild.getRoleById(it) }
             ?.also {
@@ -336,14 +336,23 @@ class JoinedGeneratorHandler(
         val interfaceData =
             settings.chatInterface
                 ?.takeIf { it > -1 }
-                ?.let { event.vcEventData.guildSettings.interfaces.getOrNull(it) }
+                ?.let {
+                    event.vcEventData.guildSettings.interfaces
+                        .getOrNull(it)
+                }
 
         if (interfaceData != null) {
             return interfaceManager.computeMessage(interfaceData)
         }
 
         val template = settings.defaultChatText ?: return null
-        val content = VariablesManager.computeChatMessage(template, event.vcEventData.guildSettings.supportedLocale, event.vcEventData.member, temporaryVC)
+        val content =
+            VariablesManager.computeChatMessage(
+                template,
+                event.vcEventData.guildSettings.supportedLocale,
+                event.vcEventData.member,
+                temporaryVC,
+            )
 
         return Containers.message(
             if (settings.defaultChatTextEmbed) {

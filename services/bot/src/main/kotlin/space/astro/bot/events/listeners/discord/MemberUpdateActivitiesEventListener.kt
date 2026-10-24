@@ -20,8 +20,8 @@ import space.astro.bot.exceptions.ConfigurationException
 import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.shared.core.clients.PremiumManager
-import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 
@@ -82,7 +82,8 @@ class MemberUpdateActivitiesEventListener(
                 ?.takeIf { it.ownerID == member.id }
                 ?: return
 
-        val guildSettings = guildSettingsRepository
+        val guildSettings =
+            guildSettingsRepository
                 .findByGuildID(guild.id)
                 ?.takeIf { premiumManager.isGuildPremium(it) }
                 ?: return

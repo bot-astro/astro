@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
     val exitCode =
         try {
             SpringApplication.exit(
-                runApplication<Application>(*args)
+                runApplication<Application>(*args),
             )
         } catch (_: Exception) {
             // already logged by Spring, a non zero code makes Kubernetes retry the job

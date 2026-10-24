@@ -18,6 +18,5 @@ import space.astro.shared.core.properties.support_bot.SupportBotEndpointProperti
 class ASupportBotApiClient {
     @Bean
     @ConditionalOnMissingBean
-    fun supportBotApiClient(supportBotEndpointProperties: SupportBotEndpointProperties) =
-        SupportBotApiClient(supportBotEndpointProperties)
+    fun supportBotApiClient(supportBotEndpointProperties: SupportBotEndpointProperties) = SupportBotApiClient(supportBotEndpointProperties)
 }

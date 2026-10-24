@@ -129,7 +129,12 @@ class ChargebeeController(
         @RequestBody body: ChargebeeWebhookBody,
     ): ResponseEntity<Void> {
         val userId = body.content.customer.id
-        if (body.content.subscription.subscriptionItems.none { it.itemPriceId.startsWith(chargebeeClientProperties.serverUltimatePlanId) }) {
+        if (body.content.subscription.subscriptionItems.none {
+                it.itemPriceId.startsWith(
+                    chargebeeClientProperties.serverUltimatePlanId,
+                )
+            }
+        ) {
             return ResponseEntity.noContent().build()
         }
 
@@ -157,7 +162,12 @@ class ChargebeeController(
     ): ResponseEntity<Void> {
         val userId = body.content.customer.id
         val subscriptionId = body.content.subscription.id
-        if (body.content.subscription.subscriptionItems.none { it.itemPriceId.startsWith(chargebeeClientProperties.serverUltimatePlanId) }) {
+        if (body.content.subscription.subscriptionItems.none {
+                it.itemPriceId.startsWith(
+                    chargebeeClientProperties.serverUltimatePlanId,
+                )
+            }
+        ) {
             return ResponseEntity.noContent().build()
         }
 

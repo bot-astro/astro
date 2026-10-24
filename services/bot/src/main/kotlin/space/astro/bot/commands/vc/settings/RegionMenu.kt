@@ -49,7 +49,11 @@ class RegionMenu(
 
         ctx.responder.reply(
             Containers.default(
-                ctx.t("vc.region.set", "emoji" to Emojis.region.formatted, "region" to "${region.emoji?.plus(" ") ?: ""}${region.getName()}"),
+                ctx.t(
+                    "vc.region.set",
+                    "emoji" to Emojis.region.formatted,
+                    "region" to "${region.emoji?.plus(" ") ?: ""}${region.getName()}",
+                ),
             ),
         )
     }

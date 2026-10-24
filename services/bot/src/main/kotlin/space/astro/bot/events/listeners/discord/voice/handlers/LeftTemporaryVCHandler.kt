@@ -12,8 +12,8 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.lang.L
-import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 
 @Component
@@ -56,9 +56,20 @@ class LeftTemporaryVCHandler(
             val memberId = data.member.idLong
             val reason = L.t(locale, "reason.vc.member_left")
 
-            vc.manager.removePermissionOverride(memberId).reason(reason).queue()
-            privateChat?.manager?.removePermissionOverride(memberId)?.reason(reason)?.queue()
-            waitingRoom?.manager?.removePermissionOverride(memberId)?.reason(reason)?.queue()
+            vc.manager
+                .removePermissionOverride(memberId)
+                .reason(reason)
+                .queue()
+            privateChat
+                ?.manager
+                ?.removePermissionOverride(memberId)
+                ?.reason(reason)
+                ?.queue()
+            waitingRoom
+                ?.manager
+                ?.removePermissionOverride(memberId)
+                ?.reason(reason)
+                ?.queue()
         }
 
         if (entity.chatLogs) {

@@ -4,8 +4,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
-import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.entitlements.expiration.job.properties.DiscordApplicationProperties
+import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -35,8 +35,7 @@ class EntitlementsExpirationRunner(
                 .getEntitlements(
                     applicationId = discordApplicationProperties.id.toString(),
                     botToken = discordApplicationProperties.token,
-                )
-                .filter { it.endsAt?.isBefore(expirationThreshold) == true }
+                ).filter { it.endsAt?.isBefore(expirationThreshold) == true }
                 .also { log.info { "Found ${it.size} expired entitlements" } }
                 .mapNotNull { entitlement -> entitlement.guildId?.let { guildId -> guildId to entitlement.id } }
                 .groupBy({ it.first }, { it.second })

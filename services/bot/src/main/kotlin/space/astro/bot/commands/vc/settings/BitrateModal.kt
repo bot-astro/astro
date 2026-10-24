@@ -32,7 +32,12 @@ class BitrateModal(
         event: ModalInteractionEvent,
         ctx: VcInteractionContext,
     ) {
-        val bitrate = event.getValue(BITRATE_INPUT_ID)?.asString?.toIntOrNull()?.times(1000)
+        val bitrate =
+            event
+                .getValue(BITRATE_INPUT_ID)
+                ?.asString
+                ?.toIntOrNull()
+                ?.times(1000)
         val commandsSettings = ctx.vcOperationCTX.generatorSettings.commandsSettings
         val maxBitrate = commandsSettings.maxBitrate?.coerceAtMost(ctx.guild.maxBitrate) ?: ctx.guild.maxBitrate
         val minBitrate = (commandsSettings.minBitrate ?: 8000).coerceAtLeast(8000)

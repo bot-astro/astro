@@ -1,4 +1,4 @@
-package space.astro.bot.interactions
+package space.astro.bot.events.listeners.discord
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PreDestroy
@@ -17,6 +17,8 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import space.astro.bot.interactions.InteractionPipeline
+import space.astro.bot.interactions.InteractionRegistry
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.handlers.ButtonHandler
 import space.astro.bot.interactions.handlers.EntitySelectHandler
@@ -124,7 +126,13 @@ class InteractionEventListener(
                 rawOptions =
                     options
                         .takeIf { it.isNotEmpty() }
-                        ?.let { jsonMapper.writeValueAsString(mapOf("options" to it.map { o -> mapOf("name" to o.name, "value" to o.asString) })) },
+                        ?.let {
+                            jsonMapper.writeValueAsString(
+                                mapOf(
+                                    "options" to it.map { o -> mapOf("name" to o.name, "value" to o.asString) },
+                                ),
+                            )
+                        },
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString(),
             ),
         )

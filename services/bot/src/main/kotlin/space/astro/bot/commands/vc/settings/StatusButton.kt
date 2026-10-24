@@ -38,8 +38,10 @@ class StatusButton(
             TextInput
                 .create(StatusModal.STATUS_INPUT_ID, TextInputStyle.SHORT)
                 .setPlaceholder(ctx.t("vc.status.placeholder"))
-                .setValue(ctx.vcOperationCTX.temporaryVC.status.ifEmpty { null })
-                .setRequired(false)
+                .setValue(
+                    ctx.vcOperationCTX.temporaryVC.status
+                        .ifEmpty { null },
+                ).setRequired(false)
                 .setMaxLength(IVoiceStatusChannel.MAX_STATUS_LENGTH)
                 .build()
 

@@ -57,9 +57,10 @@ class GuildVoiceUpdateEventListener(
     }
 
     private suspend fun handle(event: GuildVoiceUpdateEvent) {
-        val guildSettings = withContext(Dispatchers.IO) {
-            guildSettingsRepository.findByGuildID(event.guild.id)
-        } ?: return
+        val guildSettings =
+            withContext(Dispatchers.IO) {
+                guildSettingsRepository.findByGuildID(event.guild.id)
+            } ?: return
 
         val vcEventData =
             VCEventData(

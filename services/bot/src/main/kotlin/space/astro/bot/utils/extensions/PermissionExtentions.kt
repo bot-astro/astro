@@ -9,8 +9,8 @@ import net.dv8tion.jda.api.exceptions.HierarchyException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.managers.channel.attribute.IPermissionContainerManager
 import net.dv8tion.jda.api.requests.restaction.ChannelAction
-import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 
 fun Long.toPermissionList() = Permission.getPermissions(this)
 

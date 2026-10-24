@@ -51,7 +51,9 @@ class ConnectedVCHandler(
         role: Role,
         memberRolesManager: SimpleMemberRolesManager,
     ) {
-        if (event.vcEventData.member.roles.any { it.id == role.id }) {
+        if (event.vcEventData.member.roles
+                .any { it.id == role.id }
+        ) {
             memberRolesManager.remove(role)
         } else {
             memberRolesManager.add(role)

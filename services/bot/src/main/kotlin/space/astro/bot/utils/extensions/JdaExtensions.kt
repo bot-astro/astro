@@ -1,4 +1,4 @@
-package space.astro.bot.utils.discord
+package space.astro.bot.utils.extensions
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

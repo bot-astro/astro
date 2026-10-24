@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component
 import space.astro.bot.exceptions.ConfigurationException
 import space.astro.bot.exceptions.PremiumConfigurationErrors
 import space.astro.bot.interactions.InteractionException
-import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.PermissionSets
+import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.clients.PremiumManager

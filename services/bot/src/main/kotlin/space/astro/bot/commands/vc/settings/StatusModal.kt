@@ -34,7 +34,12 @@ class StatusModal(
         ctx: VcInteractionContext,
     ) {
         // an empty input unsets the status
-        val status = event.getValue(STATUS_INPUT_ID)?.asString?.trim().orEmpty()
+        val status =
+            event
+                .getValue(STATUS_INPUT_ID)
+                ?.asString
+                ?.trim()
+                .orEmpty()
 
         ctx.vcOperationCTX.temporaryVC
             .modifyStatus(status)

@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import space.astro.bot.utils.discord.iconFromUrl
+import space.astro.bot.utils.extensions.iconFromUrl
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.ANotFoundException
@@ -152,9 +152,17 @@ class DiscordGuildController(
             val channel =
                 when (request.channelType) {
                     ChannelCreateBotApiRequest.ChannelCreateType.TEXT ->
-                        guild.createTextChannel(request.name).apply { category?.let { setParent(it) } }.reason(reason).await()
+                        guild
+                            .createTextChannel(request.name)
+                            .apply { category?.let { setParent(it) } }
+                            .reason(reason)
+                            .await()
                     ChannelCreateBotApiRequest.ChannelCreateType.VOICE ->
-                        guild.createVoiceChannel(request.name).apply { category?.let { setParent(it) } }.reason(reason).await()
+                        guild
+                            .createVoiceChannel(request.name)
+                            .apply { category?.let { setParent(it) } }
+                            .reason(reason)
+                            .await()
                     ChannelCreateBotApiRequest.ChannelCreateType.CATEGORY ->
                         guild.createCategory(request.name).reason(reason).await()
                 }

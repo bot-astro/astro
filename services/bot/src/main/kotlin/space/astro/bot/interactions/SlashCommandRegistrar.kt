@@ -17,7 +17,7 @@ class SlashCommandRegistrar(
         jda
             .updateCommands()
             .addCommands(registry.slash.values.map { it.data.setLocalizationFunction(CommandLocalization) })
-           .addCommands(registry.userContexts.values.map { it.data.setLocalizationFunction(CommandLocalization) })
+            .addCommands(registry.userContexts.values.map { it.data.setLocalizationFunction(CommandLocalization) })
             .queue(
                 { log.info { "Bulk overwrote ${it.size} commands" } },
                 { log.error(it) { "Unable to bulk overwrite commands" } },

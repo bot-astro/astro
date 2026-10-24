@@ -123,7 +123,8 @@ class GuildGeneratorsController(
         current: GeneratorSettings,
         updated: GeneratorSettings,
     ) {
-        if (updated.fallbackId != null && updated.fallbackId != current.fallbackId &&
+        if (updated.fallbackId != null &&
+            updated.fallbackId != current.fallbackId &&
             !premiumManager.canUseFallbackGenerator(guildSettings)
         ) {
             throw APremiumRequiredException("Upgrade the server to use a fallback generator")
@@ -134,14 +135,16 @@ class GuildGeneratorsController(
             updated.defaultLockedName to current.defaultLockedName,
             updated.defaultHiddenName to current.defaultHiddenName,
         ).forEach { (updatedName, currentName) ->
-            if (updatedName != null && updatedName != currentName &&
+            if (updatedName != null &&
+                updatedName != currentName &&
                 !premiumManager.canUseVCNameTemplate(guildSettings, updatedName)
             ) {
                 throw APremiumRequiredException("Some variables used in the name can only be used in upgraded servers")
             }
         }
 
-        if (updated.ownerRole != null && updated.ownerRole != current.ownerRole &&
+        if (updated.ownerRole != null &&
+            updated.ownerRole != current.ownerRole &&
             !premiumManager.canAssignTemporaryVCOwnerRole(guildSettings)
         ) {
             throw APremiumRequiredException("Upgrade the server to assign a role to the owner of temporary VCs")

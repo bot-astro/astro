@@ -15,8 +15,8 @@ import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.utils.extensions.modifyMemberPermissionOverride
 import space.astro.bot.utils.extensions.modifyPermissionOverride
-import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.repositories.redis.TemporaryVCRepository

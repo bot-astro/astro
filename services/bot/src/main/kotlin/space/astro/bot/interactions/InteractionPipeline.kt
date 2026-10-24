@@ -20,9 +20,9 @@ import space.astro.bot.interactions.handlers.InteractionHandler
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.bot.utils.extensions.toConfigurationErrorDto
 import space.astro.shared.core.lang.L
-import space.astro.shared.core.models.database.ConfigurationErrorEntity
-import space.astro.shared.core.models.database.ConfigurationErrorCode
 import space.astro.shared.core.lang.localizedDescription
+import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 
@@ -82,7 +82,10 @@ class InteractionPipeline(
             responder.error(e.key, *e.args)
         } catch (e: ConfigurationException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(e.configurationErrorEntity)
-            responder.error("error.invalid_configuration", "description" to e.configurationErrorEntity.localizedDescription(responder.locale))
+            responder.error(
+                "error.invalid_configuration",
+                "description" to e.configurationErrorEntity.localizedDescription(responder.locale),
+            )
         } catch (e: InsufficientPermissionException) {
             val configurationError = e.toConfigurationErrorDto(guild.id)
 

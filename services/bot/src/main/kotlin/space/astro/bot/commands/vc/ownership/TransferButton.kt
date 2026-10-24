@@ -33,7 +33,9 @@ class TransferButton(
         event: ButtonInteractionEvent,
         ctx: VcInteractionContext,
     ) {
-        val members = ctx.vcOperationCTX.temporaryVC.members.filter { !it.user.isBot && it.id != ctx.memberId }
+        val members =
+            ctx.vcOperationCTX.temporaryVC.members
+                .filter { !it.user.isBot && it.id != ctx.memberId }
 
         if (members.isEmpty()) {
             ctx.responder.error("vc.transfer.no_candidates")

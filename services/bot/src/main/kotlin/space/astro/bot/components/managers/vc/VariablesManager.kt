@@ -13,32 +13,112 @@ import java.util.Locale
 object VariablesManager {
     private val natoAlphabet =
         listOf(
-            "Alpha", "Bravo", "Charlie", "Delta", "Echo",
-            "Foxtrot", "Golf", "Hotel", "India", "Juliet",
-            "Kilo", "Lima", "Mike", "November", "Oscar",
-            "Papa", "Quebec", "Romeo", "Sierra", "Tango",
-            "Uniform", "Victor", "Whiskey", "X-Ray", "Yankee",
+            "Alpha",
+            "Bravo",
+            "Charlie",
+            "Delta",
+            "Echo",
+            "Foxtrot",
+            "Golf",
+            "Hotel",
+            "India",
+            "Juliet",
+            "Kilo",
+            "Lima",
+            "Mike",
+            "November",
+            "Oscar",
+            "Papa",
+            "Quebec",
+            "Romeo",
+            "Sierra",
+            "Tango",
+            "Uniform",
+            "Victor",
+            "Whiskey",
+            "X-Ray",
+            "Yankee",
             "Zulu",
-            "Alpha 2", "Bravo 2", "Charlie 2", "Delta 2", "Echo 2",
-            "Foxtrot", "Golf", "Hotel", "India", "Juliet 2",
-            "Kilo", "Lima", "Mike", "November", "Oscar 2",
-            "Papa", "Quebec", "Romeo", "Sierra", "Tango 2",
-            "Uniform", "Victor", "Whiskey", "X-Ray 2", "Yankee 2",
+            "Alpha 2",
+            "Bravo 2",
+            "Charlie 2",
+            "Delta 2",
+            "Echo 2",
+            "Foxtrot",
+            "Golf",
+            "Hotel",
+            "India",
+            "Juliet 2",
+            "Kilo",
+            "Lima",
+            "Mike",
+            "November",
+            "Oscar 2",
+            "Papa",
+            "Quebec",
+            "Romeo",
+            "Sierra",
+            "Tango 2",
+            "Uniform",
+            "Victor",
+            "Whiskey",
+            "X-Ray 2",
+            "Yankee 2",
             "Zulu",
         )
 
     private val romanNumbers =
         listOf(
-            "I", "II", "III", "IV", "V",
-            "VI", "VII", "VIII", "IX", "X",
-            "XI", "XII", "XIII", "XIV", "XV",
-            "XVI", "XVII", "XVIII", "XIX", "XX",
-            "XXI", "XXII", "XXIII", "XXIV", "XXV",
-            "XXVI", "XXVII", "XXVIII", "XXIX", "XXX",
-            "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV",
-            "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL",
-            "XLI", "XLII", "XLIII", "XLIV", "XLV",
-            "XLVI", "XLVII", "XLVIII", "XLIX", "L",
+            "I",
+            "II",
+            "III",
+            "IV",
+            "V",
+            "VI",
+            "VII",
+            "VIII",
+            "IX",
+            "X",
+            "XI",
+            "XII",
+            "XIII",
+            "XIV",
+            "XV",
+            "XVI",
+            "XVII",
+            "XVIII",
+            "XIX",
+            "XX",
+            "XXI",
+            "XXII",
+            "XXIII",
+            "XXIV",
+            "XXV",
+            "XXVI",
+            "XXVII",
+            "XXVIII",
+            "XXIX",
+            "XXX",
+            "XXXI",
+            "XXXII",
+            "XXXIII",
+            "XXXIV",
+            "XXXV",
+            "XXXVI",
+            "XXXVII",
+            "XXXVIII",
+            "XXXIX",
+            "XL",
+            "XLI",
+            "XLII",
+            "XLIII",
+            "XLIV",
+            "XLV",
+            "XLVI",
+            "XLVII",
+            "XLVIII",
+            "XLIX",
+            "L",
         )
 
     private val incrementalVariables = listOf("{n}", "{nato}", "{roman}")
@@ -147,9 +227,24 @@ object VariablesManager {
         val timeFormat = SimpleDateFormat("HH:mm:ss")
 
         val emoji = activity?.emoji?.takeIf { it.type == Emoji.Type.UNICODE }?.name
-        val start = activity?.timestamps?.start?.takeIf { it != 0L }?.let { timeFormat.format(Date(it)) }
-        val end = activity?.timestamps?.end?.takeIf { it != 0L }?.let { timeFormat.format(Date(it)) }
-        val type = activity?.type?.name?.lowercase()?.replaceFirstChar { it.uppercase() }
+        val start =
+            activity
+                ?.timestamps
+                ?.start
+                ?.takeIf { it != 0L }
+                ?.let { timeFormat.format(Date(it)) }
+        val end =
+            activity
+                ?.timestamps
+                ?.end
+                ?.takeIf { it != 0L }
+                ?.let { timeFormat.format(Date(it)) }
+        val type =
+            activity
+                ?.type
+                ?.name
+                ?.lowercase()
+                ?.replaceFirstChar { it.uppercase() }
 
         return template
             .replace("{activity_name}", activity?.name ?: "", true)

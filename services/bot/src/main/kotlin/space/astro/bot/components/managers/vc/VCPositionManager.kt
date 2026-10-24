@@ -52,7 +52,8 @@ class VCPositionManager {
      * Gets the first available incremental position for a specific generator
      *
      * @param generatorId id of the generator
-     * @param excludedVCId id of a channel to exclude from the search, usually the existing channel of which we need to recalculate the position
+     * @param excludedVCId id of a channel to exclude from the search,
+     * usually the existing channel of which we need to recalculate the position
      * @param temporaryVCs list of existing temporary VCs
      */
     fun getIncrementalPosition(

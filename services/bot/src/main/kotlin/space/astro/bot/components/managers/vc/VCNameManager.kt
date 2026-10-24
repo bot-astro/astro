@@ -10,8 +10,8 @@ import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.vc.VCOperationCTX.VCOperationOrigin
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.clients.PremiumManager
-import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity
 import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
