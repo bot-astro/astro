@@ -7,6 +7,7 @@ import space.astro.bot.interactions.handlers.EntitySelectHandler
 import space.astro.bot.interactions.handlers.ModalHandler
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.interactions.handlers.StringSelectHandler
+import space.astro.bot.interactions.handlers.UserContextHandler
 
 /**
  * Lookup of all interaction handlers, fails at startup on duplicated keys
@@ -14,6 +15,7 @@ import space.astro.bot.interactions.handlers.StringSelectHandler
 @Component
 class InteractionRegistry(
     slashHandlers: List<SlashHandler<*>>,
+    userContextHandlers: List<UserContextHandler<*>>,
     buttonHandlers: List<ButtonHandler<*>>,
     stringSelectHandlers: List<StringSelectHandler<*>>,
     entitySelectHandlers: List<EntitySelectHandler<*>>,
@@ -21,6 +23,7 @@ class InteractionRegistry(
     autocompleteHandlers: List<AutocompleteHandler>,
 ) {
     val slash = index("slash command", slashHandlers) { it.data.name }
+    val userContexts = index("user context command", userContextHandlers) { it.data.name }
     val buttons = index("button", buttonHandlers) { it.id }
     val stringSelects = index("string select", stringSelectHandlers) { it.id }
     val entitySelects = index("entity select", entitySelectHandlers) { it.id }

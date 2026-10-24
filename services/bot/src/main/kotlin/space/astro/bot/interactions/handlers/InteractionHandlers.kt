@@ -3,9 +3,11 @@ package space.astro.bot.interactions.handlers
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
+import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.ContextResolver
@@ -27,6 +29,20 @@ interface SlashHandler<C : InteractionContext> : InteractionHandler<C> {
 
     suspend fun handle(
         event: SlashCommandInteractionEvent,
+        ctx: C,
+    )
+}
+
+/**
+ * Command shown in the context menu of a user (right click / long press on a user → Apps)
+ *
+ * The name of the command, which is also its key, must be unique among user commands
+ */
+interface UserContextHandler<C : InteractionContext> : InteractionHandler<C> {
+    val data: CommandData
+
+    suspend fun handle(
+        event: UserContextInteractionEvent,
         ctx: C,
     )
 }

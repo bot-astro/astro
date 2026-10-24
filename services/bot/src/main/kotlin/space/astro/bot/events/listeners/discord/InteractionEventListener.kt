@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
@@ -22,6 +23,7 @@ import space.astro.bot.interactions.handlers.EntitySelectHandler
 import space.astro.bot.interactions.handlers.ModalHandler
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.interactions.handlers.StringSelectHandler
+import space.astro.bot.interactions.handlers.UserContextHandler
 import space.astro.bot.models.analytics.SlashCommandInvocationEventData
 import tools.jackson.databind.json.JsonMapper
 import java.time.OffsetDateTime
@@ -50,6 +52,12 @@ class InteractionEventListener(
     fun onSlashCommand(event: SlashCommandInteractionEvent) {
         val handler = registry.slash[event.name] ?: return
         scope.launch { runSlash(handler, event) }
+    }
+
+    @EventListener
+    fun onUserContext(event: UserContextInteractionEvent) {
+        val handler = registry.userContexts[event.name] ?: return
+        scope.launch { runUserContext(handler, event) }
     }
 
     @EventListener
@@ -121,6 +129,11 @@ class InteractionEventListener(
             ),
         )
     }
+
+    private suspend fun <C : InteractionContext> runUserContext(
+        handler: UserContextHandler<C>,
+        event: UserContextInteractionEvent,
+    ) = pipeline.run(event, event.name, handler) { ctx -> handler.handle(event, ctx) }
 
     private suspend fun <C : InteractionContext> runButton(
         handler: ButtonHandler<C>,
