@@ -138,6 +138,10 @@ support:
       base-url: ${SUPPORT_BOT_ENDPOINT_BASE_URL}
       auth: ${SUPPORT_BOT_ENDPOINT_AUTH}
 
+vote-tracker:
+  token: ${VOTE_TRACKER_TOKEN}
+  integration-id: ${VOTE_TRACKER_INTEGRATION_ID}
+
 bigquery:
   enabled: ${BOT__BIGQUERY_ENABLED}
   dataset-name: ${BOT__BIGQUERY_DATASET_NAME}

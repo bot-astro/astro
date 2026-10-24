@@ -7,6 +7,7 @@
   "guard.bot_permissions": "Astro needs the following permissions to run this command: {permissions}",
   "guard.member_permissions": "You need the following permissions to run this command: {permissions}",
   "guard.cooldown": "This action is on cooldown, you will be able to use it again <t:{availableAt}:R>",
+  "guard.vote": "Unlock this command for 12h by [voting]({link}) for Astro!",
   "vc.context.not_in_vc": "You need to be in a VC to use this command!",
   "vc.context.not_configured": "Astro is not configured in this server!",
   "vc.context.not_in_temporary_vc": "You must be in a temporary VC to use this!",
