@@ -22,7 +22,7 @@ class DashboardCommand : SlashHandler<InteractionContext> {
         Commands
             .slash("dashboard", CommandLocalization.description("dashboard"))
             .setContexts(InteractionContextType.GUILD)
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY)
+    override val settings = InteractionSettings(ack = Ack.NONE)
     override val contextResolver = BaseContextResolver
 
     override suspend fun handle(
@@ -34,6 +34,7 @@ class DashboardCommand : SlashHandler<InteractionContext> {
                 ctx.t("dashboard.reply", "emoji" to Emojis.dashboard.formatted, "link" to Links.DASHBOARD),
                 ActionRow.of(Buttons.dashboard(ctx.locale)),
             ),
+            ephemeral = false,
         )
     }
 }

@@ -26,19 +26,23 @@ class InteractionResponder(
      * Sends [container] as the response
      *
      * If the interaction was acknowledged it edits the original response (the deferred reply or the message
-     * of the component), otherwise it replies ephemerally
+     * of the component), otherwise it replies, ephemerally unless [ephemeral] is false
      */
-    suspend fun reply(container: Container) {
+    suspend fun reply(
+        container: Container,
+        ephemeral: Boolean = true,
+    ) {
         if (!callback.isAcknowledged) {
             callback
                 .replyComponents(container)
-                .setEphemeral(true)
+                .setEphemeral(ephemeral)
                 .await()
             return
         }
 
         callback.hook
             .editOriginalComponents(container)
+            .useComponentsV2()
             .await()
     }
 

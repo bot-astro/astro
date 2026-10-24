@@ -27,7 +27,7 @@ class HelpCommand(
         Commands
             .slash("help", CommandLocalization.description("help"))
             .setContexts(InteractionContextType.GUILD)
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY)
+    override val settings = InteractionSettings(ack = Ack.NONE)
     override val contextResolver = BaseContextResolver
 
     override suspend fun handle(
@@ -88,6 +88,7 @@ class HelpCommand(
                     ),
                 ),
             ),
+            ephemeral = false,
         )
     }
 }
