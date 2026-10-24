@@ -3,6 +3,7 @@ package space.astro.shared.core.models.database.guildSettings
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import net.dv8tion.jda.api.Region
 import space.astro.shared.core.utils.extensions.isValidSnowflake
+import space.astro.shared.core.utils.validation.Validatable
 import space.astro.shared.core.utils.validation.ValidationResult
 import space.astro.shared.core.utils.validation.asValidationResult
 
@@ -14,8 +15,8 @@ data class TemplateData(
     var vcLimit: Int? = null,
     var vcBitrate: Int? = null,
     var vcRegion: String? = null,
-) {
-    fun validate(): ValidationResult {
+) : Validatable {
+    override fun validate(): ValidationResult {
         val nameValidation = name.isNotEmpty().asValidationResult("template name cannot be empty")
         val enabledGeneratorIdsValidation =
             (

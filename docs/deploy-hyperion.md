@@ -85,6 +85,7 @@ Compare against what the code reads. Last check (keys only, no values):
 | `SUPPORT_BOT_ENDPOINT_BASE_URL` | `http://support-bot.astro:9002` |
 | `SUPPORT_BOT_ENDPOINT_AUTH` | same value as `SB__API_AUTH` |
 | `CA__CHARGEBEE_WEBHOOK_TOKEN` | basic auth password you will configure in Chargebee (E2). The old one was `chargebee.webhookToken` in the old config |
+| `CA__DISCORD_APPLICATION_ID`, `CA__DISCORD_APPLICATION_TOKEN` | same app/token as `BOT__DISCORD_APPLICATION_*` (used to refresh guild entitlements from Discord) |
 | `PREMIUM_SERVER_SKU_ID`, `PREMIUM_MONTHLY_PLAN_ID`, `PREMIUM_YEARLY_PLAN_ID` | see `docs/premium-env-vars.md` (not set = nobody is premium) |
 
 Also check these in `prod`:
@@ -100,7 +101,7 @@ Also check these in `prod`:
 | Key | Value |
 |---|---|
 | `BOT__DISCORD_APPLICATION_ID`, `BOT__DISCORD_APPLICATION_TOKEN` | a **separate** Discord application for staging (never reuse the prod token) |
-| `EEJ__DISCORD_APPLICATION_ID`, `EEJ__DISCORD_APPLICATION_TOKEN` | same app/token as above (or its own) |
+| `EEJ__DISCORD_APPLICATION_ID`, `EEJ__DISCORD_APPLICATION_TOKEN`, `CA__DISCORD_APPLICATION_ID`, `CA__DISCORD_APPLICATION_TOKEN` | same app/token as above (or its own) |
 | `DISCORD_OAUTH_ID`, `DISCORD_OAUTH_SECRET` | OAuth2 of the staging application; redirect `https://api-staging.astro-bot.space/v2/auth/discord/callback` |
 | `DISCORD_OAUTH_REDIRECT_URI` | the staging redirect above |
 | `CA__AUTH`, `SB__API_AUTH`, `SUPPORT_BOT_ENDPOINT_AUTH` | random strings (`openssl rand -base64 48`); `SUPPORT_BOT_ENDPOINT_AUTH` = `SB__API_AUTH` |

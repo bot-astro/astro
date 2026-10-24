@@ -8,4 +8,6 @@ interface ConfigurationErrorRepository : MongoRepository<ConfigurationErrorEntit
         guildId: String,
         timestamp: Long,
     ): List<ConfigurationErrorEntity>
+
+    fun deleteAllByGuildId(guildId: String)
 }

@@ -123,6 +123,9 @@ discord:
   api:
     base-url: ${DISCORD_API_BASE_URL}
     enabled: true
+  application:
+    id: ${CA__DISCORD_APPLICATION_ID}
+    token: ${CA__DISCORD_APPLICATION_TOKEN}
   oauth:
     id: ${DISCORD_OAUTH_ID}
     secret: ${DISCORD_OAUTH_SECRET}

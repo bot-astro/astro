@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.RestController
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.requests.GuildUpgradeBody
+import space.astro.api.central.properties.DiscordApplicationProperties
 import space.astro.api.central.services.UserSubscriptionsService
+import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.AUnauthorizedException
+import space.astro.shared.core.models.database.guildSettings.GuildEntitlementData
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.models.database.userSettings.UserGuildUpgradeData
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
@@ -28,6 +31,8 @@ class GuildPremiumController(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val userRepository: UserRepository,
     private val userSubscriptionsService: UserSubscriptionsService,
+    private val discordApiClient: DiscordApiClient,
+    private val discordApplicationProperties: DiscordApplicationProperties,
 ) {
     @Operation(
         summary = "Upgrade guild",
@@ -100,6 +105,46 @@ class GuildPremiumController(
             userRepository.save(user)
         }
 
+        return ResponseEntity.ok(guildSettings)
+    }
+
+    @Operation(
+        summary = "Refresh guild entitlements",
+        description = "Fetches the entitlements of the guild from Discord and stores the new or changed ones",
+    )
+    @PostMapping(CentralApiEndpoint.GUILD_PREMIUM_ENTITLEMENTS_REFRESH)
+    @CanManageGuildMiddleware
+    fun refreshEntitlements(
+        @PathVariable guildId: String,
+    ): ResponseEntity<GuildSettingsEntity> {
+        val guildSettings =
+            guildSettingsRepository.findByGuildID(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+
+        val discordEntitlements =
+            discordApiClient.getEntitlements(
+                applicationId = discordApplicationProperties.id,
+                botToken = discordApplicationProperties.token,
+                guildId = guildId,
+            )
+
+        discordEntitlements.forEach { discordEntitlement ->
+            val entitlement =
+                GuildEntitlementData(
+                    id = discordEntitlement.id,
+                    skuId = discordEntitlement.skuId,
+                    endsAt = discordEntitlement.endsAt?.toInstant()?.toEpochMilli(),
+                )
+
+            val index = guildSettings.entitlements.indexOfFirst { it.id == entitlement.id }
+            if (index >= 0) {
+                guildSettings.entitlements[index] = entitlement
+            } else {
+                guildSettings.entitlements.add(entitlement)
+            }
+        }
+
+        guildSettingsRepository.save(guildSettings)
         return ResponseEntity.ok(guildSettings)
     }
 }

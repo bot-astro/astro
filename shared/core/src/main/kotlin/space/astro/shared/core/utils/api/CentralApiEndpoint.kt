@@ -20,8 +20,11 @@ object CentralApiEndpoint {
     const val GUILD_SETTINGS_INTERFACE = "/v2/guilds/{guildId}/settings/interfaces/{interfaceId}"
     const val GUILD_SETTINGS_CONNECTIONS = "/v2/guilds/{guildId}/settings/connections"
     const val GUILD_SETTINGS_CONNECTION = "/v2/guilds/{guildId}/settings/connections/{connectionId}"
+    const val GUILD_SETTINGS_TEMPLATES = "/v2/guilds/{guildId}/settings/templates"
+    const val GUILD_SETTINGS_TEMPLATE = "/v2/guilds/{guildId}/settings/templates/{templateId}"
 
     const val GUILD_PREMIUM_UPGRADE = "/v2/guilds/{guildId}/premium/upgrade"
+    const val GUILD_PREMIUM_ENTITLEMENTS_REFRESH = "/v2/guilds/{guildId}/premium/entitlements/refresh"
 
     const val CHARGEBEE_PORTAL_SESSION = "/v2/chargebee/portal-session"
     const val CHARGEBEE_CHECKOUT = "/v2/chargebee/checkout"
