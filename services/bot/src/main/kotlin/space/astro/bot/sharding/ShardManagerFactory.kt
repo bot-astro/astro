@@ -2,6 +2,7 @@ package space.astro.bot.sharding
 
 import dev.minn.jda.ktx.jdabuilder.injectKTX
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micrometer.core.instrument.MeterRegistry
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.requests.RestAction
@@ -9,8 +10,10 @@ import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import net.dv8tion.jda.internal.utils.IOUtil
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+import space.astro.bot.components.metrics.DiscordHttpMetricsInterceptor
 import space.astro.bot.events.JdaToSpringEventBridge
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.properties.DiscordApplicationProperties
@@ -37,6 +40,7 @@ class ShardManagerFactory(
     fun getDefaultShardManager(
         podProperties: PodProperties,
         redisShardSessionController: RedisShardSessionController,
+        registry: MeterRegistry,
     ): ShardManager {
         val shardsPerPod = botShardProperties.totalShards / botShardProperties.totalPods
         val shardList =
@@ -65,6 +69,7 @@ class ShardManagerFactory(
             ).setMemberCachePolicy(MemberCachePolicy.VOICE)
             .enableCache(CacheFlag.VOICE_STATE, CacheFlag.MEMBER_OVERRIDES, CacheFlag.ACTIVITY)
             .setSessionController(redisShardSessionController)
+            .setHttpClient(IOUtil.newHttpClientBuilder().addInterceptor(DiscordHttpMetricsInterceptor(registry)).build())
             .setShardsTotal(botShardProperties.totalShards)
             .setShards(shardList)
             .setActivity(activity)

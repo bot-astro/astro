@@ -22,7 +22,6 @@ management:
           - health
           - info
           - metrics
-          - prometheus
   endpoint:
     health:
       probes:
@@ -34,12 +33,29 @@ management:
         liveness:
           include:
             - livenessState
-  prometheus:
+  opentelemetry:
+    resource-attributes:
+      job_id: ${POD_NAME:N/A}
+  otlp:
     metrics:
       export:
-        enabled: true
+        enabled: ${OTEL_ENABLED:false}
+        url: ${OTEL_ENDPOINT:http://localhost:4318}/v1/metrics
+        step: 30s
+        aggregation-temporality: cumulative
+        base-time-unit: seconds
+  tracing:
+    export:
+      otlp:
+        enabled: false
+  logging:
+    export:
+      otlp:
+        enabled: false
 
 spring:
+  application:
+    name: api-central
   data:
     redis:
       client-name: api-central
@@ -67,7 +83,10 @@ scalar:
 
 
 sentry:
-  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.sentry.io/4506708023967744
+  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.us.sentry.io/4506708023967744
+  environment: ${CA__SENTRY_ENVIRONMENT:local}
+  logs:
+    enabled: true
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
   traces-sample-rate: 0.05

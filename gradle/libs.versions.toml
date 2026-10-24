@@ -94,6 +94,7 @@ spring-boot-starter-restclient = { module = "org.springframework.boot:spring-boo
 spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-opentelemetry = { module = "org.springframework.boot:spring-boot-starter-opentelemetry" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 springdoc-openapi-starter-webmvc-scalar = { module = "org.springdoc:springdoc-openapi-starter-webmvc-scalar", version.ref = "springdoc" }
 
@@ -137,7 +138,8 @@ junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "ju
 service-core=[
     "netty-resolver-dsn",
     "spring-boot-starter",
-    "spring-boot-starter-actuator"
+    "spring-boot-starter-actuator",
+    "spring-boot-starter-opentelemetry"
 ]
 serialization=[
     "jackson-kotlin"

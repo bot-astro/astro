@@ -5,7 +5,7 @@ Code under `*-old` modules (`bot-old`, `central-api-old`, `shared/old-core`) is 
 
 ## Steps
 - [x] port over premium gates
-- [ ] verify sentry is implemented correctly
+- [x] verify sentry is implemented correctly
 - [ ] verify we have telemetry setup
 - [ ] update `../../Giuliopime/gport` migrating with the info from `./docs/infra-cost-migration.md`
 - [ ] enable git precommit hooks again and run them + fix issues they report

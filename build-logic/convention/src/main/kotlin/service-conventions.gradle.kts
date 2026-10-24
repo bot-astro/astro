@@ -30,6 +30,12 @@ jib {
     }
 
     container {
+        // Sentry automatically reads this env variable
+        // and it's the easiest way to provide the correct release
+        System.getenv("SEMAPHORE_GIT_SHA")?.let {
+            environment = mapOf("SENTRY_RELEASE" to it)
+        }
+
         jvmFlags = listOf(
             "-XX:+PrintCommandLineFlags",
             "-XshowSettings:vm",

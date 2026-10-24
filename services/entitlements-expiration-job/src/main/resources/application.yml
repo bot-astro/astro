@@ -22,14 +22,15 @@ spring:
       password: ${REDIS_PASSWORD:}
 
 sentry:
-  dsn: https://10de941a51db08fb8cc81e7cd7ed8c92@o4506708022263808.ingest.sentry.io/4506708028489728
+  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.us.sentry.io/4506708023967744
+  environment: ${EEJ__SENTRY_ENVIRONMENT:local}
+  logs:
+    enabled: true
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
   traces-sample-rate: 0.05
   data-collection:
     user-info: false
-
-
 #####################
 # CUSTOM PROPERTIES #
 #####################
