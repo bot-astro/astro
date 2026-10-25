@@ -48,6 +48,7 @@ object Messages {
                 ),
             ),
             ActionRow.of(
+                Buttons.setup(locale),
                 Buttons.guildDashboard(locale, guild.id),
                 Buttons.guides(locale),
                 Buttons.support(locale),

@@ -27,5 +27,7 @@ object Emojis {
     val help = Emoji.fromCustom("help", 1029823576141987941, false)
     val developer = Emoji.fromCustom("developer", 1029823567170379877, false)
     val helper = Emoji.fromCustom("helper", 1029828557632979025, false)
+    val setup = Emoji.fromCustom("setup", 1029823609880985600, false)
+    val premium = Emoji.fromCustom("premium", 1029823603824414862, false)
     val user = Emoji.fromCustom("user", 1029823616113713263, false)
 }
