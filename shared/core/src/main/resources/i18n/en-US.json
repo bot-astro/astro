@@ -30,6 +30,7 @@
   "commands.dev-message.type.description": "The message to send",
   "dev.message.sent": "Sent the message `{type}` in this channel.",
   "dev.ping.reply": "Pong! Gateway ping: `{ping}ms` (shard `{shard}`)",
+  "commands.setup.description": "Creates a category with a generator and an interface to get started with Astro",
   "commands.dashboard.description": "Points you to the dashboard where you can configure the bot settings for your server",
   "dashboard.reply": "Setup Astro and configure all of its settings on the {emoji} [`Dashboard`]({link})",
   "commands.help.description": "Get help with Astro",
