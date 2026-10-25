@@ -3,7 +3,7 @@ package space.astro.bot.api.controllers
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -34,7 +34,7 @@ class InterfaceController(
         operationId = "createInterface",
     )
     @PostMapping(BotApiEndpoint.DISCORD_GUILD_INTERFACE)
-    suspend fun createInterface(
+    fun createInterface(
         @PathVariable guildId: String,
         @RequestBody request: InterfaceCreateBotApiRequest,
     ): ResponseEntity<InterfaceData> {
@@ -43,9 +43,13 @@ class InterfaceController(
                 ?: throw ANotFoundException("Guild not found")
 
         try {
-            val guildSettings = withContext(Dispatchers.IO) { guildSettingsRepository.findByGuildID(guildId) }
+            val guildSettings = guildSettingsRepository.findByGuildID(guildId)
 
-            return ResponseEntity.ok(interfaceManager.createInterface(guild, request.channelId, guildSettings.supportedLocale))
+            return ResponseEntity.ok(
+                runBlocking(Dispatchers.IO) {
+                    interfaceManager.createInterface(guild, request.channelId, guildSettings.supportedLocale)
+                },
+            )
         } catch (e: AException) {
             throw e
         } catch (e: ErrorResponseException) {
@@ -63,7 +67,7 @@ class InterfaceController(
         operationId = "updateInterface",
     )
     @PutMapping(BotApiEndpoint.DISCORD_GUILD_INTERFACE)
-    suspend fun updateInterface(
+    fun updateInterface(
         @PathVariable guildId: String,
         @RequestBody interfaceData: InterfaceData,
     ): ResponseEntity<Void> {
@@ -72,7 +76,7 @@ class InterfaceController(
                 ?: throw ANotFoundException("Guild not found")
 
         try {
-            interfaceManager.updateInterface(guild, interfaceData)
+            runBlocking(Dispatchers.IO) { interfaceManager.updateInterface(guild, interfaceData) }
             return ResponseEntity.noContent().build()
         } catch (e: AException) {
             throw e
@@ -91,7 +95,7 @@ class InterfaceController(
         operationId = "deleteInterface",
     )
     @DeleteMapping(BotApiEndpoint.DISCORD_GUILD_INTERFACE_MESSAGE)
-    suspend fun deleteInterface(
+    fun deleteInterface(
         @PathVariable guildId: String,
         @PathVariable channelId: String,
         @PathVariable messageId: String,
@@ -101,7 +105,9 @@ class InterfaceController(
                 ?: throw ANotFoundException("Guild not found")
 
         try {
-            interfaceManager.deleteInterface(guild, channelId, messageId, guildSettingsRepository.findByGuildID(guild.id).supportedLocale)
+            val locale = guildSettingsRepository.findByGuildID(guild.id).supportedLocale
+
+            runBlocking(Dispatchers.IO) { interfaceManager.deleteInterface(guild, channelId, messageId, locale) }
             return ResponseEntity.noContent().build()
         } catch (e: AException) {
             throw e

@@ -24,14 +24,13 @@ class GuildErrorsController(
 ) {
     @Operation(
         summary = "Get guild errors",
-        description = "Errors are described in the given locale, defaulting to the locale of the guild",
+        description = "Errors are described in the locale of the guild",
     )
     @GetMapping(CentralApiEndpoint.GUILD_ERRORS)
     @CanManageGuildMiddleware
     fun getGuildErrors(
         @PathVariable("guildId") guildId: String,
         @RequestParam(value = "from_timestamp", required = false) fromTimestamp: Long?,
-        @RequestParam(value = "locale", required = false) locale: String?,
     ): ResponseEntity<List<ConfigurationErrorResponse>> {
         val sevenDaysAgo = System.currentTimeMillis() - Duration.ofDays(7).toMillis()
         val filterTimestamp = fromTimestamp?.coerceAtLeast(sevenDaysAgo) ?: sevenDaysAgo
@@ -42,7 +41,9 @@ class GuildErrorsController(
             )
 
         val responseLocale =
-            (locale ?: guildSettingsRepository.findByGuildID(guildId)?.locale)
+            guildSettingsRepository
+                .findByGuildID(guildId)
+                ?.locale
                 ?.let { L.closestSupportedLocale(it) }
                 ?: L.default
 

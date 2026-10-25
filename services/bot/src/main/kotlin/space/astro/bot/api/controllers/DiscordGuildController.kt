@@ -3,6 +3,8 @@ package space.astro.bot.api.controllers
 import dev.minn.jda.ktx.coroutines.await
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.entities.channel.attribute.ICategorizableChannel
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
@@ -62,7 +64,7 @@ class DiscordGuildController(
         operationId = "updateGuildProfile",
     )
     @PostMapping(BotApiEndpoint.DISCORD_GUILD_PROFILE)
-    suspend fun updateGuildProfile(
+    fun updateGuildProfile(
         @PathVariable guildId: String,
         @RequestBody newProfile: GuildProfileUpdateBotApiRequest,
     ): ResponseEntity<Void> {
@@ -71,16 +73,20 @@ class DiscordGuildController(
                 ?: throw ANotFoundException("Guild with ID $guildId not found")
 
         try {
-            val avatar = newProfile.avatarUrl?.let { iconFromUrl(it) }
-            val banner = newProfile.bannerUrl?.let { iconFromUrl(it) }
+            val reason = L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.profile_update")
 
-            guild.selfMember.manager
-                .setNickname(newProfile.nickname)
-                .setBio(newProfile.bio)
-                .setAvatar(avatar)
-                .setBanner(banner)
-                .reason(L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.profile_update"))
-                .await()
+            runBlocking(Dispatchers.IO) {
+                val avatar = newProfile.avatarUrl?.let { iconFromUrl(it) }
+                val banner = newProfile.bannerUrl?.let { iconFromUrl(it) }
+
+                guild.selfMember.manager
+                    .setNickname(newProfile.nickname)
+                    .setBio(newProfile.bio)
+                    .setAvatar(avatar)
+                    .setBanner(banner)
+                    .reason(reason)
+                    .await()
+            }
         } catch (e: ErrorResponseException) {
             throw ABadRequestException(e.message ?: "Error from Discord API", e)
         } catch (e: InsufficientPermissionException) {
@@ -134,7 +140,7 @@ class DiscordGuildController(
         operationId = "createChannel",
     )
     @PostMapping(BotApiEndpoint.DISCORD_GUILD_CHANNELS)
-    suspend fun createChannel(
+    fun createChannel(
         @PathVariable guildId: String,
         @RequestBody request: ChannelCreateBotApiRequest,
     ): ResponseEntity<DiscordGuildChannelBotApiResponse> {
@@ -151,21 +157,23 @@ class DiscordGuildController(
 
         try {
             val channel =
-                when (request.channelType) {
-                    ChannelCreateBotApiRequest.ChannelCreateType.TEXT ->
-                        guild
-                            .createTextChannel(request.name)
-                            .apply { category?.let { setParent(it) } }
-                            .reason(reason)
-                            .await()
-                    ChannelCreateBotApiRequest.ChannelCreateType.VOICE ->
-                        guild
-                            .createVoiceChannel(request.name)
-                            .apply { category?.let { setParent(it) } }
-                            .reason(reason)
-                            .await()
-                    ChannelCreateBotApiRequest.ChannelCreateType.CATEGORY ->
-                        guild.createCategory(request.name).reason(reason).await()
+                runBlocking(Dispatchers.IO) {
+                    when (request.channelType) {
+                        ChannelCreateBotApiRequest.ChannelCreateType.TEXT ->
+                            guild
+                                .createTextChannel(request.name)
+                                .apply { category?.let { setParent(it) } }
+                                .reason(reason)
+                                .await()
+                        ChannelCreateBotApiRequest.ChannelCreateType.VOICE ->
+                            guild
+                                .createVoiceChannel(request.name)
+                                .apply { category?.let { setParent(it) } }
+                                .reason(reason)
+                                .await()
+                        ChannelCreateBotApiRequest.ChannelCreateType.CATEGORY ->
+                            guild.createCategory(request.name).reason(reason).await()
+                    }
                 }
 
             val response =
@@ -188,7 +196,7 @@ class DiscordGuildController(
     }
 
     @DeleteMapping(BotApiEndpoint.DISCORD_GUILD_CHANNEL)
-    suspend fun deleteChannel(
+    fun deleteChannel(
         @PathVariable guildId: String,
         @PathVariable channelId: String,
     ): ResponseEntity<Void> {
@@ -197,11 +205,15 @@ class DiscordGuildController(
                 ?: throw ANotFoundException("Guild not found")
 
         try {
-            guild.channels
-                .find { it.id == channelId }
-                ?.delete()
-                ?.reason(L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_delete"))
-                ?.await()
+            val reason = L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_delete")
+
+            runBlocking(Dispatchers.IO) {
+                guild.channels
+                    .find { it.id == channelId }
+                    ?.delete()
+                    ?.reason(reason)
+                    ?.await()
+            }
         } catch (e: ErrorResponseException) {
             when (e.errorResponse) {
                 ErrorResponse.UNKNOWN_CHANNEL -> return ResponseEntity.noContent().build()

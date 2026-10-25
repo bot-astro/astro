@@ -132,6 +132,7 @@ class BotApiClient(
                 .delete()
                 .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD_CHANNEL, guildId, channelId)
                 .retrieve()
+                .toBodilessEntity()
         } catch (e: RestClientException) {
             if (e is RestClientResponseException && e.statusCode.value() == 404) {
                 throw ANotFoundException("Guild with id $guildId not found")
