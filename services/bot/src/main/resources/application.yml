@@ -124,6 +124,9 @@ discord:
     token: ${BOT__DISCORD_APPLICATION_TOKEN}
     activity-type: ${BOT__DISCORD_APPLICATION_ACTIVITY_TYPE}
     activity-text: ${BOT__DISCORD_APPLICATION_ACTIVITY_TEXT}
+  developer:
+    guild-id: ${BOT__DISCORD_DEVELOPER_GUILD_ID:}
+    user-id: ${BOT__DISCORD_DEVELOPER_USER_ID:}
 
 premium:
   server-sku-id: ${PREMIUM_SERVER_SKU_ID:}

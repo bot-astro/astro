@@ -26,6 +26,8 @@ enum class Ack {
  * Static requirements and behaviour of an interaction handler
  *
  * @property cooldown per user and per handler, [Duration.ZERO] to disable
+ * @property developerOnly registered only in the developer guild (see [space.astro.bot.properties.DeveloperProperties])
+ * and executable only by the developer user
  */
 data class InteractionSettings(
     val ack: Ack = Ack.DEFER_REPLY_EPHEMERAL,
@@ -33,4 +35,5 @@ data class InteractionSettings(
     val memberPermissions: Set<Permission> = emptySet(),
     val botPermissions: Set<Permission> = emptySet(),
     val voteRequired: Boolean = false,
+    val developerOnly: Boolean = false,
 )

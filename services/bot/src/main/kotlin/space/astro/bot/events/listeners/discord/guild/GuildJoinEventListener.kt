@@ -48,9 +48,6 @@ class GuildJoinEventListener(
                 ?.takeIf { guild.selfMember.hasPermission(it, permissions) }
                 ?: guild.textChannels.firstOrNull { guild.selfMember.hasPermission(it, permissions) }
 
-        // TODO: premium, add back the "Ultimate" and "Vote" buttons when premium is implemented
-        // TODO: add the "Setup" button depending on what is decided for the setup commands
-        // the settings exist only if the bot was already in the server in the past
         val locale = guildSettingsRepository.findByGuildID(guild.id).supportedLocale
 
         channel?.sendMessage(createWelcomeMessage(guild, locale))?.queue()
@@ -71,7 +68,6 @@ class GuildJoinEventListener(
                     L.t(locale, "welcome.title", "guild" to guild.name, "link" to dashboard),
                     L.t(locale, "welcome.description"),
                 ),
-                Containers.divider(),
                 Containers.field(
                     L.t(locale, "help.features.title"),
                     L.t(
@@ -92,13 +88,11 @@ class GuildJoinEventListener(
                     L.t(locale, "help.support.title"),
                     L.t(locale, "help.support.content", "emoji" to Emojis.helper.formatted, "link" to Links.SUPPORT_SERVER),
                 ),
-                Containers.divider(),
-                ActionRow.of(
-                    Buttons.guildDashboard(locale, guild.id),
-                    Buttons.guides(locale),
-                    Buttons.support(locale),
-                ),
-                Containers.footer(L.t(locale, "welcome.footer")),
+            ),
+            ActionRow.of(
+                Buttons.guildDashboard(locale, guild.id),
+                Buttons.guides(locale),
+                Buttons.support(locale),
             ),
         )
     }
