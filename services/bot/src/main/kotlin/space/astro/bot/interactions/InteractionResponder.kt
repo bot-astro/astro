@@ -1,6 +1,7 @@
 package space.astro.bot.interactions
 
 import dev.minn.jda.ktx.coroutines.await
+import net.dv8tion.jda.api.components.MessageTopLevelComponent
 import net.dv8tion.jda.api.components.container.Container
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 import space.astro.bot.ui.Containers
@@ -23,25 +24,25 @@ class InteractionResponder(
     ): String = L.t(locale, key, *args)
 
     /**
-     * Sends [container] as the response
+     * Sends [components] as the response
      *
      * If the interaction was acknowledged it edits the original response (the deferred reply or the message
      * of the component), otherwise it replies, ephemerally unless [ephemeral] is false
      */
     suspend fun reply(
-        container: Container,
+        vararg components: MessageTopLevelComponent,
         ephemeral: Boolean = true,
     ) {
         if (!callback.isAcknowledged) {
             callback
-                .replyComponents(container)
+                .replyComponents(components.toList())
                 .setEphemeral(ephemeral)
                 .await()
             return
         }
 
         callback.hook
-            .editOriginalComponents(container)
+            .editOriginalComponents(components.toList())
             .useComponentsV2()
             .await()
     }

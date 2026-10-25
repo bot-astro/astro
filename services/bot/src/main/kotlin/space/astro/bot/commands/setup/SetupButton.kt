@@ -62,8 +62,8 @@ class SetupButton(
             ctx.responder.reply(
                 Containers.error(
                     ctx.t("setup.generator_limit", "max" to PremiumManager.FREE_MAX_GENERATORS),
-                    ActionRow.of(Buttons.ultimate(ctx.locale), Buttons.guildDashboard(ctx.locale, guild.id)),
                 ),
+                ActionRow.of(Buttons.ultimate(ctx.locale), Buttons.guildDashboard(ctx.locale, guild.id)),
             )
             return
         }
@@ -72,8 +72,8 @@ class SetupButton(
             ctx.responder.reply(
                 Containers.error(
                     ctx.t("setup.interface_limit", "max" to PremiumManager.FREE_MAX_INTERFACES),
-                    ActionRow.of(Buttons.ultimate(ctx.locale), Buttons.guildDashboard(ctx.locale, guild.id)),
                 ),
+                ActionRow.of(Buttons.ultimate(ctx.locale), Buttons.guildDashboard(ctx.locale, guild.id)),
             )
             return
         }
@@ -127,8 +127,8 @@ class SetupButton(
                         "generator" to generatorChannel.asMention,
                         "interface" to interfaceChannel.asMention,
                     ),
-                    ActionRow.of(Buttons.guildDashboard(ctx.locale, guild.id), Buttons.guides(ctx.locale)),
                 ),
+                ActionRow.of(Buttons.guildDashboard(ctx.locale, guild.id), Buttons.guides(ctx.locale)),
             )
         } catch (e: ErrorResponseException) {
             if (e.errorResponse == ErrorResponse.MAX_CHANNELS) {

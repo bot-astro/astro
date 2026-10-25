@@ -32,8 +32,8 @@ class DashboardCommand : SlashHandler<InteractionContext> {
         ctx.responder.reply(
             Containers.default(
                 ctx.t("dashboard.reply", "emoji" to Emojis.dashboard.formatted, "link" to Links.DASHBOARD),
-                ActionRow.of(Buttons.dashboard(ctx.locale)),
             ),
+            ActionRow.of(Buttons.dashboard(ctx.locale)),
             ephemeral = false,
         )
     }

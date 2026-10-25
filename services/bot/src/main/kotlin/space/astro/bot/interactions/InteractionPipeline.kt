@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.interactions.callbacks.IMessageEditCallback
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.exceptions.ConfigurationException
@@ -106,7 +105,7 @@ class InteractionPipeline(
     }
 
     private suspend fun retrieveGuildSettings(guildId: String): GuildSettingsEntity? =
-        withContext(Dispatchers.IO) { guildSettingsRepository.findByIdOrNull(guildId) }
+        withContext(Dispatchers.IO) { guildSettingsRepository.findByGuildID(guildId) }
 
     private suspend fun acknowledge(
         event: IReplyCallback,

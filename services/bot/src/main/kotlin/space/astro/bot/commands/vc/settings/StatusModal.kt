@@ -10,7 +10,6 @@ import space.astro.bot.interactions.context.VcInteractionContext
 import space.astro.bot.interactions.handlers.ModalHandler
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.ui.Containers
-import space.astro.bot.ui.Emojis
 
 @Component
 class StatusModal(
@@ -48,9 +47,9 @@ class StatusModal(
 
         val reply =
             if (status.isEmpty()) {
-                ctx.t("vc.status.unset", "emoji" to Emojis.logs.formatted)
+                ctx.t("vc.status.unset")
             } else {
-                ctx.t("vc.status.set", "emoji" to Emojis.logs.formatted, "status" to status)
+                ctx.t("vc.status.set", "status" to status)
             }
 
         ctx.responder.reply(Containers.default(reply))

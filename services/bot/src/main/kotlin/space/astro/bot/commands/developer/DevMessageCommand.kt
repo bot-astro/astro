@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.springframework.stereotype.Component
+import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.CommandLocalization
 import space.astro.bot.interactions.InteractionSettings
 import space.astro.bot.interactions.context.BaseContextResolver
@@ -41,7 +42,7 @@ class DevMessageCommand : SlashHandler<InteractionContext> {
                 OptionData(OptionType.STRING, "type", CommandLocalization.description("dev-message.type"), true)
                     .addChoices(DevMessage.entries.map { Command.Choice(it.label, it.name) }),
             )
-    override val settings = InteractionSettings(developerOnly = true)
+    override val settings = InteractionSettings(ack = Ack.NONE, developerOnly = true)
     override val contextResolver = BaseContextResolver
 
     override suspend fun handle(
