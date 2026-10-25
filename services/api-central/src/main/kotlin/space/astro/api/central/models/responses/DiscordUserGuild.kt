@@ -6,5 +6,4 @@ data class DiscordUserGuild(
     val icon: String?,
     val permissions: Long,
     val canManage: Boolean,
-    val preferredLocale: String,
 )

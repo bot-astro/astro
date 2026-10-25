@@ -51,7 +51,6 @@ class DiscordUserGuildsPersistenceService(
                                     it == Permission.MANAGE_SERVER ||
                                     it == Permission.ADMINISTRATOR
                             },
-                        preferredLocale = partialGuildDto.preferredLocale,
                     )
                 }
 

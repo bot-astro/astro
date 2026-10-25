@@ -4,4 +4,5 @@ data class DiscordGuildBotApiResponse(
     val id: String,
     val name: String,
     val icon: String?,
+    val preferredLocale: String,
 )

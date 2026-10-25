@@ -50,6 +50,7 @@ class DiscordGuildController(
                 id = guild.id,
                 name = guild.name,
                 icon = guild.iconUrl,
+                preferredLocale = guild.locale.locale,
             )
 
         return ResponseEntity.ok(response)
