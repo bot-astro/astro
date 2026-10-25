@@ -13,6 +13,6 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 class DiscordConstantsController {
     @Operation(summary = "Get channel related permissions")
     @GetMapping(CentralApiEndpoint.DISCORD_CHANNEL_RELATED_PERMISSIONS)
-    suspend fun getChannelRelatedPermissions(): ResponseEntity<List<DiscordPermissionMeta>> =
+    fun getChannelRelatedPermissions(): ResponseEntity<List<DiscordPermissionMeta>> =
         ResponseEntity.ok(DiscordPermissionMeta.channelsRelatedPermissions)
 }

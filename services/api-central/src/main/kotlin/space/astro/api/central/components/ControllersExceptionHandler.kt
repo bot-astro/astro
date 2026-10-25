@@ -3,6 +3,7 @@ package space.astro.api.central.components
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.TypeMismatchException
+import org.springframework.expression.ExpressionInvocationTargetException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -34,7 +35,14 @@ class ControllersExceptionHandler(
     )
 
     @ExceptionHandler(Exception::class)
-    fun handleException(e: Exception): ResponseEntity<AErrorResponse> {
+    fun handleException(thrown: Exception): ResponseEntity<AErrorResponse> {
+        // SpEL (@PreAuthorize) wraps the exceptions thrown by the beans it invokes
+        val e =
+            generateSequence<Throwable>(thrown) { it.cause }
+                .filterIsInstance<ExpressionInvocationTargetException>()
+                .firstOrNull()
+                ?.cause as? Exception
+                ?: thrown
         val r = resolve(e)
         if (r.status >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
             log.error(e) { "API request failed" }

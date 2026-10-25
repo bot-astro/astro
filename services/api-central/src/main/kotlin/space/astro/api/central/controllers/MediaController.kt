@@ -3,7 +3,6 @@ package space.astro.api.central.controllers
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.bson.types.ObjectId
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
+import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.api.central.models.requests.MediaCreateBody
 import space.astro.api.central.services.MediaContentType
 import space.astro.api.central.services.MediaStorageService
@@ -42,6 +42,7 @@ class MediaController(
 
     @Operation(summary = "Upload media")
     @PostMapping(CentralApiEndpoint.GUILD_MEDIA)
+    @CanManageGuildMiddleware
     fun uploadMedia(
         @PathVariable("guildId") guildId: String,
         @RequestPart("meta", required = true) mediaMeta: MediaCreateBody,
@@ -79,7 +80,7 @@ class MediaController(
         // cleanup unused media
         if (mediaOfGuildCount % MEDIA_CLEANUP_INTERVAL == 0L) {
             val guildSettingsEntity =
-                guildSettingsRepository.findByIdOrNull(guildId)
+                guildSettingsRepository.findByGuildID(guildId)
                     ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
             val usedMediaIds = getMediaIdsUsedByGuild(guildSettingsEntity)

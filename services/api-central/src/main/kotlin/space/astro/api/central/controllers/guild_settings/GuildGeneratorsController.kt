@@ -2,7 +2,6 @@ package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
@@ -33,7 +32,7 @@ class GuildGeneratorsController(
         @RequestBody generatorCreateBody: GeneratorCreateBody,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         if (!premiumManager.canCreateGenerator(guildSettings)) {
@@ -53,9 +52,10 @@ class GuildGeneratorsController(
         val generatorSettings =
             GeneratorSettings(
                 id = generatorDiscordChannel.id,
-                defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default"),
-                defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default"),
-                defaultWaitingName = L.t(guildSettings.javaLocale, "temporary.waiting.name.default"),
+                // the variables are kept as they are, they get replaced when the temporary VC is created
+                defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
+                defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),
+                defaultWaitingName = L.t(guildSettings.javaLocale, "temporary.waiting.name.default", "vc_name" to "{vc_name}"),
             )
 
         guildSettings.generators.add(generatorSettings)
@@ -72,7 +72,7 @@ class GuildGeneratorsController(
         @RequestBody updatedGeneratorSettings: GeneratorSettings,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         val generatorIndex =
@@ -98,7 +98,7 @@ class GuildGeneratorsController(
         @PathVariable generatorId: String,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         guildSettings.generators.removeIf { it.id == generatorId }

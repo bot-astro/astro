@@ -1,5 +1,6 @@
 package space.astro.shared.core.clients
 
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
@@ -16,12 +17,20 @@ import space.astro.shared.core.models.database.guildSettings.InterfaceData
 import space.astro.shared.core.properties.bot.BotEndpointProperties
 import space.astro.shared.core.properties.bot.BotShardProperties
 import space.astro.shared.core.utils.api.BotApiEndpoint
+import tools.jackson.databind.json.JsonMapper
 
 class BotApiClient(
     private val botEndpointProperties: BotEndpointProperties,
     private val botShardProperties: BotShardProperties,
+    jsonMapper: JsonMapper,
 ) {
-    private val client = RestClient.create()
+    // the injected mapper uses snake_case, same as the bot API
+    private val client =
+        RestClient
+            .builder()
+            .configureMessageConverters { converters ->
+                converters.withJsonConverter(JacksonJsonHttpMessageConverter(jsonMapper))
+            }.build()
 
     private fun baseUrl(podId: Long): String =
         if (botEndpointProperties.localhost) {

@@ -90,6 +90,6 @@ class RedisDynamicHashCacheRepository(
     }
 
     fun deleteAll(keyValue: String) {
-        hashOps.delete(keyName(keyValue))
+        redis.delete(keyName(keyValue))
     }
 }

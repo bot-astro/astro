@@ -2,7 +2,6 @@ package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
@@ -32,7 +31,7 @@ class GuiltInterfaceController(
         @RequestBody interfaceCreateBody: InterfaceCreateBody,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         if (!premiumManager.canCreateInterface(guildSettings)) {
@@ -59,7 +58,7 @@ class GuiltInterfaceController(
         @RequestBody updatedInterfaceData: InterfaceData,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         val interfaceIndex =
@@ -97,7 +96,7 @@ class GuiltInterfaceController(
         @PathVariable interfaceId: String,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         guildSettings.interfaces

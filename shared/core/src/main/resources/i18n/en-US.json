@@ -195,5 +195,8 @@
   "configuration_error.premium_auto_private_chat": "Your generator has automatic private chat creation enabled, but ultimate is required to use it.\nEither upgrade to ultimate or disable private chat creation!",
   "configuration_error.premium_auto_waiting_room": "Your generator has automatic waiting room creation enabled, but ultimate is required to use it.\nEither upgrade to ultimate or disable waiting room creation!",
   "configuration_error.premium_creation_chat_message": "Your generator has a default creation message, but ultimate is required to use it.\nEither upgrade to ultimate or remove it!",
-  "configuration_error.premium_owner_role": "Your generator has an owner role configured, but ultimate is required to use it.\nEither upgrade to ultimate or remove it!"
+  "configuration_error.premium_owner_role": "Your generator has an owner role configured, but ultimate is required to use it.\nEither upgrade to ultimate or remove it!",
+  "temporary.vc.name.default": "{nickname}'s VC",
+  "temporary.chat.name.default": "{vc_name}",
+  "temporary.waiting.name.default": "Waiting for {vc_name}"
 }

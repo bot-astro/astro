@@ -2,14 +2,11 @@ package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import space.astro.api.central.components.GuildPermissionsHelper
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.api.central.models.requests.GuildProfileUpdateBody
 import space.astro.api.central.models.requests.GuildSettingsUpdateBody
-import space.astro.api.central.models.responses.DiscordUserGuild
 import space.astro.shared.core.clients.BotApiClient
 import space.astro.shared.core.exceptions.AErrorCode
 import space.astro.shared.core.exceptions.AException
@@ -33,21 +30,20 @@ class GuildSettingsController(
     @CanManageGuildMiddleware
     fun getGuildSettings(
         @PathVariable guildId: String,
-        @RequestAttribute(GuildPermissionsHelper.MANAGEABLE_DISCORD_GUILD_REQUEST_ATTRIBUTE)
-        discordGuild: DiscordUserGuild,
     ): ResponseEntity<GuildSettingsEntity> {
-        try {
-            botApiClient.getGuild(guildId)
-        } catch (_: ANotFoundException) {
-            throw AException(
-                httpStatusCode = 404,
-                errorCode = AErrorCode.BOT_NOT_IN_GUILD,
-                message = "Astro is not in guild with ID $guildId",
-            )
-        }
+        val discordGuild =
+            try {
+                botApiClient.getGuild(guildId)
+            } catch (_: ANotFoundException) {
+                throw AException(
+                    httpStatusCode = 404,
+                    errorCode = AErrorCode.BOT_NOT_IN_GUILD,
+                    message = "Astro is not in guild with ID $guildId",
+                )
+            }
 
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: guildSettingsRepository.createNewGuildSettings(guildId, discordGuild.preferredLocale)
 
         return ResponseEntity.ok(guildSettings)
@@ -61,7 +57,7 @@ class GuildSettingsController(
         @RequestBody newGuildSettings: GuildSettingsUpdateBody,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found Astro database")
 
         guildSettings.apply {
@@ -84,7 +80,7 @@ class GuildSettingsController(
         @RequestBody newProfile: GuildProfileUpdateBody,
     ): ResponseEntity<Void> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found Astro database")
 
         guildSettings.nickname = newProfile.nickname

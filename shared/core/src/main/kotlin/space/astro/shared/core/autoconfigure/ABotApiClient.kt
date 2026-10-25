@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean
 import space.astro.shared.core.clients.BotApiClient
 import space.astro.shared.core.properties.bot.BotEndpointProperties
 import space.astro.shared.core.properties.bot.BotShardProperties
+import tools.jackson.databind.json.JsonMapper
 
 @AutoConfiguration
 @EnableConfigurationProperties(BotEndpointProperties::class, BotShardProperties::class)
@@ -21,5 +22,6 @@ class ABotApiClient {
     fun botApiClient(
         botEndpointProperties: BotEndpointProperties,
         botShardProperties: BotShardProperties,
-    ) = BotApiClient(botEndpointProperties, botShardProperties)
+        jsonMapper: JsonMapper,
+    ) = BotApiClient(botEndpointProperties, botShardProperties, jsonMapper)
 }

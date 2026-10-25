@@ -2,7 +2,6 @@ package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
@@ -28,7 +27,7 @@ class GuildConnectionsController(
         @RequestBody connectionCreateBody: ConnectionData,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         if (!premiumManager.canCreateConnection(guildSettings)) {
@@ -49,7 +48,7 @@ class GuildConnectionsController(
         @RequestBody updatedConnectionSettings: ConnectionData,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         val connectionIndex =
@@ -71,7 +70,7 @@ class GuildConnectionsController(
         @PathVariable connectionId: String,
     ): ResponseEntity<GuildSettingsEntity> {
         val guildSettings =
-            guildSettingsRepository.findByIdOrNull(guildId)
+            guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
         guildSettings.connections.removeIf { it.id == connectionId }

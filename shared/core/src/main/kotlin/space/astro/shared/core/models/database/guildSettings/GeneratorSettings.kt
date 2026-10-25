@@ -83,8 +83,14 @@ data class GeneratorSettings(
                     it <= 500
                 } ?: true
             ).asValidationResult("the default status for the generator can contain max 500 characters")
-        val userLimitValidation = (userLimit in 0..99).asValidationResult("the user limit for the generator must be between 0 and 99")
-        val bitrateValidation = (bitrate in 0..384000).asValidationResult("the bitrate for the generator must be between 0 and 384000")
+        val userLimitValidation =
+            (userLimit?.let { it in 0..99 } ?: true).asValidationResult(
+                "the user limit for the generator must be between 0 and 99",
+            )
+        val bitrateValidation =
+            (bitrate?.let { it in 0..384000 } ?: true).asValidationResult(
+                "the bitrate for the generator must be between 0 and 384000",
+            )
         val categoryValidation = (category?.isValidSnowflake() ?: true).asValidationResult("invalid category id")
         val permissionsTargetRoleValidation =
             (permissionsTargetRole?.isValidSnowflake() ?: true).asValidationResult(
@@ -104,7 +110,7 @@ data class GeneratorSettings(
                 } ?: true
             ).asValidationResult("the chat topic for the generator must be between 0 and ${TextChannel.MAX_TOPIC_LENGTH} characters")
         val chatSlowmodeValidation =
-            (chatSlowmode in 0..TextChannel.MAX_SLOWMODE).asValidationResult(
+            (chatSlowmode?.let { it in 0..TextChannel.MAX_SLOWMODE } ?: true).asValidationResult(
                 "the chat slowmode for the generator must be between 0 and ${TextChannel.MAX_SLOWMODE}",
             )
         val defaultChatNameValidation =
@@ -124,11 +130,11 @@ data class GeneratorSettings(
                 "the default waiting room name for the generator must be between 2 and 500 characters",
             )
         val waitingBitrateValidation =
-            (waitingBitrate in 0..384000).asValidationResult(
+            (waitingBitrate?.let { it in 0..384000 } ?: true).asValidationResult(
                 "the waiting room bitrate for the generator must be between 0 and 384000",
             )
         val waitingUserLimitValidation =
-            (waitingUserLimit in 0..99).asValidationResult(
+            (waitingUserLimit?.let { it in 0..99 } ?: true).asValidationResult(
                 "the waiting room user limit for the generator must be between 0 and 99",
             )
 
@@ -166,11 +172,11 @@ data class GeneratorSettings(
     ) {
         fun validate(): ValidationResult {
             val maxUserLimitValidation =
-                (maxUserLimit in 0..99).asValidationResult(
+                (maxUserLimit?.let { it in 0..99 } ?: true).asValidationResult(
                     "the maximum user limit for the generator must be between 0 and 99",
                 )
             val minUserLimitValidation =
-                (minUserLimit in 0..99).asValidationResult(
+                (minUserLimit?.let { it in 0..99 } ?: true).asValidationResult(
                     "the minimum user limit for the generator must be between 0 and 99",
                 )
             val maxBitrateValidation =
@@ -180,7 +186,7 @@ data class GeneratorSettings(
                     } ?: true
                 ).asValidationResult("the maximum bitrate for the generator must be between 8000 and 384000")
             val minBitrateValidation =
-                (minBitrate in 8000..384000).asValidationResult(
+                (minBitrate?.let { it in 8000..384000 } ?: true).asValidationResult(
                     "the minimum bitrate for the generator must be between 8000 and 384000",
                 )
 
