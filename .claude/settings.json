@@ -1,0 +1,6 @@
+{
+  "extraKnownMarketplaces": {
+    "astro-dev": { "source": { "source": "directory", "path": "../astro-dev-claude-plugin" } }
+  },
+  "enabledPlugins": { "AstroDevToolkit@astro-dev": true }
+}

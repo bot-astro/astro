@@ -1,6 +1,0 @@
-{
-  "variant": "js-ts-lingui",
-  "planStepsContain": ["config_lint"],
-  "planStepsAbsent": ["create_config", "write_crowdin_yml", "write_workflow"],
-  "phasesAbsent": ["Phase 3", "Phase 4"]
-}
