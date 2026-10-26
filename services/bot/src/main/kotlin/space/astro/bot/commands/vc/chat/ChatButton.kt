@@ -21,7 +21,7 @@ class ChatButton(
     private val vcPrivateChatManager: VCPrivateChatManager,
 ) : ButtonHandler<VcInteractionContext> {
     override val id = "button/vc/chat"
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
+    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL, voteRequired = true)
     override val contextResolver =
         contextResolverFactory.create(
             ownershipRequired = true,

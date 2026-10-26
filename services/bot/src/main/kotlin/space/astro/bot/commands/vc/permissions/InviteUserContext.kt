@@ -23,7 +23,7 @@ class InviteUserContext(
         Commands
             .user("Invite to VC")
             .setContexts(InteractionContextType.GUILD)
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
+    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL, voteRequired = true)
     override val contextResolver =
         contextResolverFactory.create(
             ownershipRequired = true,

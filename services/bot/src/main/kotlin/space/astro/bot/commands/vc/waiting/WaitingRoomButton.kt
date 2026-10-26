@@ -21,7 +21,7 @@ class WaitingRoomButton(
     private val vcWaitingRoomManager: VCWaitingRoomManager,
 ) : ButtonHandler<VcInteractionContext> {
     override val id = "button/vc/waiting-room"
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
+    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL, voteRequired = true)
     override val contextResolver =
         contextResolverFactory.create(
             ownershipRequired = true,

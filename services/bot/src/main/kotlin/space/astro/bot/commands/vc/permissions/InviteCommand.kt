@@ -32,7 +32,7 @@ class InviteCommand(
             .addOption(OptionType.USER, USER_OPTIONS[0], CommandLocalization.description("invite.user"), true)
             .addOption(OptionType.USER, USER_OPTIONS[1], CommandLocalization.description("invite.second-user"), false)
             .addOption(OptionType.USER, USER_OPTIONS[2], CommandLocalization.description("invite.third-user"), false)
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
+    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL, voteRequired = true)
     override val contextResolver =
         contextResolverFactory.create(
             ownershipRequired = true,

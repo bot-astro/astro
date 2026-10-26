@@ -34,7 +34,7 @@ class RegionInteraction(
 
     override val id = BUTTON_ID
     override val data = Commands.slash("region", CommandLocalization.description("region")).setContexts(InteractionContextType.GUILD)
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
+    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL, voteRequired = true)
     override val contextResolver =
         contextResolverFactory.create(
             ownershipRequired = true,

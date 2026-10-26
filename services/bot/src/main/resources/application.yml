@@ -142,6 +142,7 @@ support:
       auth: ${SUPPORT_BOT_ENDPOINT_AUTH}
 
 vote-tracker:
+  guard-enabled: ${VOTE_TRACKER_GUARD_ENABLED}
   token: ${VOTE_TRACKER_TOKEN}
   integration-id: ${VOTE_TRACKER_INTEGRATION_ID}
 

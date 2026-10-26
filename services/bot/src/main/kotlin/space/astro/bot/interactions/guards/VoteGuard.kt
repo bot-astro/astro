@@ -8,18 +8,20 @@ import space.astro.bot.interactions.InteractionException
 import space.astro.bot.ui.Links
 import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.clients.VoteTrackerClient
+import space.astro.shared.core.properties.VoteTrackerProperties
 
 /**
- * Locks the interactions marked with `voteRequired` behind a vote, premium guilds skip the lock
+ * Locks the interactions marked with `voteRequired` behind a vote, premium guilds skip the lock, disabled entirely with `vote-tracker.guard-enabled`
  */
 @Component
 @Order(20)
 class VoteGuard(
     private val voteTrackerClient: VoteTrackerClient,
     private val premiumManager: PremiumManager,
+    private val voteTrackerProperties: VoteTrackerProperties,
 ) : InteractionGuard {
     override suspend fun check(request: InteractionRequest) {
-        if (!request.settings.voteRequired) {
+        if (!voteTrackerProperties.guardEnabled || !request.settings.voteRequired) {
             return
         }
 

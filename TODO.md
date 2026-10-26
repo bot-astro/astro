@@ -18,8 +18,8 @@ Legend: `[F]` free guild, `[P]` premium guild, `[locale]` repeat in a non-Englis
 - [x] Cooldown: spam the same interaction (2s default) -> cooldown message with timestamp
 - [x] Bot missing permissions -> `guard.bot_permissions` (and skipped with `allowMissingAdminPerm`)
 - [x] Member missing permissions -> `guard.member_permissions`
-- [ ] Vote-required interactions: not voted -> vote link, voted -> works, premium guild -> skips the lock
-- [ ] Ephemeral vs public replies and defer/edit behaviour look right (Components V2 containers render, no "interaction failed")
+- [x] Vote-required interactions: not voted -> vote link, voted -> works, premium guild -> skips the lock
+- [x] Ephemeral vs public replies and defer/edit behaviour look right (Components V2 containers render, no "interaction failed")
 - [ ] Command localization (names/descriptions) shows in a non-English client, replies use the guild locale
 - [ ] Slash commands registered globally, developer commands only in the dev guild
 

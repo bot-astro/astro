@@ -37,7 +37,7 @@ class WaitingRoomCommand(
                 SubcommandData(CREATE, CommandLocalization.description("waiting-room.create")),
                 SubcommandData(DELETE, CommandLocalization.description("waiting-room.delete")),
             )
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
+    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL, voteRequired = true)
     override val contextResolver =
         contextResolverFactory.create(
             ownershipRequired = true,

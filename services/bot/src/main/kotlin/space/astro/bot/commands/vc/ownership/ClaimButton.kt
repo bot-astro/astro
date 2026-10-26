@@ -22,7 +22,7 @@ class ClaimButton(
     private val temporaryVCRepository: TemporaryVCRepository,
 ) : ButtonHandler<VcInteractionContext> {
     override val id = "button/vc/claim"
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
+    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL, voteRequired = true)
     override val contextResolver =
         contextResolverFactory.create(
             ownershipRequired = false,

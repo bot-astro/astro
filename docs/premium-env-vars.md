@@ -22,6 +22,7 @@ Already used, check they exist for `api-central`: `CHARGEBEE_SITE_NAME`, `CHARGE
 |---|---|---|
 | `SUPPORT_BOT_ENDPOINT_BASE_URL` | `bot`, `api-central` | In-cluster url of the support bot service, e.g. `http://support-bot.<namespace>:<SB__PORT>` |
 | `SUPPORT_BOT_ENDPOINT_AUTH` | `bot`, `api-central` | Same value as `SB__API_AUTH` of the support bot |
+| `VOTE_TRACKER_GUARD_ENABLED` | `bot` | `true` to lock the `voteRequired` interactions behind a vote, `false` to disable vote locks (`true` in prod and dev, `false` in staging) |
 | `VOTE_TRACKER_TOKEN` | `bot` | Vote Tracker integration API token (vote locks) |
 | `VOTE_TRACKER_INTEGRATION_ID` | `bot` | Id of the bot's Vote Tracker integration |
 | `CA__CHARGEBEE_WEBHOOK_TOKEN` | `api-central` | Password of the basic auth configured on the Chargebee webhooks (the old `chargebee.webhookToken`) |

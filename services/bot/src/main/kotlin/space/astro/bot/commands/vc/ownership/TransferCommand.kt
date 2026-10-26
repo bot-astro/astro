@@ -33,7 +33,7 @@ class TransferCommand(
             .slash("transfer", CommandLocalization.description("transfer"))
             .setContexts(InteractionContextType.GUILD)
             .addOption(OptionType.USER, USER_OPTION, CommandLocalization.description("transfer.user"), true)
-    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
+    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL, voteRequired = true)
     override val contextResolver =
         contextResolverFactory.create(
             ownershipRequired = true,
