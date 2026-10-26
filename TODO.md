@@ -10,14 +10,14 @@ Test setup to prepare once:
 Legend: `[F]` free guild, `[P]` premium guild, `[locale]` repeat in a non-English locale
 
 ### Cross-cutting scenarios (apply to every interaction below)
-- [ ] Not in a VC -> `vc.context.not_in_vc` error
-- [ ] In a VC that is not temporary -> `not_in_temporary_vc` error
-- [ ] Guild without settings -> `not_configured` error
-- [ ] Not the VC owner (for owner-only interactions) -> `not_owner` error
-- [ ] Generator deleted while temp VC exists -> `generator_deleted` error
-- [ ] Cooldown: spam the same interaction (2s default) -> cooldown message with timestamp
-- [ ] Bot missing permissions -> `guard.bot_permissions` (and skipped with `allowMissingAdminPerm`)
-- [ ] Member missing permissions -> `guard.member_permissions`
+- [x] Not in a VC -> `vc.context.not_in_vc` error
+- [x] In a VC that is not temporary -> `not_in_temporary_vc` error
+- [x] Guild without settings -> `not_configured` error
+- [x] Not the VC owner (for owner-only interactions) -> `not_owner` error
+- [x] Generator deleted while temp VC exists -> `generator_deleted` error
+- [x] Cooldown: spam the same interaction (2s default) -> cooldown message with timestamp
+- [x] Bot missing permissions -> `guard.bot_permissions` (and skipped with `allowMissingAdminPerm`)
+- [x] Member missing permissions -> `guard.member_permissions`
 - [ ] Vote-required interactions: not voted -> vote link, voted -> works, premium guild -> skips the lock
 - [ ] Ephemeral vs public replies and defer/edit behaviour look right (Components V2 containers render, no "interaction failed")
 - [ ] Command localization (names/descriptions) shows in a non-English client, replies use the guild locale
