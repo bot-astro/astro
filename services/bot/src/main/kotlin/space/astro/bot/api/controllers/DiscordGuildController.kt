@@ -73,7 +73,8 @@ class DiscordGuildController(
                 ?: throw ANotFoundException("Guild with ID $guildId not found")
 
         try {
-            val reason = L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.profile_update")
+            val reason =
+                L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.profile_update")
 
             runBlocking(Dispatchers.IO) {
                 val avatar = newProfile.avatarUrl?.let { iconFromUrl(it) }
@@ -153,7 +154,8 @@ class DiscordGuildController(
                 guild.getCategoryById(it) ?: throw ANotFoundException("Category with id $it not found")
             }
 
-        val reason = L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_create")
+        val reason =
+            L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_create")
 
         try {
             val channel =
@@ -165,12 +167,14 @@ class DiscordGuildController(
                                 .apply { category?.let { setParent(it) } }
                                 .reason(reason)
                                 .await()
+
                         ChannelCreateBotApiRequest.ChannelCreateType.VOICE ->
                             guild
                                 .createVoiceChannel(request.name)
                                 .apply { category?.let { setParent(it) } }
                                 .reason(reason)
                                 .await()
+
                         ChannelCreateBotApiRequest.ChannelCreateType.CATEGORY ->
                             guild.createCategory(request.name).reason(reason).await()
                     }
@@ -205,7 +209,8 @@ class DiscordGuildController(
                 ?: throw ANotFoundException("Guild not found")
 
         try {
-            val reason = L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_delete")
+            val reason =
+                L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_delete")
 
             runBlocking(Dispatchers.IO) {
                 guild.channels
@@ -217,7 +222,11 @@ class DiscordGuildController(
         } catch (e: ErrorResponseException) {
             when (e.errorResponse) {
                 ErrorResponse.UNKNOWN_CHANNEL -> return ResponseEntity.noContent().build()
-                ErrorResponse.MISSING_PERMISSIONS -> throw ABadRequestException("Insufficient permissions to delete channel", e)
+                ErrorResponse.MISSING_PERMISSIONS -> throw ABadRequestException(
+                    "Insufficient permissions to delete channel",
+                    e,
+                )
+
                 else -> throw ABadRequestException(e.message ?: "Error from Discord API", e)
             }
         } catch (e: InsufficientPermissionException) {
@@ -250,6 +259,7 @@ class DiscordGuildController(
                     // TODO: support fancy colors?
                     color = role.colorRaw,
                     position = role.position,
+                    manageable = !role.isPublicRole && !role.isManaged && guild.selfMember.canInteract(role),
                 )
             }
 

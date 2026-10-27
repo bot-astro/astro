@@ -24,29 +24,29 @@ Legend: `[F]` free guild, `[P]` premium guild, `[locale]` repeat in a non-Englis
 - [x] Slash commands registered globally, developer commands only in the dev guild
 
 ### Info and setup
-- [ ] `/help`: message, links/buttons, Ultimate field + button, `[locale]`
-- [ ] `/dashboard`: public reply, dashboard link button
-- [ ] Setup button (`button/settings/setup`, from welcome message / help)
-  - [ ] Owner without Manage Server -> blocked
-  - [ ] Bot missing Manage Channels -> blocked
-  - [ ] `[F]` first run creates category "Astro" + `interface` channel + `➕ Generator` with default settings
-  - [ ] `[F]` second run -> generator limit (2) / interface limit (1) error with Ultimate + dashboard buttons
-  - [ ] `[P]` multiple runs succeed
-  - [ ] Guild near 500 channels -> `setup.max_channels`
-  - [ ] Guild with no settings yet (settings created on the fly)
-  - [ ] Interface message is posted in the new channel and its buttons work
+- [x] `/help`: message, links/buttons, Ultimate field missing (known TODO), `[locale]`
+- [x] `/dashboard`: public reply, dashboard link button
+- [x] Setup button (`button/settings/setup`, from welcome message / help)
+  - [x] Owner without Manage Server -> blocked
+  - [x] Bot missing Manage Channels -> blocked
+  - [x] `[F]` first run creates category "Astro" + `interface` channel + `➕ Generator` with default settings
+  - [x] `[F]` second run -> generator limit (2) / interface limit (1) error with Ultimate + dashboard buttons
+  - [x] `[P]` multiple runs succeed
+  - [x] Guild near 500 channels -> `setup.max_channels`
+  - [x] Guild with no settings yet (settings created on the fly)
+  - [x] Interface message is posted in the new channel and its buttons work
 
 ### Developer commands (dev guild only)
 - [x] `/dev-ping` works for the developer, denied for others and in other guilds, not registered outside dev guild
 - [x] `/dev-message` preview: every message variant renders (welcome, help, errors...), `[locale]`
 
 ### Temporary VC lifecycle (events)
-- [ ] Join generator -> temp VC created and user moved, name from template, bitrate/limit/category/position from generator
-- [ ] Generator cooldown (3s): rejoin quickly -> no duplicate VC
-- [ ] Queue mode: join generator with an available non-full temp VC -> moved there instead of creating
-- [ ] Category full (50) -> fallback generator `[P]`, no fallback configured -> configuration error, `[F]` fallback -> premium error
-- [ ] Permissions inherited: NONE / GENERATOR / CATEGORY
-- [ ] Initial state locked/hidden with target role set, and with a missing target role -> config error
+- [x] Join generator -> temp VC created and user moved, name from template, bitrate/limit/category/position from generator
+- [x] Generator cooldown (3s): rejoin quickly -> no duplicate VC
+- [x] Queue mode: join generator with an available non-full temp VC -> moved there instead of creating
+- [x] Category full (50) -> fallback generator `[P]`, no fallback configured -> configuration error, `[F]` fallback -> premium error
+- [x] Permissions inherited: NONE / GENERATOR / CATEGORY
+- [x] Initial state locked/hidden with target role set, and with a missing target role -> config error
 - [ ] Owner permissions (custom vs default), immune (moderator) role permissions, bot overrides
 - [ ] Name variables: `{nickname} {username} {mention} {id} {n} {nato} {roman} {vc_*} {activity_*}`, premium variables `[F]` blocked vs `[P]` allowed
 - [ ] Auto private chat on creation (`autoChat`) `[F]` blocked / `[P]` created, chat logs on/off
