@@ -67,11 +67,17 @@ class PremiumRoleService(
     }
 
     /**
-     * Removes the premium role from the user
+     * Removes the premium role from the user, unless they still have premium
+     * (an active Chargebee subscription or another active Discord entitlement)
      *
      * @throws ANotFoundException if the user is not in the support server
      */
     suspend fun removePremiumRole(userId: String) {
+        if (hasPremium(userId)) {
+            log.info { "Premium role of member with id $userId not removed, the user still has premium" }
+            return
+        }
+
         val guild = getGuild()
         val role = getPremiumRole(guild)
         val member = retrieveMember(guild, userId)

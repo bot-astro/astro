@@ -16,12 +16,12 @@ Already used, check they exist for `api-central`: `CHARGEBEE_SITE_NAME`, `CHARGE
 
 ## Support bot calls and Chargebee webhook
 
-`bot` and `api-central` call the support bot API to add/remove the premium role (`SupportBotApiClient`):
+`bot`, `api-central` and `entitlements-expiration-job` call the support bot API to add/remove the premium role (`SupportBotApiClient`):
 
 | Variable | Services | Value |
 |---|---|---|
-| `SUPPORT_BOT_ENDPOINT_BASE_URL` | `bot`, `api-central` | In-cluster url of the support bot service, e.g. `http://support-bot.<namespace>:<SB__PORT>` |
-| `SUPPORT_BOT_ENDPOINT_AUTH` | `bot`, `api-central` | Same value as `SB__API_AUTH` of the support bot |
+| `SUPPORT_BOT_ENDPOINT_BASE_URL` | `bot`, `api-central`, `entitlements-expiration-job` | In-cluster url of the support bot service, e.g. `http://support-bot.<namespace>:<SB__PORT>` |
+| `SUPPORT_BOT_ENDPOINT_AUTH` | `bot`, `api-central`, `entitlements-expiration-job` | Same value as `SB__API_AUTH` of the support bot |
 | `VOTE_TRACKER_GUARD_ENABLED` | `bot` | `true` to lock the `voteRequired` interactions behind a vote, `false` to disable vote locks (`true` in prod and dev, `false` in staging) |
 | `VOTE_TRACKER_TOKEN` | `bot` | Vote Tracker integration API token (vote locks) |
 | `VOTE_TRACKER_INTEGRATION_ID` | `bot` | Id of the bot's Vote Tracker integration |

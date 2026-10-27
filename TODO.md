@@ -20,11 +20,11 @@ Legend: `[F]` free guild, `[P]` premium guild, `[locale]` repeat in a non-Englis
 - [x] Member missing permissions -> `guard.member_permissions`
 - [x] Vote-required interactions: not voted -> vote link, voted -> works, premium guild -> skips the lock
 - [x] Ephemeral vs public replies and defer/edit behaviour look right (Components V2 containers render, no "interaction failed")
-- [ ] Command localization (names/descriptions) shows in a non-English client, replies use the guild locale
-- [ ] Slash commands registered globally, developer commands only in the dev guild
+- [x][TO-CHECK-LATER] Command localization (names/descriptions) shows in a non-English client, replies use the guild locale
+- [x] Slash commands registered globally, developer commands only in the dev guild
 
 ### Info and setup
-- [ ] `/help`: message, links/buttons, Ultimate field missing (known TODO), `[locale]`
+- [ ] `/help`: message, links/buttons, Ultimate field + button, `[locale]`
 - [ ] `/dashboard`: public reply, dashboard link button
 - [ ] Setup button (`button/settings/setup`, from welcome message / help)
   - [ ] Owner without Manage Server -> blocked
@@ -37,8 +37,8 @@ Legend: `[F]` free guild, `[P]` premium guild, `[locale]` repeat in a non-Englis
   - [ ] Interface message is posted in the new channel and its buttons work
 
 ### Developer commands (dev guild only)
-- [ ] `/dev-ping` works for the developer, denied for others and in other guilds, not registered outside dev guild
-- [ ] `/dev-message` preview: every message variant renders (welcome, help, errors...), `[locale]`
+- [x] `/dev-ping` works for the developer, denied for others and in other guilds, not registered outside dev guild
+- [x] `/dev-message` preview: every message variant renders (welcome, help, errors...), `[locale]`
 
 ### Temporary VC lifecycle (events)
 - [ ] Join generator -> temp VC created and user moved, name from template, bitrate/limit/category/position from generator

@@ -37,7 +37,6 @@ class HelpCommand(
         val shardInfo = event.jda.shardInfo
         val dashboard = Links.guildDashboard(ctx.guildId)
 
-        // TODO: add the Ultimate field and button once premium is implemented
         ctx.responder.reply(
             Containers.container(
                 Containers.purple,
@@ -64,6 +63,10 @@ class HelpCommand(
                     ctx.t("help.errors.content", "emoji" to Emojis.dashboard.formatted, "link" to dashboard),
                 ),
                 Containers.field(
+                    ctx.t("help.ultimate.title"),
+                    ctx.t("help.ultimate.content", "emoji" to Emojis.premium.formatted, "link" to Links.ULTIMATE),
+                ),
+                Containers.field(
                     ctx.t("help.support.title"),
                     ctx.t("help.support.content", "emoji" to Emojis.helper.formatted, "link" to Links.SUPPORT_SERVER),
                 ),
@@ -74,6 +77,7 @@ class HelpCommand(
                 Containers.divider(),
                 ActionRow.of(
                     Buttons.guildDashboard(ctx.locale, ctx.guildId),
+                    Buttons.ultimate(ctx.locale),
                     Buttons.guides(ctx.locale),
                     Buttons.support(ctx.locale),
                     Buttons.github(ctx.locale),

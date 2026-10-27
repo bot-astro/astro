@@ -42,3 +42,10 @@ discord:
   application:
     id: ${EEJ__DISCORD_APPLICATION_ID}
     token: ${EEJ__DISCORD_APPLICATION_TOKEN}
+
+support:
+  bot:
+    endpoint:
+      enabled: true
+      base-url: ${SUPPORT_BOT_ENDPOINT_BASE_URL}
+      auth: ${SUPPORT_BOT_ENDPOINT_AUTH}
