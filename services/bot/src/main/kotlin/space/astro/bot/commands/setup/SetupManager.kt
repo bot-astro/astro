@@ -89,6 +89,7 @@ class SetupManager(
                     id = generatorChannel.id,
                     category = category.id,
                     chatCategory = category.id,
+                    waitingCategory = category.id,
                     // the variables are kept as they are, they get replaced when the temporary VC is created
                     defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
                     defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),

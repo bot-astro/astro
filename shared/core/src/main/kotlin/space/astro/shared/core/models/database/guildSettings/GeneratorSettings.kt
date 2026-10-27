@@ -16,12 +16,15 @@ data class GeneratorSettings(
     var defaultLockedName: String? = null,
     var defaultHiddenName: String? = null,
     var defaultStatus: String? = null,
+    // DEPRECATED legacy value: 0 means unset, same as null
     var userLimit: Int? = null,
+    // DEPRECATED legacy value: 0 means unset, same as null
     var bitrate: Int? = null,
     var category: String? = null,
     var permissionsInherited: PermissionsInherited = PermissionsInherited.NONE,
     var permissionsTargetRole: String? = null,
     var permissionsImmuneRole: String? = null,
+    // DEPRECATED legacy value: 0 means unset, same as null
     var ownerPermissions: Long? = null,
     var ownerRole: String? = null,
     var initialState: VCState = VCState.UNLOCKED,
@@ -33,17 +36,21 @@ data class GeneratorSettings(
     var chatCategory: String? = null,
     var chatTopic: String? = null,
     var chatNsfw: Boolean = false,
+    // DEPRECATED legacy value: 0 means unset, same as null
     var chatSlowmode: Int? = null,
     var chatPermissionsInherited: PermissionsInherited = PermissionsInherited.NONE,
     var defaultChatName: String,
     var defaultChatText: String? = null,
     var defaultChatTextEmbed: Boolean = false,
+    // DEPRECATED legacy value: -1 means unset, same as null
     var chatInterface: Int? = null,
     var waitingCategory: String? = null,
     var waitingPermissionsInherited: PermissionsInherited = PermissionsInherited.NONE,
     var defaultWaitingName: String,
+    // DEPRECATED legacy value: 0 means unset, same as null
     var waitingBitrate: Int? = null,
-    var waitingPosition: InitialPosition = InitialPosition.BOTTOM,
+    var waitingPosition: InitialPosition = InitialPosition.BEFORE,
+    // DEPRECATED legacy value: 0 means unset, same as null
     var waitingUserLimit: Int? = null,
     var ownerPermissionIds: List<String> = emptyList(),
 ) : Validatable {

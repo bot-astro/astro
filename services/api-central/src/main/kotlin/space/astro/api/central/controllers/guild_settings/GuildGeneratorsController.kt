@@ -52,6 +52,8 @@ class GuildGeneratorsController(
         val generatorSettings =
             GeneratorSettings(
                 id = generatorDiscordChannel.id,
+                chatCategory = generatorCreateBody.categoryId,
+                waitingCategory = generatorCreateBody.categoryId,
                 // the variables are kept as they are, they get replaced when the temporary VC is created
                 defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
                 defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),
@@ -159,9 +161,10 @@ class GuildGeneratorsController(
             throw APremiumRequiredException("Upgrade the server to automatically create a waiting room")
         }
 
+        // DEPRECATED: -1 is a legacy value for an unset chat interface
         val newChatMessage =
             (updated.defaultChatText != null && updated.defaultChatText != current.defaultChatText) ||
-                (updated.chatInterface != null && updated.chatInterface != current.chatInterface)
+                (updated.chatInterface?.let { it > -1 && it != current.chatInterface } == true)
 
         if (newChatMessage && !premiumManager.canSendMessageInVCChatOnVCGeneration(guildSettings)) {
             throw APremiumRequiredException("Upgrade the server to send a message when a temporary VC is created")

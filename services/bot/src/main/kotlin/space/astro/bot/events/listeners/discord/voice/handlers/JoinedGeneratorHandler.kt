@@ -162,9 +162,11 @@ class JoinedGeneratorHandler(
 
         val bitrate =
             settings.bitrate
+                // DEPRECATED: 0 is a legacy value for unset
                 ?.takeIf { it != 0 }
                 ?.coerceIn(8000, guild.maxBitrate)
                 ?: 64000
+        // DEPRECATED: 0 is a legacy value for unset, same as null
         val userLimit = (settings.userLimit ?: 0).coerceIn(0, VoiceChannel.MAX_USERLIMIT)
         val name = VariablesManager.computeVcNameForCreation(nameTemplate, locale, owner, bitrate, userLimit, incrementalPosition)
 
@@ -226,6 +228,7 @@ class JoinedGeneratorHandler(
         temporaryVCBuilder.modifyPermissionOverride(
             permissionOverride = permissionOverrides.firstOrNull { it.id == owner.id },
             permissionHolder = owner,
+            // DEPRECATED: 0 is a legacy value for unset
             allow = settings.ownerPermissions?.takeIf { it != 0L } ?: PermissionSets.ownerVCPermissions,
             deny = 0L,
         )
@@ -336,6 +339,7 @@ class JoinedGeneratorHandler(
 
         val interfaceData =
             settings.chatInterface
+                // DEPRECATED: -1 is a legacy value for unset
                 ?.takeIf { it > -1 }
                 ?.let {
                     event.vcEventData.guildSettings.interfaces

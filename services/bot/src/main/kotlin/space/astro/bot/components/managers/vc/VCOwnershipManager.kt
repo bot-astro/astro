@@ -50,6 +50,7 @@ class VCOwnershipManager(
 
         // new owner permissions
         val ownerPermissions =
+            // DEPRECATED: 0 is a legacy value for unset
             generatorSettings.ownerPermissions?.takeIf { it != 0L }
                 ?: PermissionSets.ownerVCPermissions
 

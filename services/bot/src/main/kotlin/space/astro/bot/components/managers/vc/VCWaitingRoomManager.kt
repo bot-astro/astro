@@ -42,8 +42,9 @@ class VCWaitingRoomManager {
 
             val bitrate =
                 generatorSettings.waitingBitrate
+                    // DEPRECATED: 0 is a legacy value for unset
                     ?.takeIf { it != 0 }
-                    ?.coerceAtMost(guild.maxBitrate)
+                    ?.coerceIn(8000, guild.maxBitrate)
                     ?: 64000
 
             val name =
@@ -68,8 +69,8 @@ class VCWaitingRoomManager {
                 guild
                     .createVoiceChannel(name)
                     .setBitrate(bitrate)
+                    // DEPRECATED: 0 is a legacy value for unset, same as null
                     .setUserlimit(generatorSettings.waitingUserLimit ?: 0)
-                    .setSlowmode(generatorSettings.chatSlowmode ?: 0)
                     .setPosition(position)
                     .apply { category?.let { setParent(it) } }
                     .reason(L.t(locale, "reason.vc.waiting_room_created"))

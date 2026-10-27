@@ -45,6 +45,7 @@ class VCPrivateChatManager {
             val builder =
                 guild
                     .createTextChannel(name)
+                    // DEPRECATED: 0 is a legacy value for unset, same as null
                     .setSlowmode(generatorSettings.chatSlowmode ?: 0)
                     .setNSFW(generatorSettings.chatNsfw)
                     .apply {
