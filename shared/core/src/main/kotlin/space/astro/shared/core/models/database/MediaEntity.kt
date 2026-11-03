@@ -18,6 +18,7 @@ data class MediaEntity(
     enum class MediaType {
         PROFILE_AVATAR,
         PROFILE_BANNER,
+        INTERFACE_IMAGE,
         ;
 
         /**
@@ -25,8 +26,9 @@ data class MediaEntity(
          */
         fun storagePath(guildId: String): String =
             when (this) {
-                PROFILE_BANNER -> "/guilds/$guildId/banner/"
-                PROFILE_AVATAR -> "/guilds/$guildId/avatar/"
+                PROFILE_BANNER -> "guilds/$guildId/banner/"
+                PROFILE_AVATAR -> "guilds/$guildId/avatar/"
+                INTERFACE_IMAGE -> "guilds/$guildId/interface/"
             }
     }
 }

@@ -8,4 +8,7 @@ data class R2Properties(
     val accessKeyId: String,
     val secretAccessKey: String,
     val bucketName: String,
-)
+    val publicUrl: String,
+) {
+    fun urlOf(key: String) = publicUrl.trimEnd('/') + "/" + key.trimStart('/')
+}

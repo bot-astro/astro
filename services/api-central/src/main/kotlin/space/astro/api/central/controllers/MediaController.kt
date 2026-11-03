@@ -2,17 +2,20 @@ package space.astro.api.central.controllers
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.api.central.models.requests.MediaCreateBody
+import space.astro.api.central.models.responses.MediaResponse
 import space.astro.api.central.services.MediaContentType
 import space.astro.api.central.services.MediaStorageService
 import space.astro.api.central.services.RateLimitingService
@@ -39,6 +42,21 @@ class MediaController(
         const val MAX_MEDIA_PER_GUILD = 200L
         const val MEDIA_CLEANUP_INTERVAL = 20L
     }
+
+    @Operation(summary = "Get media of the guild")
+    @GetMapping(CentralApiEndpoint.GUILD_MEDIA)
+    @CanManageGuildMiddleware
+    fun getMedia(
+        @PathVariable("guildId") guildId: String,
+        @RequestParam("type", required = false) type: MediaEntity.MediaType?,
+    ): ResponseEntity<List<MediaResponse>> =
+        ResponseEntity.ok(
+            mediaRepository
+                .findAllByGuildId(guildId)
+                .filter { type == null || it.type == type }
+                .sortedByDescending { it.id.date }
+                .map { MediaResponse.from(it, r2Properties) },
+        )
 
     @Operation(summary = "Upload media")
     @PostMapping(CentralApiEndpoint.GUILD_MEDIA)
@@ -83,14 +101,12 @@ class MediaController(
                 guildSettingsRepository.findByGuildID(guildId)
                     ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
 
-            val usedMediaIds = getMediaIdsUsedByGuild(guildSettingsEntity)
-            val outdatedMediaKeys =
-                mediaOfGuild
-                    .filter { it.id in (mediaOfGuild.map { media -> media.id }.toSet() - usedMediaIds) }
-                    .map { it.key }
+            val usedMediaUrls = getMediaUrlsUsedByGuild(guildSettingsEntity)
+            val outdatedMedia = mediaOfGuild.filter { r2Properties.urlOf(it.key) !in usedMediaUrls }
 
-            if (outdatedMediaKeys.isNotEmpty()) {
-                mediaStorageService.deleteAll(outdatedMediaKeys)
+            if (outdatedMedia.isNotEmpty()) {
+                mediaStorageService.deleteAll(outdatedMedia.map { it.key })
+                mediaRepository.deleteAll(outdatedMedia)
             }
         }
 
@@ -101,10 +117,8 @@ class MediaController(
                 guildId = guildId,
                 data = media.bytes,
                 contentType =
-                    MediaContentType.fromMime(
-                        media.originalFilename?.substringAfterLast(".")
-                            ?: throw ABadRequestException("Missing file name for media"),
-                    ),
+                    MediaContentType.entries.find { it.mimeType == media.contentType }
+                        ?: throw ABadRequestException("Unsupported media type, supported ones are png, jpeg, gif and webp"),
             )
 
         val mediaEntity =
@@ -117,15 +131,34 @@ class MediaController(
 
         mediaRepository.save(mediaEntity)
 
-        return ResponseEntity.ok(mediaEntity)
+        return ResponseEntity.ok(MediaResponse.from(mediaEntity, r2Properties))
     }
 
-    private fun getMediaIdsUsedByGuild(guildSettings: GuildSettingsEntity): Set<ObjectId> {
-        // TODO: updated once the interface model is correct
-        return buildSet {
+    @Operation(summary = "Delete media")
+    @DeleteMapping(CentralApiEndpoint.GUILD_MEDIA_ITEM)
+    @CanManageGuildMiddleware
+    fun deleteMedia(
+        @PathVariable("guildId") guildId: String,
+        @PathVariable("mediaId") mediaId: String,
+    ): ResponseEntity<Unit> {
+        val media =
+            mediaRepository.findById(mediaId).orElse(null)?.takeIf { it.guildId == guildId }
+                ?: throw ANotFoundException("Media with ID $mediaId not found for guild with id $guildId")
+
+        mediaStorageService.deleteAll(listOf(media.key))
+        mediaRepository.delete(media)
+
+        return ResponseEntity.noContent().build()
+    }
+
+    private fun getMediaUrlsUsedByGuild(guildSettings: GuildSettingsEntity): Set<String> =
+        buildSet {
+            addAll(listOfNotNull(guildSettings.avatarUrl, guildSettings.bannerUrl))
+
             for (i in guildSettings.interfaces) {
-//                add(i.embedStyle.authorIconUrl)
+                with(i.embedStyle) {
+                    addAll(listOfNotNull(thumbnail, image, authorIconUrl, footerIconUrl))
+                }
             }
         }
-    }
 }

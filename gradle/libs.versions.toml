@@ -7,7 +7,6 @@ detekt = "2.0.0-alpha.6"
 
 # Kotlin
 kotlin = "2.4.0"
-kotlinxCoroutines = "1.11.0"
 kotlinxDatetime = "0.8.0"
 kotlinxSerialization = "1.11.0"
 
@@ -36,7 +35,7 @@ s3 = "1.9.4"
 jackson-date = "2.22.1"
 
 # Concurrency
-coroutines = "1.10.2"
+coroutines = "1.11.0"
 
 # Security
 jjwt = "0.13.0"

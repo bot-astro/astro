@@ -4,6 +4,10 @@ plugins {
     id("service-conventions")
 }
 
+// the AWS SDK needs the coroutines version it was built against, Spring Boot's BOM would downgrade it
+// FUTURE: upgrade spring boot BOM and remove this once a new stable version gets released
+extra["kotlin-coroutines.version"] = libs.versions.coroutines.get()
+
 dependencies {
     implementation(project(":shared:core"))
 
