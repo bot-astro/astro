@@ -256,7 +256,6 @@ class DiscordGuildController(
                 DiscordGuildRoleBotApiResponse(
                     id = role.id,
                     name = role.name,
-                    // TODO: support fancy colors?
                     color = role.colorRaw,
                     position = role.position,
                     manageable = !role.isPublicRole && !role.isManaged && guild.selfMember.canInteract(role),

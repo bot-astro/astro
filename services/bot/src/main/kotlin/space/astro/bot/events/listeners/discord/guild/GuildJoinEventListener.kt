@@ -33,7 +33,6 @@ class GuildJoinEventListener(
 
         val permissions = PermissionSets.astroSendMessagePermissions.toPermissionList()
 
-        // TODO: select the channel in a better way (e.g. the one the inviter was in / most active text channel)
         val channel =
             guild.systemChannel
                 ?.takeIf { guild.selfMember.hasPermission(it, permissions) }
