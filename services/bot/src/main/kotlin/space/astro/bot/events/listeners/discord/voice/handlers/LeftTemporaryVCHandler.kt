@@ -47,6 +47,14 @@ class LeftTemporaryVCHandler(
             privateChat?.delete()?.reason(reason)?.queue()
             waitingRoom?.delete()?.reason(reason)?.queue()
 
+            if (event.ownerLeft) {
+                data.generators
+                    .firstOrNull { it.id == entity.generatorID }
+                    ?.ownerRole
+                    ?.let { guild.getRoleById(it) }
+                    ?.also { memberRolesManager.remove(it) }
+            }
+
             return
         }
 
