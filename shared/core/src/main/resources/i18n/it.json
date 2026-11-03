@@ -181,8 +181,6 @@
   "welcome.title": "## Astro è appena arrivato in [{guild}]({link})!",
   "welcome.description": "Grazie per aver invitato Astro in questo fantastico server, portiamolo subito al livello successivo!",
   "welcome.setup.title": "Configurazione",
-  "interface.title": "Interfaccia del canale vocale",
-  "interface.description": "Usa i pulsanti qui sotto per gestire il tuo canale vocale temporaneo",
   "reason.roles.features": "Applicati i ruoli necessari in base alle impostazioni del generatore e delle funzionalità di connessione",
   "reason.dashboard.profile_update": "Aggiornamento del profilo avviato dalla dashboard",
   "reason.dashboard.channel_create": "Creazione del canale avviata dalla dashboard",

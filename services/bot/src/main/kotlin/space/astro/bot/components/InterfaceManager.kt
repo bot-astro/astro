@@ -18,7 +18,9 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder
 import org.springframework.stereotype.Component
+import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
+import space.astro.bot.ui.Links
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.lang.L
@@ -68,17 +70,17 @@ class InterfaceManager {
 
     private fun defaultEmbedStyle(locale: Locale) =
         InterfaceData.EmbedStyle(
-            url = null,
-            title = L.t(locale, "interface.title"),
+            url = Links.WEBSITE,
+            title = null,
             description = L.t(locale, "interface.description"),
             timestamp = null,
-            color = 0x2B2D31,
+            color = Containers.purple.rgb,
             thumbnail = null,
-            image = null,
-            authorName = null,
-            authorUrl = null,
-            authorIconUrl = null,
-            footer = null,
+            image = Links.INTERFACE_BUTTONS_IMAGE,
+            authorName = L.t(locale, "interface.author"),
+            authorUrl = Links.WEBSITE,
+            authorIconUrl = Links.LOGO,
+            footer = L.t(locale, "interface.footer"),
             footerIconUrl = null,
         )
 
