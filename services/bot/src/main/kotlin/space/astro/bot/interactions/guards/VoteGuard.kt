@@ -11,7 +11,8 @@ import space.astro.shared.core.clients.VoteTrackerClient
 import space.astro.shared.core.properties.VoteTrackerProperties
 
 /**
- * Locks the interactions marked with `voteRequired` behind a vote, premium guilds skip the lock, disabled entirely with `vote-tracker.guard-enabled`
+ * Locks the interactions marked with `voteRequired` behind a vote, premium guilds skip the lock,
+ * disabled entirely with `vote-tracker.guard-enabled`
  */
 @Component
 @Order(20)
