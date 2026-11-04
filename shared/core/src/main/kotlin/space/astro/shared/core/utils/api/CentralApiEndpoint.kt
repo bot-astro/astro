@@ -19,6 +19,7 @@ object CentralApiEndpoint {
     const val GUILD_SETTINGS_GENERATOR = "/v2/guilds/{guildId}/settings/generators/{generatorId}"
     const val GUILD_SETTINGS_INTERFACES = "/v2/guilds/{guildId}/settings/interfaces"
     const val GUILD_SETTINGS_INTERFACE = "/v2/guilds/{guildId}/settings/interfaces/{interfaceId}"
+    const val GUILD_SETTINGS_INTERFACE_MOVE = "/v2/guilds/{guildId}/settings/interfaces/{interfaceId}/move"
     const val GUILD_SETTINGS_CONNECTIONS = "/v2/guilds/{guildId}/settings/connections"
     const val GUILD_SETTINGS_CONNECTION = "/v2/guilds/{guildId}/settings/connections/{connectionId}"
     const val GUILD_SETTINGS_TEMPLATES = "/v2/guilds/{guildId}/settings/templates"

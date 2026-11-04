@@ -10,6 +10,7 @@ import space.astro.shared.core.exceptions.AUnknownException
 import space.astro.shared.core.models.api.bot.request.ChannelCreateBotApiRequest
 import space.astro.shared.core.models.api.bot.request.GuildProfileUpdateBotApiRequest
 import space.astro.shared.core.models.api.bot.request.InterfaceCreateBotApiRequest
+import space.astro.shared.core.models.api.bot.request.InterfaceMoveBotApiRequest
 import space.astro.shared.core.models.api.bot.response.DiscordGuildBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildRoleBotApiResponse
@@ -197,6 +198,27 @@ class BotApiClient(
             }
 
             throw AUnknownException("Failed to update interface", e)
+        }
+    }
+
+    fun moveInterface(
+        guildId: String,
+        request: InterfaceMoveBotApiRequest,
+    ): InterfaceData {
+        try {
+            return client
+                .post()
+                .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD_INTERFACE_MOVE, guildId)
+                .body(request)
+                .retrieve()
+                .body()
+                ?: throw AUnknownException("Failed to move interface")
+        } catch (e: RestClientException) {
+            if (e is RestClientResponseException && e.statusCode.value() == 404) {
+                throw ANotFoundException("Guild or channel not found for guild with id $guildId")
+            }
+
+            throw AUnknownException("Failed to move interface", e)
         }
     }
 

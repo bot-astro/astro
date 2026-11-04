@@ -131,6 +131,35 @@ class InterfaceManager {
             ).await()
     }
 
+    suspend fun moveInterface(
+        guild: Guild,
+        interfaceData: InterfaceData,
+        channelId: String,
+        locale: Locale,
+    ): InterfaceData {
+        val channel =
+            guild.getTextChannelById(channelId)
+                ?: throw ANotFoundException("Text channel with id $channelId not found")
+
+        val movedInterface =
+            interfaceData.copy(
+                channelID = channel.id,
+                // replaced with the real message id once the message is sent
+                messageID = "0",
+            )
+
+        val message = channel.sendMessage(computeMessage(movedInterface)).await()
+        movedInterface.messageID = message.id
+
+        try {
+            deleteInterface(guild, interfaceData.channelID, interfaceData.messageID, locale)
+        } catch (_: Exception) {
+            // the old message is not worth failing the move, the new one is already sent
+        }
+
+        return movedInterface
+    }
+
     suspend fun deleteInterface(
         guild: Guild,
         channelId: String,

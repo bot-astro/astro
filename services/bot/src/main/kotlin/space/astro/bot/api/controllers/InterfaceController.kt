@@ -16,6 +16,7 @@ import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.AUnknownException
 import space.astro.shared.core.models.api.bot.request.InterfaceCreateBotApiRequest
+import space.astro.shared.core.models.api.bot.request.InterfaceMoveBotApiRequest
 import space.astro.shared.core.models.database.guildSettings.InterfaceData
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.BotApiEndpoint
@@ -84,6 +85,39 @@ class InterfaceController(
             throw ABadRequestException(e.message ?: "Error from Discord API", e)
         } catch (e: InsufficientPermissionException) {
             throw ABadRequestException("Insufficient permissions to edit the interface", e)
+        } catch (e: Exception) {
+            throw AUnknownException("An unexpected error occurred", e)
+        }
+    }
+
+    @Operation(
+        summary = "Move interface",
+        description = "Sends the interface message in another channel, deletes the old one and returns the new data",
+        operationId = "moveInterface",
+    )
+    @PostMapping(BotApiEndpoint.DISCORD_GUILD_INTERFACE_MOVE)
+    fun moveInterface(
+        @PathVariable guildId: String,
+        @RequestBody request: InterfaceMoveBotApiRequest,
+    ): ResponseEntity<InterfaceData> {
+        val guild =
+            shardManager.getGuildById(guildId)
+                ?: throw ANotFoundException("Guild not found")
+
+        try {
+            val locale = guildSettingsRepository.findByGuildID(guildId).supportedLocale
+
+            return ResponseEntity.ok(
+                runBlocking(Dispatchers.IO) {
+                    interfaceManager.moveInterface(guild, request.interfaceData, request.channelId, locale)
+                },
+            )
+        } catch (e: AException) {
+            throw e
+        } catch (e: ErrorResponseException) {
+            throw ABadRequestException(e.message ?: "Error from Discord API", e)
+        } catch (e: InsufficientPermissionException) {
+            throw ABadRequestException("Insufficient permissions to move the interface", e)
         } catch (e: Exception) {
             throw AUnknownException("An unexpected error occurred", e)
         }
