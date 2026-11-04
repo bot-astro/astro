@@ -29,6 +29,8 @@ exceptions:
     active: false
 
 complexity:
+  ComplexCondition:
+    threshold: 4
   CyclomaticComplexMethod:
     active: false
   LongMethod:
