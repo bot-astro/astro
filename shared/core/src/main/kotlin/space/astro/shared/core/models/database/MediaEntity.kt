@@ -14,6 +14,8 @@ data class MediaEntity(
     val type: MediaType,
     val bucket: String,
     val key: String,
+    // original name of the file uploaded by the user
+    val fileName: String? = null,
 ) {
     enum class MediaType {
         PROFILE_AVATAR,

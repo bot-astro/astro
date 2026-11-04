@@ -41,6 +41,7 @@ class MediaController(
     private companion object {
         const val MAX_MEDIA_PER_GUILD = 200L
         const val MEDIA_CLEANUP_INTERVAL = 20L
+        const val MAX_FILE_NAME_LENGTH = 100
     }
 
     @Operation(summary = "Get media of the guild")
@@ -127,6 +128,12 @@ class MediaController(
                 bucket = r2Properties.bucketName,
                 key = mediaKey,
                 type = mediaMeta.mediaType,
+                fileName =
+                    media.originalFilename
+                        ?.substringAfterLast('/')
+                        ?.substringAfterLast('\\')
+                        ?.take(MAX_FILE_NAME_LENGTH)
+                        ?.takeIf { it.isNotBlank() },
             )
 
         mediaRepository.save(mediaEntity)

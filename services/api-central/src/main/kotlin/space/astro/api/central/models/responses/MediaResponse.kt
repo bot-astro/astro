@@ -17,7 +17,7 @@ data class MediaResponse(
         ) = MediaResponse(
             id = entity.id.toHexString(),
             type = entity.type,
-            fileName = entity.key.substringAfterLast("/"),
+            fileName = entity.fileName ?: entity.key.substringAfterLast("/"),
             url = r2Properties.urlOf(entity.key),
             createdAt = entity.id.date.time,
         )
