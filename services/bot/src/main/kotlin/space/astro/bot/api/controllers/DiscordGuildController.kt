@@ -60,7 +60,9 @@ class DiscordGuildController(
 
     @Operation(
         summary = "Update bot profile",
-        description = "Updates the bot's guild profile, any null value resets the field to the default",
+        description =
+            "Updates the bot's guild profile, " +
+                "only the fields that differ from the saved ones are changed and a null value resets them to the default",
         operationId = "updateGuildProfile",
     )
     @PostMapping(BotApiEndpoint.DISCORD_GUILD_PROFILE)
@@ -72,21 +74,30 @@ class DiscordGuildController(
             shardManager.getGuildById(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found")
 
+        val guildSettings =
+            guildSettingsRepository.findByGuildID(guild.id)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+
         try {
-            val reason =
-                L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.profile_update")
+            val reason = L.t(guildSettings.supportedLocale, "reason.dashboard.profile_update")
 
-            runBlocking(Dispatchers.IO) {
-                val avatar = newProfile.avatarUrl?.let { iconFromUrl(it) }
-                val banner = newProfile.bannerUrl?.let { iconFromUrl(it) }
+            // Discord rate limits profile changes, so only the fields that changed are updated
+            val nicknameChanged = newProfile.nickname != guildSettings.nickname
+            val bioChanged = newProfile.bio != guildSettings.bio
+            val avatarChanged = newProfile.avatarUrl != guildSettings.avatarUrl
+            val bannerChanged = newProfile.bannerUrl != guildSettings.bannerUrl
 
-                guild.selfMember.manager
-                    .setNickname(newProfile.nickname)
-                    .setBio(newProfile.bio)
-                    .setAvatar(avatar)
-                    .setBanner(banner)
-                    .reason(reason)
-                    .await()
+            if (nicknameChanged || bioChanged || avatarChanged || bannerChanged) {
+                runBlocking(Dispatchers.IO) {
+                    val manager = guild.selfMember.manager
+
+                    if (nicknameChanged) manager.setNickname(newProfile.nickname)
+                    if (bioChanged) manager.setBio(newProfile.bio)
+                    if (avatarChanged) manager.setAvatar(newProfile.avatarUrl?.let { iconFromUrl(it) })
+                    if (bannerChanged) manager.setBanner(newProfile.bannerUrl?.let { iconFromUrl(it) })
+
+                    manager.reason(reason).await()
+                }
             }
         } catch (e: ErrorResponseException) {
             throw ABadRequestException(e.message ?: "Error from Discord API", e)

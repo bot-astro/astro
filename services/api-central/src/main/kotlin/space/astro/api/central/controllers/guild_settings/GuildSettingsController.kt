@@ -83,13 +83,6 @@ class GuildSettingsController(
             guildSettingsRepository.findByGuildID(guildId)
                 ?: throw ANotFoundException("Guild with ID $guildId not found Astro database")
 
-        guildSettings.nickname = newProfile.nickname
-        guildSettings.bio = newProfile.bio
-        guildSettings.avatarUrl = newProfile.avatarUrl
-        guildSettings.bannerUrl = newProfile.bannerUrl
-
-        guildSettingsRepository.save(guildSettings)
-
         botApiClient.updateGuildProfile(
             guildId,
             GuildProfileUpdateBotApiRequest(
@@ -99,6 +92,13 @@ class GuildSettingsController(
                 bannerUrl = newProfile.bannerUrl,
             ),
         )
+
+        guildSettings.nickname = newProfile.nickname
+        guildSettings.bio = newProfile.bio
+        guildSettings.avatarUrl = newProfile.avatarUrl
+        guildSettings.bannerUrl = newProfile.bannerUrl
+
+        guildSettingsRepository.save(guildSettings)
 
         return ResponseEntity.ok().build()
     }
