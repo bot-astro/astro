@@ -30,7 +30,7 @@ exceptions:
 
 complexity:
   ComplexCondition:
-    threshold: 4
+    allowedConditions: 4
   CyclomaticComplexMethod:
     active: false
   LongMethod:
