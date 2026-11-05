@@ -1,6 +1,6 @@
 # Deploying Hyperion (new bot, new infra)
 
-Replaces the legacy deployment (Helm releases in the `astro` namespace, `master` branch charts, ConfigMaps) with the Hyperion services deployed by ArgoCD from `bot-astro/infra` and configured from Infisical. Downtime of the bot is accepted. Nothing in this guide touches the cluster itself (`gport/hcloud-cluster`), Longhorn, Redis data or MongoDB data.
+Replaces the legacy deployment (Helm releases in the `astro` namespace, `master` branch charts, ConfigMaps) with the Hyperion services deployed by ArgoCD from `bot-astro/infra` and configured from Infisical. Downtime of the bot is accepted. Nothing in this guide touches the cluster itself (`gport/hcloud-cluster`), Longhorn or the data stores, except the cleanups of step D4 (legacy `errors` documents in MongoDB, `TEMP_VCS:*` keys in Redis).
 
 Repos: `astro` (this), `infra` (`../infra`), `gport` (`../../Giuliopime/gport`). Cluster context: `gport`. Prod namespace `astro`, staging `astro-staging`.
 
@@ -165,7 +165,7 @@ Details in `terraform/README.md`. Prod and staging are both declared. Summary:
 | What | How |
 |---|---|
 | MongoDB | Atlas → Backup → take an on-demand snapshot. The only change the migration makes is deleting the legacy `errors` documents (D4) |
-| Redis | `kubectl exec -n databases redis-master-0 -- redis-cli -a "$(kubectl get secret rediscreds -n databases -o jsonpath='{.data.password}' \| base64 -d)" BGSAVE`, wait for `LASTSAVE` to change, then `kubectl cp databases/redis-master-0:/data/dump.rdb ./redis-backup.rdb` (see `redis-migration.md` for the layout). Redis is **not** modified by the migration |
+| Redis | `kubectl exec -n databases redis-master-0 -- redis-cli -a "$(kubectl get secret rediscreds -n databases -o jsonpath='{.data.password}' \| base64 -d)" BGSAVE`, wait for `LASTSAVE` to change, then `kubectl cp databases/redis-master-0:/data/dump.rdb ./redis-backup.rdb` (see `redis-migration.md` for the layout). The only Redis change the migration makes is deleting the `TEMP_VCS:*` keys (D4) |
 | Longhorn | Longhorn UI → Volume → Create Backup/Snapshot for the Redis and Prometheus volumes |
 | Old config | `kubectl get cm,secret,ingress,sts,deploy,cronjob,svc -n astro -o yaml > astro-legacy-backup.yaml` (contains secrets, keep it out of git). Also `helm get values -n astro <release>` for `bot`, `central-api`, `support-bot`, `entitlements-expiration-job` |
 | BigQuery | Adopted by Terraform with `imports.tf`, data not modified. Take a copy before the first apply anyway: `bq cp` each of the 5 tables of `astro_bot` to a backup dataset (or a table snapshot) |
@@ -224,6 +224,12 @@ Checklist:
    mongosh "$URI" --quiet --eval 'printjson(db.errors.countDocuments({}))'                       # expect 0
    ```
    Do the same on the staging database if it was ever filled with legacy data (`MONGODB_URI` of `staging`).
+   Also **delete the legacy temporary VC entries from Redis** (keys `TEMP_VCS:<guildId>`). `TemporaryVCEntity` no longer uses the legacy JSON key names (`ownerID`, `genID`, `position`), so the legacy entries cannot be read. Their channels stay on Discord but are no longer tracked as temporary VCs (they are never auto-deleted), which is accepted. Same condition: legacy bots stopped, new ones not started.
+   ```sh
+   kubectl exec -n databases redis-master-0 -- sh -c 'redis-cli -a "$REDIS_PASSWORD" --scan --pattern "TEMP_VCS:*" | xargs -r redis-cli -a "$REDIS_PASSWORD" unlink'
+   kubectl exec -n databases redis-master-0 -- sh -c 'redis-cli -a "$REDIS_PASSWORD" --scan --pattern "TEMP_VCS:*" | wc -l'   # expect 0
+   ```
+   If `$REDIS_PASSWORD` is not set in the pod, use the `redis_exec` helper from `redis-migration.md` with `--scan` and `UNLINK` instead.
 5. In `infra`, remove the `exclude` entry added in B4, commit and push. ArgoCD creates the `*-astro` apps (the appset refreshes within ~3 minutes, or force it: `kubectl annotate applicationset astro-appset -n argocd argocd.argoproj.io/application-set-refresh=true`).
 6. Watch it come up:
    ```sh

@@ -1,5 +1,8 @@
 package space.astro.shared.core.models.database
 
+import com.fasterxml.jackson.annotation.JsonInclude
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class TemporaryVCEntity(
     val id: String,
     var ownerID: String,

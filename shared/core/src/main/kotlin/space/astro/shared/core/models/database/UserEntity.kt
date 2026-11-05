@@ -12,13 +12,5 @@ data class UserEntity(
     val id: ObjectId = ObjectId.get(),
     @Indexed(unique = true)
     val userID: String,
-//    val entitlements: MutableList<UserEntitlementData> = mutableListOf(),
-//    var votes: Int = 0,
-//    var coins: Double = 0.0,
-//    val settings: UserSettingsData = UserSettingsData(),
-//    val createdFirstVC: Boolean = false,
-//    var premium: Boolean = false,
     val guildActiveUpgrades: MutableList<UserGuildUpgradeData> = mutableListOf(),
-) {
-//    val hasUltimate = entitlements.any { it.isActive(System.currentTimeMillis()) } || guildActiveUpgrades.isNotEmpty()
-}
+)
