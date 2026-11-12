@@ -34,7 +34,7 @@ blocks:
         - name: Build, test and push bot
           commands:
             - ./gradlew :services:bot:build
-            - ./gradlew :services:bot:jib -Djib.httpTimeout=60000
+            - ./gradlew :services:bot:jib -Djib.httpTimeout=60000 --no-configuration-cache
       epilogue:
         on_pass:
           commands:
@@ -62,7 +62,7 @@ blocks:
         - name: Build, test and push api-central
           commands:
             - ./gradlew :services:api-central:build
-            - ./gradlew :services:api-central:jib -Djib.httpTimeout=60000
+            - ./gradlew :services:api-central:jib -Djib.httpTimeout=60000 --no-configuration-cache
       epilogue:
         on_pass:
           commands:
@@ -90,7 +90,7 @@ blocks:
         - name: Build, test and push support-bot
           commands:
             - ./gradlew :services:support-bot:build
-            - ./gradlew :services:support-bot:jib -Djib.httpTimeout=60000
+            - ./gradlew :services:support-bot:jib -Djib.httpTimeout=60000 --no-configuration-cache
       epilogue:
         on_pass:
           commands:
@@ -118,7 +118,7 @@ blocks:
         - name: Build, test and push entitlements-expiration-job
           commands:
             - ./gradlew :services:entitlements-expiration-job:build
-            - ./gradlew :services:entitlements-expiration-job:jib -Djib.httpTimeout=60000
+            - ./gradlew :services:entitlements-expiration-job:jib -Djib.httpTimeout=60000 --no-configuration-cache
       epilogue:
         on_pass:
           commands:
