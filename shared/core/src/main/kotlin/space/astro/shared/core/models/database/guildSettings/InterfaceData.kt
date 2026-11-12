@@ -1,6 +1,7 @@
 package space.astro.shared.core.models.database.guildSettings
 
 import net.dv8tion.jda.api.entities.MessageEmbed
+import org.springframework.data.mongodb.core.mapping.Field
 import space.astro.shared.core.utils.extensions.isValidSnowflake
 import space.astro.shared.core.utils.validation.Validatable
 import space.astro.shared.core.utils.validation.ValidationResult
@@ -120,6 +121,8 @@ data class InterfaceData(
     }
 
     data class InterfaceButton(
+        // nested documents keep the legacy `id` field, Spring would otherwise map a property named id to `_id`
+        @Field("id")
         var id: String,
         var name: String?,
         var emoji: String?,

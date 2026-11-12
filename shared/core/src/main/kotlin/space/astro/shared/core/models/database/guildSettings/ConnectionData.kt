@@ -1,11 +1,14 @@
 package space.astro.shared.core.models.database.guildSettings
 
+import org.springframework.data.mongodb.core.mapping.Field
 import space.astro.shared.core.utils.extensions.isValidSnowflake
 import space.astro.shared.core.utils.validation.Validatable
 import space.astro.shared.core.utils.validation.ValidationResult
 import space.astro.shared.core.utils.validation.asValidationResult
 
 data class ConnectionData(
+    // nested documents keep the legacy `id` field, Spring would otherwise map a property named id to `_id`
+    @Field("id")
     var id: String,
     var roleID: String,
     var action: ConnectionAction = ConnectionAction.ASSIGN,

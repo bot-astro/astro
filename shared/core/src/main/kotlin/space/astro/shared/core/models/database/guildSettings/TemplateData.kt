@@ -2,12 +2,15 @@ package space.astro.shared.core.models.database.guildSettings
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import net.dv8tion.jda.api.Region
+import org.springframework.data.mongodb.core.mapping.Field
 import space.astro.shared.core.utils.extensions.isValidSnowflake
 import space.astro.shared.core.utils.validation.Validatable
 import space.astro.shared.core.utils.validation.ValidationResult
 import space.astro.shared.core.utils.validation.asValidationResult
 
 data class TemplateData(
+    // nested documents keep the legacy `id` field, Spring would otherwise map a property named id to `_id`
+    @Field("id")
     var id: String = NanoIdUtils.randomNanoId(),
     var name: String,
     var enabledGeneratorIds: MutableList<String>? = null,

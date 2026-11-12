@@ -3,12 +3,15 @@ package space.astro.shared.core.models.database.guildSettings
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import org.springframework.data.mongodb.core.mapping.Field
 import space.astro.shared.core.utils.extensions.isValidSnowflake
 import space.astro.shared.core.utils.validation.Validatable
 import space.astro.shared.core.utils.validation.ValidationResult
 import space.astro.shared.core.utils.validation.asValidationResult
 
 data class GeneratorSettings(
+    // nested documents keep the legacy `id` field, Spring would otherwise map a property named id to `_id`
+    @Field("id")
     val id: String,
     var fallbackId: String? = null,
     var queueMode: Boolean = false,
