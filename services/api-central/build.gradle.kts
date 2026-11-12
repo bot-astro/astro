@@ -29,3 +29,15 @@ dependencies {
     implementation(libs.nanoid)
     implementation(libs.chargebee)
 }
+
+jib {
+    container {
+        jvmFlags =
+            listOf(
+                "-XX:+PrintCommandLineFlags",
+                "-XshowSettings:vm",
+                "-XX:MaxRAMPercentage=50.0",
+                "-XX:ActiveProcessorCount=2",
+            )
+    }
+}
