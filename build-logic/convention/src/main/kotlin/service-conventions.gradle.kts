@@ -7,11 +7,11 @@ plugins {
 
 sentry {
     // Uploads a source bundle so stack traces show source context.
-    // The Sentry project slug must match the Gradle project (service) name.
+    // The Sentry project slug matches the Gradle project (service) name, except api-central (Sentry project is central-api).
     includeSourceContext = true
 
     org = "bot-astro"
-    projectName = project.name
+    projectName = if (project.name == "api-central") "central-api" else project.name
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
