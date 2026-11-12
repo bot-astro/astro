@@ -45,6 +45,12 @@ You can read the story of this project [on my blog post](https://giuliopime.dev/
 > [!WARNING]
 > I do **not** provide support for self-hosting the bot.
 
+### AI Usage
+This project was born and lived long of its life in the pre-AI-era.  
+In November 2026 I used AI for the first time to write code for Astro.
+
+I froze all the code that was written before that in `pre-ai-era` branches in both Backend and Frontend repositories, so if you are interested in some human artifacts built by pulling all nighters to fix bugs and kubernetes deployments, those branches will serve you well.
+
 ## Development
 ### Prerequisites
 - JDK 25
