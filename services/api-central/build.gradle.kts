@@ -29,3 +29,18 @@ dependencies {
     implementation(libs.nanoid)
     implementation(libs.chargebee)
 }
+
+// api-central is small and the JVM sees every core of the node (no cpu limit), so cap what scales with core count.
+// A fixed min = max heap pinned 60% of the pod memory even though live data is ~75 MB.
+jib {
+    container {
+        jvmFlags =
+            listOf(
+                "-XX:+PrintCommandLineFlags",
+                "-XshowSettings:vm",
+                "-XX:MaxRAMPercentage=50.0",
+                "-XX:MaxMetaspaceSize=192m",
+                "-XX:ActiveProcessorCount=2",
+            )
+    }
+}
