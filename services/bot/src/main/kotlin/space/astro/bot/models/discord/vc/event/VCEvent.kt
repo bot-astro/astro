@@ -1,34 +1,35 @@
 package space.astro.bot.models.discord.vc.event
 
-import space.astro.shared.core.models.database.ConnectionData
-import space.astro.shared.core.models.database.GeneratorData
-import space.astro.shared.core.models.database.TemporaryVCData
+import space.astro.shared.core.models.database.TemporaryVCEntity
+import space.astro.shared.core.models.database.guildSettings.ConnectionData
+import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 
 sealed class VCEvent(
-    val vcEventData: VCEventData
+    val vcEventData: VCEventData,
 ) {
     class JoinedGenerator(
         vcEventData: VCEventData,
-        val generatorData: GeneratorData
-    ): VCEvent(vcEventData)
+        val generatorSettings: GeneratorSettings,
+    ) : VCEvent(vcEventData)
+
     class JoinedTemporaryVC(
         vcEventData: VCEventData,
-        val temporaryVCData: TemporaryVCData
-    ): VCEvent(vcEventData)
+        val temporaryVCEntity: TemporaryVCEntity,
+    ) : VCEvent(vcEventData)
 
     class JoinedConnectedVC(
         vcEventData: VCEventData,
-        val connectionData: ConnectionData
-    ): VCEvent(vcEventData)
+        val connectionData: ConnectionData,
+    ) : VCEvent(vcEventData)
 
     class LeftTemporaryVC(
         vcEventData: VCEventData,
         val ownerLeft: Boolean,
-        val temporaryVCData: TemporaryVCData,
-    ): VCEvent(vcEventData)
+        val temporaryVCEntity: TemporaryVCEntity,
+    ) : VCEvent(vcEventData)
 
     class LeftConnectedVC(
         vcEventData: VCEventData,
-        val connectionData: ConnectionData
-    ): VCEvent(vcEventData)
+        val connectionData: ConnectionData,
+    ) : VCEvent(vcEventData)
 }

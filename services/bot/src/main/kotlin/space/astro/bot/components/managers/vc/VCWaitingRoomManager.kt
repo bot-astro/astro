@@ -8,100 +8,110 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import org.springframework.stereotype.Component
-import space.astro.bot.core.exceptions.ConfigurationException
-import space.astro.bot.core.extentions.modifyPermissionOverride
+import space.astro.bot.exceptions.ConfigurationException
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.services.ConfigurationErrorService
-import space.astro.shared.core.components.managers.VariablesManager
-import space.astro.shared.core.models.database.GeneratorData
-import space.astro.shared.core.models.database.InitialPosition
-import space.astro.shared.core.models.database.PermissionsInherited
-import space.astro.shared.core.models.database.TemporaryVCData
+import space.astro.bot.utils.extensions.modifyPermissionOverride
+import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.lang.L
+import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.TemporaryVCEntity
+import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
+import space.astro.shared.core.models.database.guildSettings.GeneratorSettings.InitialPosition
+import space.astro.shared.core.models.database.guildSettings.GeneratorSettings.PermissionsInherited
+import java.util.Locale
 
 @Component
-class VCWaitingRoomManager(
-    private val configurationErrorService: ConfigurationErrorService
-) {
+class VCWaitingRoomManager {
     /**
+     * Remember to update the [TemporaryVCEntity] waiting room info
+     *
      * @throws InsufficientPermissionException
      * @throws ConfigurationException
      */
     suspend fun create(
         owner: Member,
-        generatorData: GeneratorData,
+        generatorSettings: GeneratorSettings,
         temporaryVC: VoiceChannel,
-        temporaryVCIncrementalPosition: Int?
-    ) : VoiceChannel {
+        temporaryVCIncrementalPosition: Int?,
+        locale: Locale,
+    ): VoiceChannel {
         try {
             val guild = owner.guild
 
-            val bitrate = generatorData.waitingBitrate
-                .takeIf { it != 0 }
-                ?.coerceAtMost(guild.maxBitrate)
-                ?: 64000
+            val bitrate =
+                generatorSettings.waitingBitrate
+                    // DEPRECATED: 0 is a legacy value for unset
+                    ?.takeIf { it != 0 }
+                    ?.coerceIn(8000, guild.maxBitrate)
+                    ?: 64000
 
-            val name = VariablesManager.computeVcNameForExisting(
-                template = generatorData.defaultWaitingName,
-                owner = owner,
-                temporaryVC = temporaryVC,
-                incrementalPosition = temporaryVCIncrementalPosition
-            )
+            val name =
+                VariablesManager.computeWaitingRoomName(
+                    template = generatorSettings.defaultWaitingName,
+                    locale = locale,
+                    owner = owner,
+                    temporaryVC = temporaryVC,
+                    incrementalPosition = temporaryVCIncrementalPosition,
+                )
 
-            val position = when (generatorData.waitingPosition) {
-                InitialPosition.BOTTOM -> null
-                InitialPosition.BEFORE -> temporaryVC.positionRaw - VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
-                InitialPosition.AFTER -> temporaryVC.positionRaw + VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
-            }?.coerceAtLeast(0)
+            val position =
+                when (generatorSettings.waitingPosition) {
+                    InitialPosition.BOTTOM -> null
+                    InitialPosition.BEFORE -> temporaryVC.positionRaw - VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
+                    InitialPosition.AFTER -> temporaryVC.positionRaw + VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
+                }?.coerceAtLeast(0)
 
-            val category = generatorData.waitingCategory?.let { guild.getCategoryById(it) }
+            val category = generatorSettings.waitingCategory?.let { guild.getCategoryById(it) }
 
-            val builder = guild.createVoiceChannel(name)
-                .setBitrate(bitrate)
-                .setUserlimit(generatorData.waitingUserLimit)
-                .setSlowmode(generatorData.chatSlowmode)
-                .setPosition(position)
-                .apply {
-                    if (category != null)
-                        setParent(category)
-                }
+            val builder =
+                guild
+                    .createVoiceChannel(name)
+                    .setBitrate(bitrate)
+                    // DEPRECATED: 0 is a legacy value for unset, same as null
+                    .setUserlimit(generatorSettings.waitingUserLimit ?: 0)
+                    .setPosition(position)
+                    .apply { category?.let { setParent(it) } }
+                    .reason(L.t(locale, "reason.vc.waiting_room_created"))
 
             // add bot permissions
             builder.addMemberPermissionOverride(
                 guild.selfMember.idLong,
                 PermissionSets.astroVCPermissions,
-                0L
+                0L,
             )
 
             // inherit permissions if needed
-            val permissionOverrides = when (generatorData.waitingPermissionsInherited) {
-                PermissionsInherited.NONE -> emptyList()
+            val permissionOverrides =
+                when (generatorSettings.waitingPermissionsInherited) {
+                    PermissionsInherited.NONE -> emptyList()
 
-                PermissionsInherited.CATEGORY -> {
-                    builder.syncPermissionOverrides()
-                    category?.permissionOverrides ?: emptyList()
-                }
+                    PermissionsInherited.CATEGORY -> {
+                        builder.syncPermissionOverrides()
+                        category?.permissionOverrides ?: emptyList()
+                    }
 
-                PermissionsInherited.GENERATOR -> {
-                    // copy permission overrides one by one from the generator if the perm holder is cached
-                    guild.getVoiceChannelById(generatorData.id)?.let {
-                        it.permissionOverrides.forEach { perm ->
-                            perm.permissionHolder?.also { permHolder ->
-                                builder.addPermissionOverride(permHolder, perm.allowedRaw, perm.deniedRaw)
+                    PermissionsInherited.GENERATOR -> {
+                        // copy permission overrides one by one from the generator if the perm holder is cached
+                        guild.getVoiceChannelById(generatorSettings.id)?.let {
+                            it.permissionOverrides.forEach { perm ->
+                                perm.permissionHolder?.also { permHolder ->
+                                    builder.addPermissionOverride(permHolder, perm.allowedRaw, perm.deniedRaw)
+                                }
                             }
-                        }
 
-                        it.permissionOverrides
-                    } ?: emptyList()
+                            it.permissionOverrides
+                        } ?: emptyList()
+                    }
                 }
-            }
 
             // temporary vc owner permissions
             builder.modifyPermissionOverride(
                 permissionOverrides.firstOrNull { it.id == owner.id },
                 owner,
                 PermissionSets.ownerWaitingRoomVCPermissions,
-                0
+                0,
             )
 
             temporaryVC.members.filter { it.id != owner.id }.forEach { vcMember ->
@@ -109,78 +119,70 @@ class VCWaitingRoomManager(
                     permissionOverrides.firstOrNull { it.id == vcMember.id },
                     vcMember,
                     Permission.VIEW_CHANNEL.rawValue,
-                    0
+                    0,
                 )
             }
 
             return builder.await()
         } catch (e: ErrorResponseException) {
-            val configError = when (e.errorResponse) {
-                ErrorResponse.MAX_CHANNELS -> configurationErrorService.maximumAmountOfChannelsReached(
-                    guildId = owner.guild.id,
-                    encounteredIn = "creating the waiting room of a temporary VC"
-                )
-                else -> configurationErrorService.unknown(
-                    guildId = owner.guild.id,
-                    encounteredIn = "creating the waiting room of a temporary VC: ${e.meaning}"
-                )
-            }
-
-            throw ConfigurationException(configError)
+            throw ConfigurationException(
+                if (e.errorResponse == ErrorResponse.MAX_CHANNELS) {
+                    ConfigurationErrorEntity(guildId = owner.guild.id, code = ConfigurationErrorCode.MAX_CHANNELS_WAITING_ROOM)
+                } else {
+                    ConfigurationErrorEntity(
+                        guildId = owner.guild.id,
+                        code = ConfigurationErrorCode.UNKNOWN,
+                        args = mapOf("encounteredIn" to "creating the waiting room of a temporary VC", "details" to e.meaning),
+                    )
+                },
+            )
         }
     }
 
-    fun performWaitingRoomNameRefresh(
-        vcOperationCTX: VCOperationCTX
-    ) {
-        vcOperationCTX.apply {
-            if (waitingRoom != null &&
-                waitingRoomManager != null &&
-                temporaryVCData.canBeRenamed()
-            ) {
-                val newName = VariablesManager.computeWaitingRoomName(
-                    template = generatorData.defaultWaitingName,
-                    owner = temporaryVCOwner,
-                    temporaryVC = temporaryVC,
-                    incrementalPosition = temporaryVCData.incrementalPosition
-                )
+    /**
+     * Remember to save the [TemporaryVCEntity] and queue the managers, rename counters of the entity get updated
+     */
+    fun performWaitingRoomNameRefresh(ctx: VCOperationCTX) {
+        val waitingRoom = ctx.waitingRoom
+        val waitingRoomManager = ctx.waitingRoomManager
+        val entity = ctx.temporaryVCEntity
 
-                if (waitingRoom.name != newName) {
-                    temporaryVCData.performRenameOperationsOnTemporaryVCData()
-                    waitingRoomManager.setName(newName)
-                    markWaitingRoomManagerAsUpdated()
-                }
-            }
+        if (waitingRoom == null || waitingRoomManager == null || !entity.canBeRenamed()) {
+            return
+        }
+
+        val newName =
+            VariablesManager.computeWaitingRoomName(
+                template = ctx.generatorSettings.defaultWaitingName,
+                locale = ctx.guildSettings.supportedLocale,
+                owner = ctx.temporaryVCOwner,
+                temporaryVC = ctx.temporaryVC,
+                incrementalPosition = entity.incrementalPosition,
+            )
+
+        if (waitingRoom.name != newName) {
+            entity.registerRename()
+            waitingRoomManager.setName(newName)
+            ctx.markWaitingRoomManagerAsUpdated()
         }
     }
 
-    /////////////////////////////////
-    /// TEMPORARY VC DATA HELPERS ///
-    /////////////////////////////////
+    private fun TemporaryVCEntity.canBeRenamed(): Boolean {
+        val lastChange = lastWaitingNameChange ?: return true
 
-    private fun TemporaryVCData.canBeRenamed(): Boolean {
-        val currentTime = System.currentTimeMillis()
-
-        if (lastWaitingNameChange == null || currentTime - lastWaitingNameChange!! > 600000)
-            return true
-
-        if (waitingNameChanges < 2)
-            return true
-
-        return false
+        return System.currentTimeMillis() - lastChange > RATE_LIMIT_WINDOW_MS || waitingNameChanges < MAX_NAME_CHANGES
     }
 
-    private fun TemporaryVCData.performRenameOperationsOnTemporaryVCData() {
-        if (canBeRenamed()) {
-            val currentTime = System.currentTimeMillis()
+    private fun TemporaryVCEntity.registerRename() {
+        val now = System.currentTimeMillis()
+        val lastChange = lastWaitingNameChange
 
-            if (lastWaitingNameChange == null || currentTime - lastWaitingNameChange!! > 600000) {
-                lastWaitingNameChange = currentTime
-                waitingNameChanges = 1
-            } else {
-                lastWaitingNameChange = currentTime
-                waitingNameChanges++
-            }
-        }
+        waitingNameChanges = if (lastChange == null || now - lastChange > RATE_LIMIT_WINDOW_MS) 1 else waitingNameChanges + 1
+        lastWaitingNameChange = now
+    }
+
+    private companion object {
+        const val RATE_LIMIT_WINDOW_MS = 600_000L
+        const val MAX_NAME_CHANGES = 2
     }
 }

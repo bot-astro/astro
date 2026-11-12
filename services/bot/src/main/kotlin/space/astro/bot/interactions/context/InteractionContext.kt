@@ -2,71 +2,31 @@ package space.astro.bot.interactions.context
 
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
-import space.astro.bot.interactions.reply.IInteractionReplyHandler
+import space.astro.bot.interactions.InteractionResponder
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.shared.core.models.database.*
+import space.astro.shared.core.lang.L
+import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
+import java.util.Locale
 
 open class InteractionContext(
     val guild: Guild,
     val member: Member,
-    val replyHandler: IInteractionReplyHandler
+    val guildSettings: GuildSettingsEntity?,
+    val responder: InteractionResponder,
 ) {
-    val user = member.user
-    val guildId = guild.id
-    val memberId = member.id
+    val guildId: String = guild.id
+    val memberId: String = member.id
+
+    /** locale of the user that triggered the interaction */
+    val locale: Locale = responder.locale
+
+    fun t(
+        key: String,
+        vararg args: Pair<String, Any?>,
+    ): String = L.t(locale, key, *args)
 }
 
 class VcInteractionContext(
     val vcOperationCTX: VCOperationCTX,
-    guild: Guild,
-    member: Member,
-    replyHandler: IInteractionReplyHandler
-) : InteractionContext(guild, member, replyHandler)
-
-class SettingsInteractionContext(
-    val guildData: GuildData,
-    val userData: UserData,
-    guild: Guild,
-    member: Member,
-    replyHandler: IInteractionReplyHandler
-) : InteractionContext(guild, member, replyHandler)
-
-class GeneratorSettingsInteractionContext(
-    val generatorData: GeneratorData,
-    val guildData: GuildData,
-    guild: Guild,
-    member: Member,
-    replyHandler: IInteractionReplyHandler
-) : InteractionContext(guild, member, replyHandler) {
-    val generatorIndex = guildData.generators.indexOfFirst { it.id == generatorData.id }
-}
-
-class InterfaceSettingsInteractionContext(
-    val interfaceData: InterfaceData,
-    val guildData: GuildData,
-    guild: Guild,
-    member: Member,
-    replyHandler: IInteractionReplyHandler
-) : InteractionContext(guild, member, replyHandler) {
-    val interfaceIndex = guildData.interfaces.indexOfFirst { it.messageID == interfaceData.messageID }
-}
-
-class ConnectionSettingsInteractionContext(
-    val connectionData: ConnectionData,
-    val guildData: GuildData,
-    guild: Guild,
-    member: Member,
-    replyHandler: IInteractionReplyHandler
-) : InteractionContext(guild, member, replyHandler) {
-    val connectionIndex = guildData.connections.indexOfFirst { it.id == connectionData.id && it.roleID == connectionData.roleID }
-}
-
-class TemplateSettingsInteractionContext(
-    val templateData: TemplateData,
-    val guildData: GuildData,
-    guild: Guild,
-    member: Member,
-    replyHandler: IInteractionReplyHandler
-) : InteractionContext(guild, member, replyHandler) {
-    val templateIndex = guildData.templates.indexOfFirst { it.id == templateData.id }
-}
+    base: InteractionContext,
+) : InteractionContext(base.guild, base.member, base.guildSettings, base.responder)

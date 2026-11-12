@@ -1,270 +1,220 @@
 package space.astro.bot.components.managers.vc
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
-import space.astro.bot.core.exceptions.ConfigurationException
-import space.astro.bot.core.exceptions.VcOperationException
+import space.astro.bot.exceptions.ConfigurationException
+import space.astro.bot.exceptions.PremiumConfigurationErrors
+import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.services.ConfigurationErrorService
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
-import space.astro.shared.core.components.managers.VariablesManager
-import space.astro.shared.core.models.database.InitialPosition
-import space.astro.shared.core.models.database.TemporaryVCData
-import space.astro.shared.core.models.database.VCState
+import space.astro.bot.models.discord.vc.VCOperationCTX.VCOperationOrigin
+import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.clients.PremiumManager
+import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.TemporaryVCEntity
+import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
+import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
+import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 
 @Component
 class VCNameManager(
-    private val premiumRequirementDetector: PremiumRequirementDetector,
+    private val temporaryVCRepository: TemporaryVCRepository,
     private val vcPositionManager: VCPositionManager,
-    private val configurationErrorService: ConfigurationErrorService
+    private val premiumManager: PremiumManager,
 ) {
     /**
-     * Change the name of a temporary vc
+     * Renames a temporary vc, the change is applied once [VCOperationCTX.queueUpdatedManagers] is called
+     * and the temporary vc entity gets saved
      *
-     * @param newNameTemplate
-     *
-     * @throws ConfigurationException
-     * @throws VcOperationException
+     * @throws InteractionException if the vc cannot be renamed right now
+     * @throws ConfigurationException if the resulting name is not valid
      */
-    fun performVCRename(
-        vcOperationCTX: VCOperationCTX,
-        newNameTemplate: String
+    suspend fun performVCRename(
+        ctx: VCOperationCTX,
+        newNameTemplate: String,
     ) {
-        vcOperationCTX.apply {
-            if (!temporaryVCData.canBeRenamed()) {
-                throw VcOperationException(VcOperationException.Reason.RENAME_IS_RATE_LIMITED)
-            }
-
-            if (!shouldRenameBasedOnRenameConditions()) {
-                return
-            }
-
-            validatePremiumRequirements(newNameTemplate)
-
-            validateBadwords(newNameTemplate)
-
-            performPositionUpdates(newNameTemplate)
-
-            val newName = VariablesManager.computeVcNameForExisting(
-                template = newNameTemplate,
-                owner = temporaryVCOwner,
-                temporaryVC = temporaryVC,
-                incrementalPosition = temporaryVCData.incrementalPosition
-            )
-
-            performNameUpdates(newName)
-        }
-    }
-
-    /**
-     * Refresh the name of a temporary vc
-     *
-     * @throws ConfigurationException
-     * @throws VcOperationException
-     */
-    fun performVCNameRefresh(vcOperationCTX: VCOperationCTX) {
-        vcOperationCTX.apply {
-            if (!temporaryVCData.canBeRenamed()) {
-                throw VcOperationException(VcOperationException.Reason.RENAME_IS_RATE_LIMITED)
-            }
-
-            if (!shouldRenameBasedOnRenameConditions()) {
-                return
-            }
-
-            val nameTemplate = VariablesManager.getNameTemplateForRefresh(
-                temporaryVCData = temporaryVCData,
-                generatorData = generatorData
-            )
-
-            validatePremiumRequirements(nameTemplate)
-
-            validateBadwords(nameTemplate)
-
-            performPositionUpdates(nameTemplate)
-
-            val newName = VariablesManager.computeVcNameForExisting(
-                template = nameTemplate,
-                owner = temporaryVCOwner,
-                temporaryVC = temporaryVC,
-                incrementalPosition = temporaryVCData.incrementalPosition
-            )
-            performNameUpdates(newName)
-        }
-    }
-    
-    
-    /////////////////////////////////
-    /// TEMPORARY VC DATA HELPERS ///
-    /////////////////////////////////
-    
-    private fun TemporaryVCData.canBeRenamed(): Boolean {
-        val currentTime = System.currentTimeMillis()
-
-        if (lastNameChange == null || (currentTime - lastNameChange!!) > 600000)
-            return true
-
-        if (nameChanges < 2)
-            return true
-
-        return false
-    }
-
-    private fun TemporaryVCData.performRenameOperationsOnTemporaryVCData(
-        renamedByUser: Boolean
-    ) {
-        if (canBeRenamed()) {
-            val currentTime = System.currentTimeMillis()
-
-            if (lastNameChange == null || (currentTime - lastNameChange!!) > 600000) {
-                lastNameChange = currentTime
-                nameChanges = 1
-            } else {
-                lastNameChange = currentTime
-                nameChanges++
-            }
-
-            if (renamedByUser) {
-                this.renamed = true
-            }
-        }
-    }
-
-    //////////////////
-    /// VALIDATORS ///
-    //////////////////
-
-    /**
-     * Checks whether premium variables can be used depending on the guild premium status
-     *
-     * @throws ConfigurationException if premium variables have been detected and the guild is not premium
-     */
-    private fun VCOperationCTX.validatePremiumRequirements(nameTemplate: String) {
-        if (!premiumRequirementDetector.canUseVCNameTemplate(guildData, nameTemplate)) {
-            throw ConfigurationException(configurationErrorService.premiumVariables(
-                guildId = guild.id,
-                encounteredIn = "applying the name $nameTemplate to a temporary VC"
-            ))
-        }
-    }
-
-    /**
-     * Checks whether badwords have been used in this name
-     *
-     * @throws ConfigurationException if premium variables have been detected and the guild is not premium
-     */
-    private fun VCOperationCTX.validateBadwords(nameTemplate: String) {
-        if (generatorData.commandsSettings.badwordsAllowed) {
+        if (!rename(ctx, newNameTemplate)) {
             return
         }
 
-        if (!premiumRequirementDetector.canValidateBadwords(guildData)) {
-            throw ConfigurationException(configurationErrorService.premiumRequiredForBadwordsValidation(guild.id))
-        }
-
-        if (!generatorData.commandsSettings.badwordsAllowed && VariablesManager.Checkers.containsBadwords(nameTemplate)) {
-            throw VcOperationException(VcOperationException.Reason.CANNOT_USE_BADWORDS)
-        }
+        withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guild.id, ctx.temporaryVCEntity) }
     }
 
-    /////////////////////
-    /// OTHER HELPERS ///
-    /////////////////////
+    /**
+     * Refreshes the name of a temporary vc based on its state, following the rename conditions of the generator
+     *
+     * **The temporary vc entity must be saved by the caller**, the change is applied once [VCOperationCTX.queueUpdatedManagers] is called
+     *
+     * @throws InteractionException if the vc cannot be renamed right now
+     * @throws ConfigurationException if the resulting name is not valid
+     */
+    fun performVCNameRefresh(ctx: VCOperationCTX) {
+        val nameTemplate = getNameTemplateForRefresh(ctx)
+
+        rename(ctx, nameTemplate)
+    }
 
     /**
-     * Checks whether the VC name should be renamed based on the generator rename conditions
-     *
-     * @return true if it should be renamed, false otherwise
+     * @return true if the entity has been modified
+     */
+    private fun rename(
+        ctx: VCOperationCTX,
+        nameTemplate: String,
+    ): Boolean {
+        val entity = ctx.temporaryVCEntity
+
+        if (!entity.canBeRenamed()) {
+            throw InteractionException("vc.name.rate_limited")
+        }
+
+        if (!ctx.shouldRenameBasedOnRenameConditions()) {
+            return false
+        }
+
+        if (!premiumManager.canUseVCNameTemplate(ctx.guildSettings, nameTemplate)) {
+            throw PremiumConfigurationErrors.premiumVariables(
+                guildId = ctx.guild.id,
+                encounteredIn = "applying the name $nameTemplate to a temporary VC",
+            )
+        }
+
+        performPositionUpdates(ctx, nameTemplate)
+
+        val newName =
+            VariablesManager.computeVcNameForExisting(
+                template = nameTemplate,
+                locale = ctx.guildSettings.supportedLocale,
+                owner = ctx.temporaryVCOwner,
+                temporaryVC = ctx.temporaryVC,
+                incrementalPosition = entity.incrementalPosition,
+            )
+
+        if (ctx.temporaryVC.name == newName) {
+            return true
+        }
+
+        try {
+            ctx.temporaryVCManager.setName(newName)
+        } catch (e: IllegalArgumentException) {
+            throw ConfigurationException(
+                ConfigurationErrorEntity(
+                    guildId = ctx.guild.id,
+                    code = ConfigurationErrorCode.INVALID_VC_NAME,
+                    args = mapOf("name" to newName),
+                ),
+            )
+        }
+
+        ctx.markTemporaryVCManagerAsUpdated()
+
+        entity.registerRename(renamedByUser = ctx.vcOperationOrigin == VCOperationOrigin.USER_RENAME)
+
+        return true
+    }
+
+    private fun getNameTemplateForRefresh(ctx: VCOperationCTX): String {
+        val settings = ctx.generatorSettings
+
+        return when (ctx.temporaryVCEntity.state) {
+            TemporaryVCState.UNLOCKED, TemporaryVCState.UNHIDDEN -> settings.defaultName
+            TemporaryVCState.LOCKED -> settings.defaultLockedName
+            TemporaryVCState.HIDDEN -> settings.defaultHiddenName
+        } ?: settings.defaultName
+    }
+
+    /**
+     * Checks whether the vc should be renamed based on the rename conditions of the generator
      */
     private fun VCOperationCTX.shouldRenameBasedOnRenameConditions(): Boolean {
-        val renameConditions = generatorData.renameConditions
+        val conditions = generatorSettings.renameConditions
 
-        if (vcOperationOrigin == VCOperationCTX.VCOperationOrigin.USER_RENAME)
+        if (vcOperationOrigin == VCOperationOrigin.USER_RENAME) {
             return true
+        }
 
-        if (!generatorData.renameConditions.renamed && temporaryVCData.renamed)
+        if (!conditions.renamed && temporaryVCEntity.renamed) {
             return false
+        }
 
         return when (vcOperationOrigin) {
-            VCOperationCTX.VCOperationOrigin.ACTIVITY_CHANGE -> renameConditions.activityChange
-            VCOperationCTX.VCOperationOrigin.STATE_CHANGE -> {
-                renameConditions.stateChange && when (temporaryVCData.state) {
-                    VCState.LOCKED -> generatorData.defaultLockedName != null
-                    VCState.HIDDEN -> generatorData.defaultHiddenName != null
-                    else -> true
-                }
-            }
-            VCOperationCTX.VCOperationOrigin.OWNER_CHANGE -> renameConditions.ownerChange
+            VCOperationOrigin.ACTIVITY_CHANGE -> conditions.activityChange
+            VCOperationOrigin.OWNER_CHANGE -> conditions.ownerChange
+            VCOperationOrigin.STATE_CHANGE ->
+                conditions.stateChange &&
+                    when (temporaryVCEntity.state) {
+                        TemporaryVCState.LOCKED -> generatorSettings.defaultLockedName != null
+                        TemporaryVCState.HIDDEN -> generatorSettings.defaultHiddenName != null
+                        else -> true
+                    }
+
             else -> true
         }
     }
 
     /**
-     * Updates the incremental, raw and waiting room raw position related to this temporary vc
-     *
-     * @param nameTemplate the name template of the temporary vc to check whether positional data is required
+     * Updates the incremental position of the temporary vc and the raw positions of the vc and its waiting room,
+     * only if the [nameTemplate] needs positional data
      */
-    private fun VCOperationCTX.performPositionUpdates(
-        nameTemplate: String
+    private fun performPositionUpdates(
+        ctx: VCOperationCTX,
+        nameTemplate: String,
     ) {
-        val requiresPositionalData =
-            VariablesManager.doesTemplateRequireVCPositionalData(nameTemplate)
-
-        if (requiresPositionalData) {
-            val incrementalPosition = vcPositionManager.getIncrementalPosition(
-                generatorId = generatorData.id,
-                excludedVCId = null,
-                temporaryVCs = temporaryVCsData
-            )
-            temporaryVCData.incrementalPosition = incrementalPosition
-
-            vcPositionManager.getRawPosition(
-                incrementalPosition = incrementalPosition,
-                generator = generatorData,
-                generatorVC = generator
-            )
-                ?.also {  temporaryVCRawPosition ->
-                    temporaryVCManager.setPosition(temporaryVCRawPosition)
-                    markTemporaryVCManagerAsUpdated()
-
-                    if (waitingRoomManager != null) {
-                        when (generatorData.waitingPosition) {
-                            InitialPosition.AFTER -> temporaryVCRawPosition + 1
-                            InitialPosition.BEFORE -> temporaryVCRawPosition - 1
-                            InitialPosition.BOTTOM -> null
-                        }?.also {  waitingRoomRawPosition ->
-                            waitingRoomManager.setPosition(waitingRoomRawPosition)
-                            markWaitingRoomManagerAsUpdated()
-                        }
-                    }
-                }
-        }
-    }
-
-    /**
-     * @throws ConfigurationException
-     */
-    private fun VCOperationCTX.performNameUpdates(
-        name: String
-    ) {
-        if (temporaryVC.name == name) {
+        if (!VariablesManager.doesTemplateRequireVCPositionalData(nameTemplate)) {
             return
         }
 
-        temporaryVCData.performRenameOperationsOnTemporaryVCData(
-            renamedByUser = vcOperationOrigin == VCOperationCTX.VCOperationOrigin.USER_RENAME
-        )
-
-        try {
-            temporaryVCManager.setName(name)
-        } catch (e: IllegalArgumentException) {
-            throw ConfigurationException(
-                configurationErrorService.invalidChannelName(
-                    guildId = guild.id,
-                    encounteredIn = "temporary vc name: $name"
-                )
+        val incrementalPosition =
+            vcPositionManager.getIncrementalPosition(
+                generatorId = ctx.generatorSettings.id,
+                excludedVCId = null,
+                temporaryVCs = ctx.temporaryVCEntities,
             )
-        }
+        ctx.temporaryVCEntity.incrementalPosition = incrementalPosition
 
-        markTemporaryVCManagerAsUpdated()
+        val rawPosition =
+            vcPositionManager.getRawPosition(
+                incrementalPosition = incrementalPosition,
+                generator = ctx.generatorSettings,
+                generatorVC = ctx.generator,
+            ) ?: return
+
+        ctx.temporaryVCManager.setPosition(rawPosition)
+        ctx.markTemporaryVCManagerAsUpdated()
+
+        val waitingRoomManager = ctx.waitingRoomManager ?: return
+
+        val waitingRoomRawPosition =
+            when (ctx.generatorSettings.waitingPosition) {
+                GeneratorSettings.InitialPosition.AFTER -> rawPosition + VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
+                GeneratorSettings.InitialPosition.BEFORE -> rawPosition - VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
+                GeneratorSettings.InitialPosition.BOTTOM -> null
+            } ?: return
+
+        waitingRoomManager.setPosition(waitingRoomRawPosition)
+        ctx.markWaitingRoomManagerAsUpdated()
+    }
+
+    private fun TemporaryVCEntity.canBeRenamed(): Boolean {
+        val lastChange = lastNameChange ?: return true
+
+        return System.currentTimeMillis() - lastChange > RATE_LIMIT_WINDOW_MS || nameChanges < MAX_NAME_CHANGES
+    }
+
+    private fun TemporaryVCEntity.registerRename(renamedByUser: Boolean) {
+        val now = System.currentTimeMillis()
+        val lastChange = lastNameChange
+
+        nameChanges = if (lastChange == null || now - lastChange > RATE_LIMIT_WINDOW_MS) 1 else nameChanges + 1
+        lastNameChange = now
+
+        if (renamedByUser) {
+            renamed = true
+        }
+    }
+
+    private companion object {
+        const val RATE_LIMIT_WINDOW_MS = 600_000L
+        const val MAX_NAME_CHANGES = 2
     }
 }

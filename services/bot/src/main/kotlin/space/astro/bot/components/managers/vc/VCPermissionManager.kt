@@ -1,314 +1,239 @@
 package space.astro.bot.components.managers.vc
 
 import dev.minn.jda.ktx.coroutines.await
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.IMentionable
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
-import space.astro.bot.core.exceptions.ConfigurationException
-import space.astro.bot.core.exceptions.VcOperationException
-import space.astro.bot.core.extentions.modifyMemberPermissionOverride
-import space.astro.bot.core.extentions.modifyPermissionOverride
+import space.astro.bot.exceptions.ConfigurationException
+import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.services.ConfigurationErrorService
-import space.astro.shared.core.models.database.PermissionsInherited
-import space.astro.shared.core.models.database.VCState
+import space.astro.bot.utils.extensions.modifyMemberPermissionOverride
+import space.astro.bot.utils.extensions.modifyPermissionOverride
+import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
+import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCState
+import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
+import space.astro.shared.core.repositories.redis.TemporaryVCRepository
+import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * All the methods only modify the managers of the [VCOperationCTX] and mark them as updated,
+ * the changes are applied once [VCOperationCTX.queueUpdatedManagers] is called
+ */
 @Component
 class VCPermissionManager(
     private val vcNameManager: VCNameManager,
-    private val configurationErrorService: ConfigurationErrorService
+    private val temporaryVCRepository: TemporaryVCRepository,
 ) {
     /**
-     * Remember to save the new temporaryVCData, its state property gets changed when calling this function
+     * Changes the state of the temporary vc and saves the entity
+     *
      * @throws InsufficientPermissionException
-     * @throws ConfigurationException
+     * @throws ConfigurationException if the target role of the generator does not exist anymore
      */
-    fun changeState(
-        vcOperationCTX: VCOperationCTX,
-        newState: VCState
+    suspend fun changeState(
+        ctx: VCOperationCTX,
+        newState: TemporaryVCState,
     ) {
-        if (newState == vcOperationCTX.temporaryVCData.state) {
+        val entity = ctx.temporaryVCEntity
+
+        if (newState == entity.state) {
             return
         }
 
-        val targetRole = if (vcOperationCTX.generatorData.permissionsTargetRole != null) {
-            vcOperationCTX.guild.getRoleById(vcOperationCTX.generatorData.permissionsTargetRole!!)
-                ?: throw ConfigurationException(configurationErrorService.missingGeneratorTargetRole(vcOperationCTX.guild.id, vcOperationCTX.generator.name))
-        } else {
-            vcOperationCTX.guild.publicRole
-        }
-
-        vcOperationCTX.temporaryVCData.state = newState
-
-        if (newState.permissionDenied != null) {
-            vcOperationCTX.temporaryVCManager.modifyPermissionOverride(
-                targetRole,
-                0,
-                newState.permissionDenied!!.rawValue
-            )
-        }
-
-        if (newState.permissionReset != null) {
-            // Get the original permissions inherited for the temporary vc
-            val originalPermissionOverrides = when (vcOperationCTX.generatorData.permissionsInherited) {
-                PermissionsInherited.NONE -> null
-                PermissionsInherited.GENERATOR -> vcOperationCTX.generator.permissionOverrides
-                PermissionsInherited.CATEGORY -> vcOperationCTX.generator.parentCategory?.permissionOverrides
-            }
-            val originalPermissionOverride = originalPermissionOverrides?.firstOrNull { it.id == targetRole.id }
-
-            // Find whether the permission to reset was originally allowed or denied
-            val isOriginalPermissionAllowed = originalPermissionOverride?.allowed?.contains(newState.permissionReset) ?: false
-            val isOriginalPermissionDenied = if (isOriginalPermissionAllowed) false else originalPermissionOverride?.denied?.contains(newState.permissionReset) ?: false
-
-            // Get the permission override for the target role
-            val permissionOverrideInheritedForTargetRole = vcOperationCTX.temporaryVC.permissionOverrides.firstOrNull { it.id == targetRole.id }
-
-            if (permissionOverrideInheritedForTargetRole != null) {
-                // If the original was allowed, allow it for the target role
-                // If it was denied, deny it
-                // If it was neither, set it to neutral
-                if (isOriginalPermissionAllowed) {
-                    vcOperationCTX.temporaryVCManager.modifyPermissionOverride(targetRole, newState.permissionReset?.rawValue ?: 0L, 0L)
-                } else if (isOriginalPermissionDenied) {
-                    vcOperationCTX.temporaryVCManager.modifyPermissionOverride(targetRole, 0L, newState.permissionReset?.rawValue ?: 0L)
-                } else {
-                    val allowed = permissionOverrideInheritedForTargetRole.allowed.apply { remove(newState.permissionReset) }
-                    val denied = permissionOverrideInheritedForTargetRole.denied.apply { remove(newState.permissionReset) }
-
-                    vcOperationCTX.temporaryVCManager.putPermissionOverride(
-                        targetRole,
-                        allowed,
-                        denied
+        val targetRoleId = ctx.generatorSettings.permissionsTargetRole
+        val targetRole =
+            if (targetRoleId == null) {
+                ctx.guild.publicRole
+            } else {
+                ctx.guild.getRoleById(targetRoleId)
+                    ?: throw ConfigurationException(
+                        ConfigurationErrorEntity(
+                            guildId = ctx.guild.id,
+                            code = ConfigurationErrorCode.GENERATOR_TARGET_ROLE_MISSING,
+                            args = mapOf("generator" to ctx.generator.name),
+                        ),
                     )
-                }
             }
+
+        val statePermissions = GeneratorSettings.VCState.valueOf(newState.name)
+        entity.state = newState
+
+        statePermissions.permissionDenied?.let { denied ->
+            ctx.temporaryVCManager.modifyPermissionOverride(targetRole, 0L, denied.rawValue)
         }
 
-        vcOperationCTX.markTemporaryVCManagerAsUpdated()
+        statePermissions.permissionReset?.let { reset ->
+            resetPermission(ctx, targetRole, reset)
+        }
+
+        ctx.markTemporaryVCManagerAsUpdated()
 
         try {
-            vcNameManager.performVCNameRefresh(vcOperationCTX)
-        } catch (_: VcOperationException) {}
+            vcNameManager.performVCNameRefresh(ctx)
+        } catch (_: InteractionException) {
+            // rename rate limited, keep the current name
+        }
+
+        withContext(Dispatchers.IO) { temporaryVCRepository.save(ctx.guild.id, entity) }
     }
 
     /**
-     * Gives all members with a specific id and [roles] [Permission.VIEW_CHANNEL] and [Permission.VOICE_CONNECT]
+     * Gives the members with the [memberIds] and the [roles] [Permission.VIEW_CHANNEL] and [Permission.VOICE_CONNECT]
      */
     fun permit(
-        vcOperationCTX: VCOperationCTX,
+        ctx: VCOperationCTX,
         memberIds: List<Long>,
-        roles: List<Role>
+        roles: List<Role>,
     ) {
-        memberIds.forEach { memberId ->
-            vcOperationCTX.temporaryVCManager.modifyMemberPermissionOverride(
-                memberId,
-                Permission.getRaw(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT),
-                0
-            )
-        }
+        val permitted = Permission.getRaw(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT)
 
-        roles.forEach { entity ->
-            vcOperationCTX.temporaryVCManager.modifyPermissionOverride(
-                entity,
-                Permission.getRaw(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT),
-                0
-            )
-        }
+        memberIds.forEach { ctx.temporaryVCManager.modifyMemberPermissionOverride(it, permitted, 0L) }
+        roles.forEach { ctx.temporaryVCManager.modifyPermissionOverride(it, permitted, 0L) }
 
-        vcOperationCTX.temporaryVCManager.queue()
+        ctx.markTemporaryVCManagerAsUpdated()
     }
 
     /**
-     * Kicks a member from a VC and denies [Permission.VOICE_CONNECT]
+     * Gives the [members] [Permission.VIEW_CHANNEL] and [Permission.VOICE_CONNECT]
+     */
+    fun permitMembers(
+        ctx: VCOperationCTX,
+        members: List<Member>,
+    ) {
+        val permitted = Permission.getRaw(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT)
+
+        members.forEach { ctx.temporaryVCManager.modifyPermissionOverride(it, permitted, 0L) }
+
+        ctx.markTemporaryVCManagerAsUpdated()
+    }
+
+    /**
+     * Kicks a member from the vc (if present) and denies [Permission.VOICE_CONNECT]
      *
-     * @throws VcOperationException
+     * @throws InteractionException if the member has the immune role
      */
     suspend fun kickAndBanMember(
-        vcOperationCTX: VCOperationCTX,
-        member: Member
+        ctx: VCOperationCTX,
+        member: Member,
     ) {
-        val immuneRoleId = vcOperationCTX.generatorData.permissionsImmuneRole
-
-        if (immuneRoleId != null && member.roles.any { it.id == immuneRoleId }) {
-            throw VcOperationException(VcOperationException.Reason.CANNOT_BAN_IMMUNE_ROLE)
+        if (isImmune(ctx, member)) {
+            throw InteractionException("vc.permissions.member_immune", "user" to member.asMention)
         }
 
-        if (member.voiceState!!.channel?.id == vcOperationCTX.temporaryVC.id) {
-            vcOperationCTX.guild.kickVoiceMember(member).await()
-            delay(450)
+        if (member.voiceState?.channel?.id == ctx.temporaryVC.id) {
+            ctx.guild.kickVoiceMember(member).await()
+            delay(450.milliseconds)
         }
 
-        vcOperationCTX.temporaryVC.manager.putPermissionOverride(
-            member,
-            0,
-            Permission.VOICE_CONNECT.rawValue
-        ).queue()
-    }
-
-    /**
-     * Kicks multiple members from a VC and denies [Permission.VOICE_CONNECT]
-     *
-     * @return the list of banned [Member]
-     */
-    suspend fun kickAndBanMultipleMembers(
-        vcOperationCTX: VCOperationCTX,
-        members: List<Member>
-    ): List<Member> {
-        val membersToKick = mutableListOf<Member>()
-        val banned = mutableListOf<Member>()
-        val immuneRoleId = vcOperationCTX.generatorData.permissionsImmuneRole
-
-        members.forEach { member ->
-            if (member.roles.none { it.id == immuneRoleId }) {
-                banned.add(member)
-
-                vcOperationCTX.temporaryVC.manager.putPermissionOverride(
-                    member,
-                    0,
-                    Permission.VOICE_CONNECT.rawValue
-                )
-            }
-
-            if (member.voiceState!!.channel?.id == vcOperationCTX.temporaryVC.id) {
-                membersToKick.add(member)
-            }
-        }
-
-        // Those delays are to prevent spam and because when a user exists a temp vc its permissions get removed
-        // But we also need to explicitly deny some other perms after
-        membersToKick.forEach {
-            vcOperationCTX.guild.kickVoiceMember(it).await()
-            delay(250)
-        }
-        delay(200)
-
-        vcOperationCTX.temporaryVC.manager.queue()
-
-        return banned
+        ctx.temporaryVCManager.modifyPermissionOverride(member, 0L, Permission.VOICE_CONNECT.rawValue)
+        ctx.markTemporaryVCManagerAsUpdated()
     }
 
     /**
      * Denies [Permission.VOICE_CONNECT] to the role
      *
-     * @throws VcOperationException
+     * @throws InteractionException if the role is the immune role
      */
     fun banRole(
-        vcOperationCTX: VCOperationCTX,
-        role: Role
+        ctx: VCOperationCTX,
+        role: Role,
     ) {
-        val immuneRoleId = vcOperationCTX.generatorData.permissionsImmuneRole
-
-        if (immuneRoleId == role.id) {
-            throw VcOperationException(VcOperationException.Reason.CANNOT_BAN_IMMUNE_ROLE)
+        if (ctx.generatorSettings.permissionsImmuneRole == role.id) {
+            throw InteractionException("vc.permissions.role_immune", "role" to role.asMention)
         }
 
-        vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
-            role,
-            0,
-            Permission.VOICE_CONNECT.rawValue
-        ).queue()
+        ctx.temporaryVCManager.modifyPermissionOverride(role, 0L, Permission.VOICE_CONNECT.rawValue)
+        ctx.markTemporaryVCManagerAsUpdated()
     }
 
     /**
-     * Denies [Permission.VOICE_CONNECT] to multiple roles
+     * Kicks the [members] from the vc and denies [Permission.VOICE_CONNECT] to [members] and [roles],
+     * skipping the ones that are immune
      *
-     * @return the list of banned [Role]
+     * @return the effectively banned members and roles
      */
-    fun banMultipleRoles(
-        vcOperationCTX: VCOperationCTX,
-        roles: List<Role>
-    ): List<Role> {
-        val banned = mutableListOf<Role>()
-
-        val immuneRoleId = vcOperationCTX.generatorData.permissionsImmuneRole
-
-        roles.forEach { role ->
-            if (immuneRoleId != role.id) {
-                banned.add(role)
-                vcOperationCTX.temporaryVC.manager.modifyPermissionOverride(
-                    role,
-                    0,
-                    Permission.VOICE_CONNECT.rawValue
-                )
-            }
-        }
-
-        vcOperationCTX.temporaryVC.manager.queue()
-
-        return banned
-    }
-
-    /**
-     * Kicks multiple member from a VC and denies [Permission.VOICE_CONNECT] to the members and roles
-     *
-     * @return the list of effectively banned members and roles as [IMentionable]
-     */
-    suspend fun kickAndBanMultipleMembersAndRoles(
-        vcOperationCTX: VCOperationCTX,
+    suspend fun kickAndBanMembersAndRoles(
+        ctx: VCOperationCTX,
         members: List<Member>,
-        roles: List<Role>
+        roles: List<Role>,
     ): List<IMentionable> {
         val membersToKick = mutableListOf<Member>()
         val banned = mutableListOf<IMentionable>()
-        val immuneRoleId = vcOperationCTX.generatorData.permissionsImmuneRole
+        val immuneRoleId = ctx.generatorSettings.permissionsImmuneRole
 
-        members.forEach { member ->
-            if (member.roles.none { it.id == immuneRoleId }) {
-                banned.add(member)
+        members.filterNot { isImmune(ctx, it) }.forEach { member ->
+            banned.add(member)
+            ctx.temporaryVCManager.modifyPermissionOverride(member, 0L, Permission.VOICE_CONNECT.rawValue)
 
-                vcOperationCTX.temporaryVCManager.putPermissionOverride(
-                    member,
-                    0,
-                    Permission.VOICE_CONNECT.rawValue
-                )
-
-                if (member.voiceState!!.channel?.id == vcOperationCTX.temporaryVC.id) {
-                    membersToKick.add(member)
-                }
+            if (member.voiceState?.channel?.id == ctx.temporaryVC.id) {
+                membersToKick.add(member)
             }
         }
 
-        roles.forEach { role ->
-            if (immuneRoleId != role.id) {
-                banned.add(role)
-                vcOperationCTX.temporaryVCManager.modifyPermissionOverride(
-                    role,
-                    0,
-                    Permission.VOICE_CONNECT.rawValue
-                )
-            }
+        roles.filter { it.id != immuneRoleId }.forEach { role ->
+            banned.add(role)
+            ctx.temporaryVCManager.modifyPermissionOverride(role, 0L, Permission.VOICE_CONNECT.rawValue)
         }
 
-        // Those delays are to prevent spam and because when a user exists a temp vc its permissions get removed
-        // But we also need to explicitly deny some other perms after
+        // Those delays are to prevent spam and because when a user exits a temp vc its permissions get removed,
+        // but we also need to explicitly deny some other perms after
         membersToKick.forEach {
-            vcOperationCTX.guild.kickVoiceMember(it).await()
+            ctx.guild.kickVoiceMember(it).await()
             delay(250)
         }
         delay(200)
 
-        vcOperationCTX.temporaryVCManager.queue()
+        ctx.markTemporaryVCManagerAsUpdated()
 
         return banned
     }
 
-    private fun VCOperationCTX.calculateInheritedPermissions(): List<PermissionOverride> {
-        return when (generatorData.permissionsInherited) {
-            PermissionsInherited.NONE -> {
-                emptyList()
+    private fun isImmune(
+        ctx: VCOperationCTX,
+        member: Member,
+    ): Boolean {
+        val immuneRoleId = ctx.generatorSettings.permissionsImmuneRole ?: return false
+
+        return member.roles.any { it.id == immuneRoleId }
+    }
+
+    /**
+     * Restores [permission] for [targetRole] to what the generator originally had (allowed, denied or neutral)
+     */
+    private fun resetPermission(
+        ctx: VCOperationCTX,
+        targetRole: Role,
+        permission: Permission,
+    ) {
+        val originalOverrides =
+            when (ctx.generatorSettings.permissionsInherited) {
+                GeneratorSettings.PermissionsInherited.NONE -> null
+                GeneratorSettings.PermissionsInherited.GENERATOR -> ctx.generator.permissionOverrides
+                GeneratorSettings.PermissionsInherited.CATEGORY -> ctx.generator.parentCategory?.permissionOverrides
             }
-            PermissionsInherited.GENERATOR -> {
-                generator.permissionOverrides
-            }
-            PermissionsInherited.CATEGORY -> {
-                temporaryVC.parentCategory?.permissionOverrides ?: emptyList()
-            }
+        val originalOverride = originalOverrides?.firstOrNull { it.id == targetRole.id }
+
+        val wasAllowed = originalOverride?.allowed?.contains(permission) ?: false
+        val wasDenied = !wasAllowed && (originalOverride?.denied?.contains(permission) ?: false)
+
+        val currentOverride = ctx.temporaryVC.permissionOverrides.firstOrNull { it.id == targetRole.id } ?: return
+
+        when {
+            wasAllowed -> ctx.temporaryVCManager.modifyPermissionOverride(targetRole, permission.rawValue, 0L)
+            wasDenied -> ctx.temporaryVCManager.modifyPermissionOverride(targetRole, 0L, permission.rawValue)
+            else ->
+                ctx.temporaryVCManager.putPermissionOverride(
+                    targetRole,
+                    currentOverride.allowed.apply { remove(permission) },
+                    currentOverride.denied.apply { remove(permission) },
+                )
         }
     }
 }

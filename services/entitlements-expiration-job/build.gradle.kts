@@ -1,46 +1,14 @@
+project.version = "3.0.0"
+
 plugins {
-    id("com.google.cloud.tools.jib")
+    id("service-conventions")
 }
 
 dependencies {
-    implementation(libs.bundles.base)
-    implementation(libs.bundles.coroutines)
-    implementation(libs.bundles.web)
-    implementation(libs.jda)
     implementation(project(":shared:core"))
-}
 
-jib {
-    from {
-        image = "amazoncorretto:25-al2023-headless"
-    }
-
-    to {
-        image = "ghcr.io/${project.property("ghcrOrg")}/$name"
-        tags = setOf(System.getenv("SEMAPHORE_GIT_SHA"), "latest")
-        auth {
-            username = System.getenv("GITHUB_ACTOR")
-            password = System.getenv("GITHUB_TOKEN")
-        }
-    }
-
-    container {
-        jvmFlags = listOf(
-            "-XX:+PrintCommandLineFlags",
-            "-XshowSettings:vm",
-//            "-XX:+PrintFlagsFinal",
-//            "-Xlog:os+container=trace"
-        )
-    }
-}
-
-sentry {
-    // Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
-    // This enables source context, allowing you to see your source
-    // code as part of your stack traces in Sentry.
-    includeSourceContext = true
-
-    org = "bot-astro"
-    projectName = "entitlements-expiration-job"
-    authToken = System.getenv("SENTRY_AUTH_TOKEN")
+    implementation(libs.bundles.service.core)
+    implementation(libs.bundles.logging)
+    implementation(libs.bundles.db)
+    implementation(libs.bundles.cache)
 }

@@ -2,42 +2,40 @@ package space.astro.bot.components.managers.vc
 
 import net.dv8tion.jda.api.Region
 import org.springframework.stereotype.Component
-import space.astro.bot.core.exceptions.ConfigurationException
-import space.astro.bot.core.exceptions.VcOperationException
+import space.astro.bot.exceptions.ConfigurationException
+import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.shared.core.models.database.TemplateData
+import space.astro.shared.core.models.database.guildSettings.TemplateData
 
 @Component
 class VCTemplateManager(
-    private val vcNameManager: VCNameManager
+    private val vcNameManager: VCNameManager,
 ) {
     /**
-     * Applies a [template]
+     * Applies a [template], the changes are applied once [VCOperationCTX.queueUpdatedManagers] is called
      *
      * @throws ConfigurationException
-     * @throws VcOperationException
+     * @throws InteractionException
      */
-    fun applyTemplate(
-        vcOperationCTX: VCOperationCTX,
-        template: TemplateData
+    suspend fun applyTemplate(
+        ctx: VCOperationCTX,
+        template: TemplateData,
     ) {
-        if (template.vcName != null) {
-            vcNameManager.performVCRename(vcOperationCTX, template.vcName!!)
+        template.vcName?.let { vcNameManager.performVCRename(ctx, it) }
+
+        template.vcLimit?.let {
+            ctx.temporaryVCManager.setUserLimit(it)
+            ctx.markTemporaryVCManagerAsUpdated()
         }
 
-        if (template.vcLimit != null) {
-            vcOperationCTX.temporaryVCManager.setUserLimit(template.vcLimit!!)
-            vcOperationCTX.markTemporaryVCManagerAsUpdated()
+        template.vcBitrate?.let {
+            ctx.temporaryVCManager.setBitrate(it)
+            ctx.markTemporaryVCManagerAsUpdated()
         }
 
-        if (template.vcBitrate != null) {
-            vcOperationCTX.temporaryVCManager.setBitrate(template.vcBitrate!!)
-            vcOperationCTX.markTemporaryVCManagerAsUpdated()
-        }
-
-        if (template.vcRegion != null) {
-            vcOperationCTX.temporaryVCManager.setRegion(Region.fromKey(template.vcRegion))
-            vcOperationCTX.markTemporaryVCManagerAsUpdated()
+        template.vcRegion?.let {
+            ctx.temporaryVCManager.setRegion(Region.fromKey(it))
+            ctx.markTemporaryVCManagerAsUpdated()
         }
     }
 }

@@ -5,44 +5,35 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager
-import space.astro.shared.core.models.database.GeneratorData
-import space.astro.shared.core.models.database.GuildData
-import space.astro.shared.core.models.database.TemporaryVCData
+import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.lang.L
+import space.astro.shared.core.models.database.TemporaryVCEntity
+import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
+import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 
 /**
  * Context for most temporary vc related operations
  *
  * This includes a method to queue the managers: [queueUpdatedManagers]
  *
- * **You should also save the new [temporaryVCData] once finished with the operations on the temporary vc**
+ * **You should also save the new [temporaryVCEntity] once finished with the operations on the temporary vc**
  *
- * @param guildData
- * @param generator The generator voice channel entity
- * @param generatorData
- * @param temporaryVCOwner
- * @param temporaryVC
- * @param temporaryVCManager
- * @param temporaryVCData
- * @param temporaryVCsData all temporary vcs related to the same guild of this temporary vc
- * @param privateChat
- * @param privateChatManager
- * @param waitingRoom
- * @param waitingRoomManager
+ * @param temporaryVCEntities all temporary vcs related to the same guild of this temporary vc
  */
 data class VCOperationCTX(
-    val guildData: GuildData,
+    val guildSettings: GuildSettingsEntity,
     val generator: VoiceChannel,
-    val generatorData: GeneratorData,
+    val generatorSettings: GeneratorSettings,
     var temporaryVCOwner: Member?,
     val temporaryVC: VoiceChannel,
     val temporaryVCManager: VoiceChannelManager,
-    val temporaryVCData: TemporaryVCData,
-    val temporaryVCsData: List<TemporaryVCData>,
+    val temporaryVCEntity: TemporaryVCEntity,
+    val temporaryVCEntities: List<TemporaryVCEntity>,
     val privateChat: TextChannel?,
     val privateChatManager: TextChannelManager?,
     val waitingRoom: VoiceChannel?,
     val waitingRoomManager: VoiceChannelManager?,
-    val vcOperationOrigin: VCOperationOrigin
+    val vcOperationOrigin: VCOperationOrigin,
 ) {
     val guild = generator.guild
 
@@ -74,7 +65,6 @@ data class VCOperationCTX(
         waitingRoomManagerUpdated = true
     }
 
-
     /**
      * Queues [temporaryVCManager], [privateChatManager] and [waitingRoomManager]
      * but checks for each one if it has been updated
@@ -86,53 +76,45 @@ data class VCOperationCTX(
         success: ((managerType: ManagerType) -> Unit)? = null,
         failure: ((managerType: ManagerType, throwable: Throwable) -> Unit)? = null,
     ) {
+        val reason = L.t(guildSettings.supportedLocale, vcOperationOrigin.reasonKey)
+
         if (temporaryVCManagerUpdated) {
-            temporaryVCManager.queue(
-                {
-                    success?.invoke(ManagerType.TEMPORARY_VC)
-                },
-                { throwable ->
-                    failure?.invoke(ManagerType.TEMPORARY_VC, throwable)
-                }
+            temporaryVCManager.reason(reason).queue(
+                { success?.invoke(ManagerType.TEMPORARY_VC) },
+                { throwable -> failure?.invoke(ManagerType.TEMPORARY_VC, throwable) },
             )
         }
 
         if (privateChatManagerUpdated) {
-            privateChatManager?.queue(
-                {
-                    success?.invoke(ManagerType.PRIVATE_CHAT)
-                },
-                { throwable ->
-                    failure?.invoke(ManagerType.PRIVATE_CHAT, throwable)
-                }
+            privateChatManager?.reason(reason)?.queue(
+                { success?.invoke(ManagerType.PRIVATE_CHAT) },
+                { throwable -> failure?.invoke(ManagerType.PRIVATE_CHAT, throwable) },
             )
         }
 
         if (waitingRoomManagerUpdated) {
-            waitingRoomManager?.queue(
-                {
-                    success?.invoke(ManagerType.WAITING_ROOM)
-                },
-                { throwable ->
-                    failure?.invoke(ManagerType.WAITING_ROOM, throwable)
-                }
+            waitingRoomManager?.reason(reason)?.queue(
+                { success?.invoke(ManagerType.WAITING_ROOM) },
+                { throwable -> failure?.invoke(ManagerType.WAITING_ROOM, throwable) },
             )
         }
     }
 
     enum class ManagerType(
-        val readableName: String
+        val readableName: String,
     ) {
         TEMPORARY_VC("temporary vc"),
         PRIVATE_CHAT("private chat"),
-        WAITING_ROOM("waiting room")
+        WAITING_ROOM("waiting room"),
     }
 
-    enum class VCOperationOrigin {
-        USER_RENAME,
-        STATE_CHANGE,
-        OWNER_CHANGE,
-        ACTIVITY_CHANGE,
-        UNKNOWN
+    enum class VCOperationOrigin(
+        val reasonKey: String,
+    ) {
+        USER_RENAME("reason.vc.update.user_rename"),
+        STATE_CHANGE("reason.vc.update.state_change"),
+        OWNER_CHANGE("reason.vc.update.owner_change"),
+        ACTIVITY_CHANGE("reason.vc.update.activity_change"),
+        UNKNOWN("reason.vc.update.unknown"),
     }
 }

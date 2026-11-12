@@ -1,0 +1,56 @@
+package space.astro.bot.commands.vc.settings
+
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionContextType
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import org.springframework.stereotype.Component
+import space.astro.bot.components.managers.vc.VCNameManager
+import space.astro.bot.interactions.Ack
+import space.astro.bot.interactions.CommandLocalization
+import space.astro.bot.interactions.InteractionSettings
+import space.astro.bot.interactions.context.VcContextResolverFactory
+import space.astro.bot.interactions.context.VcInteractionContext
+import space.astro.bot.interactions.handlers.SlashHandler
+import space.astro.bot.models.discord.vc.VCOperationCTX
+import space.astro.bot.ui.Containers
+import space.astro.bot.ui.Emojis
+
+@Component
+class NameCommand(
+    contextResolverFactory: VcContextResolverFactory,
+    private val vcNameManager: VCNameManager,
+) : SlashHandler<VcInteractionContext> {
+    companion object {
+        private const val NAME_OPTION = "name"
+    }
+
+    override val data =
+        Commands
+            .slash("name", CommandLocalization.description("name"))
+            .setContexts(InteractionContextType.GUILD)
+            .addOption(OptionType.STRING, NAME_OPTION, CommandLocalization.description("name.name"), true, false)
+    override val settings = InteractionSettings(ack = Ack.DEFER_REPLY_EPHEMERAL)
+    override val contextResolver =
+        contextResolverFactory.create(
+            ownershipRequired = true,
+            origin = VCOperationCTX.VCOperationOrigin.USER_RENAME,
+        )
+
+    override suspend fun handle(
+        event: SlashCommandInteractionEvent,
+        ctx: VcInteractionContext,
+    ) {
+        val name = event.getOption(NAME_OPTION)?.asString
+
+        if (name.isNullOrBlank()) {
+            ctx.responder.error("vc.name.invalid")
+            return
+        }
+
+        vcNameManager.performVCRename(ctx.vcOperationCTX, name)
+        ctx.vcOperationCTX.queueUpdatedManagers()
+
+        ctx.responder.reply(Containers.default(ctx.t("vc.name.set", "emoji" to Emojis.name.formatted, "name" to name)))
+    }
+}

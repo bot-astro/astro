@@ -1,19 +1,51 @@
 info:
   app:
-    name: "Entitlement expiration job"
-    description: "Job that deletes expired entitlements."
-    version: "1.0.0"
+    name: "Entitlements expiration job"
+    description: "Job that removes the expired entitlements from the guilds."
 
-##############
-### SHARED ###
-##############
 logging:
   level:
-    root: ${LOG_LEVEL:INFO}
+    root: ${EEJ__LOG_LEVEL}
 
+spring:
+  main:
+    web-application-type: none
+  mongodb:
+    uri: ${MONGODB_URI}
+  data:
+    redis:
+      client-name: entitlements-expiration-job
+      client-type: lettuce
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
+      password: ${REDIS_PASSWORD:}
 
 sentry:
-  dsn: https://10de941a51db08fb8cc81e7cd7ed8c92@o4506708022263808.ingest.sentry.io/4506708028489728
+  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.us.sentry.io/4506708023967744
+  environment: ${EEJ__SENTRY_ENVIRONMENT:local}
+  logs:
+    enabled: true
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
   traces-sample-rate: 0.05
+  data-collection:
+    user-info: false
+#####################
+# CUSTOM PROPERTIES #
+#####################
+
+discord:
+  api:
+    base-url: ${DISCORD_API_BASE_URL}
+    enabled: true
+  application:
+    id: ${EEJ__DISCORD_APPLICATION_ID}
+    token: ${EEJ__DISCORD_APPLICATION_TOKEN}
+
+support:
+  bot:
+    endpoint:
+      enabled: true
+      base-url: ${SUPPORT_BOT_ENDPOINT_BASE_URL}
+      auth: ${SUPPORT_BOT_ENDPOINT_AUTH}

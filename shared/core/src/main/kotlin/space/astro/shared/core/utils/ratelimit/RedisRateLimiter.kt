@@ -1,0 +1,86 @@
+package space.astro.shared.core.utils.ratelimit
+
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.lettuce.core.RedisNoScriptException
+import io.lettuce.core.ScriptOutputType
+import io.lettuce.core.api.sync.RedisCommands
+import space.astro.shared.core.utils.redis.RedisKey
+import java.time.Duration
+
+private val log = KotlinLogging.logger { }
+
+/**
+ * Rate limiter based on Redis
+ *
+ * @param commands Redis commands
+ * @param namespace Redis rate limiting namespace
+ * @param defaultMaxPerInterval Default max requests per interval
+ * @param intervalDuration Interval duration
+ */
+class RedisRateLimiter(
+    private val commands: RedisCommands<String, String>,
+    private val namespace: String,
+    private val defaultMaxPerInterval: Int,
+    private val intervalDuration: Duration,
+) : RateLimiter {
+    private var scriptHash: String
+
+    companion object {
+        private const val SCRIPT =
+            "" +
+                "local count = redis.call(\"incr\",KEYS[1])\n" +
+                "local ttl = redis.call(\"pttl\",KEYS[1])\n" +
+                "if ttl == -1 then\n" +
+                "    redis.call(\"pexpire\",KEYS[1],ARGV[1])\n" +
+                "    return { count, tonumber(ARGV[1]) }\n" +
+                "elseif ttl == -2 then\n" +
+                "    return { count, 0 }\n" +
+                "else" +
+                "    return { count, ttl }\n" +
+                "end\n" +
+                ";"
+    }
+
+    init {
+        scriptHash = commands.scriptLoad(SCRIPT)
+    }
+
+    override fun tryAcquire(id: String): RateLimiterAcquireResult = tryAcquire(id, defaultMaxPerInterval)
+
+    override fun tryAcquire(
+        id: String,
+        maxPerInterval: Int,
+    ): RateLimiterAcquireResult {
+        val key = RedisKey.RATE_LIMIT(namespace, id)
+
+        val keys = arrayOf(key)
+        val args = arrayOf(intervalDuration.toMillis().toString())
+
+        return try {
+            val data = commands.evalsha<ArrayList<Long>>(scriptHash, ScriptOutputType.MULTI, keys, *args)
+            val incr = data[0]
+
+            RateLimiterAcquireResult(
+                acquired = incr <= maxPerInterval,
+                count = incr,
+                ttl = data[1],
+            )
+        } catch (e: RedisNoScriptException) {
+            log.error(e) { "Redis rate limiter script not found, reloading it" }
+            // NOTE: recreate script if redis fails to find old one
+            scriptHash = commands.scriptLoad(SCRIPT)
+
+            // NOTE: try to prevent outage by releasing rate limit temporarily
+            RateLimiterAcquireResult(
+                acquired = true,
+            )
+        } catch (e: Exception) {
+            log.error(e) { "Redis rate limiter failed" }
+
+            // NOTE: try to prevent outage by releasing rate limit temporarily
+            RateLimiterAcquireResult(
+                acquired = true,
+            )
+        }
+    }
+}

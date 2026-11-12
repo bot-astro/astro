@@ -1,0 +1,278 @@
+package space.astro.bot.api.controllers
+
+import dev.minn.jda.ktx.coroutines.await
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import net.dv8tion.jda.api.entities.channel.attribute.ICategorizableChannel
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.requests.ErrorResponse
+import net.dv8tion.jda.api.sharding.ShardManager
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+import space.astro.bot.utils.extensions.iconFromUrl
+import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.exceptions.ABadRequestException
+import space.astro.shared.core.exceptions.ANotFoundException
+import space.astro.shared.core.exceptions.AUnknownException
+import space.astro.shared.core.lang.L
+import space.astro.shared.core.models.api.bot.request.ChannelCreateBotApiRequest
+import space.astro.shared.core.models.api.bot.request.GuildProfileUpdateBotApiRequest
+import space.astro.shared.core.models.api.bot.response.DiscordGuildBotApiResponse
+import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
+import space.astro.shared.core.models.api.bot.response.DiscordGuildRoleBotApiResponse
+import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
+import space.astro.shared.core.utils.api.BotApiEndpoint
+import java.io.IOException
+
+@RestController
+@RequestMapping
+@Tag(name = "Discord Guild")
+class DiscordGuildController(
+    private val shardManager: ShardManager,
+    private val guildSettingsRepository: GuildSettingsRepository,
+) {
+    @Operation(
+        summary = "Get guild",
+        description = "Returns the guild if the bot is in it, 404 otherwise",
+        operationId = "getGuild",
+    )
+    @GetMapping(BotApiEndpoint.DISCORD_GUILD)
+    fun getGuild(
+        @PathVariable guildId: String,
+    ): ResponseEntity<DiscordGuildBotApiResponse> {
+        val guild =
+            shardManager.getGuildById(guildId)
+                ?: throw ANotFoundException("Guild not found")
+
+        val response =
+            DiscordGuildBotApiResponse(
+                id = guild.id,
+                name = guild.name,
+                icon = guild.iconUrl,
+                preferredLocale = guild.locale.locale,
+            )
+
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(
+        summary = "Update bot profile",
+        description =
+            "Updates the bot's guild profile, " +
+                "only the fields that differ from the saved ones are changed and a null value resets them to the default",
+        operationId = "updateGuildProfile",
+    )
+    @PostMapping(BotApiEndpoint.DISCORD_GUILD_PROFILE)
+    fun updateGuildProfile(
+        @PathVariable guildId: String,
+        @RequestBody newProfile: GuildProfileUpdateBotApiRequest,
+    ): ResponseEntity<Void> {
+        val guild =
+            shardManager.getGuildById(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found")
+
+        val guildSettings =
+            guildSettingsRepository.findByGuildID(guild.id)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+
+        try {
+            val reason = L.t(guildSettings.supportedLocale, "reason.dashboard.profile_update")
+
+            // Discord rate limits profile changes, so only the fields that changed are updated
+            val nicknameChanged = newProfile.nickname != guildSettings.nickname
+            val bioChanged = newProfile.bio != guildSettings.bio
+            val avatarChanged = newProfile.avatarUrl != guildSettings.avatarUrl
+            val bannerChanged = newProfile.bannerUrl != guildSettings.bannerUrl
+
+            if (nicknameChanged || bioChanged || avatarChanged || bannerChanged) {
+                runBlocking(Dispatchers.IO) {
+                    val manager = guild.selfMember.manager
+
+                    if (nicknameChanged) manager.setNickname(newProfile.nickname)
+                    if (bioChanged) manager.setBio(newProfile.bio)
+                    if (avatarChanged) manager.setAvatar(newProfile.avatarUrl?.let { iconFromUrl(it) })
+                    if (bannerChanged) manager.setBanner(newProfile.bannerUrl?.let { iconFromUrl(it) })
+
+                    manager.reason(reason).await()
+                }
+            }
+        } catch (e: ErrorResponseException) {
+            throw ABadRequestException(e.message ?: "Error from Discord API", e)
+        } catch (e: InsufficientPermissionException) {
+            throw ABadRequestException("Insufficient permissions to update profile", e)
+        } catch (e: IOException) {
+            throw ABadRequestException("Failed to download profile image", e)
+        } catch (e: Exception) {
+            throw AUnknownException("An unexpected error occurred", e)
+        }
+
+        return ResponseEntity.noContent().build()
+    }
+
+    @Operation(
+        summary = "Get guild channels",
+        description = "Returns a list of channels for the specified guild",
+        operationId = "getGuildChannels",
+    )
+    @GetMapping(BotApiEndpoint.DISCORD_GUILD_CHANNELS)
+    fun getGuildChannels(
+        @PathVariable guildId: String,
+    ): ResponseEntity<List<DiscordGuildChannelBotApiResponse>> {
+        val guild =
+            shardManager.getGuildById(guildId)
+                ?: throw ANotFoundException("Guild not found")
+
+        val channels =
+            guild.channels.map { channel ->
+                val parent =
+                    if (channel is ICategorizableChannel) {
+                        channel.parentCategory
+                    } else {
+                        null
+                    }
+
+                DiscordGuildChannelBotApiResponse(
+                    id = channel.id,
+                    name = channel.name,
+                    type = channel.type.id,
+                    parentId = parent?.id,
+                    parentName = parent?.name,
+                )
+            }
+
+        return ResponseEntity.ok(channels)
+    }
+
+    @Operation(
+        summary = "Create channel",
+        description = "Creates a channel in the specified guild",
+        operationId = "createChannel",
+    )
+    @PostMapping(BotApiEndpoint.DISCORD_GUILD_CHANNELS)
+    fun createChannel(
+        @PathVariable guildId: String,
+        @RequestBody request: ChannelCreateBotApiRequest,
+    ): ResponseEntity<DiscordGuildChannelBotApiResponse> {
+        val guild =
+            shardManager.getGuildById(guildId)
+                ?: throw ANotFoundException("Guild not found")
+
+        val category =
+            request.categoryId?.let {
+                guild.getCategoryById(it) ?: throw ANotFoundException("Category with id $it not found")
+            }
+
+        val reason =
+            L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_create")
+
+        try {
+            val channel =
+                runBlocking(Dispatchers.IO) {
+                    when (request.channelType) {
+                        ChannelCreateBotApiRequest.ChannelCreateType.TEXT ->
+                            guild
+                                .createTextChannel(request.name)
+                                .apply { category?.let { setParent(it) } }
+                                .reason(reason)
+                                .await()
+
+                        ChannelCreateBotApiRequest.ChannelCreateType.VOICE ->
+                            guild
+                                .createVoiceChannel(request.name)
+                                .apply { category?.let { setParent(it) } }
+                                .reason(reason)
+                                .await()
+
+                        ChannelCreateBotApiRequest.ChannelCreateType.CATEGORY ->
+                            guild.createCategory(request.name).reason(reason).await()
+                    }
+                }
+
+            val response =
+                DiscordGuildChannelBotApiResponse(
+                    id = channel.id,
+                    name = channel.name,
+                    type = channel.type.id,
+                    parentId = category?.id,
+                    parentName = category?.name,
+                )
+
+            return ResponseEntity.ok(response)
+        } catch (e: ErrorResponseException) {
+            throw ABadRequestException(e.message ?: "Error from Discord API", e)
+        } catch (e: InsufficientPermissionException) {
+            throw ABadRequestException("Insufficient permissions to create channel", e)
+        } catch (e: Exception) {
+            throw AUnknownException("An unexpected error occurred", e)
+        }
+    }
+
+    @DeleteMapping(BotApiEndpoint.DISCORD_GUILD_CHANNEL)
+    fun deleteChannel(
+        @PathVariable guildId: String,
+        @PathVariable channelId: String,
+    ): ResponseEntity<Void> {
+        val guild =
+            shardManager.getGuildById(guildId)
+                ?: throw ANotFoundException("Guild not found")
+
+        try {
+            val reason =
+                L.t(guildSettingsRepository.findByGuildID(guild.id).supportedLocale, "reason.dashboard.channel_delete")
+
+            runBlocking(Dispatchers.IO) {
+                guild.channels
+                    .find { it.id == channelId }
+                    ?.delete()
+                    ?.reason(reason)
+                    ?.await()
+            }
+        } catch (e: ErrorResponseException) {
+            when (e.errorResponse) {
+                ErrorResponse.UNKNOWN_CHANNEL -> return ResponseEntity.noContent().build()
+                ErrorResponse.MISSING_PERMISSIONS -> throw ABadRequestException(
+                    "Insufficient permissions to delete channel",
+                    e,
+                )
+
+                else -> throw ABadRequestException(e.message ?: "Error from Discord API", e)
+            }
+        } catch (e: InsufficientPermissionException) {
+            throw ABadRequestException("Insufficient permissions to delete channel", e)
+        } catch (e: Exception) {
+            throw AUnknownException("An unexpected error occurred", e)
+        }
+
+        return ResponseEntity.noContent().build()
+    }
+
+    @Operation(
+        summary = "Get guild roles",
+        description = "Returns a list of roles for the specified guild",
+        operationId = "getGuildRoles",
+    )
+    @GetMapping(BotApiEndpoint.DISCORD_GUILD_ROLES)
+    fun getGuildRoles(
+        @PathVariable guildId: String,
+    ): ResponseEntity<List<DiscordGuildRoleBotApiResponse>> {
+        val guild =
+            shardManager.getGuildById(guildId)
+                ?: throw ANotFoundException("Guild not found")
+
+        val roles =
+            guild.roles.map { role ->
+                DiscordGuildRoleBotApiResponse(
+                    id = role.id,
+                    name = role.name,
+                    color = role.colorRaw,
+                    position = role.position,
+                    manageable = !role.isPublicRole && !role.isManaged && guild.selfMember.canInteract(role),
+                )
+            }
+
+        return ResponseEntity.ok(roles)
+    }
+}

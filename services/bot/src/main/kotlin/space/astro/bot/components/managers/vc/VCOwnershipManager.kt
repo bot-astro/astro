@@ -3,104 +3,107 @@ package space.astro.bot.components.managers.vc
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.springframework.stereotype.Component
-import space.astro.bot.core.exceptions.ConfigurationException
-import space.astro.bot.core.exceptions.VcOperationException
-import space.astro.bot.core.extentions.modifyPermissionOverride
+import space.astro.bot.exceptions.ConfigurationException
+import space.astro.bot.exceptions.PremiumConfigurationErrors
+import space.astro.bot.interactions.InteractionException
 import space.astro.bot.models.discord.PermissionSets
 import space.astro.bot.models.discord.vc.VCOperationCTX
-import space.astro.bot.services.ConfigurationErrorService
-import space.astro.shared.core.components.managers.PremiumRequirementDetector
+import space.astro.bot.utils.extensions.modifyPermissionOverride
+import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.shared.core.clients.PremiumManager
+import space.astro.shared.core.lang.L
 
 @Component
 class VCOwnershipManager(
     private val vcNameManager: VCNameManager,
     private val vcPrivateChatManager: VCPrivateChatManager,
     private val vcWaitingRoomManager: VCWaitingRoomManager,
-    private val premiumRequirementDetector: PremiumRequirementDetector,
-    private val configurationErrorService: ConfigurationErrorService
+    private val premiumManager: PremiumManager,
 ) {
     /**
-     * Change the owner of a temporary vc.
-     * Updates the vc name properly
+     * Changes the owner of a temporary vc and refreshes the names
      *
-     * **This doesn't handle owner roles!**
-     * For that see [handleOwnerRoleMigration]
+     * The changes are applied once [VCOperationCTX.queueUpdatedManagers] is called and
+     * **the temporary vc entity must be saved by the caller**
+     *
+     * **This doesn't handle owner roles!** For that see [handleOwnerRoleMigration]
      *
      * @throws ConfigurationException
      * @throws InsufficientPermissionException
      */
-    fun changeOwner(
-        vcOperationCTX: VCOperationCTX,
-        newOwner: Member
+    suspend fun changeOwner(
+        ctx: VCOperationCTX,
+        newOwner: Member,
     ) {
-        vcOperationCTX.apply {
-            /////////////////////////////
-            /// OLD OWNER PERMISSIONS ///
-            /////////////////////////////
-            temporaryVCData.ownerId.toLong().also {
-                temporaryVCManager.removePermissionOverride(it)
-                privateChatManager?.removePermissionOverride(it)
-                waitingRoomManager?.removePermissionOverride(it)
-            }
+        val generatorSettings = ctx.generatorSettings
 
-            markTemporaryVCManagerAsUpdated()
-            markPrivateChatManagerAsUpdated()
-            markWaitingRoomManagerAsUpdated()
+        // old owner permissions
+        ctx.temporaryVCEntity.ownerID.toLong().also {
+            ctx.temporaryVCManager.removePermissionOverride(it)
+            ctx.privateChatManager?.removePermissionOverride(it)
+            ctx.waitingRoomManager?.removePermissionOverride(it)
+        }
 
+        ctx.markTemporaryVCManagerAsUpdated()
+        ctx.markPrivateChatManagerAsUpdated()
+        ctx.markWaitingRoomManagerAsUpdated()
 
-            /////////////////////////////
-            /// NEW OWNER PERMISSIONS ///
-            /////////////////////////////
-            val ownerPermissions = generatorData.ownerPermissions.takeIf { it != 0L }
+        // new owner permissions
+        val ownerPermissions =
+            // DEPRECATED: 0 is a legacy value for unset
+            generatorSettings.ownerPermissions?.takeIf { it != 0L }
                 ?: PermissionSets.ownerVCPermissions
 
-            temporaryVCManager.modifyPermissionOverride(
-                permissionHolder = newOwner,
-                allow = ownerPermissions
-            )
+        ctx.temporaryVCManager.modifyPermissionOverride(
+            permissionHolder = newOwner,
+            allow = ownerPermissions,
+        )
 
-            ///////////////////////
-            /// UPDATE CTX DATA ///
-            ///////////////////////
-            temporaryVCOwner = newOwner
-            temporaryVCData.ownerId = newOwner.id
-            temporaryVCData.renamed = false
+        ctx.temporaryVCOwner = newOwner
+        ctx.temporaryVCEntity.ownerID = newOwner.id
+        ctx.temporaryVCEntity.renamed = false
 
-
-            ////////////////////////////
-            /// UPDATE CHANNEL NAMES ///
-            ////////////////////////////
-            if (generatorData.renameConditions.ownerChange) {
-                try {
-                    vcNameManager.performVCNameRefresh(this)
-                } catch (_: VcOperationException) {}
-                vcPrivateChatManager.performPrivateChatNameRefresh(this)
-                vcWaitingRoomManager.performWaitingRoomNameRefresh(this)
+        // channel names
+        if (generatorSettings.renameConditions.ownerChange) {
+            try {
+                vcNameManager.performVCNameRefresh(ctx)
+            } catch (_: InteractionException) {
+                // rename rate limited, keep the current name
             }
+            vcPrivateChatManager.performPrivateChatNameRefresh(ctx)
+            vcWaitingRoomManager.performWaitingRoomNameRefresh(ctx)
         }
     }
 
     /**
-     * Migrates the owner role from an [oldOwner] to a [newOwner]
+     * Migrates the owner role of the generator from [oldOwner] to [newOwner]
      *
-     * @throws ConfigurationException
+     * @throws ConfigurationException if the guild is not premium
      */
     fun handleOwnerRoleMigration(
-        vcOperationCTX: VCOperationCTX,
+        ctx: VCOperationCTX,
         oldOwner: Member?,
-        newOwner: Member
+        newOwner: Member,
     ) {
-        vcOperationCTX.generatorData.ownerRole?.let { ownerRoleId ->
-            vcOperationCTX.guild.getRoleById(ownerRoleId)?.let { ownerRole ->
-                if (premiumRequirementDetector.canAssignTemporaryVCOwnerRole(vcOperationCTX.guildData)) {
-                    if (oldOwner != null && oldOwner.roles.any { it.id == ownerRole.id }) {
-                        vcOperationCTX.guild.removeRoleFromMember(oldOwner.user, ownerRole).queue()
-                    }
-                    vcOperationCTX.guild.addRoleToMember(newOwner.user, ownerRole).queue()
-                } else {
-                    throw ConfigurationException(configurationErrorService.premiumRequiredForOwnerRole(vcOperationCTX.guild.id))
-                }
-            }
+        val ownerRole =
+            ctx.generatorSettings.ownerRole?.let { ctx.guild.getRoleById(it) }
+                ?: return
+
+        if (!premiumManager.canAssignTemporaryVCOwnerRole(ctx.guildSettings)) {
+            throw PremiumConfigurationErrors.ownerRole(ctx.guild.id)
         }
+
+        val locale = ctx.guildSettings.supportedLocale
+
+        if (oldOwner != null && oldOwner.roles.any { it.id == ownerRole.id }) {
+            ctx.guild
+                .removeRoleFromMember(oldOwner.user, ownerRole)
+                .reason(L.t(locale, "reason.vc.owner_role_removed"))
+                .queue()
+        }
+        ctx.guild
+            .addRoleToMember(newOwner.user, ownerRole)
+            .reason(L.t(locale, "reason.vc.owner_role_added"))
+            .queue()
     }
 }

@@ -1,0 +1,171 @@
+info:
+  app:
+    name: "Central API"
+    description: "Main REST API for Astro"
+
+logging:
+  level:
+    root: ${CA__LOG_LEVEL}
+
+server:
+  port: ${CA__PORT}
+
+
+management:
+  server:
+    # separate port for the Kubernetes probes and metrics, it must not be exposed outside the cluster
+    port: ${CA__MANAGEMENT_PORT:9101}
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include:
+            - readinessState
+        liveness:
+          include:
+            - livenessState
+  opentelemetry:
+    resource-attributes:
+      job_id: ${POD_NAME:N/A}
+  otlp:
+    metrics:
+      export:
+        enabled: ${OTEL_ENABLED:false}
+        url: ${OTEL_ENDPOINT:http://localhost:4318}/v1/metrics
+        step: 30s
+        aggregation-temporality: cumulative
+        base-time-unit: seconds
+  tracing:
+    export:
+      otlp:
+        enabled: false
+  logging:
+    export:
+      otlp:
+        enabled: false
+
+spring:
+  application:
+    name: api-central
+  mongodb:
+    uri: ${MONGODB_URI}
+  data:
+    redis:
+      client-name: api-central
+      client-type: lettuce
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
+      password: ${REDIS_PASSWORD:}
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+
+springdoc:
+  api-docs:
+    path: /docs/openapi.json
+
+scalar:
+  enabled: true
+  url: /docs/openapi.json
+  path: /docs
+  page-title: "Astro API Reference"
+  operation-sorter: method
+
+
+sentry:
+  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.us.sentry.io/4506708023967744
+  environment: ${CA__SENTRY_ENVIRONMENT:local}
+  logs:
+    enabled: true
+  # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
+  # We recommend adjusting this value in production.
+  traces-sample-rate: 0.05
+  data-collection:
+    user-info: false
+
+
+#####################
+# CUSTOM PROPERTIES #
+#####################
+
+### SHARED ###
+
+chargebee:
+  enabled: true
+  site-name: ${CHARGEBEE_SITE_NAME}
+  api-key: ${CHARGEBEE_API_KEY}
+  server-ultimate-plan-id: ${CHARGEBEE_SERVER_PREMIUM_PLAN_ID}
+
+premium:
+  server-sku-id: ${PREMIUM_SERVER_SKU_ID:}
+  monthly-plan-id: ${PREMIUM_MONTHLY_PLAN_ID:}
+  yearly-plan-id: ${PREMIUM_YEARLY_PLAN_ID:}
+  restrictions: ${PREMIUM_RESTRICTIONS:true}
+
+support:
+  bot:
+    endpoint:
+      enabled: true
+      base-url: ${SUPPORT_BOT_ENDPOINT_BASE_URL}
+      auth: ${SUPPORT_BOT_ENDPOINT_AUTH}
+
+discord:
+  api:
+    base-url: ${DISCORD_API_BASE_URL}
+    enabled: true
+  application:
+    id: ${CA__DISCORD_APPLICATION_ID}
+    token: ${CA__DISCORD_APPLICATION_TOKEN}
+  oauth:
+    id: ${DISCORD_OAUTH_ID}
+    secret: ${DISCORD_OAUTH_SECRET}
+    redirect-uri: ${DISCORD_OAUTH_REDIRECT_URI}
+
+bot:
+  endpoint:
+    localhost: ${BOT_ENDPOINT_LOCALHOST}
+    port: ${BOT_API_PORT}
+    pod-name: ${BOT_ENDPOINT_POD_NAME}
+    service-name: ${BOT_ENDPOINT_SERVICE_NAME}
+    namespace: ${BOT_ENDPOINT_NAMESPACE}
+  shard:
+    manager:
+      total-shards: ${BOT_SHARD_MANAGER_TOTAL_SHARDS}
+      total-pods: ${BOT_SHARD_MANAGER_TOTAL_PODS}
+      login-factor: ${BOT_SHARD_MANAGER_LOGIN_FACTOR}
+
+frontend:
+  base-url: ${FRONTEND_BASE_URL}
+
+r2:
+  endpoint-url: ${R2_ENDPOINT_URL}
+  access-key-id: ${R2_ACCESS_KEY_ID}
+  secret-access-key: ${R2_SECRET_ACCESS_KEY}
+  bucket-name: ${R2_BUCKET_NAME}
+  public-url: ${R2_PUBLIC_URL}
+
+### SERVICE SPECIFIC ###
+
+central:
+  api:
+    auth: ${CA__AUTH:}
+    session-cookie-name: ${CA__SESSION_COOKIE_NAME}
+    session-cookie-allow-origin: ${CA__SESSION_COOKIE_ALLOW_ORIGIN}
+    session-cookie-domain: ${CA__SESSION_COOKIE_DOMAIN}
+    session-cookie-secure: ${CA__SESSION_COOKIE_SECURE}
+    session-cookie-same-site: ${CA__SESSION_COOKIE_SAME_SITE}
+    cors-allowed-origins:
+      - ${CA__CORS_ALLOWED_ORIGIN}
+    chargebee-webhook-token: ${CA__CHARGEBEE_WEBHOOK_TOKEN}

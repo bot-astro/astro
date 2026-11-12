@@ -4,10 +4,14 @@ info:
     description: "The main bot Discord application."
     version: "1.0.0"
 
+
 server:
-  port: ${BOT_API_PORT:9000}
+  port: ${BOT_API_PORT}
 
 management:
+  server:
+    # separate port for the Kubernetes probes and metrics, it must not be exposed outside the cluster
+    port: ${BOT__MANAGEMENT_PORT:9100}
   endpoints:
     web:
       cors:
@@ -18,10 +22,7 @@ management:
           - health
           - info
           - metrics
-          - prometheus
   endpoint:
-    prometheus:
-      enabled: true
     health:
       probes:
         enabled: true
@@ -34,21 +35,121 @@ management:
           include:
             - livenessState
             - shardsLiveness
-  prometheus:
+  opentelemetry:
+    resource-attributes:
+      job_id: ${POD_NAME:N/A}
+  otlp:
     metrics:
       export:
-        enabled: true
+        enabled: ${OTEL_ENABLED:false}
+        url: ${OTEL_ENDPOINT:http://localhost:4318}/v1/metrics
+        step: 30s
+        aggregation-temporality: cumulative
+        base-time-unit: seconds
+  tracing:
+    export:
+      otlp:
+        enabled: false
+  logging:
+    export:
+      otlp:
+        enabled: false
+
+springdoc:
+  api-docs:
+    path: /docs/openapi.json
+
+scalar:
+  enabled: true
+  url: /docs/openapi.json
+  path: /docs
+  page-title: "Astro bot-API Reference"
+  operation-sorter: method
 
 ##############
 ### SHARED ###
 ##############
 logging:
   level:
-    root: ${LOG_LEVEL:INFO}
+    root: ${BOT__LOG_LEVEL}
 
 
 sentry:
-  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.sentry.io/4506708023967744
+  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.us.sentry.io/4506708023967744
+  environment: ${BOT__SENTRY_ENVIRONMENT:local}
   # Set traces-sample-rate to 1.0 to capture 100% of transactions for performance monitoring.
   # We recommend adjusting this value in production.
   traces-sample-rate: 0.05
+  logs:
+    enabled: true
+  data-collection:
+    user-info: false
+
+spring:
+  application:
+    name: bot
+  mongodb:
+    uri: ${MONGODB_URI}
+  data:
+    mongodb:
+      auto-index-creation: true
+    redis:
+      client-name: bot
+      client-type: lettuce
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
+      password: ${REDIS_PASSWORD:}
+
+bot:
+  endpoint:
+    localhost: ${BOT_ENDPOINT_LOCALHOST}
+    port: ${BOT_API_PORT}
+    pod-name: ${BOT_ENDPOINT_POD_NAME}
+    service-name: ${BOT_ENDPOINT_SERVICE_NAME}
+    namespace: ${BOT_ENDPOINT_NAMESPACE}
+  shard:
+    manager:
+      total-shards: ${BOT_SHARD_MANAGER_TOTAL_SHARDS}
+      total-pods: ${BOT_SHARD_MANAGER_TOTAL_PODS}
+      login-factor: ${BOT_SHARD_MANAGER_LOGIN_FACTOR}
+
+pod:
+  hostname: ${BOT__POD_HOSTNAME}
+  ordinal: ${BOT__POD_ORDINAL}
+
+discord:
+  application:
+    id: ${BOT__DISCORD_APPLICATION_ID}
+    token: ${BOT__DISCORD_APPLICATION_TOKEN}
+    activity-type: ${BOT__DISCORD_APPLICATION_ACTIVITY_TYPE}
+    activity-text: ${BOT__DISCORD_APPLICATION_ACTIVITY_TEXT}
+  developer:
+    guild-id: ${BOT__DISCORD_DEVELOPER_GUILD_ID:}
+    user-id: ${BOT__DISCORD_DEVELOPER_USER_ID:}
+
+premium:
+  server-sku-id: ${PREMIUM_SERVER_SKU_ID:}
+  monthly-plan-id: ${PREMIUM_MONTHLY_PLAN_ID:}
+  yearly-plan-id: ${PREMIUM_YEARLY_PLAN_ID:}
+  restrictions: ${PREMIUM_RESTRICTIONS:true}
+
+support:
+  bot:
+    endpoint:
+      enabled: true
+      base-url: ${SUPPORT_BOT_ENDPOINT_BASE_URL}
+      auth: ${SUPPORT_BOT_ENDPOINT_AUTH}
+
+vote-tracker:
+  guard-enabled: ${VOTE_TRACKER_GUARD_ENABLED}
+  token: ${VOTE_TRACKER_TOKEN}
+  integration-id: ${VOTE_TRACKER_INTEGRATION_ID}
+
+bigquery:
+  enabled: ${BOT__BIGQUERY_ENABLED}
+  dataset-name: ${BOT__BIGQUERY_DATASET_NAME}
+  max-events-entry: 10000
+  # seconds, used by the scheduled dispatch
+  delay: 10
+  interval: 15
