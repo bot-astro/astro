@@ -7,7 +7,7 @@ Code under `*-old` modules (`bot-old`, `central-api-old`, `shared/old-core`) is 
 - [x] port over premium gates
 - [x] verify sentry is implemented correctly
 - [x] verify we have telemetry setup
-- [x] update `../../Giuliopime/gport` migrating with the info from `./docs/infrastructure.md`…
+- [x] update `../../Giuliopime/gport` migrating with the info from `ignored/infrastructure.md`…
 - [x] update justfile with useful tasks (run each service, run docker compose, etc..)
 - [x] enable git precommit hooks again and run them + fix issues they report
 - [x] clean up `./docs` and move `./ignored/notes/redis-migration.md` inside docs
@@ -17,7 +17,7 @@ Code under `*-old` modules (`bot-old`, `central-api-old`, `shared/old-core`) is 
 - [x] verify semaphore pipelines are correct, and the infra too, in depth
 - [x] stuff is currently deployed with old infra & bot version, write a clear step by step guide on how to deploy everything new, including `../infra` (do not miss any detail, I'm ok with some downtime on the bot, the gport repo has terraform code that defines Longhorn and other stuff so it's important that the migration is done right).
 - [x] deploy, see `docs/deploy-hyperion.md`
-- [ ] try improving memory JVM, see `docs/memory-improvement-plan.md`
+- [ ] try improving memory JVM, see `ignored/memory-improvement-plan.md`
 
 
 ## Workflow

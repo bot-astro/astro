@@ -56,7 +56,6 @@ You can read the story of this project [on my blog post](https://giuliopime.dev/
 ### Understanding the codebase
 Everything runs via SpringBoot and there is a `shared/core` module that contains the shared code between the services.  
 Code is mostly well documented / self-explanatory, so you should be able to take a look at it and get an idea of how things work quite easily.  
-More in depth stuff is in the [docs](docs) folder.  
 
 This project contains four services:  
 #### `bot`
@@ -81,12 +80,8 @@ It interacts with:
 
 #### `api-central`
 A REST api for the bot, it's used by the dashboard to retrieve settings and data from the bot database.  
-The dashboard requests the list of roles and channels of a given guild, and to respond to this, this API queries the `bot` service api.  
-Since they are both running on k8s and the bot is sharded and divided in pods, the central api needs to calculate the correct pod to send the request to.  
-This is done by calculating the shard id of the guild via the guild id, and then the pod by knowing the amount of shards and pods.  
 
 User authentication is managed via a combination of JWT tokens and session cookies, [docs/authentication.md](docs/authentication.md) explains how.  
-It also receives the Chargebee webhooks and handles the uploads of images (to Cloudflare R2).  
 
 #### `entitlements-expiration-job`
 Simple service that checks for expired Discord premium application entitlements and updates the bot database.  
@@ -205,7 +200,7 @@ Now when you commit to `master`, Semaphore will automatically:
 <!-- CONTRIBUTING -->
 ## Contributing
 If you have an idea, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
+Don't forget to give the project a star! Thanks!
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
