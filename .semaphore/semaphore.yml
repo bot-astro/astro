@@ -6,6 +6,9 @@ agent:
     type: e1-standard-2
     os_image: ubuntu2404
 global_job_config:
+  env_vars:
+    - name: GHCR_ORGANIZATION
+      value: bot-astro
   prologue:
     commands:
       - checkout

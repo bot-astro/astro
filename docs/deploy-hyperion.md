@@ -11,6 +11,38 @@ Repos (siblings): `astro` (this), `infra`, `astro-bot.space`, `../../Giuliopime/
 
 **How to use this document.** Every step has a *Prompt* block. Paste it into Claude Code opened in the repo named in the block's first line, and Claude does the step (or tells you what you must do by hand). Steps marked **[you]** need a dashboard or a decision Claude cannot do. Claude must never apply Terraform, push to `infra`, uninstall Helm releases or delete data without you confirming the exact command first, and the prompts say so.
 
+**Access.** The `AstroDevToolkit` skills (notably `astro-services-tools`, `astro-tech-overview`, `infisical-*`) document how to reach almost every service (Hetzner, kubectl, ArgoCD, Infisical, Cloudflare, GCP/BigQuery, MongoDB, Redis, Sentry, Semaphore, GitHub, Chargebee, Crowdin...). Whenever Claude needs a CLI, login or token for a service, ask the user to grant it (log in, add credentials, allow the tool) and Claude does the step itself instead of handing it back as **[you]**. Only steps that truly need a human (Discord portal, Chargebee dashboard, announcements) stay manual.
+
+## Progress log
+
+**Rule for Claude: right after finishing (or deciding to skip/defer) any step, or any action that changes the cluster, a repo, Terraform or an external service, append a line here (date, step, what was done, commit SHAs/ids, anything left open) and update "Next". Do it before moving on, so the conversation can be cleared at any time and work resumes from this section. Do not wait to be asked.**
+
+| Date | Step | Result |
+|---|---|---|
+| 2026-11-12 | S | Deferred: no `cx` stock in any EU location. Control plane stays in S as the lowest priority. `gport` `kube-hetzner.tf` server types unchanged (cpx) |
+| 2026-11-12 | A1 | Done. `gport` commit `6e02072` (Infisical operator Application + `enableOTLPReceiver`), pushed. `infisical-operator` Synced/Healthy, CRDs `secrets.infisical.com` present, OTLP receiver on |
+| 2026-11-12 | A1 extra | Prometheus volume was already faulted (single replica, failed 2026-10-27, no backup): PVC deleted and recreated empty, metric history lost (accepted). All Longhorn volumes attached/healthy. 9 stale Longhorn node objects deleted |
+| 2026-11-12 | Autoscaler cap | `max_nodes = 3` (min 3) in `kube-hetzner.tf`, `gport` commit `6878f40`. Live `cluster-autoscaler` already runs `--nodes=3:3:cpx52:...`, applied with a targeted `terraform apply` on `configure_autoscaler` only |
+| 2026-11-12 | Firewall | Hetzner firewall `gport` is wide open on purpose (all inbound TCP/UDP/ICMP, all outbound). `kube-hetzner.tf` aligned to it, `gport` commit `f97b338`, firewall plan has no diff. Left unapplied (optional housekeeping): local `kustomization_backup` file and the autoscaled-node registry entry swap (could restart k3s on one node if `registries.yaml` differs) |
+| 2026-11-12 | A2 config check | Read-only check done. All required keys present in prod/staging (except pod-injected ones and, in staging, `BOT__BIGQUERY_DATASET_NAME` + `BOT__GCP_CREDENTIALS_JSON`; prod lacks only `BOT__GCP_CREDENTIALS_JSON`). Ports, replicas (11/176 prod, 1/1 staging), REDIS_HOST, SUPPORT_BOT_ENDPOINT_BASE_URL, SB auth match, prod/staging secrets differ: OK. Open: `CA__CORS_ALLOWED_ORIGIN` still `http://localhost:3000` in both; staging `PREMIUM_RESTRICTIONS=true` (doc says false); staging `MONGODB_URI` has no database path (Spring defaults to `test`, so isolated from prod `AstroDB` but probably unintended); `R2_*` (bucket `astro-media`) exist in both envs and must be saved and deleted before the A3 Terraform apply; prod `BOT__BIGQUERY_DATASET_NAME` already `astro_bot` |
+| 2026-11-12 | A2 fixes | Set `CA__CORS_ALLOWED_ORIGIN` (prod `https://astro-bot.space`, staging `https://staging.astro-bot.space`) and staging `PREMIUM_RESTRICTIONS=false` in Infisical. Still open: staging `MONGODB_URI` database name, delete old `R2_*` before A3 |
+| 2026-11-12 | A2 `astro-k8s-operator` | Created via API: identity id `7050ad6b-29cd-47e5-af2c-2be29db7d26b`, Kubernetes Auth (host `https://91.98.7.112:6443`, namespaces `astro,astro-staging`, SA `infisical-service-account`, review mode api), Viewer on the backend project. Cluster: SA `infisical-token-reviewer` + clusterrolebinding `system:auth-delegator` in `kube-system`, 1y token. Not verified end to end until the operator authenticates in B |
+
+| 2026-11-12 | A2 `astro-terraform` | Created via API: identity id `c3139bf7-973d-4ed0-bbba-03ddb58a8866`, Universal Auth, admin on the backend project. `infisical_client_id/secret` (+ `infisical_project_id` for cloudflare) appended to gitignored `infra/terraform/{cloudflare,gcp}/terraform.tfvars`. A2 done |
+| 2026-11-12 | A5 | Sealed identity id for `astro` and `astro-staging` (`apps/infisical/envs/*/infisical-kubernetes-credentials-secret-sealed.yml`, added to kustomizations), all `kustomize build apps/*/envs/*` pass, the 9 InfisicalStaticSecrets point at the right project/env/secret names. Committed locally in `infra`, **not pushed yet** (awaiting user OK). ArgoCD repo access still **[you]** |
+
+| 2026-11-12 | A5 push | `bot-astro/infra` did not exist on GitHub (local repo had no remote). Scanned tracked files and the 3 commits of history: no plaintext secrets (only SealedSecrets, `*.template.yml`, `backend.hcl.template`; tfvars gitignored). Created it **public** with `gh repo create bot-astro/infra --public --push`, branch `master` (includes `285cc80`). Public means ArgoCD needs no repo credentials; the Semaphore deploy key (A4) can now be added to this repo |
+| 2026-11-12 | A3 prep | `cf` CLI is logged in (OAuth, expires ~1h, lacks the "Account API Tokens Write" scope). Created R2 bucket `astro-terraform-state` and account token `astro-terraform-state` (R2 Bucket Item Write on that bucket). Wrote `infra/terraform/backend.hcl`; the S3 creds (`AWS_ACCESS_KEY_ID/SECRET`) are in `~/.config/astro/tf-state-creds.env` (outside git). `terraform.tfvars` of `cloudflare/` and `gcp/` have the Infisical creds (cloudflare also account id, zone `e334135d93d94d9e2c015ac7d538c45e`, ingress `91.98.7.60`; gcp has `gcp_project_id`). **Missing: `cloudflare_api_token`** (OAuth session cannot mint tokens with Account API Tokens Write) |
+| 2026-11-12 | A3 gcp plan | `terraform init` + `plan` in `infra/terraform/gcp` (state in R2): 6 import (prod dataset + 5 tables), 18 add, 0 change, **0 destroy**. Not applied yet (awaiting user OK). Before apply: delete prod `BOT__BIGQUERY_DATASET_NAME` (value `astro_bot`) in Infisical, terraform recreates it |
+| 2026-11-12 | A3 Cloudflare token | User provided a Cloudflare user API token (`cfut_...`, verified active). Stored **temporarily, outside git** in `~/.config/astro/cloudflare-token.env` (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, mode 600) and in the gitignored `infra/terraform/cloudflare/terraform.tfvars`. Terraform state creds are in `~/.config/astro/tf-state-creds.env`. **At the end of the deploy (E2): delete both files in `~/.config/astro/`, remove the token line from `terraform.tfvars`, and revoke the token in Cloudflare (My Profile → API Tokens), since it was pasted in a chat** |
+| 2026-11-12 | A3 cloudflare plan | Imported DNS `api` and `support-bot` into state. Fixed `infra/terraform/cloudflare/main.tf` (`resources = jsonencode({...})` in `cloudflare_api_token.r2`, provider v5 needs a string; **uncommitted in infra**). Plan: 16 add, 0 change, 0 destroy (2 DNS, 2 buckets, 2 custom domains, 2 tokens, 8 Infisical `R2_*`). Old bucket `astro-media` verified empty, still holds `cdn.astro-bot.space`. Terraform does NOT manage `R2_PUBLIC_URL` (keep it). Blocked: deleting the old Infisical `R2_ACCESS_KEY_ID/SECRET/BUCKET_NAME/ENDPOINT_URL` (prod+staging) and prod `BOT__BIGQUERY_DATASET_NAME` was denied by the permission classifier; then delete bucket `astro-media` (remove its custom domain first) and apply |
+| 2026-11-12 | A3 cloudflare applied | User deleted old Infisical `R2_*` (kept `R2_PUBLIC_URL`) and prod `BOT__BIGQUERY_DATASET_NAME` (backup in `~/.config/astro/old-r2-backup-2026-11-12.env`), bucket `astro-media` and its `cdn` domain. User ran `terraform apply` in `infra/terraform/cloudflare`: 16 added, 0 destroyed (buckets `astro-media-prod/staging`, domains `cdn[-staging].astro-bot.space`, DNS `api-staging`, `support-bot-staging`, 2 R2 tokens, 8 Infisical `R2_*`). `main.tf` fix committed and pushed in `infra`. **gcp apply still pending** (user runs it: `terraform apply -auto-approve`, `!` has no tty, the classifier blocks Claude from applying) |
+| 2026-11-12 | A3 gcp applied | User ran `terraform apply` in `infra/terraform/gcp`: 6 imported, 18 added, 0 destroyed. Datasets `astro_bot` (adopted, 5 tables intact) and `astro_staging` exist; `BOT__BIGQUERY_DATASET_NAME` and `BOT__GCP_CREDENTIALS_JSON` now in Infisical prod+staging. `gcp/imports.tf` removed and pushed (`32b77c1`). **A3 done**. Cloudflare staging DNS exists; `terraform/cloudflare/.cloudflare/` is an untracked cf CLI cache dir, ignore |
+| 2026-11-12 | A7 partial | Backups in `~/astro-backups/2026-11-12/` (mode 700, outside git): `redis-backup.rdb` (325 MB, DBSIZE 26835 at the time), `astro-legacy-backup.yaml` (cm/secret/ingress/sts/deploy/cronjob/svc of `astro`), `helm-values-{bot,central-api,support-bot,entitlements-expiration-job}.yaml`. BigQuery: 5 tables copied into dataset `astro_bot_backup_20261112`, row counts equal (6200665 / 247030 / 655095 / 1456295 / 14465508). Note for zsh: write `${P}:dataset.table`, `$P:x` is a path modifier. **Still open: MongoDB Atlas snapshot [you], Longhorn volume snapshots (Redis + Prometheus), note the old Cloudflare frontend deployment id** |
+| 2026-11-12 | A4 Semaphore | User provided a Semaphore API token (org `astro-bot.semaphoreci.com`). Stored **temporarily, outside git** in `~/.config/astro/semaphore-token.env`; `sem connect` also keeps it in `~/.sem.yaml`. **After the deploy: delete `~/.config/astro/cloudflare-token.env` and `~/.config/astro/semaphore-token.env`, run `sem disconnect`/remove `~/.sem.yaml`, and revoke both tokens (Cloudflare My Profile → API Tokens, Semaphore Profile → API Token regenerate), since they were pasted in a chat.** Secrets found: `github` (`GITHUB_ACTOR`, `GITHUB_TOKEN`), `sentry` (`SENTRY_AUTH_TOKEN`), plus legacy `helm_*`, `kube` (delete in E2). Created `infra-deploy-key` (file `/home/semaphore/.ssh/infra_deploy_key`) and its public half as read-write deploy key `semaphore-deploy` on `bot-astro/infra`; private key not kept locally. `GHCR_ORGANIZATION` was missing everywhere (read by `service-conventions.gradle.kts`): added to `global_job_config.env_vars` in `.semaphore/semaphore.yml` (**uncommitted**, needs merge to master). Not verified: that `GITHUB_TOKEN` has `write:packages` |
+
+Next: A4 (needs `sem connect`), A7 backups, A6 Discord redirects **[you]**, then F and B. (Older "Next" text below is obsolete.) A3 needs Cloudflare credentials Claude does not have (cf CLI not authenticated): R2 bucket `astro-terraform-state` + its S3 token (`backend.hcl`, `AWS_*`), `cloudflare_api_token`, `cloudflare_account_id`, `cloudflare_zone_id`, `r2_bucket_item_write_permission_group_id`. Known values: `ingress_ipv4` = `91.98.7.60` (Hetzner LB `gport-nginx`), `gcp_project_id` = `astro-405113`. Also before apply: save and delete old `R2_*` in Infisical prod/staging, empty/delete bucket `astro-media`, import the 2 DNS records. Then A5 (seal identity `7050ad6b-29cd-47e5-af2c-2be29db7d26b`), which does not depend on A3.
+
 ## 0. State verified on 2026-11-05
 
 Checked by comparing every `${VAR}` without default in the `application.yml` of `bot`, `api-central`, `support-bot` and `entitlements-expiration-job` with the keys in Infisical:
@@ -29,6 +61,7 @@ Re-run the check before the cutover (prompt in A2).
 ## 1. Order
 
 ```
+S  DEFERRED: cpx → cx node migration (no cx stock, see S), do it after the deploy
 A  Prepare (old version keeps running)   gport, Infisical, Terraform, Semaphore, infra repo, Discord, backups
 B  Merge + build + staging up            backend images, staging apps, staging frontend
 C  Test staging end to end               backend + frontend
@@ -40,6 +73,72 @@ Danger: as soon as ArgoCD sees `apps/*/envs/astro`, it starts the new prod bots.
 
 The new frontend talks to the `/v2` API only. It goes live in prod **after** the new API is up (D5), and the old frontend is down or broken between D2 and D6: that is the downtime.
 
+## S. Right-size servers (DEFERRED, skip for now)
+
+**Status 2026-11-12: deferred. Start at A.** Checked live with the Hetzner API (`/v1/server_types`, `locations[].available`): `cx23` is sold out in nbg1/fsn1 (only hel1), `cx33`, `cx43` and `cx53` are sold out in every location, `cax` too. Changing location does not help (hel1 is ~15% cheaper for the same cpx types, not worth moving the cluster). The cpx nodes keep running as they are: the two old cpx52 are at the grandfathered €36.49, and the deploy does not change node count or types. Rules until S is done: do not touch `agent-sailboat`/control-plane, do not drain autoscaler nodes (a replacement would be a cpx52 at €100.49), keep `min_nodes = 3` / `max_nodes = 3` (capped on 2026-11-12 so the autoscaler can never buy a 4th server at €100.49; raise it only on purpose).
+
+Also corrected: cx53 is €35.98 gross (≈€29.49 net) in the Hetzner API, so prices in this section and in `docs/infrastructure.md` are net of VAT, the CLI shows gross.
+
+Decision 2026-11-12: the control plane (3x cpx22 → cx23, saves ~€42/month net) stays in S but is the lowest priority: do it last, only when cx23 is available in nbg1 (today only hel1), one node at a time to keep etcd quorum, and note the disk drops from 80 to 40 GB. Order when S resumes: autoscaler pool, then `agent-sailboat`, then control plane.
+
+When to resume: after the deploy and the JVM memory work (E3), when `cx33`/`cx53` are available in nbg1 again (check `curl -s -H "Authorization: Bearer $(grep -m1 token ~/.config/hcloud/cli.toml | sed 's/.*= *\"\(.*\)\"/\1/')" https://api.hetzner.cloud/v1/server_types?per_page=50`, field `locations[].available`). The text below is the original plan, kept for then.
+
+Original rationale (kept):
+
+Why first: Hetzner raised CPX prices on 2026-06-15; every autoscaler replacement pays the new price (cpx52 €100.49 vs cx53 €29.49). Moving to `cx` saves ~€154/month with the same RAM. Full analysis in `docs/infrastructure.md`. The pod right-sizing (step 2 there, ~€29/month more) is **not** part of the deploy: it is JVM work done after (E3), so keep `min_nodes = 3` / `max_nodes = 4` for now (11 bots x 5 Gi requests need 3 nodes).
+
+Node replacement is kept apart from the app migration on purpose: do S, let it settle (at least a few days, watch shard latency and memory), then start A. The legacy bots keep running and each node drain restarts some of their pods: accepted.
+
+Target (already in `gport/hcloud-cluster/kube-hetzner.tf`, uncommitted; details and rollout in `gport/hcloud-cluster/docs/cx-migration.md`):
+
+| Pool | Now | Target |
+|---|---|---|
+| `control-plane` (3) | cpx22 | cx23 |
+| `agent-sailboat` (1, holds Longhorn volumes) | cpx32 | cx33 |
+| `agent-as-cruiser` (autoscaler, 3) | cpx52 | cx53 |
+
+Known risks: stock on 2026-10-24 had only cx23 available (cx33 sold out, cx53 not available), cx53 disk is 320 GB (cpx52 480 GB), and replacing `agent-sailboat` destroys local disk, where the Longhorn Redis (30 GB) and Prometheus (10 GB) volumes live (single replica).
+
+### S1. **[you]** Check capacity and backups
+
+- Hetzner console (or `hcloud server-type list`): cx23, cx33, cx53 available in nbg1. If one is sold out, ask Hetzner support or use the fallback (cx43 8c/16G €15.99 for the agent; for the autoscaler stay on cpx52 until cx53 is available, do not replace those nodes) and update `kube-hetzner.tf` and `cx-migration.md` accordingly.
+- Take the A7 backups of **Redis and Longhorn** now (Redis `BGSAVE` + copy, Longhorn snapshot/backup of the Redis and Prometheus volumes). They protect the agent node replacement in S3.
+
+### S2. Plan the change
+
+Prompt:
+```
+Repo: ../../Giuliopime/gport
+Review `git diff hcloud-cluster/kube-hetzner.tf` and hcloud-cluster/docs/cx-migration.md (fix its reference to the non-existent docs/infra-cost-migration.md: the analysis is in bot-astro/astro docs/infrastructure.md). Check (kubectl context gport, hcloud context gport): current servers and types (`hcloud server list`), Longhorn volumes and where their replicas live (`kubectl get volumes.longhorn.io -n longhorn-system`, `kubectl get replicas.longhorn.io -n longhorn-system -o wide`), disk usage per node vs the cx53 320 GB disk, requests per node (`kubectl describe nodes | grep -A8 "Allocated resources"`). Then run `terraform init && terraform plan` in hcloud-cluster/ and READ the plan to me. Hard stop if the plan destroys or replaces more than the pool I am about to change, or anything outside nodepools. Do NOT apply and do NOT commit anything yet. Give me the rollout order, one pool per apply, with the exact commands.
+```
+
+### S3. Autoscaler pool (cx53)
+
+Prompt:
+```
+Repo: ../../Giuliopime/gport
+Do the autoscaler step of docs/cx-migration.md, one node at a time. Show me each exact command and wait for my OK before running it (drain, terraform apply, anything deleting a server). Order: apply only the autoscaler pool change (`-target` or only that pool edited, as I confirm), cordon and drain ONE cpx52 node (`kubectl drain <node> --ignore-daemonsets --delete-emptydir-data`), wait until the autoscaler brings a cx53 replacement and all its pods are Ready, report `kubectl get nodes -o wide` and `kubectl top nodes`. Stop there: I watch the new node for a few days (bot pods Ready, shard latency, memory) and ask you to replace the next two. Never drain two nodes at once. Remember the Longhorn volumes are NOT on autoscaler nodes (only on agent-sailboat): verify before each drain with the replicas listing.
+```
+
+Repeat for the remaining two cpx52 nodes, one at a time, after the watch period. The two old cpx52 at €36.49 are the expensive ones to lose (replacing them with cpx52 would cost €100.49 each), so the autoscaler must never recreate a cpx52: confirm `server_type = "cx53"` is applied before draining.
+
+### S4. Agent node (cx33) and control plane (cx23)
+
+Prompt:
+```
+Repo: ../../Giuliopime/gport
+Continue docs/cx-migration.md: first agent-sailboat, then the control plane, one step at a time with my confirmation of each exact command.
+agent-sailboat: confirm fresh Longhorn backups of the Redis and Prometheus volumes exist (S1), then, because replacing the node destroys local disk data, tell me the safest way (raise the Longhorn replica count and wait for rebuild onto the autoscaler nodes, or backup and restore) and wait for my choice. After the replacement verify Redis (redis-master-0 Ready, DBSIZE sane vs before) and Prometheus data, and that all Longhorn volumes are healthy/attached.
+control-plane: one node at a time, never more than 1 of 3 down (etcd quorum): cordon, drain, remove, apply, wait for the new node Ready and `kubectl get --raw=/readyz` OK before the next. If etcd or the API server gets OOM-killed on 4 GB nodes, stop and propose cx33 (€8.49) for the control plane.
+```
+
+### S5. Done when
+
+- [ ] `hcloud server list` shows only `cx` types and the node count/pools match `kube-hetzner.tf`; `terraform plan` is clean (no diff).
+- [ ] All nodes Ready, all Longhorn volumes healthy/attached, legacy bots/Redis/Prometheus healthy, no OOM kills on control-plane nodes.
+- [ ] The `kube-hetzner.tf` and `cx-migration.md` changes are committed and pushed in gport (**[you]** confirm the diff first).
+- [ ] The next Hetzner invoice/pricing page shows the expected costs (see `docs/infrastructure.md` totals).
+
 ## A. Preparation (no downtime)
 
 ### A1. gport: Prometheus OTLP receiver + Infisical operator
@@ -47,7 +146,7 @@ The new frontend talks to the `/v2` API only. It goes live in prod **after** the
 Prompt:
 ```
 Repo: ../../Giuliopime/gport
-Commit and push only these two changes: argocd/apps/infisical-operator.yaml (new) and the enableOTLPReceiver: true change in k8s-resources/kube-prometheus-stack/values.yaml. Do NOT touch hcloud-cluster/kube-hetzner.tf or hcloud-cluster/docs/cx-migration.md (node replacement must not happen together with the app migration). Show me the git diff and the commit message first, wait for my OK, then push. Afterwards verify (kubectl context gport): argocd applications infisical-operator and kube-prometheus-stack are Synced/Healthy, CRDs secrets.infisical.com exist, pods in infisical-operator-system run, the prometheus pod restarted once and its Longhorn PVC is still bound, and all Longhorn volumes are healthy/attached. Report anything off.
+Commit and push only these two changes: argocd/apps/infisical-operator.yaml (new) and the enableOTLPReceiver: true change in k8s-resources/kube-prometheus-stack/values.yaml. Do NOT touch hcloud-cluster/kube-hetzner.tf or hcloud-cluster/docs/cx-migration.md (the server migration in S is deferred and its uncommitted changes must stay out of this commit; node replacement must not happen together with the app migration). Show me the git diff and the commit message first, wait for my OK, then push. Afterwards verify (kubectl context gport): argocd applications infisical-operator and kube-prometheus-stack are Synced/Healthy, CRDs secrets.infisical.com exist, pods in infisical-operator-system run, the prometheus pod restarted once and its Longhorn PVC is still bound, and all Longhorn volumes are healthy/attached. Report anything off.
 ```
 
 ### A2. Infisical
@@ -337,4 +436,4 @@ Prepare the post-cutover cleanup and show me each step before doing it:
 
 **[you]**: remove the old Discord OAuth redirects if they differ, delete unused Semaphore secrets, check the old frontend project and old R2 bucket are removed.
 
-**E3.** Later and separately: `cpx → cx` node migration (`gport/hcloud-cluster/docs/cx-migration.md`) and JVM memory work (`docs/memory-improvement-plan.md`). Update `CLAUDE.md` steps: mark "deploy" done.
+**E3.** Later and separately: JVM memory work (`docs/memory-improvement-plan.md`; pod right-sizing then allows `min_nodes = 2`, see `docs/infrastructure.md` step 2). The `cpx → cx` node migration (S) is deferred until `cx` stock returns in nbg1: do it after this step. Update `CLAUDE.md` steps: mark "deploy" done.
