@@ -47,6 +47,9 @@ management:
         aggregation-temporality: cumulative
         base-time-unit: seconds
   tracing:
+    exemplars:
+      # lazily resolving the Tracer from the Lettuce event loop deadlocks with bean creation at startup
+      include: none
     export:
       otlp:
         enabled: false
