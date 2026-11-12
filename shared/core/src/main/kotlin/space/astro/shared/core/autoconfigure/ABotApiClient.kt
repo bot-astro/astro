@@ -14,7 +14,7 @@ import tools.jackson.databind.json.JsonMapper
 @EnableConfigurationProperties(BotEndpointProperties::class, BotShardProperties::class)
 @ConditionalOnProperty(
     prefix = "bot.endpoint",
-    name = ["localhost"],
+    name = ["port"],
 )
 class ABotApiClient {
     @Bean
