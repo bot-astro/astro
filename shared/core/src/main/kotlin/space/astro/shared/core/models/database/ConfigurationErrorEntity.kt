@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class ConfigurationErrorEntity(
     @Id
     val id: ObjectId = ObjectId.get(),
-    @Indexed
+    @Indexed(name = "guildId_1")
     val guildId: String,
     val code: ConfigurationErrorCode,
     val args: Map<String, String> = emptyMap(),

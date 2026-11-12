@@ -10,7 +10,8 @@ import space.astro.shared.core.models.database.userSettings.UserGuildUpgradeData
 data class UserEntity(
     @Id
     val id: ObjectId = ObjectId.get(),
-    @Indexed(unique = true)
+    // same name and options as the production index (not unique), a different spec makes createIndexes fail
+    @Indexed(name = "userID_1")
     val userID: String,
     val guildActiveUpgrades: MutableList<UserGuildUpgradeData> = mutableListOf(),
 )

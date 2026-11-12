@@ -10,7 +10,8 @@ import java.util.*
 data class GuildSettingsEntity(
     @Id
     val id: ObjectId = ObjectId.get(),
-    @Indexed
+    // named like the index that already exists in production (Spring would otherwise name it `guildID` and conflict)
+    @Indexed(name = "guildID_1")
     val guildID: String,
     var nickname: String? = null,
     var bio: String? = null,
