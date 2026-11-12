@@ -75,13 +75,6 @@ class HelpCommand(
                     ctx.t("help.open_source.content", "githubLink" to Links.GITHUB, "blogLink" to Links.BLOG_ARTICLE),
                 ),
                 Containers.divider(),
-                ActionRow.of(
-                    Buttons.guildDashboard(ctx.locale, ctx.guildId),
-                    Buttons.ultimate(ctx.locale),
-                    Buttons.guides(ctx.locale),
-                    Buttons.support(ctx.locale),
-                    Buttons.github(ctx.locale),
-                ),
                 Containers.footer(
                     ctx.t(
                         "help.footer",
@@ -91,6 +84,14 @@ class HelpCommand(
                         "totalPods" to botShardProperties.totalPods.toString(),
                     ),
                 ),
+            ),
+            // buttons sit below the container, like in the welcome message
+            ActionRow.of(
+                Buttons.guildDashboard(ctx.locale, ctx.guildId),
+                Buttons.ultimate(ctx.locale),
+                Buttons.guides(ctx.locale),
+                Buttons.support(ctx.locale),
+                Buttons.github(ctx.locale),
             ),
             ephemeral = false,
         )
