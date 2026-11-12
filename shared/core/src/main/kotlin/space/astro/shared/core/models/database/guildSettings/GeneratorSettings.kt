@@ -42,14 +42,15 @@ data class GeneratorSettings(
     // DEPRECATED legacy value: 0 means unset, same as null
     var chatSlowmode: Int? = null,
     var chatPermissionsInherited: PermissionsInherited = PermissionsInherited.NONE,
-    var defaultChatName: String,
+    // legacy generators created before private chats existed do not store these two names
+    var defaultChatName: String = "{vc_name}",
     var defaultChatText: String? = null,
     var defaultChatTextEmbed: Boolean = false,
     // DEPRECATED legacy value: -1 means unset, same as null
     var chatInterface: Int? = null,
     var waitingCategory: String? = null,
     var waitingPermissionsInherited: PermissionsInherited = PermissionsInherited.NONE,
-    var defaultWaitingName: String,
+    var defaultWaitingName: String = "Waiting for {vc_name}",
     // DEPRECATED legacy value: 0 means unset, same as null
     var waitingBitrate: Int? = null,
     var waitingPosition: InitialPosition = InitialPosition.BEFORE,
