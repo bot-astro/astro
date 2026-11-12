@@ -1,275 +1,340 @@
-# Deploying Hyperion (new bot, new infra)
+# Deploying Hyperion (backend + frontend)
 
-Replaces the legacy deployment (Helm releases in the `astro` namespace, `master` branch charts, ConfigMaps) with the Hyperion services deployed by ArgoCD from `bot-astro/infra` and configured from Infisical. Downtime of the bot is accepted. Nothing in this guide touches the cluster itself (`gport/hcloud-cluster`), Longhorn or the data stores, except the cleanups of step D4 (legacy `errors` documents in MongoDB, `TEMP_VCS:*` keys in Redis).
+Replaces the legacy deployment (Helm releases in namespace `astro`, ConfigMaps, old Nuxt site) with:
 
-Repos: `astro` (this), `infra` (`../infra`), `gport` (`../../Giuliopime/gport`). Cluster context: `gport`. Prod namespace `astro`, staging `astro-staging`.
+- **Backend**: Hyperion services deployed by ArgoCD from `bot-astro/infra`, config from Infisical via the Infisical operator.
+- **Frontend**: `astro-bot.space` (Nuxt 4, branch `hyperion-rewrite`) on Cloudflare.
 
-## 0. What changes, and the order
+Hours of downtime are accepted. Cluster, Longhorn and data stores are not modified, except the two data cleanups in D3 (`errors` documents in MongoDB, `TEMP_VCS:*` keys in Redis).
 
-| | Legacy | Hyperion |
-|---|---|---|
-| Deploy | `helm install` from `master` charts | ArgoCD appset on `bot-astro/infra` (`apps/*/envs/*`, namespace = env folder) |
-| Config | ConfigMaps (`bot-config`, `central-api-config`, ...) | Infisical (`prod`, `staging`) synced to Secrets by the Infisical operator |
-| Names | `central-api`, ingress `support-bot-ing` | `api-central`, ingress `support-bot` |
-| Pull secret | `docker-registry` (Helm) | `docker-registry` (SealedSecret, app `registry`) |
-| BigQuery key | secret `gcp-bigquery-creds` | `BOT__GCP_CREDENTIALS_JSON` in Infisical, mounted from `bot-config` |
-| Probes | custom `/ready`, `KUBE_LIFECYCLE_AUTH_KEY` | actuator on separate management ports 9100/9101/9102 |
-| Metrics | none in Prometheus | OTLP push to Prometheus |
+Repos (siblings): `astro` (this), `infra`, `astro-bot.space`, `../../Giuliopime/gport`. kubectl context `gport`. Namespaces: prod `astro`, staging `astro-staging`.
 
-Order: **(A) prepare while the old version keeps running** → **(B) merge to master, images get built, staging comes up** → **(C) test on staging** → **(D) prod cutover (downtime)** → **(E) after cutover**.
+**How to use this document.** Every step has a *Prompt* block. Paste it into Claude Code opened in the repo named in the block's first line, and Claude does the step (or tells you what you must do by hand). Steps marked **[you]** need a dashboard or a decision Claude cannot do. Claude must never apply Terraform, push to `infra`, uninstall Helm releases or delete data without you confirming the exact command first, and the prompts say so.
 
-Danger to keep in mind: the moment the appset sees `apps/*/envs/astro`, ArgoCD starts the new prod bots. If the old bots are still running, two processes use the same Discord token and the same Redis keys. That is why section B/C keeps prod excluded and section D stops the old ones first.
+## 0. State verified on 2026-11-05
+
+Checked by comparing every `${VAR}` without default in the `application.yml` of `bot`, `api-central`, `support-bot` and `entitlements-expiration-job` with the keys in Infisical:
+
+| Check | Result |
+|---|---|
+| Required keys in `prod` and `staging` | All present, except `BOT__POD_HOSTNAME`/`BOT__POD_ORDINAL` (injected by the StatefulSet, correct to be absent) and `BOT__BIGQUERY_DATASET_NAME` in `staging` (written by Terraform, A3) |
+| `CA__CORS_ALLOWED_ORIGIN` | **Wrong in both `prod` and `staging`: `http://localhost:3000`.** Must be the frontend origin or every dashboard request fails CORS. Fixed in A2 |
+| Cookie config | OK: `CA__SESSION_COOKIE_DOMAIN` = `astro-bot.space` / `staging.astro-bot.space`, secure `true`, SameSite `Lax`, allow-origin = frontend origin, `FRONTEND_BASE_URL` set |
+| `DISCORD_OAUTH_REDIRECT_URI` | prod `https://api.astro-bot.space/v2/auth/discord/callback`, staging `https://api-staging.astro-bot.space/v2/auth/discord/callback` (must also be registered in the Discord portals, A6) |
+| Frontend Infisical project (`c624625b-...`) | `ASTRO_API_BASE_URL` and `CHARGEBEE_SITE` set in `dev`, `staging`, `prod` with the right values (`https://api[-staging].astro-bot.space`, site `astro-bot` for prod and `astro-bot-test` for staging). Plus `CROWDIN_*` (translations only, not needed at build) |
+| Frontend deploy config | None in the repo (no wrangler file, no CI). Hosting is Cloudflare, configured in the dashboard: F section |
+
+Re-run the check before the cutover (prompt in A2).
+
+## 1. Order
+
+```
+A  Prepare (old version keeps running)   gport, Infisical, Terraform, Semaphore, infra repo, Discord, backups
+B  Merge + build + staging up            backend images, staging apps, staging frontend
+C  Test staging end to end               backend + frontend
+D  Production cutover (downtime)         stop legacy, clean data, start new backend, deploy new frontend
+E  After                                 Chargebee webhooks, cleanup
+```
+
+Danger: as soon as ArgoCD sees `apps/*/envs/astro`, it starts the new prod bots. If the legacy bots still run, two processes share one Discord token and Redis keys. Prod stays excluded in the appset until D4.
+
+The new frontend talks to the `/v2` API only. It goes live in prod **after** the new API is up (D5), and the old frontend is down or broken between D2 and D6: that is the downtime.
 
 ## A. Preparation (no downtime)
 
-### A1. gport
+### A1. gport: Prometheus OTLP receiver + Infisical operator
 
-Two changes in `gport`, both applied by ArgoCD from `main`:
-
-1. `k8s-resources/kube-prometheus-stack/values.yaml`: `enableOTLPReceiver: true` (uncommitted today). Without it the services cannot push metrics.
-2. `argocd/apps/infisical-operator.yaml` (new): installs the Infisical operator (`secrets-operator` chart 0.11.15) in `infisical-operator-system`.
-
-```sh
-cd ../../Giuliopime/gport
-git add argocd/apps/infisical-operator.yaml k8s-resources/kube-prometheus-stack/values.yaml
-git commit -m "feat: infisical operator, prometheus otlp receiver" && git push
+Prompt:
 ```
-
-Do **not** commit/apply `hcloud-cluster/kube-hetzner.tf` or `hcloud-cluster/docs/cx-migration.md` as part of this: node replacement and the app migration should not happen together (the cx migration drains nodes holding Longhorn volumes with Redis and Prometheus data).
-
-Verify:
-```sh
-kubectl get applications -n argocd                       # infisical-operator and kube-prometheus-stack Synced/Healthy
-kubectl get crd | grep infisical                          # infisicalconnections, infisicalauths, infisicalstaticsecrets (secrets.infisical.com)
-kubectl get pods -n infisical-operator-system
-kubectl get pods -n monitoring | grep prometheus          # restarted once for the OTLP flag (Longhorn PVC 10Gi stays)
-```
-
-Longhorn check (read only), all volumes should be `healthy`/`attached`:
-```sh
-kubectl get volumes.longhorn.io -n longhorn-system
+Repo: ../../Giuliopime/gport
+Commit and push only these two changes: argocd/apps/infisical-operator.yaml (new) and the enableOTLPReceiver: true change in k8s-resources/kube-prometheus-stack/values.yaml. Do NOT touch hcloud-cluster/kube-hetzner.tf or hcloud-cluster/docs/cx-migration.md (node replacement must not happen together with the app migration). Show me the git diff and the commit message first, wait for my OK, then push. Afterwards verify (kubectl context gport): argocd applications infisical-operator and kube-prometheus-stack are Synced/Healthy, CRDs secrets.infisical.com exist, pods in infisical-operator-system run, the prometheus pod restarted once and its Longhorn PVC is still bound, and all Longhorn volumes are healthy/attached. Report anything off.
 ```
 
 ### A2. Infisical
 
-Project `b9071f19-b984-4138-a1e8-a15c67e02603`, environments `prod` and `staging`.
+Project `b9071f19-b984-4138-a1e8-a15c67e02603` (backend), `c624625b-a4c6-41b6-aac9-eb9985ff2469` (frontend).
 
-**1. Machine identity for the operator (Kubernetes Auth)**
+**[you] Machine identities**
 
-1. Organization → Access Control → Machine Identities → create `astro-k8s-operator`. Add it to the project with a role that can read secrets in `prod` and `staging` (Viewer is enough).
-2. Authentication → add **Kubernetes Auth**:
-   - Kubernetes host/API URL: the cluster API URL (gport creates a Cloudflare record for it; Infisical Cloud must be able to reach it on 6443, check the control plane load balancer/firewall in `hcloud-cluster/kube-hetzner.tf`).
-   - Token reviewer JWT: the token of a service account that has `system:auth-delegator`, e.g.
+1. `astro-k8s-operator`, **Kubernetes Auth**, role Viewer on the backend project (`prod` + `staging`):
+   - API URL: cluster API (Cloudflare record from gport). Infisical Cloud must reach it on 6443: check the control plane firewall/load balancer in `hcloud-cluster/kube-hetzner.tf`.
+   - Token reviewer JWT:
      ```sh
      kubectl create serviceaccount infisical-token-reviewer -n kube-system
      kubectl create clusterrolebinding infisical-token-reviewer --clusterrole=system:auth-delegator --serviceaccount=kube-system:infisical-token-reviewer
      kubectl create token infisical-token-reviewer -n kube-system --duration=8760h
      ```
-     (a long-lived token Secret of type `kubernetes.io/service-account-token` is the alternative if you want it not to expire).
-   - CA certificate: from the kubeconfig (`certificate-authority-data`, base64 decoded).
-   - Allowed service account names: `infisical-service-account`. Allowed namespaces: `astro,astro-staging`.
-3. Copy the **Identity ID**. It goes in the sealed secret in A5 (it is the same for both namespaces, or create one identity per env if you prefer to scope them).
+   - CA certificate: `certificate-authority-data` from the kubeconfig, base64-decoded.
+   - Allowed service account names `infisical-service-account`, namespaces `astro,astro-staging`.
+   - Copy the **Identity ID** (used in A5).
+2. `astro-terraform`, **Universal Auth**, write access to the backend project. Copy client id/secret (for `terraform.tfvars`, A3).
 
-**2. Machine identity for Terraform (Universal Auth)**
+**Fix the CORS value and re-verify config**
 
-Create `astro-terraform` with write access to the project (secrets in both envs). Copy client id/secret for `terraform.tfvars` (A3).
+`CA__CORS_ALLOWED_ORIGIN` is a single value (the property builds a one-element list). Set `prod` = `https://astro-bot.space`, `staging` = `https://staging.astro-bot.space`.
 
-**3. Secrets**
+Prompt:
+```
+Repo: astro
+1. Run `infisical export --env=<env> --format=json` for staging and prod (print KEYS ONLY, never values, except for these non-secret ones: FRONTEND_BASE_URL, CA__CORS_ALLOWED_ORIGIN, CA__SESSION_COOKIE_DOMAIN, CA__SESSION_COOKIE_ALLOW_ORIGIN, CA__SESSION_COOKIE_SECURE, CA__SESSION_COOKIE_SAME_SITE, DISCORD_OAUTH_REDIRECT_URI, R2_PUBLIC_URL, SUPPORT_BOT_ENDPOINT_BASE_URL, BOT_SHARD_MANAGER_TOTAL_PODS, BOT_SHARD_MANAGER_TOTAL_SHARDS, REDIS_HOST, MONGODB_URI host only).
+2. Compare every ${VAR} without default in services/{bot,api-central,support-bot,entitlements-expiration-job}/src/main/resources/application.yml (and anything under shared/core that reads env) with those keys, and tell me what is missing per env. Expected missing: BOT__POD_HOSTNAME/BOT__POD_ORDINAL (injected by the StatefulSet), BOT__BIGQUERY_DATASET_NAME and R2_*/BOT__GCP_CREDENTIALS_JSON in staging until Terraform runs.
+3. Check the values against what the manifests in ../infra/apps/*/envs/* expect: ports (bot 9000, api-central 9001, support-bot 9002), SUPPORT_BOT_ENDPOINT_BASE_URL = http://support-bot.<namespace>:9002, BOT_SHARD_MANAGER_TOTAL_PODS = replicas in apps/bot/envs/<env>/replicas.yml, TOTAL_SHARDS = pods x shards per pod, REDIS_HOST (prod redis-master.databases.svc.cluster.local, staging redis-staging), that staging uses a DIFFERENT Discord application token, Mongo database and Redis from prod, and that SUPPORT_BOT_ENDPOINT_AUTH equals SB__API_AUTH in each env.
+4. Flag CA__CORS_ALLOWED_ORIGIN if it is not exactly the frontend origin of that env (prod https://astro-bot.space, staging https://staging.astro-bot.space). Do not change anything, give me a report and the exact `infisical secrets set` commands, I run them.
+```
 
-Compare against what the code reads. Last check (keys only, no values):
-
-*`prod`: 59 keys set, add these:*
-
-| Key | Value |
-|---|---|
-| `SUPPORT_BOT_ENDPOINT_BASE_URL` | `http://support-bot.astro:9002` |
-| `SUPPORT_BOT_ENDPOINT_AUTH` | same value as `SB__API_AUTH` |
-| `CA__CHARGEBEE_WEBHOOK_TOKEN` | basic auth password you will configure in Chargebee (E2). The old one was `chargebee.webhookToken` in the old config |
-| `CA__DISCORD_APPLICATION_ID`, `CA__DISCORD_APPLICATION_TOKEN` | same app/token as `BOT__DISCORD_APPLICATION_*` (used to refresh guild entitlements from Discord) |
-| `PREMIUM_SERVER_SKU_ID`, `PREMIUM_MONTHLY_PLAN_ID`, `PREMIUM_YEARLY_PLAN_ID` | see `docs/premium-env-vars.md` (not set = nobody is premium) |
-
-Also check these in `prod`:
-- `DISCORD_OAUTH_REDIRECT_URI=https://api.astro-bot.space/v2/auth/discord/callback` and that URL is registered in the Discord developer portal (OAuth2 → Redirects). The old redirect keeps working until you remove it.
-- `BOT_SHARD_MANAGER_TOTAL_PODS=11`, `BOT_SHARD_MANAGER_TOTAL_SHARDS=176` (match the 11 replicas in `apps/bot/envs/astro/replicas.yml`).
-- Ports: `BOT_API_PORT=9000`, `CA__PORT=9001`, `SB__PORT=9002`.
-- `REDIS_HOST=redis-master.databases.svc.cluster.local`, `REDIS_PORT=6379`, `REDIS_DATABASE=0`, `REDIS_PASSWORD` (same as secret `rediscreds` in `databases`).
-- `MONGODB_URI` is the Atlas string. `R2_*` and the BigQuery vars are written by Terraform (A3).
-- Do not set `BOT__POD_HOSTNAME`/`BOT__POD_ORDINAL` in prod/staging, the StatefulSet injects them (the ordinal is the pod name, e.g. `bot-3`).
-
-*`staging`: 39 keys set, add these:*
-
-| Key | Value |
-|---|---|
-| `BOT__DISCORD_APPLICATION_ID`, `BOT__DISCORD_APPLICATION_TOKEN` | a **separate** Discord application for staging (never reuse the prod token) |
-| `EEJ__DISCORD_APPLICATION_ID`, `EEJ__DISCORD_APPLICATION_TOKEN`, `CA__DISCORD_APPLICATION_ID`, `CA__DISCORD_APPLICATION_TOKEN` | same app/token as above (or its own) |
-| `DISCORD_OAUTH_ID`, `DISCORD_OAUTH_SECRET` | OAuth2 of the staging application; redirect `https://api-staging.astro-bot.space/v2/auth/discord/callback` |
-| `DISCORD_OAUTH_REDIRECT_URI` | the staging redirect above |
-| `CA__AUTH`, `SB__API_AUTH`, `SUPPORT_BOT_ENDPOINT_AUTH` | random strings (`openssl rand -base64 48`); `SUPPORT_BOT_ENDPOINT_AUTH` = `SB__API_AUTH` |
-| `SUPPORT_BOT_ENDPOINT_BASE_URL` | `http://support-bot.astro-staging:9002` |
-| `CA__SESSION_COOKIE_ALLOW_ORIGIN` | staging frontend origin |
-| `CA__CHARGEBEE_WEBHOOK_TOKEN`, `CHARGEBEE_API_KEY` | Chargebee test site (`astro-bot-test`) |
-| `MONGODB_URI` | a separate database for staging (new database name in the same Atlas cluster is enough, user with access to only that database) |
-| `REDIS_HOST` | `redis-staging` |
-| `REDIS_PORT` / `REDIS_DATABASE` | `6379` / `0` |
-| `REDIS_PASSWORD` | random (the staging Redis in `apps/redis-staging` reads it from here) |
-| `SB__DISCORD_APPLICATION_TOKEN`, `SB__SERVER_GUILD_ID`, `SB__SERVER_PREMIUM_ROLE_ID`, `SB__SERVER_PREMIUM_SKU_ID`, `SB__SERVER_ENTITLEMENTS_APPLICATION_ID`, `SB__SERVER_ENTITLEMENTS_APPLICATION_TOKEN` | a staging support server and application |
-| `PREMIUM_RESTRICTIONS` | `false` to treat every guild as premium on staging |
-| `BOT__BIGQUERY_DATASET_NAME`, `BOT__GCP_CREDENTIALS_JSON`, `R2_*` | written by Terraform (A3), do not add by hand (if they already exist, delete or import them first, see `terraform/README.md`) |
-
-Staging already has `BOT_SHARD_MANAGER_TOTAL_PODS=1`, `TOTAL_SHARDS=1`.
-
+**[you]** Staging keys that must be a separate staging application/database (verify the prompt's report): `BOT__DISCORD_APPLICATION_*`, `EEJ__*`, `CA__DISCORD_APPLICATION_*`, `DISCORD_OAUTH_*`, `SB__*`, `MONGODB_URI`, `REDIS_*`, Chargebee test site (`astro-bot-test`), `PREMIUM_RESTRICTIONS=false`.
 ### A3. Terraform (`infra/terraform`)
 
-Details in `terraform/README.md`. Prod and staging are both declared. Summary:
+Creates R2 buckets (`astro-media-prod/staging`), `cdn[-staging].astro-bot.space`, DNS for `api`, `support-bot` and staging hosts, BigQuery (adopts the existing prod dataset, creates staging), service accounts, and writes `R2_*`, `BOT__BIGQUERY_DATASET_NAME`, `BOT__GCP_CREDENTIALS_JSON` into Infisical. Details: `terraform/README.md`.
 
-1. By hand once: create the R2 bucket `astro-terraform-state` and an R2 API token for it. `cp backend.hcl.template backend.hcl`, fill the account id, `export AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=...`.
-2. Delete in Infisical, in both `prod` and `staging`, the keys terraform will create (it fails with "already exists"): `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_ENDPOINT_URL`, `BOT__BIGQUERY_DATASET_NAME`, `BOT__GCP_CREDENTIALS_JSON`. Nothing running reads them from Infisical yet (the legacy bot uses ConfigMaps). Copy `R2_*` and the dataset name aside first if you want to be able to roll back.
-3. `cloudflare/` (buckets `astro-media-prod` and `astro-media-staging`, `cdn.astro-bot.space` and `cdn-staging.astro-bot.space`, one token per env, DNS for `api`, `support-bot` and the two staging hosts → ingress IP; `ingress_ipv4` from gport's `module.kube-hetzner.ingress_public_ipv4`):
-   - The old prod bucket `astro-media` is empty: verify it (Cloudflare dashboard → R2), then delete it. This frees `cdn.astro-bot.space`, a custom domain can be attached to one bucket only. Also delete its old API token.
-   - The prod DNS records `api` and `support-bot` already exist: import them (commands in `terraform/README.md`) so they are not recreated.
-4. `gcp/` (project `astro-405113`): `imports.tf` adopts the existing prod dataset `astro_bot` and its 5 tables (`CONNECTION_INVOCATION`, `GUILD_EVENT`, `GUILD_SNAPSHOT`, `SLASH_COMMAND_INVOCATION`, `TEMPORARY_VC_GENERATION`) without touching the data; tables have `deletion_protection` and `prevent_destroy`, so a mistake fails instead of dropping data. It also creates the service accounts (`astro-bot-prod`, `astro-bot-staging`), `astro_staging`, and writes `BOT__GCP_CREDENTIALS_JSON`. Revoke the old key (`gcp-bigquery-creds` secret, committed `gcp-bigquery-creds.json`) once the new version runs, and remove the file from git.
-5. In each module: `terraform init -backend-config=../backend.hcl && terraform plan`. **Read the plan** before applying:
-   - `gcp/`: the dataset and 5 prod tables are only `import`ed (at most in-place updates, no schema change); there must be **no** `destroy` or `replace` on any BigQuery resource.
-   - `cloudflare/`: no `destroy`; the imported DNS records may show `update in-place` (proxy/ttl), that is fine.
-   - After the first successful apply delete `gcp/imports.tf`.
+**[you] before**: create R2 bucket `astro-terraform-state` + R2 API token; `cp backend.hcl.template backend.hcl` and fill it; `export AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY`; fill `terraform.tfvars` for both modules (Infisical `astro-terraform` creds, Cloudflare token, zone id, `ingress_ipv4` = gport `module.kube-hetzner.ingress_public_ipv4`).
+
+Prompt:
+```
+Repo: ../infra (terraform/)
+Read terraform/README.md and walk me through the Terraform apply for cloudflare/ and gcp/. Rules:
+- First list which of R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_ENDPOINT_URL, BOT__BIGQUERY_DATASET_NAME, BOT__GCP_CREDENTIALS_JSON exist in Infisical prod/staging (keys only). Terraform fails if they exist: tell me to save the old R2_* values aside and delete them, and give me the commands.
+- The old prod bucket astro-media must be verified empty (I do this in the Cloudflare dashboard) and deleted, because cdn.astro-bot.space can be attached to one bucket only.
+- The prod DNS records api and support-bot already exist: give me the terraform import commands from the README.
+- Run `terraform init -backend-config=../backend.hcl && terraform plan` in each module and READ the plan to me. Hard stop if gcp/ shows any destroy or replace on a BigQuery dataset or table, or if cloudflare/ shows any destroy. Imported DNS records may show in-place updates, fine.
+- Apply only after I confirm the plan. After the first successful apply of gcp/, delete gcp/imports.tf.
+- Afterwards verify the keys now exist in Infisical for both envs and that https://cdn.astro-bot.space resolves.
+```
 
 ### A4. Semaphore and GitHub
 
-1. Semaphore secrets (check with `sem get secrets` after `sem connect`):
-   - `github`: env `GHCR_ORGANIZATION=bot-astro`, `GITHUB_ACTOR`, `GITHUB_TOKEN` (token with `write:packages`).
-   - `sentry`: env `SENTRY_AUTH_TOKEN`.
-   - `infra-deploy-key`: file `/home/semaphore/.ssh/infra_deploy_key` with the **private** key. Create the pair: `ssh-keygen -t ed25519 -N "" -f infra_deploy_key`, add `infra_deploy_key.pub` to `bot-astro/infra` → Settings → Deploy keys with **write access**.
-2. The pipeline only builds and auto-promotes on **`master`**. Production promotion is manual. Promote a prod deploy only for a commit whose build for that service actually ran (the image tag is the git SHA; if the service block was skipped because nothing changed, the tag does not exist).
+**[you]** Check with `sem get secrets`:
+- `github`: `GHCR_ORGANIZATION=bot-astro`, `GITHUB_ACTOR`, `GITHUB_TOKEN` (`write:packages`).
+- `sentry`: `SENTRY_AUTH_TOKEN`.
+- `infra-deploy-key`: file `/home/semaphore/.ssh/infra_deploy_key` (private key). Create: `ssh-keygen -t ed25519 -N "" -f infra_deploy_key`, add the `.pub` to `bot-astro/infra` → Settings → Deploy keys with **write access**.
 
-### A5. Infra repo: secrets and ArgoCD access
+Prompt:
+```
+Repo: astro
+Audit .semaphore/*.yml and ../infra/scripts/{deploy.sh,bump-version.sh} in depth: pipeline triggers only on master, the build blocks' change_in paths, secrets used vs the secrets listed above, jib push of <sha>/<version>/latest to ghcr.io/bot-astro/<service>, staging promotion auto and prod promotion manual, the deploy script cloning infra with the deploy key, yq bump of apps/<app>/envs/<env>/version.yml, commit and push with rebase retry. Tell me every bug or missing piece. Remember an image tag is the git SHA: a prod promotion only works for a commit whose build of that service actually ran.
+```
 
-1. `docker-registry` SealedSecrets are already generated for both namespaces (`apps/registry/envs/*/docker-config-secret-sealed.yml`). To regenerate, see the instructions in `apps/registry/envs/<env>/secrets/docker-config-secret.template.yml`.
-2. Seal the Infisical identity id for both namespaces (instructions inside `apps/infisical/envs/<env>/secrets/infisical-kubernetes-credentials-secret.template.yml`), then add the sealed file to `resources:` in `apps/infisical/envs/<env>/kustomization.yml`:
-   ```sh
-   cd ../infra
-   cp apps/infisical/envs/astro/secrets/infisical-kubernetes-credentials-secret.template.yml apps/infisical/envs/astro/secrets/infisical-kubernetes-credentials-secret.yml   # then set identityId
-   cp apps/infisical/envs/astro-staging/secrets/infisical-kubernetes-credentials-secret.template.yml apps/infisical/envs/astro-staging/secrets/infisical-kubernetes-credentials-secret.yml
-   scripts/seal-secrets.sh infisical
-   ```
-3. `kustomize build` every overlay (`for d in apps/*/envs/*; do kustomize build $d > /dev/null || echo FAIL $d; done`), then commit and push `infra`. Nothing deploys yet, the root app is not applied.
-4. ArgoCD must be able to read `bot-astro/infra`. If the repo is private, add credentials in ArgoCD (Settings → Repositories, HTTPS + token with `repo:read`, or add a deploy key; this belongs in `gport/argocd-installation` as a sealed secret so it survives reinstalls).
+### A5. Infra repo: sealed secrets and ArgoCD access
 
-### A6. External services
+`docker-registry` SealedSecrets already exist for both namespaces. The Infisical identity secret does not yet.
 
-- **Discord developer portal** (prod application): add the new OAuth2 redirect (A2).
-- **Chargebee**: the new webhook URLs are set in E2 (they depend on the new API being up).
-- **Cloudflare**: DNS and R2 are managed by Terraform (A3).
+Prompt:
+```
+Repo: ../infra
+1. Seal the Infisical machine identity id (I give it to you now: <IDENTITY_ID>) for apps/infisical/envs/astro and apps/infisical/envs/astro-staging following the templates in secrets/infisical-kubernetes-credentials-secret.template.yml, using scripts/seal-secrets.sh infisical. Check the sealed files are the only thing that gets committed (the plain *-secret.yml must be gitignored) and add the sealed file to resources: in each kustomization.yml.
+2. Run `for d in apps/*/envs/*; do kustomize build $d > /dev/null || echo FAIL $d; done` and fix failures.
+3. Review that every InfisicalStaticSecret (apps/infisical/envs/*) points at project b9071f19-b984-4138-a1e8-a15c67e02603, environment slug prod for astro and staging for astro-staging, and that the generated Secret names match what the workloads reference (bot-config, api-central-config, support-bot-config, entitlements-expiration-job-config, redis-staging-config).
+4. Show me the diff, wait for my OK, commit and push. Nothing deploys yet because the root app is not applied.
+```
+
+**[you]** ArgoCD must be able to read `bot-astro/infra`. If private, add credentials (Settings → Repositories, HTTPS + token or deploy key); persist them as a sealed secret in `gport/argocd-installation`.
+
+### A6. External services **[you]**
+
+- **Discord developer portal**, prod application: add redirect `https://api.astro-bot.space/v2/auth/discord/callback` (OAuth2 → Redirects). Staging application: `https://api-staging.astro-bot.space/v2/auth/discord/callback`. Keep the old redirect until E.
+- **Cloudflare**: DNS/R2 by Terraform (A3). The frontend domains are configured in F.
+- **Chargebee**: webhooks changed in E1 (they need the new API up).
 
 ### A7. Backups (before the cutover)
 
 | What | How |
 |---|---|
-| MongoDB | Atlas → Backup → take an on-demand snapshot. The only change the migration makes is deleting the legacy `errors` documents (D4) |
-| Redis | `kubectl exec -n databases redis-master-0 -- redis-cli -a "$(kubectl get secret rediscreds -n databases -o jsonpath='{.data.password}' \| base64 -d)" BGSAVE`, wait for `LASTSAVE` to change, then `kubectl cp databases/redis-master-0:/data/dump.rdb ./redis-backup.rdb` (see `redis-migration.md` for the layout). The only Redis change the migration makes is deleting the `TEMP_VCS:*` keys (D4) |
-| Longhorn | Longhorn UI → Volume → Create Backup/Snapshot for the Redis and Prometheus volumes |
-| Old config | `kubectl get cm,secret,ingress,sts,deploy,cronjob,svc -n astro -o yaml > astro-legacy-backup.yaml` (contains secrets, keep it out of git). Also `helm get values -n astro <release>` for `bot`, `central-api`, `support-bot`, `entitlements-expiration-job` |
-| BigQuery | Adopted by Terraform with `imports.tf`, data not modified. Take a copy before the first apply anyway: `bq cp` each of the 5 tables of `astro_bot` to a backup dataset (or a table snapshot) |
+| MongoDB | **[you]** Atlas → Backup → on-demand snapshot |
+| Redis | `kubectl exec -n databases redis-master-0 -- redis-cli -a "$(kubectl get secret rediscreds -n databases -o jsonpath='{.data.password}' \| base64 -d)" BGSAVE`, wait until `LASTSAVE` changes, then `kubectl cp databases/redis-master-0:/data/dump.rdb ./redis-backup.rdb` |
+| Longhorn | Longhorn UI → snapshot/backup of the Redis and Prometheus volumes |
+| Legacy config | `kubectl get cm,secret,ingress,sts,deploy,cronjob,svc -n astro -o yaml > astro-legacy-backup.yaml` (contains secrets, outside git) and `helm get values -n astro <release>` for `bot`, `central-api`, `support-bot`, `entitlements-expiration-job` |
+| BigQuery | `bq cp` the 5 tables of `astro_bot` (`CONNECTION_INVOCATION`, `GUILD_EVENT`, `GUILD_SNAPSHOT`, `SLASH_COMMAND_INVOCATION`, `TEMPORARY_VC_GENERATION`) into a backup dataset |
+| Old frontend | Note the current Cloudflare deployment id so you can roll back (F5) |
 
-## B. Merge, build, staging
+Prompt:
+```
+Repo: astro
+Run the Redis BGSAVE + copy, the legacy config dump and the helm get values dumps from docs/deploy-hyperion.md A7 into ~/astro-backups/<today>/ (outside any git repo), and the bq cp of the 5 astro_bot tables into a dataset astro_bot_backup_<today>. Confirm each file is non-empty and each table copy has the same row count as the source. Do not delete or modify anything.
+```
 
-1. Merge `version/hyperion` into `master` (the legacy charts under `services/*/chart` on master are replaced). Semaphore builds every service whose paths changed and pushes images tagged `<sha>`, `<version>` (`6.0.0` bot and api-central, `3.0.0` support-bot and expiration job) and `latest` to `ghcr.io/bot-astro/<service>`.
-2. Each build auto-promotes to staging: `scripts/deploy.sh` clones `infra`, sets the image of `apps/<app>/envs/astro-staging/version.yml` to the SHA, and pushes. Check the commits `deploy(<app>): astro-staging <sha>` in `infra`.
-3. Promote production in Semaphore for each service (manual promotion). This only writes the SHA into `apps/<app>/envs/astro/version.yml` of `infra`; nothing starts yet because ArgoCD does not know about the prod folders (step 4).
-4. Apply the root app **with prod excluded**. Edit `appsets/appset.yml` in `infra` and add under `generators[0].git.directories`:
+## F. Frontend preparation (can be done during A, B, C)
+
+Facts: Nuxt 4, modules `@nuxt/content` (uses `better-sqlite3`), `@nuxt/image`, `@nuxtjs/i18n` (locales `en-US`, `it`), sitemap, robots. `runtimeConfig.public` reads `ASTRO_API_BASE_URL` and `CHARGEBEE_SITE` from `process.env` **inside `nuxt.config.ts`**, so they are baked at **build time**: they must be set as Cloudflare *build* variables, and each environment (prod, staging) needs its own build with its own values. Branch `hyperion-rewrite` is 56 files ahead of `main`.
+
+### F1. Decide Pages vs Workers and make the build work on Cloudflare
+
+Nuxt Content v3 stores content in SQLite; on Cloudflare it needs the Cloudflare/D1 setup, which is the part most likely to break.
+
+Prompt:
+```
+Repo: astro-bot.space
+Make the app deployable on Cloudflare (Pages or Workers with static assets, use whichever Cloudflare currently recommends for Nuxt 4 / Nitro) and tell me exactly what to configure in the Cloudflare dashboard. Check in order:
+1. Nitro preset for Cloudflare and whether `nuxt build` (SSR) or `nuxt generate` (static) fits: look at which routes need server rendering (content pages, dashboard with cookie auth is client-side calling the API?). Prefer static generation if every route can be prerendered, otherwise SSR on Workers.
+2. @nuxt/content 3.16 on Cloudflare: required database config (D1 binding or other), wrangler config, and what it needs at build time. better-sqlite3 is native: check it does not break the Cloudflare build.
+3. @nuxt/image (provider), @nuxt/fonts, sitemap url (site.url is hard-coded to https://astro-bot.space: it must not index the staging site, add noindex/robots disallow for staging via an env flag), the particles.js CDN script, and routeRules redirects in app/constants/redirects.
+4. The API calls: confirm they send credentials (cookie session) to ASTRO_API_BASE_URL and that this works cross-origin from astro-bot.space -> api.astro-bot.space given the backend config (CA__CORS_ALLOWED_ORIGIN = frontend origin, cookie domain astro-bot.space, Secure, SameSite=Lax). Read services/api-central in ../astro to confirm CORS allowCredentials and methods.
+5. Add the config files needed (wrangler.jsonc, nuxt.config changes, .node-version or engines, pnpm version) and a short README "Deploy" section. Do NOT build or run anything that touches Cloudflare. Show me the diff.
+Then give me the exact dashboard settings: framework preset, build command, output directory, Node version, environment variables per environment (ASTRO_API_BASE_URL, CHARGEBEE_SITE, anything else you found), production branch and preview/staging branch.
+```
+
+### F2. **[you]** Cloudflare project
+
+Create one Cloudflare project connected to `bot-astro/astro-bot.space` with the settings from F1:
+
+| Environment | Branch | Domain | Build variables |
+|---|---|---|---|
+| Production | `main` (after merge) | `astro-bot.space` (+ `www` redirect if it exists today) | `ASTRO_API_BASE_URL=https://api.astro-bot.space`, `CHARGEBEE_SITE=astro-bot` |
+| Staging (preview/branch deploy) | `hyperion-rewrite` | `staging.astro-bot.space` | `ASTRO_API_BASE_URL=https://api-staging.astro-bot.space`, `CHARGEBEE_SITE=astro-bot-test` |
+
+Do not attach `astro-bot.space` to the new project until D6: it is currently serving the old site. Before that, test through the project's `*.pages.dev`/`*.workers.dev` URL or the staging domain.
+
+For the preview URL to work against the staging API the origin must be allowed by CORS: staging only accepts `https://staging.astro-bot.space`. So test staging through `staging.astro-bot.space`, not through the `*.pages.dev` URL.
+
+### F3. Frontend release checklist before D6
+
+- [ ] `hyperion-rewrite` builds on Cloudflare with the staging variables and is reachable on `staging.astro-bot.space`.
+- [ ] Prod build (branch `main` after merge, or a preview of `hyperion-rewrite` with prod variables) succeeds and is *not yet* attached to the prod domain.
+- [ ] Crowdin: `l10n_hyperion-rewrite` translation PR is merged into `hyperion-rewrite` and `i18n/*.json` are the final ones.
+
+## B. Merge, build, staging up
+
+1. **Backend**: merge `version/hyperion` into `master`. Semaphore builds every service and pushes `<sha>`, `<version>`, `latest` to `ghcr.io/bot-astro/<service>`; each build auto-promotes to staging by writing `apps/<app>/envs/astro-staging/version.yml` in `infra`.
+2. Promote **production** in Semaphore for each of the 4 services (manual). This only writes the SHA into `apps/<app>/envs/astro/version.yml`; nothing starts yet because prod is excluded in step 3.
+3. Apply the root app with **prod excluded**. In `infra/appsets/appset.yml` add under `generators[0].git.directories`:
    ```yaml
           - path: apps/*/envs/astro
             exclude: true
    ```
-   commit, push, then:
-   ```sh
-   kubectl apply -f root-argocd-app.yml
-   ```
-   Apps created: `registry-astro-staging`, `infisical-astro-staging`, `redis-staging-astro-staging`, `bot-astro-staging`, `api-central-astro-staging`, `support-bot-astro-staging`, `entitlements-expiration-job-astro-staging`.
+
+Prompt:
+```
+Repo: ../infra
+1. Show me the Semaphore build status for the merge commit of the astro repo (sem CLI if connected) and the commits `deploy(<app>): astro-staging <sha>` and `deploy(<app>): astro <sha>` in infra's git log, for bot, api-central, support-bot, entitlements-expiration-job. Verify for each that the image ghcr.io/bot-astro/<service>:<sha> exists (docker manifest inspect / gh api).
+2. Add the `exclude: true` entry for apps/*/envs/astro to appsets/appset.yml and show me the diff. After my OK commit, push, and run `kubectl apply -f root-argocd-app.yml` (context gport).
+3. Confirm the created applications are exactly: registry-astro-staging, infisical-astro-staging, redis-staging-astro-staging, bot-astro-staging, api-central-astro-staging, support-bot-astro-staging, entitlements-expiration-job-astro-staging, and that NO *-astro (prod) application exists.
+```
+
+4. **Frontend**: merge `hyperion-rewrite` into `main` **only at D6**. For staging, Cloudflare builds `hyperion-rewrite` as is (F2).
 
 ## C. Test staging
 
-```sh
-kubectl get applications -n argocd | grep staging
-kubectl get pods,infisicalstaticsecrets -n astro-staging
-kubectl describe infisicalauth infisical-auth -n astro-staging      # auth errors show up here
-kubectl logs -n astro-staging bot-0 --tail=100
+Prompt:
+```
+Repo: astro
+Check staging (kubectl context gport, namespace astro-staging) and report a pass/fail checklist:
+- `kubectl get applications -n argocd | grep staging` all Synced/Healthy.
+- Secrets exist: docker-registry, bot-config, api-central-config, support-bot-config, entitlements-expiration-job-config, redis-staging-config; `kubectl describe infisicalauth -n astro-staging` has no auth errors; InfisicalStaticSecrets are synced.
+- Pods Ready: bot-0 (readiness takes ~2 min), api-central, support-bot-0, redis-staging; no CreateContainerConfigError/ImagePullBackOff/CrashLoopBackOff; show the last 100 log lines of bot-0 and api-central and flag errors.
+- Certificates issued and https://api-staging.astro-bot.space/docs answers; the management ports (9100/9101/9102) are NOT exposed by any ingress.
+- Sentry (use the Sentry MCP): events from staging with the release = deployed SHA.
+- Prometheus (port-forward kube-prometheus-stack-prometheus 19090:9090): the services' OTLP metrics are present.
+- BigQuery astro_staging.TEMPORARY_VC_GENERATION receives rows after I create a temp voice channel (I will do that, tell me when).
+- Run the job once: `kubectl create job --from=cronjob/entitlements-expiration-job test-run -n astro-staging`, show its logs, then delete the job.
 ```
 
-Checklist:
-- [ ] `docker-registry`, `bot-config`, `api-central-config`, `support-bot-config`, `entitlements-expiration-job-config`, `redis-staging-config` Secrets exist; pods leave `CreateContainerConfigError`/`ImagePullBackOff`.
-- [ ] `bot-0`, `api-central`, `support-bot-0` Ready (readiness takes ~2 min for the bot); `redis-staging` Running.
-- [ ] Ingress certificates issued: `kubectl get certificate -n astro-staging`; `https://api-staging.astro-bot.space` answers.
-- [ ] Staging bot is online in a test guild; create a temporary voice channel.
-- [ ] Sentry receives events (release = SHA); Prometheus has the OTLP metrics (port-forward `kube-prometheus-stack-prometheus` and query e.g. `up` / the app meters).
-- [ ] BigQuery `astro_staging.TEMPORARY_VC_GENERATION` gets rows (`bq query` with a partition filter).
-- [ ] Dashboard login via Discord OAuth works against the staging API, Chargebee test webhooks reach `/v2/chargebee/events/subscription/*`.
-- [ ] Trigger the job: `kubectl create job --from=cronjob/entitlements-expiration-job test-run -n astro-staging`.
+**[you]** Manual checks on staging:
+- [ ] Staging bot online in a test guild; slash commands respond; a temporary voice channel is created and deleted.
+- [ ] `https://staging.astro-bot.space` loads; language switch works (en-US/it); content pages and guides render.
+- [ ] Sign in with Discord from the staging site: redirect to Discord → back to the staging site with a session cookie (`Domain=staging.astro-bot.space`, Secure, HttpOnly); refresh keeps the session; no CORS errors in the browser console.
+- [ ] Dashboard lists the test guild, a setting change persists (check in MongoDB staging DB), an interface/template move or upload works (R2 `astro-media-staging`, images served from `cdn-staging.astro-bot.space`).
+- [ ] Premium flow on the Chargebee **test** site (`astro-bot-test`): checkout opens from the frontend (Chargebee.js initialised with the test site), webhook `/v2/chargebee/events/subscription/create` returns 200 and the guild becomes premium; cancel flow likewise. (Set up the test webhook as in E1.)
+- [ ] Robots: staging is not indexable.
 
-## D. Production cutover (downtime starts here)
+Fix issues, redeploy staging, repeat. Do not go on to D until all pass.
 
-1. Announce the downtime. Make sure A1–A7 and B3 are done and staging is healthy.
-2. Record the legacy state: `helm list -n astro` (expect releases `bot`, `central-api`, `support-bot`, `entitlements-expiration-job`), `kubectl get all,ingress,pvc -n astro`. There are no PVCs in `astro`.
-3. Stop the legacy workloads by uninstalling the Helm releases (this removes their Services, StatefulSets, Deployments, CronJob, Ingresses and the ConfigMaps/Secrets they own):
-   ```sh
-   for r in bot central-api support-bot entitlements-expiration-job; do helm uninstall $r -n astro; done
-   kubectl get all,ingress,cm,secret -n astro        # only kube-root-ca.crt and leftovers not owned by Helm remain
-   ```
-   If `gcp-bigquery-creds`, `docker-registry` or the `central-api-tls`/`support-bot-tls` secrets remain, delete them: `docker-registry` is recreated by the SealedSecret (if a non-Helm `docker-registry` is still there, the SealedSecret controller will refuse to overwrite it: delete it), the TLS secrets are reissued under the new names `api-central-tls`/`support-bot-tls`.
-   Do **not** delete the `astro` namespace, the `databases` namespace or anything in `longhorn-system`/`monitoring`.
-4. **Clear the legacy configuration error documents** (MongoDB `AstroDB`, collection `errors`). The legacy bot stored `{guildId, description, premiumRequired, guide, timestamp}`; the new entity (`ConfigurationErrorEntity`) stores `{guildId, code, args, timestamp}` with a required `code` enum, so legacy documents cannot be read by the new version (last check: 40,376 documents, 0 with `code`). Do it now, with the legacy bots stopped (step 3) and the new ones not started (step 5 starts them), so nothing writes in between. The errors are regenerated by the bot when a configuration problem happens again, nothing else depends on them. The `guildId_1` index is the same in both versions and stays.
-   ```sh
-   cd ../astro && URI=$(infisical export --env=prod --format=json | jq -r '.[]|select(.key=="MONGODB_URI")|.value')
-   mongosh "$URI" --quiet --eval 'printjson({total: db.errors.countDocuments({}), legacy: db.errors.countDocuments({code: {$exists: false}})})'
-   mongosh "$URI" --quiet --eval 'printjson(db.errors.deleteMany({code: {$exists: false}}))'     # deletes only the legacy shape
-   mongosh "$URI" --quiet --eval 'printjson(db.errors.countDocuments({}))'                       # expect 0
-   ```
-   Do the same on the staging database if it was ever filled with legacy data (`MONGODB_URI` of `staging`).
-   Also **delete the legacy temporary VC entries from Redis** (keys `TEMP_VCS:<guildId>`). `TemporaryVCEntity` no longer uses the legacy JSON key names (`ownerID`, `genID`, `position`), so the legacy entries cannot be read. Their channels stay on Discord but are no longer tracked as temporary VCs (they are never auto-deleted), which is accepted. Same condition: legacy bots stopped, new ones not started.
-   ```sh
-   kubectl exec -n databases redis-master-0 -- sh -c 'redis-cli -a "$REDIS_PASSWORD" --scan --pattern "TEMP_VCS:*" | xargs -r redis-cli -a "$REDIS_PASSWORD" unlink'
-   kubectl exec -n databases redis-master-0 -- sh -c 'redis-cli -a "$REDIS_PASSWORD" --scan --pattern "TEMP_VCS:*" | wc -l'   # expect 0
-   ```
-   If `$REDIS_PASSWORD` is not set in the pod, use the `redis_exec` helper from `redis-migration.md` with `--scan` and `UNLINK` instead.
-5. In `infra`, remove the `exclude` entry added in B4, commit and push. ArgoCD creates the `*-astro` apps (the appset refreshes within ~3 minutes, or force it: `kubectl annotate applicationset astro-appset -n argocd argocd.argoproj.io/application-set-refresh=true`).
-6. Watch it come up:
-   ```sh
-   kubectl get applications -n argocd | grep -- '-astro '
-   kubectl get pods,infisicalstaticsecrets -n astro -w
-   kubectl get certificate,ingress -n astro
-   ```
-   The 11 bot pods start in parallel; each takes 2+ minutes to log in its 16 shards. Readiness gates at 120s + probes.
-7. Verify:
-   - [ ] `kubectl get sts bot -n astro` shows 11/11; shards connected (Prometheus `pod_id`/shard gauges, Sentry).
-   - [ ] `https://api.astro-bot.space` and the dashboard work, Discord login uses the new redirect.
-   - [ ] Support bot Ready and premium role changes work.
-   - [ ] A temporary voice channel is created and cleaned up in a real guild; slash commands respond.
-   - [ ] BigQuery `astro_bot.TEMPORARY_VC_GENERATION` receives new rows (`SELECT COUNT(*) ... WHERE timestamp > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 HOUR)`).
-   - [ ] Redis is used by the new pods (`REDIS_HOST` points at `databases`), no errors in Sentry.
-   - [ ] `db.errors` only contains documents with a `code` (no read errors in Sentry when a guild opens its configuration errors).
-   - [ ] The expiration job schedule `0 1 * * *` shows in `kubectl get cronjob -n astro`.
-8. Announce the end of the downtime.
+## D. Production cutover (downtime starts at D2)
+
+**D1. Go/no-go.** All of A, F, B and C done; backups of A7 exist; Infisical prod re-verified (A2 prompt); old Cloudflare deployment id noted. **[you]** Announce the downtime (support server, status).
+
+**D2. Record and stop legacy.**
+
+Prompt:
+```
+Repo: astro
+Start of the production cutover. Do these in order and stop at any surprise:
+1. Record the legacy state: `helm list -n astro` (expect releases bot, central-api, support-bot, entitlements-expiration-job) and `kubectl get all,ingress,pvc,cm,secret -n astro`. Confirm there are no PVCs in astro.
+2. Show me the exact command to uninstall the 4 Helm releases. After I confirm, run `helm uninstall <r> -n astro` for bot, central-api, support-bot, entitlements-expiration-job. NEVER touch the namespaces astro, databases, longhorn-system or monitoring themselves.
+3. List what remains in astro. Leftovers to delete only after showing me: secret docker-registry if not owned by a SealedSecret, gcp-bigquery-creds, central-api-tls, support-bot-tls.
+4. Confirm no pod in astro is running anymore (legacy bots are down: no process uses the Discord token).
+```
+
+**D3. Data cleanups** (legacy bots stopped, new ones not started yet).
+
+- MongoDB `AstroDB.errors`: legacy documents `{guildId, description, premiumRequired, guide, timestamp}` cannot be read by `ConfigurationErrorEntity` (`{guildId, code, args, timestamp}`, `code` required). Last check: 40,376 documents, 0 with `code`. They are regenerated when a config problem happens again. The `guildId_1` index stays.
+- Redis `TEMP_VCS:<guildId>`: legacy JSON keys (`ownerID`, `genID`, `position`) cannot be read by `TemporaryVCEntity`. Those channels stay on Discord untracked (never auto-deleted): accepted.
+
+Prompt:
+```
+Repo: astro
+Legacy bots are stopped and the new prod ones are not started. Clean the legacy data, one command at a time, showing me the count first and waiting for my OK before each delete:
+1. MongoDB prod (MONGODB_URI from `infisical export --env=prod`, never print it): count total and legacy documents of collection `errors` with `{code: {$exists: false}}`, then deleteMany for that filter only, then confirm the count of remaining legacy documents is 0 and the guildId_1 index still exists.
+2. Redis (namespace databases, pod redis-master-0): count `TEMP_VCS:*` keys via --scan, then UNLINK them, then confirm 0 remain. If $REDIS_PASSWORD is not in the pod, take it from secret rediscreds in databases.
+Do not touch any other collection or key.
+```
+
+**D4. Start the new backend.**
+
+Prompt:
+```
+Repo: ../infra
+Remove the `exclude: true` entry for apps/*/envs/astro from appsets/appset.yml, show me the diff, and after my OK commit and push. Then force an appset refresh: `kubectl annotate applicationset astro-appset -n argocd argocd.argoproj.io/application-set-refresh=true`. Watch (kubectl context gport): applications *-astro Synced/Healthy; pods, infisicalstaticsecrets, certificates and ingresses in namespace astro. The 11 bot pods start in parallel and take 2+ minutes each to log in their shards. Report when `kubectl get sts bot -n astro` is 11/11 and list any pod in error with its logs.
+```
+
+**D5. Verify the backend.**
+
+Prompt:
+```
+Repo: astro
+Verify production and report pass/fail:
+- sts bot 11/11 Ready; Prometheus (port-forward) shows all 176 shards connected; Sentry (MCP) has no new unresolved errors since the start, release = deployed SHA, environment prod.
+- https://api.astro-bot.space/docs answers over valid TLS; management ports are not exposed publicly; api-central, support-bot Ready; cronjob entitlements-expiration-job exists with schedule 0 1 * * *.
+- bot pods use the new Redis keys (REDIS_HOST = redis-master.databases...), no read/deserialisation errors in logs or Sentry, MongoDB `errors` contains only documents with `code`.
+- BigQuery astro_bot.TEMPORARY_VC_GENERATION has rows newer than the cutover time.
+```
+
+**[you]** Real-guild checks: a slash command, create and delete a temp voice channel, premium role change through the support bot.
+
+**D6. Frontend goes live.**
+
+1. Merge `hyperion-rewrite` into `main` in `astro-bot.space` (Crowdin: `l10n_*` branch already merged).
+2. In the Cloudflare project make sure the production environment has the prod build variables (F2), build, and verify on the project URL.
+3. Attach the custom domain `astro-bot.space` (and `www` if used) to the new project, removing it from the old one if applicable. Cloudflare DNS manages it.
+
+Prompt:
+```
+Repo: astro-bot.space
+Verify the production frontend after deploy (use the Claude in Chrome tools on https://astro-bot.space, no destructive actions): home page and a guide render, language switch, no console errors, network calls go to https://api.astro-bot.space, no CORS errors, `Set-Cookie` of the session has Domain=astro-bot.space; sitemap.xml and robots.txt are right for production (indexable); redirects from app/constants/redirects work. Tell me what to click for the Discord login myself, and I will tell you the result.
+```
+
+**[you]** Real login on `https://astro-bot.space`, dashboard shows your guilds, change and save a setting.
+
+**D7.** Announce the end of the downtime.
 
 ### Rollback
 
-Before any data migration step, rollback is: stop ArgoCD from running prod (add the `exclude` back and push, then `kubectl delete application -n argocd bot-astro api-central-astro support-bot-astro entitlements-expiration-job-astro`), then reinstall the legacy releases from the `master` charts before the merge (`git show <commit-before-merge>:services/<svc>/chart`) with `helm install` and the values saved in A7. The legacy image `ghcr.io/bot-astro/bot:243fb4da98e18ae2ebc587575dcc75e0cc745b5b` is still in ghcr. Redis and MongoDB are shared, so data written by the new version stays.
+- **Frontend**: Cloudflare → Deployments → rollback to the noted old deployment (instant), or re-attach the domain to the old project. Old frontend only works with the old API.
+- **Backend, before any data deletion (D3)**: add the `exclude` back in the appset and push, `kubectl delete application -n argocd bot-astro api-central-astro support-bot-astro entitlements-expiration-job-astro`, reinstall the legacy releases from the pre-merge `master` charts (`git show <commit-before-merge>:services/<svc>/chart`) with the values saved in A7. Legacy image `ghcr.io/bot-astro/bot:243fb4da98e18ae2ebc587575dcc75e0cc745b5b` is still in ghcr.
+- **After D3**: legacy `errors` documents and `TEMP_VCS:*` keys are gone (restore from the A7 backups if really needed). MongoDB and Redis are shared, data written by the new version stays.
 
 ## E. After the cutover
 
-1. **Chargebee webhooks** (the new API is live now, so they can be validated). In Chargebee → Settings → Configure Chargebee → Webhooks (do it on the **live** site, and on the **test** site `astro-bot-test` for staging), replace the old webhooks (the legacy `central-api` URLs) with:
+**E1. Chargebee webhooks [you]** (Settings → Configure Chargebee → Webhooks; the new API is live now). Replace the legacy `central-api` webhooks. Basic auth on each: username `chargebee`, password = `CA__CHARGEBEE_WEBHOOK_TOKEN` of the matching Infisical env.
 
-   | Site | Event | URL |
-   |---|---|---|
-   | live | Subscription created | `https://api.astro-bot.space/v2/chargebee/events/subscription/create` |
-   | live | Subscription cancelled | `https://api.astro-bot.space/v2/chargebee/events/subscription/cancel` |
-   | test | Subscription created | `https://api-staging.astro-bot.space/v2/chargebee/events/subscription/create` |
-   | test | Subscription cancelled | `https://api-staging.astro-bot.space/v2/chargebee/events/subscription/cancel` |
+| Site | Event | URL |
+|---|---|---|
+| live (`astro-bot`) | Subscription created | `https://api.astro-bot.space/v2/chargebee/events/subscription/create` |
+| live | Subscription cancelled | `https://api.astro-bot.space/v2/chargebee/events/subscription/cancel` |
+| test (`astro-bot-test`) | Subscription created | `https://api-staging.astro-bot.space/v2/chargebee/events/subscription/create` |
+| test | Subscription cancelled | `https://api-staging.astro-bot.space/v2/chargebee/events/subscription/cancel` |
 
-   - Enable basic authentication on each webhook: username `chargebee`, password = `CA__CHARGEBEE_WEBHOOK_TOKEN` of the matching Infisical environment (A2).
-   - The same plan ids must be in Infisical: `PREMIUM_MONTHLY_PLAN_ID`, `PREMIUM_YEARLY_PLAN_ID`, `CHARGEBEE_SERVER_PREMIUM_PLAN_ID`, `CHARGEBEE_SITE_NAME`, `CHARGEBEE_API_KEY` (see `docs/premium-env-vars.md`).
-   - Verify: Chargebee → the webhook → "Test webhook"/send a sample event, expect `200`. For a real check subscribe/cancel on the test site with a staging guild and watch `kubectl logs -n astro-staging deploy/api-central` and the premium role changing. Chargebee retries failed events, so events sent during the downtime are redelivered once the API is up; check the Chargebee event log for failed deliveries in the window and replay them.
-2. Security cleanup:
-   - Rotate `SUPPORT_BOT_AUTH`/`SB__API_AUTH` (the old value was readable in the legacy ConfigMap) and `KUBE_LIFECYCLE_AUTH_KEY` leftovers (the value committed in `services/api-central/chart/values.yaml` on the old branch).
-   - Revoke the old BigQuery key (`gcp-bigquery-creds.json`) and remove the file from git.
-3. Delete leftovers: Helm release secrets (`sh.helm.release.v1.*`) disappear with `helm uninstall`; old ghcr tags can stay.
-4. Remove the old Discord OAuth redirect if it differs, and any Semaphore secrets that are no longer used.
-5. Later, separately: the `cpx → cx` node migration (`gport/hcloud-cluster/docs/cx-migration.md`) and the JVM memory work (`docs/memory-improvement-plan.md`).
+Send a sample event (expect 200). Chargebee retries failed deliveries, but check the event log for failures during the downtime and replay them.
+
+**E2. Security cleanup**
+
+Prompt:
+```
+Repo: astro
+Prepare the post-cutover cleanup and show me each step before doing it:
+1. Rotate SB__API_AUTH and SUPPORT_BOT_ENDPOINT_AUTH (same new value, in prod and staging), CA__AUTH, and any leftover of KUBE_LIFECYCLE_AUTH_KEY (the value committed in services/api-central/chart/values.yaml on the old branch). Generate with `openssl rand -base64 48`, give me the `infisical secrets set` commands; the operator syncs and the pods auto-reload, then confirm the pods restarted healthy.
+2. Find gcp-bigquery-creds.json in this repo and in git history, tell me how to remove it from git (git rm + history decision) and remind me to revoke the old service account key in GCP (I do it in the console).
+3. List Semaphore secrets and Infisical keys no longer used by any manifest or application.yml.
+```
+
+**[you]**: remove the old Discord OAuth redirects if they differ, delete unused Semaphore secrets, check the old frontend project and old R2 bucket are removed.
+
+**E3.** Later and separately: `cpx → cx` node migration (`gport/hcloud-cluster/docs/cx-migration.md`) and JVM memory work (`docs/memory-improvement-plan.md`). Update `CLAUDE.md` steps: mark "deploy" done.
