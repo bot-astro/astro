@@ -15,13 +15,18 @@ import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.client.ResourceAccessException
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import space.astro.shared.core.exceptions.AErrorCode
 import space.astro.shared.core.exceptions.AErrorResponse
 import space.astro.shared.core.exceptions.AException
 import tools.jackson.databind.json.JsonMapper
+import java.io.IOException
 
 private val log = KotlinLogging.logger { }
+
+private val CLIENT_DISCONNECT_MESSAGES = setOf("Broken pipe", "Connection reset by peer")
 
 @RestControllerAdvice
 class ControllersExceptionHandler(
@@ -43,6 +48,23 @@ class ControllersExceptionHandler(
                 .firstOrNull()
                 ?.cause as? Exception
                 ?: thrown
+        val causes = generateSequence<Throwable>(e) { it.cause }.toList()
+
+        // the client went away mid-response, nobody is listening and writing an error body would just fail again
+        if (causes.any { it is AsyncRequestNotUsableException || (it is IOException && it.message in CLIENT_DISCONNECT_MESSAGES) }) {
+            log.debug { "Client disconnected before the response was written: ${e.message}" }
+            return ResponseEntity.status(499).build()
+        }
+
+        // an internal service (e.g. a bot pod being restarted or rolled out) can't be reached, usually transient
+        if (causes.any { it is ResourceAccessException }) {
+            log.warn(e) { "Upstream service unreachable" }
+            return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(AErrorResponse(code = AErrorCode.UNKNOWN, message = "Service temporarily unavailable, try again shortly."))
+        }
+
         val r = resolve(e)
         if (r.status >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
             log.error(e) { "API request failed" }
