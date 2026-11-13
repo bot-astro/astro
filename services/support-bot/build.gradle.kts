@@ -11,6 +11,7 @@ dependencies {
     implementation(libs.bundles.web)
     implementation(libs.bundles.logging)
     implementation(libs.bundles.cache)
+    implementation(libs.bundles.coroutines)
 
     implementation(libs.jda) {
         exclude(
