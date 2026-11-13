@@ -5,7 +5,6 @@ import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 
 interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String> {
-    // `first` so that a duplicated guild document doesn't make every lookup of that guild throw
     fun findFirstByGuildID(guildID: String): GuildSettingsEntity?
 
     fun findByGuildID(guildID: String): GuildSettingsEntity? = findFirstByGuildID(guildID)

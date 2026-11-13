@@ -37,7 +37,6 @@ class DefaultFailureConsumer(
             return
         }
 
-        // expected races: the entity was deleted / the interaction expired before the request was executed
         if (t is ErrorResponseException && t.errorResponse in IGNORED_ERROR_RESPONSES) {
             log.debug { "Ignored RestAction failure: ${t.meaning}" }
             return
