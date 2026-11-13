@@ -11,6 +11,8 @@ dependencies {
     implementation(libs.bundles.web)
     implementation(libs.bundles.logging)
     implementation(libs.bundles.cache)
+    // required by Spring to invoke suspend controller functions (NoClassDefFoundError: kotlinx/coroutines/reactor/MonoKt)
+    implementation(libs.bundles.coroutines)
 
     implementation(libs.jda) {
         exclude(

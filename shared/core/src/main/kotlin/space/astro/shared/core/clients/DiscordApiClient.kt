@@ -5,6 +5,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.body
@@ -24,6 +25,8 @@ import java.util.Optional
 private val log = KotlinLogging.logger { }
 
 private const val ENTITLEMENTS_PAGE_SIZE = 100
+private const val GUILDS_MAX_ATTEMPTS = 3
+private const val GUILDS_MAX_RETRY_WAIT_MS = 2000L
 
 class DiscordApiClient(
     discordApiConfig: DiscordApiProperties,
@@ -151,19 +154,32 @@ class DiscordApiClient(
      * @throws AException
      */
     fun getGuilds(accessToken: String): List<DiscordPartialGuildDto> {
-        try {
-            return client
-                .get()
-                .uri("/users/@me/guilds")
-                .header("Authorization", "Bearer $accessToken")
-                .retrieve()
-                .body<List<DiscordPartialGuildDto>>()
-                ?: run {
-                    log.error { "Discord returned an empty guilds response" }
-                    throw AUnknownException("Failed to fetch Discord user guilds")
+        var attempt = 0
+
+        while (true) {
+            try {
+                return client
+                    .get()
+                    .uri("/users/@me/guilds")
+                    .header("Authorization", "Bearer $accessToken")
+                    .retrieve()
+                    .body<List<DiscordPartialGuildDto>>()
+                    ?: run {
+                        log.error { "Discord returned an empty guilds response" }
+                        throw AUnknownException("Failed to fetch Discord user guilds")
+                    }
+            } catch (e: HttpClientErrorException.TooManyRequests) {
+                // short per-route rate limits (retry_after is usually < 1s) are retried instead of failing the request
+                attempt++
+                val retryAfterMs =
+                    ((e.responseHeaders?.getFirst("Retry-After")?.toDoubleOrNull() ?: 1.0) * 1000).toLong()
+                if (attempt >= GUILDS_MAX_ATTEMPTS || retryAfterMs > GUILDS_MAX_RETRY_WAIT_MS) {
+                    throw AUnknownException("Failed to fetch Discord user guilds", e)
                 }
-        } catch (e: RestClientResponseException) {
-            throw AUnknownException("Failed to fetch Discord user guilds", e)
+                Thread.sleep(retryAfterMs + 50)
+            } catch (e: RestClientResponseException) {
+                throw AUnknownException("Failed to fetch Discord user guilds", e)
+            }
         }
     }
 
