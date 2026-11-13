@@ -26,7 +26,7 @@
   "setup.reason": "Na-trigger ang setup ng Astro mula sa setup button",
   "setup.success": "Matagumpay na na-setup ang Astro sa {category}!\n\nNarito ang mga nagawa:\n• Isang generator na magagamit para gumawa ng mga pansamantalang voice channel: {generator}\n• Isang interface na magagamit para pamahalaan ang mga pansamantalang voice channel gamit ang mga button: {interface}\n\n**Gamitin ang dashboard para mas baguhin pa ang mga setting ng Astro!**\n\n*Maaari mong baguhin ang pangalan, category, posisyon, at lahat ng iba pa sa mga channel na ito!*",
   "commands.dev-ping.description": "Para sa developer lang: ipinapakita ang gateway ping ng shard na humahawak sa command",
-  "commands.dev-message.description": "Para sa developer lang: nagpapadala sa channel na ito ng mensaheng karaniwang ipinapadala ng bot mismo",
+  "commands.dev-message.description": "Developer lang: nagpapadala rito ng mensaheng karaniwang kusang ipinapadala ng bot",
   "commands.dev-message.type.description": "Ang mensaheng ipapadala",
   "dev.message.sent": "Naipadala ang mensaheng `{type}` sa channel na ito.",
   "dev.ping.reply": "Pong! Gateway ping: `{ping}ms` (shard `{shard}`)",
