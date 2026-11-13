@@ -22,6 +22,10 @@ class DefaultFailureConsumer(
                 ErrorResponse.UNKNOWN_MEMBER,
                 ErrorResponse.UNKNOWN_INTERACTION,
                 ErrorResponse.INVALID_WEBHOOK_TOKEN,
+                ErrorResponse.UNKNOWN_GUILD,
+                ErrorResponse.UNKNOWN_ROLE,
+                ErrorResponse.MISSING_ACCESS,
+                ErrorResponse.MISSING_PERMISSIONS,
             )
     }
 
