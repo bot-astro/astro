@@ -1,3 +1,7 @@
 files:
   - source: /shared/core/src/main/resources/i18n/en-US.json
-    translation: /shared/core/src/main/resources/i18n/%locale%.json
+    translation: /shared/core/src/main/resources/i18n/%two_letters_code%.json
+    languages_mapping:
+      two_letters_code:
+        es-ES: es-ES
+        pt-BR: pt-BR
