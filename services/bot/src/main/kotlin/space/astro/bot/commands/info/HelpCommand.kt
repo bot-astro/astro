@@ -1,5 +1,6 @@
 package space.astro.bot.commands.info
 
+import net.dv8tion.jda.api.components.MessageTopLevelComponent
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionContextType
@@ -16,11 +17,13 @@ import space.astro.bot.ui.Buttons
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
 import space.astro.bot.ui.Links
+import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.properties.bot.BotShardProperties
 
 @Component
 class HelpCommand(
     private val podProperties: PodProperties,
+    private val premiumManager: PremiumManager,
     private val botShardProperties: BotShardProperties,
 ) : SlashHandler<InteractionContext> {
     override val data =
@@ -36,6 +39,21 @@ class HelpCommand(
     ) {
         val shardInfo = event.jda.shardInfo
         val dashboard = Links.guildDashboard(ctx.guildId)
+
+        // the limits only apply to free guilds, premium guilds are only limited by what is already configured
+        val settings = ctx.guildSettings
+        val noGenerator = settings == null || settings.generators.isEmpty()
+        val noInterface = settings == null || settings.interfaces.isEmpty()
+        val canCreateGenerator = settings == null || premiumManager.canCreateGenerator(settings)
+        val canCreateInterface = settings == null || premiumManager.canCreateInterface(settings)
+
+        val quickSetupRow =
+            listOfNotNull(
+                // setup creates both, so it would fail if either limit is reached
+                if (noGenerator && canCreateGenerator && canCreateInterface) Buttons.setup(ctx.locale) else null,
+                if (noGenerator && canCreateGenerator) Buttons.createGenerator(ctx.locale) else null,
+                if (noInterface && canCreateInterface) Buttons.createInterface(ctx.locale) else null,
+            ).takeIf { it.isNotEmpty() }?.let { ActionRow.of(it) }
 
         ctx.responder.reply(
             Containers.container(
@@ -86,13 +104,16 @@ class HelpCommand(
                 ),
             ),
             // buttons sit below the container, like in the welcome message
-            ActionRow.of(
-                Buttons.guildDashboard(ctx.locale, ctx.guildId),
-                Buttons.ultimate(ctx.locale),
-                Buttons.guides(ctx.locale),
-                Buttons.support(ctx.locale),
-                Buttons.github(ctx.locale),
-            ),
+            *listOfNotNull<MessageTopLevelComponent>(
+                quickSetupRow,
+                ActionRow.of(
+                    Buttons.guildDashboard(ctx.locale, ctx.guildId),
+                    Buttons.ultimate(ctx.locale),
+                    Buttons.guides(ctx.locale),
+                    Buttons.support(ctx.locale),
+                    Buttons.github(ctx.locale),
+                ),
+            ).toTypedArray(),
             ephemeral = false,
         )
     }
