@@ -197,6 +197,7 @@
   "reason.vc.deleted_empty": "Eliminazione del canale vocale temporaneo, rilevati {count} utenti, nessuno dei quali non è un bot",
   "reason.vc.deleted_move_failed": "Errore sconosciuto durante lo spostamento di un utente in un canale vocale temporaneo",
   "reason.vc.deleted_left_too_quickly": "L'utente è uscito troppo in fretta dal canale vocale temporaneo generato",
+  "reason.vc.deleted_cleanup": "Pulizia di un canale vocale temporaneo rimasto",
   "reason.vc.invite_created": "Invito creato per un canale vocale temporaneo",
   "reason.vc.status_updated": "Stato del canale vocale aggiornato",
   "reason.vc.owner_role_added": "Ruolo di proprietario assegnato al nuovo proprietario del canale vocale temporaneo",

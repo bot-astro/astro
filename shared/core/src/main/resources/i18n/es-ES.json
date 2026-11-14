@@ -197,6 +197,7 @@
   "reason.vc.deleted_empty": "Eliminando canal de voz temporal, se detectaron {count} usuarios, ninguno de ellos es una persona",
   "reason.vc.deleted_move_failed": "Error desconocido al mover a un usuario a un canal de voz temporal",
   "reason.vc.deleted_left_too_quickly": "El usuario salió del canal de voz temporal generado demasiado rápido",
+  "reason.vc.deleted_cleanup": "Limpiando un canal de voz temporal sobrante",
   "reason.vc.invite_created": "Invitación creada para un canal de voz temporal",
   "reason.vc.status_updated": "Estado del canal de voz actualizado",
   "reason.vc.owner_role_added": "Rol de propietario otorgado al nuevo propietario del canal de voz temporal",

@@ -197,6 +197,7 @@
   "reason.vc.deleted_empty": "Suppression du salon vocal temporaire, {count} utilisateurs détectés, aucun n'est un humain",
   "reason.vc.deleted_move_failed": "Erreur inconnue lors du déplacement d'un utilisateur dans un salon vocal temporaire",
   "reason.vc.deleted_left_too_quickly": "L'utilisateur a quitté le salon vocal temporaire généré trop rapidement",
+  "reason.vc.deleted_cleanup": "Nettoyage d'un salon vocal temporaire restant",
   "reason.vc.invite_created": "Invitation créée pour un salon vocal temporaire",
   "reason.vc.status_updated": "Statut du salon vocal mis à jour",
   "reason.vc.owner_role_added": "Rôle de propriétaire donné au nouveau propriétaire du salon vocal temporaire",

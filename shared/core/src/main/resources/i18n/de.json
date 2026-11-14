@@ -197,6 +197,7 @@
   "reason.vc.deleted_empty": "Temporärer Sprachkanal wird gelöscht, {count} Nutzer erkannt, keiner davon ist kein Bot",
   "reason.vc.deleted_move_failed": "Unbekannter Fehler beim Verschieben eines Nutzers in einen temporären Sprachkanal",
   "reason.vc.deleted_left_too_quickly": "Der Nutzer hat den erzeugten temporären Sprachkanal zu schnell verlassen",
+  "reason.vc.deleted_cleanup": "Bereinige einen übrig gebliebenen temporären Sprachkanal",
   "reason.vc.invite_created": "Einladung für einen temporären Sprachkanal erstellt",
   "reason.vc.status_updated": "Status des Sprachkanals aktualisiert",
   "reason.vc.owner_role_added": "Besitzerrolle an den neuen Besitzer des temporären Sprachkanals vergeben",

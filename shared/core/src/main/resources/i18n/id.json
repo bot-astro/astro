@@ -197,6 +197,7 @@
   "reason.vc.deleted_empty": "Menghapus saluran suara sementara, terdeteksi {count} pengguna, tidak ada satu pun yang bukan bot",
   "reason.vc.deleted_move_failed": "Kesalahan tidak diketahui saat memindahkan pengguna ke saluran suara sementara",
   "reason.vc.deleted_left_too_quickly": "Pengguna keluar dari saluran suara sementara yang dibuat terlalu cepat",
+  "reason.vc.deleted_cleanup": "Membersihkan saluran suara sementara yang tertinggal",
   "reason.vc.invite_created": "Undangan dibuat untuk saluran suara sementara",
   "reason.vc.status_updated": "Status saluran suara diperbarui",
   "reason.vc.owner_role_added": "Peran pemilik diberikan kepada pemilik baru saluran suara sementara",
