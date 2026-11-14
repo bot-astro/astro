@@ -30,22 +30,27 @@ jib {
     }
 
     container {
-        // glibc creates up to 8 malloc arenas per detected core, which fragments native memory and bloats the RSS.
-        // 2 is the commonly recommended value for containerized JVMs.
-        // Sentry automatically reads SENTRY_RELEASE and it's the easiest way to provide the correct release
-        environment =
-            mapOf("MALLOC_ARENA_MAX" to "2") +
-                (System.getenv("SEMAPHORE_GIT_SHA")?.let { mapOf("SENTRY_RELEASE" to it) } ?: emptyMap())
+        environment = buildMap {
+            // glibc creates up to 8 malloc arenas per detected core, which fragments native memory and bloats the RSS.
+            // 2 is the commonly recommended value for containerized JVMs.
+            put("MALLOC_ARENA_MAX", "2")
+
+            // Sentry automatically reads this env variable and it's the easiest way to provide the correct release
+            System.getenv("SEMAPHORE_GIT_SHA")?.let { put("SENTRY_RELEASE", it) }
+        }
 
         jvmFlags = listOf(
             "-XX:+PrintCommandLineFlags",
             "-XshowSettings:vm",
             "-XX:MaxRAMPercentage=60.0",
+
             // Pods have no CPU limit on purpose (startup needs bursts), so the JVM would see every core of the node
             // and size GC, JIT and Netty threads (and malloc arenas) for it. Services with different needs override jvmFlags.
             "-XX:ActiveProcessorCount=2",
-            // return unused heap to the OS when idle, G1 otherwise never shrinks
-            "-XX:G1PeriodicGCInterval=120000"
+
+            // Return unused heap to the OS when idle, G1 otherwise never shrinks
+            "-XX:G1PeriodicGCInterval=120000",
+
 //            "-XX:+PrintFlagsFinal",
 //            "-Xlog:os+container=trace"
         )
