@@ -196,7 +196,7 @@ How to set up the cluster and deploy with ArgoCD is explained in the [infra](htt
 Now when you commit to `master`, Semaphore will automatically:  
 - build the Docker image for each service that changed
 - upload it to GitHub Container Registry
-- update the version in `infra`, automatically for staging and via a promotion button for production, then ArgoCD deploys it
+- update the version in `infra` via a promotion button for production, then ArgoCD deploys it (the automatic staging deploy is currently disabled, see the commented promotions in `.semaphore/semaphore.yml`)
 
 > [!NOTE]
 > Images are tagged with the commit sha and are only built for the services that changed in that commit, so promote a service to production from a build that actually included it.  
