@@ -1,5 +1,6 @@
 package space.astro.bot.commands.info
 
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.components.MessageTopLevelComponent
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -47,12 +48,14 @@ class HelpCommand(
         val canCreateGenerator = settings == null || premiumManager.canCreateGenerator(settings)
         val canCreateInterface = settings == null || premiumManager.canCreateInterface(settings)
 
+        val canManageServer = event.member?.hasPermission(Permission.MANAGE_SERVER) == true
+
         val quickSetupRow =
             listOfNotNull(
                 // setup creates both, so it would fail if either limit is reached
-                if (noGenerator && canCreateGenerator && canCreateInterface) Buttons.setup(ctx.locale) else null,
-                if (noGenerator && canCreateGenerator) Buttons.createGenerator(ctx.locale) else null,
-                if (noInterface && canCreateInterface) Buttons.createInterface(ctx.locale) else null,
+                if (canManageServer && noGenerator && canCreateGenerator && canCreateInterface) Buttons.setup(ctx.locale) else null,
+                if (canManageServer && noGenerator && canCreateGenerator) Buttons.createGenerator(ctx.locale) else null,
+                if (canManageServer && noInterface && canCreateInterface) Buttons.createInterface(ctx.locale) else null,
             ).takeIf { it.isNotEmpty() }?.let { ActionRow.of(it) }
 
         ctx.responder.reply(
