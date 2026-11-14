@@ -53,8 +53,6 @@ jib {
                 "-XX:G1PeriodicGCInterval=120000",
                 // a heap OOM leaves the JVM half broken, better to let Kubernetes restart the pod
                 "-XX:+ExitOnOutOfMemoryError",
-                // TEMPORARY: confirm where the non-heap memory goes with `jcmd 1 VM.native_memory summary`, remove after
-                "-XX:NativeMemoryTracking=summary",
             )
     }
 }
