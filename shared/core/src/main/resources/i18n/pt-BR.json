@@ -197,6 +197,7 @@
   "reason.vc.deleted_empty": "Excluindo canal de voz temporário, {count} usuários detectados, nenhum deles é uma pessoa",
   "reason.vc.deleted_move_failed": "Erro desconhecido ao mover um usuário para um canal de voz temporário",
   "reason.vc.deleted_left_too_quickly": "O usuário saiu do canal de voz temporário gerado rápido demais",
+  "reason.vc.deleted_cleanup": "Limpando um canal de voz temporário que sobrou",
   "reason.vc.invite_created": "Convite criado para um canal de voz temporário",
   "reason.vc.status_updated": "Status do canal de voz atualizado",
   "reason.vc.owner_role_added": "Cargo de dono concedido ao novo dono do canal de voz temporário",

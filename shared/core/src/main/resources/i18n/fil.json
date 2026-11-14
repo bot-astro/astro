@@ -197,6 +197,7 @@
   "reason.vc.deleted_empty": "Tinatanggal ang pansamantalang voice channel, may na-detect na {count} user, wala ni isa sa kanila ang hindi bot",
   "reason.vc.deleted_move_failed": "Hindi kilalang error sa paglipat ng user sa pansamantalang voice channel",
   "reason.vc.deleted_left_too_quickly": "Masyadong mabilis umalis ang user sa nagawang pansamantalang voice channel",
+  "reason.vc.deleted_cleanup": "Nililinis ang naiwang pansamantalang voice channel",
   "reason.vc.invite_created": "Gumawa ng imbitasyon para sa pansamantalang voice channel",
   "reason.vc.status_updated": "Na-update ang status ng voice channel",
   "reason.vc.owner_role_added": "Ibinigay ang owner role sa bagong may-ari ng pansamantalang voice channel",

@@ -6,8 +6,7 @@ import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.requests.RestAction
 
 /**
- * Awaits a channel deletion, treating an already deleted channel as a success.
- * Any other failure is rethrown so that callers can keep their state and retry later.
+ * Awaits a channel deletion, a channel that is already deleted counts as a success
  */
 suspend fun RestAction<*>.awaitChannelDeletion() {
     try {

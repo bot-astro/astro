@@ -1,10 +1,12 @@
 package space.astro.bot.events.listeners.discord.voice.handlers
 
 import dev.minn.jda.ktx.coroutines.await
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.springframework.stereotype.Component
 import space.astro.bot.components.InterfaceManager
@@ -22,6 +24,7 @@ import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.ui.Containers
 import space.astro.bot.utils.extensions.modifyPermissionOverride
 import space.astro.bot.utils.extensions.supportedLocale
+import space.astro.bot.utils.extensions.toConfigurationErrorDto
 import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorCode
@@ -32,6 +35,8 @@ import space.astro.shared.core.repositories.redis.TemporaryVCRepository
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+
+private val log = KotlinLogging.logger { }
 
 /**
  * Handles the creation of temporary voice channels via generators
@@ -257,30 +262,45 @@ class JoinedGeneratorHandler(
         var privateChat: TextChannel? = null
         var waitingRoom: VoiceChannel? = null
 
-        try {
-            if (settings.autoChat) {
-                if (!premiumManager.canCreatePrivateChatOnVCGeneration(guildSettings)) {
-                    throw PremiumConfigurationErrors.autoPrivateChat(guild.id)
+        // a failure here is reported but the temporary VC is kept, it works without the chat and the waiting room
+        if (settings.autoChat) {
+            if (premiumManager.canCreatePrivateChatOnVCGeneration(guildSettings)) {
+                try {
+                    privateChat = vcPrivateChatManager.create(owner, settings, temporaryVC, locale)
+                } catch (e: Exception) {
+                    when (e) {
+                        is ConfigurationException ->
+                            configurationErrorEventPublisher.publishConfigurationErrorEvent(e.configurationErrorEntity)
+                        is InsufficientPermissionException ->
+                            configurationErrorEventPublisher.publishConfigurationErrorEvent(e.toConfigurationErrorDto(guild.id))
+                        else -> log.error(e) { "Failed creating the private chat of temporary VC ${temporaryVC.id} in guild ${guild.id}" }
+                    }
                 }
-
-                privateChat = vcPrivateChatManager.create(owner, settings, temporaryVC, locale)
+            } else {
+                configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                    PremiumConfigurationErrors.autoPrivateChat(guild.id).configurationErrorEntity,
+                )
             }
+        }
 
-            if (settings.autoWaiting) {
-                if (!premiumManager.canCreateWaitingRoomOnVCGeneration(guildSettings)) {
-                    throw PremiumConfigurationErrors.autoWaitingRoom(guild.id)
+        if (settings.autoWaiting) {
+            if (premiumManager.canCreateWaitingRoomOnVCGeneration(guildSettings)) {
+                try {
+                    waitingRoom = vcWaitingRoomManager.create(owner, settings, temporaryVC, incrementalPosition, locale)
+                } catch (e: Exception) {
+                    when (e) {
+                        is ConfigurationException ->
+                            configurationErrorEventPublisher.publishConfigurationErrorEvent(e.configurationErrorEntity)
+                        is InsufficientPermissionException ->
+                            configurationErrorEventPublisher.publishConfigurationErrorEvent(e.toConfigurationErrorDto(guild.id))
+                        else -> log.error(e) { "Failed creating the waiting room of temporary VC ${temporaryVC.id} in guild ${guild.id}" }
+                    }
                 }
-
-                waitingRoom = vcWaitingRoomManager.create(owner, settings, temporaryVC, incrementalPosition, locale)
+            } else {
+                configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                    PremiumConfigurationErrors.autoWaitingRoom(guild.id).configurationErrorEntity,
+                )
             }
-        } catch (e: Exception) {
-            val reason = L.t(locale, "reason.vc.deleted_creation_failed")
-
-            waitingRoom?.delete()?.reason(reason)?.queue()
-            privateChat?.delete()?.reason(reason)?.queue()
-            temporaryVC.delete().reason(reason).queue()
-
-            throw e
         }
 
         // //////////////////

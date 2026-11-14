@@ -197,6 +197,7 @@
   "reason.vc.deleted_empty": "임시 음성 채널을 삭제해요. 사용자 {count}명이 감지되었지만 봇이 아닌 사용자는 없어요",
   "reason.vc.deleted_move_failed": "사용자를 임시 음성 채널로 이동하는 중 알 수 없는 오류가 발생했어요",
   "reason.vc.deleted_left_too_quickly": "사용자가 생성된 임시 음성 채널을 너무 빨리 나갔어요",
+  "reason.vc.deleted_cleanup": "남아 있는 임시 음성 채널을 정리하는 중이에요",
   "reason.vc.invite_created": "임시 음성 채널의 초대가 생성되었어요",
   "reason.vc.status_updated": "음성 채널 상태가 업데이트되었어요",
   "reason.vc.owner_role_added": "임시 음성 채널의 새 소유자에게 소유자 역할이 부여되었어요",

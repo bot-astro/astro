@@ -197,6 +197,7 @@
   "reason.vc.deleted_empty": "جارٍ حذف القناة الصوتية المؤقتة، تم رصد {count} مستخدمين، ولا أحد منهم غير بوت",
   "reason.vc.deleted_move_failed": "خطأ غير معروف أثناء نقل مستخدم إلى قناة صوتية مؤقتة",
   "reason.vc.deleted_left_too_quickly": "غادر المستخدم القناة الصوتية المؤقتة المُنشأة بسرعة كبيرة",
+  "reason.vc.deleted_cleanup": "تنظيف قناة صوتية مؤقتة متبقية",
   "reason.vc.invite_created": "تم إنشاء دعوة لقناة صوتية مؤقتة",
   "reason.vc.status_updated": "تم تحديث حالة القناة الصوتية",
   "reason.vc.owner_role_added": "تم منح رتبة المالك للمالك الجديد للقناة الصوتية المؤقتة",

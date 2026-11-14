@@ -42,14 +42,6 @@ class LeftTemporaryVCHandler(
         if (newOwner == null) {
             val reason = L.t(locale, "reason.vc.deleted_empty", "count" to vc.members.size)
 
-            // The entity is removed only after the channels are gone: if a delete fails the entity stays
-            // and the periodic cleanup retries
-            vc.delete().reason(reason).awaitChannelDeletion()
-            privateChat?.delete()?.reason(reason)?.awaitChannelDeletion()
-            waitingRoom?.delete()?.reason(reason)?.awaitChannelDeletion()
-
-            temporaryVCRepository.delete(guild.id, entity.id)
-
             if (event.ownerLeft) {
                 data.generators
                     .firstOrNull { it.id == entity.generatorID }
@@ -57,6 +49,13 @@ class LeftTemporaryVCHandler(
                     ?.let { guild.getRoleById(it) }
                     ?.also { memberRolesManager.remove(it) }
             }
+
+            // the entity is removed only after the channels are gone, so that a failed delete is picked up by the cleaner
+            vc.delete().reason(reason).awaitChannelDeletion()
+            privateChat?.delete()?.reason(reason)?.awaitChannelDeletion()
+            waitingRoom?.delete()?.reason(reason)?.awaitChannelDeletion()
+
+            temporaryVCRepository.delete(guild.id, entity.id)
 
             return
         }

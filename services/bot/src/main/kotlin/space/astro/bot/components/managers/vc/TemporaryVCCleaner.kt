@@ -8,6 +8,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent
 import net.dv8tion.jda.api.sharding.ShardManager
@@ -30,15 +31,8 @@ import kotlin.time.Duration.Companion.seconds
 private val log = KotlinLogging.logger { }
 
 /**
- * Deletes temporary voice channels that are left over (empty, or whose data went missing),
- * for example because a voice event was missed during a restart or a delete failed.
- *
- * Checking is free: it only reads Redis and the JDA cache. Discord requests happen only
- * for actual leftovers, capped per guild and paced to stay far from the rate limits.
- *
- * Premium guilds are swept every [PREMIUM_INTERVAL] (the scheduler tick), free guilds
- * once per [FREE_INTERVAL] and at startup.
- * Each pod only sweeps the guilds of its own shards.
+ * Deletes temporary VCs that were left over, for example because a voice event was missed during a restart.
+ * Premium guilds are swept every 30 minutes, free guilds once a day and at startup.
  */
 @Component
 class TemporaryVCCleaner(
@@ -47,13 +41,13 @@ class TemporaryVCCleaner(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val premiumManager: PremiumManager,
 ) {
-    private companion object {
-        val PREMIUM_INTERVAL = 30.minutes
-        val FREE_INTERVAL = 24.hours
-        val STARTUP_MAX_DELAY = 5.minutes
-        val PACE_BETWEEN_GUILDS = 100.milliseconds
-        val PACE_BETWEEN_DELETES = 1.seconds
-        const val MAX_VCS_PER_GUILD_SWEEP = 5
+    companion object {
+        private val PREMIUM_INTERVAL = 30.minutes
+        private val FREE_INTERVAL = 24.hours
+        private val STARTUP_MAX_DELAY = 5.minutes
+        private val PACE_BETWEEN_GUILDS = 100.milliseconds
+        private val PACE_BETWEEN_DELETES = 1.seconds
+        private const val MAX_VCS_PER_GUILD_SWEEP = 5
     }
 
     // IO because the repositories are blocking
@@ -66,25 +60,18 @@ class TemporaryVCCleaner(
         scope.cancel()
     }
 
-    /**
-     * Covers events missed while the pod was down.
-     * Delayed randomly so that all the guilds of a pod don't sweep at the same moment.
-     */
     @EventListener
     fun onGuildReady(event: GuildReadyEvent) {
         val guild = event.guild
 
         scope.launch {
+            // random delay so that the guilds of a pod don't all sweep at the same moment after a restart
             delay(Random.nextLong(STARTUP_MAX_DELAY.inWholeMilliseconds).milliseconds)
             sweepSafely(guild)
         }
     }
 
-    @Scheduled(
-        initialDelay = 30,
-        fixedDelay = 30,
-        timeUnit = TimeUnit.MINUTES,
-    )
+    @Scheduled(initialDelay = 30, fixedDelay = 30, timeUnit = TimeUnit.MINUTES)
     fun sweepAll() {
         scope.launch {
             shardManager.guilds.forEach { guild ->
@@ -107,15 +94,25 @@ class TemporaryVCCleaner(
         }
 
     private suspend fun sweep(guild: Guild): Boolean {
+        // the cache can be partial while a shard is not connected, so a channel or member that looks missing could be alive
+        if (guild.jda.status != JDA.Status.CONNECTED) {
+            return false
+        }
+
         val entities = temporaryVCRepository.getOfGuild(guild.id)
         if (entities.isEmpty()) {
             return false
         }
 
-        val guildSettings = guildSettingsRepository.findByGuildID(guild.id)
         val now = System.currentTimeMillis()
-        val interval = if (guildSettings != null && premiumManager.isGuildPremium(guildSettings)) PREMIUM_INTERVAL else FREE_INTERVAL
         val lastSweep = lastSweeps[guild.idLong]
+
+        if (lastSweep != null && now - lastSweep < PREMIUM_INTERVAL.inWholeMilliseconds) {
+            return true
+        }
+
+        val guildSettings = guildSettingsRepository.findByGuildID(guild.id)
+        val interval = if (guildSettings != null && premiumManager.isGuildPremium(guildSettings)) PREMIUM_INTERVAL else FREE_INTERVAL
 
         if (lastSweep != null && now - lastSweep < interval.inWholeMilliseconds) {
             return true
