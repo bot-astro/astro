@@ -118,4 +118,99 @@ class SetupManager(
             throw e
         }
     }
+
+    suspend fun createGenerator(ctx: InteractionContext) {
+        val guild = ctx.guild
+
+        val guildSettings =
+            withContext(Dispatchers.IO) {
+                guildSettingsRepository.findByGuildID(guild.id)
+                    ?: guildSettingsRepository.createNewGuildSettings(guild.id, guild.locale.locale)
+            }
+
+        if (!premiumManager.canCreateGenerator(guildSettings)) {
+            ctx.responder.reply(
+                Containers.error(
+                    ctx.t("setup.generator_limit", "max" to PremiumManager.FREE_MAX_GENERATORS),
+                ),
+                ActionRow.of(Buttons.ultimate(ctx.locale), Buttons.guildDashboard(ctx.locale, guild.id)),
+            )
+            return
+        }
+
+        try {
+            val generatorChannel =
+                guild
+                    .createVoiceChannel("➕ Generator")
+                    .reason(ctx.t("setup.reason"))
+                    .await()
+
+            guildSettings.generators.add(
+                GeneratorSettings(
+                    id = generatorChannel.id,
+                    // the variables are kept as they are, they get replaced when the temporary VC is created
+                    defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
+                    defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),
+                    defaultWaitingName = L.t(guildSettings.javaLocale, "temporary.waiting.name.default", "vc_name" to "{vc_name}"),
+                ),
+            )
+
+            withContext(Dispatchers.IO) { guildSettingsRepository.save(guildSettings) }
+
+            ctx.responder.reply(
+                Containers.default(ctx.t("setup.generator_success", "generator" to generatorChannel.asMention)),
+                ActionRow.of(Buttons.guildDashboard(ctx.locale, guild.id), Buttons.guides(ctx.locale)),
+            )
+        } catch (e: ErrorResponseException) {
+            if (e.errorResponse == ErrorResponse.MAX_CHANNELS) {
+                throw InteractionException("setup.max_channels")
+            }
+
+            throw e
+        }
+    }
+
+    suspend fun createInterface(ctx: InteractionContext) {
+        val guild = ctx.guild
+
+        val guildSettings =
+            withContext(Dispatchers.IO) {
+                guildSettingsRepository.findByGuildID(guild.id)
+                    ?: guildSettingsRepository.createNewGuildSettings(guild.id, guild.locale.locale)
+            }
+
+        if (!premiumManager.canCreateInterface(guildSettings)) {
+            ctx.responder.reply(
+                Containers.error(
+                    ctx.t("setup.interface_limit", "max" to PremiumManager.FREE_MAX_INTERFACES),
+                ),
+                ActionRow.of(Buttons.ultimate(ctx.locale), Buttons.guildDashboard(ctx.locale, guild.id)),
+            )
+            return
+        }
+
+        try {
+            val interfaceChannel =
+                guild
+                    .createTextChannel("interface")
+                    .addMemberPermissionOverride(guild.selfMember.idLong, Permission.VIEW_CHANNEL.rawValue, 0)
+                    .reason(ctx.t("setup.reason"))
+                    .await()
+
+            guildSettings.interfaces.add(interfaceManager.createInterface(guild, interfaceChannel.id, ctx.locale))
+
+            withContext(Dispatchers.IO) { guildSettingsRepository.save(guildSettings) }
+
+            ctx.responder.reply(
+                Containers.default(ctx.t("setup.interface_success", "interface" to interfaceChannel.asMention)),
+                ActionRow.of(Buttons.guildDashboard(ctx.locale, guild.id), Buttons.guides(ctx.locale)),
+            )
+        } catch (e: ErrorResponseException) {
+            if (e.errorResponse == ErrorResponse.MAX_CHANNELS) {
+                throw InteractionException("setup.max_channels")
+            }
+
+            throw e
+        }
+    }
 }

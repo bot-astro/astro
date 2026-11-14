@@ -1,5 +1,6 @@
 package space.astro.bot.commands.info
 
+import net.dv8tion.jda.api.components.MessageTopLevelComponent
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionContextType
@@ -86,13 +87,25 @@ class HelpCommand(
                 ),
             ),
             // buttons sit below the container, like in the welcome message
-            ActionRow.of(
-                Buttons.guildDashboard(ctx.locale, ctx.guildId),
-                Buttons.ultimate(ctx.locale),
-                Buttons.guides(ctx.locale),
-                Buttons.support(ctx.locale),
-                Buttons.github(ctx.locale),
-            ),
+            *listOfNotNull<MessageTopLevelComponent>(
+                // quick setup buttons are only useful while the guild has no generator
+                if (ctx.guildSettings?.generators.isNullOrEmpty()) {
+                    ActionRow.of(
+                        Buttons.setup(ctx.locale),
+                        Buttons.createGenerator(ctx.locale),
+                        Buttons.createInterface(ctx.locale),
+                    )
+                } else {
+                    null
+                },
+                ActionRow.of(
+                    Buttons.guildDashboard(ctx.locale, ctx.guildId),
+                    Buttons.ultimate(ctx.locale),
+                    Buttons.guides(ctx.locale),
+                    Buttons.support(ctx.locale),
+                    Buttons.github(ctx.locale),
+                ),
+            ).toTypedArray(),
             ephemeral = false,
         )
     }

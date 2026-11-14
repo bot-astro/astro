@@ -1,12 +1,20 @@
 package space.astro.bot.ui
 
 import net.dv8tion.jda.api.components.buttons.Button
+import space.astro.bot.commands.setup.CreateGeneratorButton
+import space.astro.bot.commands.setup.CreateInterfaceButton
 import space.astro.bot.commands.setup.SetupButton
 import space.astro.shared.core.lang.L
 import java.util.Locale
 
 object Buttons {
     fun setup(locale: Locale) = Button.success(SetupButton.ID, L.t(locale, "button.setup")).withEmoji(Emojis.setup)
+
+    fun createGenerator(locale: Locale) =
+        Button.primary(CreateGeneratorButton.ID, L.t(locale, "button.create_generator")).withEmoji(Emojis.generator)
+
+    fun createInterface(locale: Locale) =
+        Button.primary(CreateInterfaceButton.ID, L.t(locale, "button.create_interface")).withEmoji(Emojis.vcInterface)
 
     fun dashboard(locale: Locale) = Button.link(Links.DASHBOARD, L.t(locale, "button.dashboard")).withEmoji(Emojis.dashboard)
 
