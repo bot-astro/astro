@@ -31,8 +31,6 @@ jib {
 
     container {
         environment = buildMap {
-            // glibc creates up to 8 malloc arenas per detected core, which fragments native memory and bloats the RSS.
-            // 2 is the commonly recommended value for containerized JVMs.
             put("MALLOC_ARENA_MAX", "2")
 
             // Sentry automatically reads this env variable and it's the easiest way to provide the correct release
@@ -42,14 +40,9 @@ jib {
         jvmFlags = listOf(
             "-XX:+PrintCommandLineFlags",
             "-XshowSettings:vm",
-            // Min applies to pods under ~256Mi (e.g. the entitlements job), Max to the others, keep them equal
             "-XX:MinRAMPercentage=60.0",
             "-XX:MaxRAMPercentage=60.0",
-
-            // Pods have no CPU limit on purpose (startup needs bursts), so the JVM would see every core of the node
-            // and size GC, JIT and Netty threads (and malloc arenas) for it. Services with different needs override jvmFlags.
             "-XX:ActiveProcessorCount=2",
-
 //            "-XX:+PrintFlagsFinal",
 //            "-Xlog:os+container=trace"
         )

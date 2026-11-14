@@ -46,12 +46,9 @@ jib {
             listOf(
                 "-XX:+PrintCommandLineFlags",
                 "-XshowSettings:vm",
-                // live heap is ~1 GiB (15k guilds), the default 60% of the pod was ~3 GiB of mostly garbage, see ignored/memory-improvement-plan.md
                 "-Xmx1536m",
-                // no CPU limit on the pod, 4 keeps some parallelism for the startup burst (JIT, GC) without sizing everything for the node
                 "-XX:ActiveProcessorCount=4",
                 "-XX:G1PeriodicGCInterval=120000",
-                // a heap OOM leaves the JVM half broken, better to let Kubernetes restart the pod
                 "-XX:+ExitOnOutOfMemoryError",
             )
     }
