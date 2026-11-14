@@ -197,6 +197,8 @@
   "reason.vc.deleted_empty": "Deleting temporary voice channel, detected {count} users, none of them is a non bot",
   "reason.vc.deleted_move_failed": "Unknown error moving a user into a temporary voice channel",
   "reason.vc.deleted_left_too_quickly": "User left the generated temporary voice channel too quickly",
+  "reason.vc.deleted_creation_failed": "Error while setting up a temporary voice channel",
+  "reason.vc.deleted_cleanup": "Cleaning up a leftover temporary voice channel",
   "reason.vc.invite_created": "Invite created for a temporary voice channel",
   "reason.vc.status_updated": "Voice channel status updated",
   "reason.vc.owner_role_added": "Owner role given to the new owner of the temporary voice channel",

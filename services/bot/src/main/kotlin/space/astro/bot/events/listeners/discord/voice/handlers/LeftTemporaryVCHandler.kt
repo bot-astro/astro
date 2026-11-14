@@ -10,6 +10,7 @@ import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.VCOperationCTX
 import space.astro.bot.models.discord.vc.event.VCEvent
+import space.astro.bot.utils.discord.awaitChannelDeletion
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.ConfigurationErrorCode
@@ -41,11 +42,13 @@ class LeftTemporaryVCHandler(
         if (newOwner == null) {
             val reason = L.t(locale, "reason.vc.deleted_empty", "count" to vc.members.size)
 
-            temporaryVCRepository.delete(guild.id, entity.id)
+            // The entity is removed only after the channels are gone: if a delete fails the entity stays
+            // and the periodic cleanup retries
+            vc.delete().reason(reason).awaitChannelDeletion()
+            privateChat?.delete()?.reason(reason)?.awaitChannelDeletion()
+            waitingRoom?.delete()?.reason(reason)?.awaitChannelDeletion()
 
-            vc.delete().reason(reason).queue()
-            privateChat?.delete()?.reason(reason)?.queue()
-            waitingRoom?.delete()?.reason(reason)?.queue()
+            temporaryVCRepository.delete(guild.id, entity.id)
 
             if (event.ownerLeft) {
                 data.generators

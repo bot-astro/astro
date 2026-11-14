@@ -3,6 +3,7 @@ package space.astro.bot.events.listeners.discord.voice.handlers
 import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.PermissionOverride
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.springframework.stereotype.Component
@@ -253,27 +254,34 @@ class JoinedGeneratorHandler(
         // /////////////////////////////
         // / TEXT & WAITING CREATION ///
         // /////////////////////////////
-        val privateChat =
+        var privateChat: TextChannel? = null
+        var waitingRoom: VoiceChannel? = null
+
+        try {
             if (settings.autoChat) {
                 if (!premiumManager.canCreatePrivateChatOnVCGeneration(guildSettings)) {
                     throw PremiumConfigurationErrors.autoPrivateChat(guild.id)
                 }
 
-                vcPrivateChatManager.create(owner, settings, temporaryVC, locale)
-            } else {
-                null
+                privateChat = vcPrivateChatManager.create(owner, settings, temporaryVC, locale)
             }
 
-        val waitingRoom =
             if (settings.autoWaiting) {
                 if (!premiumManager.canCreateWaitingRoomOnVCGeneration(guildSettings)) {
                     throw PremiumConfigurationErrors.autoWaitingRoom(guild.id)
                 }
 
-                vcWaitingRoomManager.create(owner, settings, temporaryVC, incrementalPosition, locale)
-            } else {
-                null
+                waitingRoom = vcWaitingRoomManager.create(owner, settings, temporaryVC, incrementalPosition, locale)
             }
+        } catch (e: Exception) {
+            val reason = L.t(locale, "reason.vc.deleted_creation_failed")
+
+            waitingRoom?.delete()?.reason(reason)?.queue()
+            privateChat?.delete()?.reason(reason)?.queue()
+            temporaryVC.delete().reason(reason).queue()
+
+            throw e
+        }
 
         // //////////////////
         // / CHAT MESSAGE ///
