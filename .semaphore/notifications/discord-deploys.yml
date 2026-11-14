@@ -1,0 +1,26 @@
+# Every deploy pipeline result (staging and production), sent to Discord through its Slack-compatible webhook.
+# The webhook URL is a secret, never commit it. Apply with:
+#   DISCORD_DEPLOYS_WEBHOOK=https://discord.com/api/webhooks/<id>/<token> \
+#     envsubst < .semaphore/notifications/discord-deploys.yml | sem apply -f -
+apiVersion: v1alpha
+kind: Notification
+metadata:
+  name: discord-deploys
+spec:
+  rules:
+    - name: Deploys
+      filter:
+        projects:
+          - astro
+        branches:
+          - master
+        pipelines:
+          - deploy/.*
+        results:
+          - passed
+          - failed
+          - stopped
+          - canceled
+      notify:
+        slack:
+          endpoint: ${DISCORD_DEPLOYS_WEBHOOK}/slack

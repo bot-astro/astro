@@ -1,0 +1,25 @@
+# Failed/stopped builds on master, sent to Discord through its Slack-compatible webhook.
+# The webhook URL is a secret, never commit it. Apply with:
+#   DISCORD_CI_WEBHOOK=https://discord.com/api/webhooks/<id>/<token> \
+#     envsubst < .semaphore/notifications/discord-ci.yml | sem apply -f -
+apiVersion: v1alpha
+kind: Notification
+metadata:
+  name: discord-ci
+spec:
+  rules:
+    - name: Failed builds on master
+      filter:
+        projects:
+          - astro
+        branches:
+          - master
+        pipelines:
+          - semaphore.yml
+        results:
+          - failed
+          - stopped
+          - canceled
+      notify:
+        slack:
+          endpoint: ${DISCORD_CI_WEBHOOK}/slack
