@@ -30,17 +30,19 @@ jib {
     }
 
     container {
-        // Sentry automatically reads this env variable
-        // and it's the easiest way to provide the correct release
-        System.getenv("SEMAPHORE_GIT_SHA")?.let {
-            environment = mapOf("SENTRY_RELEASE" to it)
+        environment = buildMap {
+            put("MALLOC_ARENA_MAX", "2")
+
+            // Sentry automatically reads this env variable and it's the easiest way to provide the correct release
+            System.getenv("SEMAPHORE_GIT_SHA")?.let { put("SENTRY_RELEASE", it) }
         }
 
         jvmFlags = listOf(
             "-XX:+PrintCommandLineFlags",
             "-XshowSettings:vm",
             "-XX:MinRAMPercentage=60.0",
-            "-XX:MaxRAMPercentage=60.0"
+            "-XX:MaxRAMPercentage=60.0",
+            "-XX:ActiveProcessorCount=2",
 //            "-XX:+PrintFlagsFinal",
 //            "-Xlog:os+container=trace"
         )
