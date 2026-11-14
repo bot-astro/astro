@@ -46,7 +46,9 @@ jib {
             listOf(
                 "-XX:+PrintCommandLineFlags",
                 "-XshowSettings:vm",
-                "-Xmx1536m",
+                // live heap is ~1 GiB (15k guilds), the default 60% of the pod was mostly garbage.
+                // 50% of the 3Gi pod limit set in infra is 1.5 GiB, the heap size tested in the canary
+                "-XX:MaxRAMPercentage=50.0",
                 "-XX:ActiveProcessorCount=4",
                 "-XX:G1PeriodicGCInterval=120000",
                 "-XX:+ExitOnOutOfMemoryError",
