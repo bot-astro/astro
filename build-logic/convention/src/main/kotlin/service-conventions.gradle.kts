@@ -42,14 +42,13 @@ jib {
         jvmFlags = listOf(
             "-XX:+PrintCommandLineFlags",
             "-XshowSettings:vm",
+            // Min applies to pods under ~256Mi (e.g. the entitlements job), Max to the others, keep them equal
+            "-XX:MinRAMPercentage=60.0",
             "-XX:MaxRAMPercentage=60.0",
 
             // Pods have no CPU limit on purpose (startup needs bursts), so the JVM would see every core of the node
             // and size GC, JIT and Netty threads (and malloc arenas) for it. Services with different needs override jvmFlags.
             "-XX:ActiveProcessorCount=2",
-
-            // Return unused heap to the OS when idle, G1 otherwise never shrinks
-            "-XX:G1PeriodicGCInterval=120000",
 
 //            "-XX:+PrintFlagsFinal",
 //            "-Xlog:os+container=trace"
