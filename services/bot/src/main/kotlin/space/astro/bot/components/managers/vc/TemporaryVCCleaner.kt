@@ -124,14 +124,15 @@ class TemporaryVCCleaner(
         lastSweeps[guild.idLong] = now
 
         val reason = L.t(guildSettings.supportedLocale, "reason.vc.deleted_cleanup")
-        var deleted = 0
+        val leftovers =
+            entities
+                .filter { entity ->
+                    val vc = guild.getVoiceChannelById(entity.id)
+                    vc == null || vc.members.none { !it.user.isBot }
+                }.take(MAX_VCS_PER_GUILD_SWEEP)
 
-        for (entity in entities) {
+        for (entity in leftovers) {
             val vc = guild.getVoiceChannelById(entity.id)
-
-            if (vc != null && vc.members.any { !it.user.isBot }) {
-                continue
-            }
 
             temporaryVCRepository.delete(guild.id, entity.id)
 
@@ -151,17 +152,11 @@ class TemporaryVCCleaner(
                 log.warn(e) { "Failed deleting leftover temporary VC ${entity.id} in guild ${guild.id}" }
             }
 
-            deleted++
-
             delay(PACE_BETWEEN_DELETES)
-
-            if (deleted >= MAX_VCS_PER_GUILD_SWEEP) {
-                break
-            }
         }
 
-        if (deleted > 0) {
-            log.info { "Cleaned $deleted leftover temporary VCs in guild ${guild.id}" }
+        if (leftovers.isNotEmpty()) {
+            log.info { "Cleaned ${leftovers.size} leftover temporary VCs in guild ${guild.id}" }
         }
 
         return true
