@@ -44,7 +44,8 @@ class VCEventHandler(
                 Duration.ofSeconds(20),
             ).register(registry)
 
-    // registered upfront at 0: a counter created on its first increment appears already at 1, and Prometheus increase() ignores that first event
+    // registered upfront at 0: a counter created on its first increment appears already at 1,
+    // and Prometheus increase() ignores that first event
     private val creationCounters =
         listOf("created", "skipped", "config_error", "no_permission", "failed").associateWith {
             Counter
