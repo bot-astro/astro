@@ -44,6 +44,15 @@ class VCEventHandler(
                 Duration.ofSeconds(20),
             ).register(registry)
 
+    // registered upfront at 0: a counter created on its first increment appears already at 1, and Prometheus increase() ignores that first event
+    private val creationCounters =
+        listOf("created", "skipped", "config_error", "no_permission", "failed").associateWith {
+            Counter
+                .builder("astro.vc.created")
+                .tag("outcome", it)
+                .register(registry)
+        }
+
     suspend fun handleEvents(
         events: List<VCEvent>,
         memberRolesManager: SimpleMemberRolesManager,
@@ -73,11 +82,7 @@ class VCEventHandler(
 
                 handleException(event, e)
             } finally {
-                Counter
-                    .builder("astro.vc.created")
-                    .tag("outcome", outcome)
-                    .register(registry)
-                    .increment()
+                creationCounters.getValue(outcome).increment()
 
                 if (outcome == "created") sample.stop(creationTimer)
             }
@@ -103,9 +108,9 @@ class VCEventHandler(
 
     // UNKNOWN configuration errors wrap Discord API failures while creating the channel, the other codes are guild misconfigurations
     private fun generationOutcome(e: Exception) =
-        when {
-            e is InsufficientPermissionException -> "no_permission"
-            e is ConfigurationException && e.configurationErrorEntity.code != ConfigurationErrorCode.UNKNOWN -> "config_error"
+        when (e) {
+            is InsufficientPermissionException -> "no_permission"
+            is ConfigurationException if e.configurationErrorEntity.code != ConfigurationErrorCode.UNKNOWN -> "config_error"
             else -> "failed"
         }
 

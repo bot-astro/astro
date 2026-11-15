@@ -46,7 +46,6 @@ class InteractionPipeline(
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
     private val registry: MeterRegistry,
 ) {
-    // the keys are the names of the registered handlers, so the tag cardinality is bounded
     suspend fun <E, C : InteractionContext> run(
         event: E,
         key: String,
@@ -54,7 +53,15 @@ class InteractionPipeline(
         block: suspend (C) -> Unit,
     ) where E : GenericInteractionCreateEvent, E : IReplyCallback {
         val sample = Timer.start(registry)
+
+        // /////////////
+        // / EXECUTE ///
+        // /////////////
         val outcome = execute(event, key, handler, block)
+
+        // /////////////
+        // / METRICS ///
+        // /////////////
         val type = event.type.name.lowercase()
 
         Counter
@@ -84,6 +91,8 @@ class InteractionPipeline(
     }
 
     /**
+     * Runs the shared flow and replies to the user if something goes wrong
+     *
      * @return the outcome used as metric tag: ok, outside_guild, user_error, config_error, no_permission or failed
      */
     private suspend fun <E, C : InteractionContext> execute(
@@ -91,10 +100,13 @@ class InteractionPipeline(
         key: String,
         handler: InteractionHandler<C>,
         block: suspend (C) -> Unit,
-    ) where E : GenericInteractionCreateEvent, E : IReplyCallback {
+    ): String where E : GenericInteractionCreateEvent, E : IReplyCallback {
         val settings = handler.settings
         var responder = InteractionResponder(event, settings.ack, L.default)
 
+        // /////////////////
+        // / GUILD CHECK ///
+        // /////////////////
         val guild = event.guild
         val member = event.member
 
@@ -104,23 +116,41 @@ class InteractionPipeline(
         }
 
         return try {
+            // //////////////
+            // / COOLDOWN ///
+            // //////////////
             // runs before the guild settings are retrieved so a user on cooldown costs no database read
             cooldownGuard.check(key, member, settings)
 
+            // ////////////////////
+            // / GUILD SETTINGS ///
+            // ////////////////////
             val guildSettings = retrieveGuildSettings(guild.id)
             responder = InteractionResponder(event, settings.ack, guildSettings.supportedLocale)
 
+            // ////////////
+            // / GUARDS ///
+            // ////////////
             val request = InteractionRequest(key, guild, member, guildSettings, settings)
             guards.forEach { it.check(request) }
 
+            // /////////////
+            // / CONTEXT ///
+            // /////////////
             val ctx =
                 handler.contextResolver.resolve(
                     event,
                     InteractionContext(guild, member, guildSettings, responder),
                 )
 
+            // /////////////////
+            // / ACKNOWLEDGE ///
+            // /////////////////
             acknowledge(event, settings.ack)
 
+            // /////////////
+            // / EXECUTE ///
+            // /////////////
             block(ctx)
 
             "ok"
