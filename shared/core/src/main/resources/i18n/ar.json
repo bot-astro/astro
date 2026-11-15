@@ -181,6 +181,8 @@
   "welcome.title": "## Astro هبط للتو في [{guild}]({link})!",
   "welcome.description": "شكرًا لدعوتك Astro إلى هذا السيرفر الرائع، لنأخذه الآن إلى المستوى التالي!",
   "welcome.setup.title": "الإعداد",
+  "inviter_onboarding.title": "## شكرًا لإضافتك Astro إلى [{guild}]({link})!",
+  "inviter_onboarding.description": "وصلتك هذه الرسالة لأنك قمت بدعوة Astro. إليك كيفية البدء، يستغرق الأمر دقيقة فقط!",
   "interface.description": "يمكنك استخدام هذه الواجهة لإدارة قناتك الصوتية.\nيمكنك أيضًا استخدام أوامر الشرطة المائلة `/`!",
   "interface.author": "واجهة Astro",
   "interface.footer": "استخدم الأزرار أدناه لإدارة قناتك الصوتية",

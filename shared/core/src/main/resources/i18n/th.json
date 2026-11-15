@@ -181,6 +181,8 @@
   "welcome.title": "## Astro เพิ่งลงจอดที่ [{guild}]({link})!",
   "welcome.description": "ขอบคุณที่เชิญ Astro เข้ามาในเซิร์ฟเวอร์สุดเจ๋งนี้ มายกระดับให้ดียิ่งขึ้นกันเลย!",
   "welcome.setup.title": "การตั้งค่า",
+  "inviter_onboarding.title": "## ขอบคุณที่เพิ่ม Astro ใน [{guild}]({link})!",
+  "inviter_onboarding.description": "คุณได้รับข้อความนี้เพราะคุณเป็นผู้เชิญ Astro นี่คือวิธีเริ่มต้นใช้งาน ใช้เวลาเพียงหนึ่งนาที!",
   "interface.description": "คุณใช้อินเทอร์เฟซนี้เพื่อจัดการช่องเสียงของคุณได้\nคุณยังใช้คำสั่งสแลชด้วย `/` ได้เช่นกัน!",
   "interface.author": "อินเทอร์เฟซของ Astro",
   "interface.footer": "ใช้ปุ่มด้านล่างเพื่อจัดการช่องเสียงของคุณ",

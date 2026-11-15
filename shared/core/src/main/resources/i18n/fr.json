@@ -181,6 +181,8 @@
   "welcome.title": "## Astro vient d'atterrir sur [{guild}]({link}) !",
   "welcome.description": "Merci d'avoir invité Astro sur ce super serveur, passons-le maintenant au niveau supérieur !",
   "welcome.setup.title": "Configuration",
+  "inviter_onboarding.title": "## Merci d'avoir ajouté Astro à [{guild}]({link}) !",
+  "inviter_onboarding.description": "Tu reçois ce message parce que tu as invité Astro. Voici comment démarrer, ça ne prend qu'une minute !",
   "interface.description": "Tu peux utiliser cette interface pour gérer ton salon vocal.\nTu peux aussi utiliser les commandes slash avec `/` !",
   "interface.author": "Interface Astro",
   "interface.footer": "Utilise les boutons ci-dessous pour gérer ton salon vocal",
