@@ -70,28 +70,29 @@ class BigQueryService(
         val client = bigQuery ?: return
         val events = generateSequence { pool.poll() }.toList()
 
-        events
-            .groupBy { tableName(it) }
-            .forEach { (table, tableEvents) ->
-                // the daily snapshot adds one row per guild at once, BigQuery recommends at most 500 rows per request
-                tableEvents.chunked(MAX_ROWS_PER_REQUEST).forEach { chunk ->
-                    try {
-                        val request =
-                            InsertAllRequest
-                                .newBuilder(properties.datasetName, table)
-                                .also { builder ->
-                                    chunk.forEach { builder.addRow(jsonMapper.convertValue<Map<String, Any?>>(it)) }
-                                }.build()
+        // the daily snapshot adds one row per guild at once, BigQuery recommends at most 500 rows per request
+        val batches =
+            events
+                .groupBy { tableName(it) }
+                .flatMap { (table, tableEvents) -> tableEvents.chunked(MAX_ROWS_PER_REQUEST).map { table to it } }
 
-                        val response = client.insertAll(request)
-                        if (response.hasErrors()) {
-                            response.insertErrors.values.forEach { log.error { "Failed while inserting analytics event in $table: $it" } }
-                        }
-                    } catch (e: Exception) {
-                        log.error(e) { "Failed to dispatch ${chunk.size} analytics events to $table" }
-                    }
+        batches.forEach { (table, batch) ->
+            try {
+                val request =
+                    InsertAllRequest
+                        .newBuilder(properties.datasetName, table)
+                        .also { builder ->
+                            batch.forEach { builder.addRow(jsonMapper.convertValue<Map<String, Any?>>(it)) }
+                        }.build()
+
+                val response = client.insertAll(request)
+                if (response.hasErrors()) {
+                    response.insertErrors.values.forEach { log.error { "Failed while inserting analytics event in $table: $it" } }
                 }
+            } catch (e: Exception) {
+                log.error(e) { "Failed to dispatch ${batch.size} analytics events to $table" }
             }
+        }
     }
 
     private fun tableName(data: AnalyticsEventData) =
