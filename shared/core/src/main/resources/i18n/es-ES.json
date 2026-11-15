@@ -186,6 +186,7 @@
   "interface.footer": "Usa los botones de abajo para gestionar tu canal de voz",
   "reason.roles.features": "Se aplicaron los roles necesarios según los ajustes del generador y de las funciones de conexión",
   "reason.dashboard.profile_update": "Actualización de perfil iniciada desde el panel",
+  "reason.dashboard.setup": "Configuración de Astro iniciada desde el panel",
   "reason.dashboard.channel_create": "Creación de canal iniciada desde el panel",
   "reason.dashboard.channel_delete": "Eliminación de canal iniciada desde el panel",
   "reason.dashboard.interface_delete": "Eliminación de interfaz iniciada desde el panel",

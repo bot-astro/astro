@@ -186,6 +186,7 @@
   "interface.footer": "Gunakan tombol di bawah untuk mengelola saluran suaramu",
   "reason.roles.features": "Peran yang diperlukan diterapkan berdasarkan pengaturan generator dan fitur koneksi",
   "reason.dashboard.profile_update": "Pembaruan profil dipicu dari dashboard",
+  "reason.dashboard.setup": "Setup Astro dijalankan dari dashboard",
   "reason.dashboard.channel_create": "Pembuatan saluran dipicu dari dashboard",
   "reason.dashboard.channel_delete": "Penghapusan saluran dipicu dari dashboard",
   "reason.dashboard.interface_delete": "Penghapusan interface dipicu dari dashboard",

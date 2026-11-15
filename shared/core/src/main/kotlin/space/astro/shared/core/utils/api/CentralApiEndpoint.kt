@@ -15,6 +15,7 @@ object CentralApiEndpoint {
     const val GUILD_SETTINGS = "/v2/guilds/{guildId}/settings"
     const val GUILD_SETTINGS_VC_CACHE = "/v2/guilds/{guildId}/settings/vcs/cache"
     const val GUILD_SETTINGS_PROFILE = "/v2/guilds/{guildId}/settings/profile"
+    const val GUILD_SETTINGS_SETUP = "/v2/guilds/{guildId}/settings/setup"
     const val GUILD_SETTINGS_GENERATORS = "/v2/guilds/{guildId}/settings/generators"
     const val GUILD_SETTINGS_GENERATOR = "/v2/guilds/{guildId}/settings/generators/{generatorId}"
     const val GUILD_SETTINGS_INTERFACES = "/v2/guilds/{guildId}/settings/interfaces"

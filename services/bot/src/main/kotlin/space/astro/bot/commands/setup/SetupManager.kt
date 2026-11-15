@@ -5,6 +5,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.channel.concrete.Category
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import org.springframework.stereotype.Component
@@ -16,7 +20,10 @@ import space.astro.bot.ui.Containers
 import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
+import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
+import space.astro.shared.core.models.database.guildSettings.InterfaceData
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
+import java.util.Locale
 
 @Component
 class SetupManager(
@@ -26,6 +33,68 @@ class SetupManager(
 ) {
     companion object {
         private const val MAX_GUILD_CHANNELS = 500
+    }
+
+    /**
+     * What [createSetup] created, none of it is saved in the guild settings yet
+     */
+    data class SetupResult(
+        val category: Category,
+        val interfaceChannel: TextChannel,
+        val generatorChannel: VoiceChannel,
+        val interfaceData: InterfaceData,
+        val generatorSettings: GeneratorSettings,
+    )
+
+    /**
+     * @return true if the guild has enough free channel slots for the category, the interface and the generator
+     */
+    fun hasRoomForSetup(guild: Guild) = guild.channels.size <= MAX_GUILD_CHANNELS - 3
+
+    /**
+     * Creates a category with an interface and a generator inside it, the caller adds the returned
+     * [SetupResult.interfaceData] and [SetupResult.generatorSettings] to the [guildSettings] and saves them
+     *
+     * @throws ErrorResponseException
+     */
+    suspend fun createSetup(
+        guild: Guild,
+        guildSettings: GuildSettingsEntity,
+        locale: Locale,
+        reason: String,
+    ): SetupResult {
+        val category = guild.createCategory("Astro").reason(reason).await()
+
+        val interfaceChannel =
+            guild
+                .createTextChannel("interface")
+                .addMemberPermissionOverride(guild.selfMember.idLong, Permission.VIEW_CHANNEL.rawValue, 0)
+                .setParent(category)
+                .reason(reason)
+                .await()
+
+        val interfaceData = interfaceManager.createInterface(guild, interfaceChannel.id, locale)
+
+        val generatorChannel =
+            guild
+                .createVoiceChannel("➕ Generator")
+                .setParent(category)
+                .reason(reason)
+                .await()
+
+        val generatorSettings =
+            GeneratorSettings(
+                id = generatorChannel.id,
+                category = category.id,
+                chatCategory = category.id,
+                waitingCategory = category.id,
+                // the variables are kept as they are, they get replaced when the temporary VC is created
+                defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
+                defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),
+                defaultWaitingName = L.t(guildSettings.javaLocale, "temporary.waiting.name.default", "vc_name" to "{vc_name}"),
+            )
+
+        return SetupResult(category, interfaceChannel, generatorChannel, interfaceData, generatorSettings)
     }
 
     suspend fun setup(ctx: InteractionContext) {
@@ -57,45 +126,15 @@ class SetupManager(
             return
         }
 
-        // category + interface + generator
-        if (guild.channels.size > MAX_GUILD_CHANNELS - 3) {
+        if (!hasRoomForSetup(guild)) {
             throw InteractionException("setup.max_channels")
         }
 
-        val reason = ctx.t("setup.reason")
-
         try {
-            val category = guild.createCategory("Astro").reason(reason).await()
+            val setup = createSetup(guild, guildSettings, ctx.locale, ctx.t("setup.reason"))
 
-            val interfaceChannel =
-                guild
-                    .createTextChannel("interface")
-                    .addMemberPermissionOverride(guild.selfMember.idLong, Permission.VIEW_CHANNEL.rawValue, 0)
-                    .setParent(category)
-                    .reason(reason)
-                    .await()
-
-            guildSettings.interfaces.add(interfaceManager.createInterface(guild, interfaceChannel.id, ctx.locale))
-
-            val generatorChannel =
-                guild
-                    .createVoiceChannel("➕ Generator")
-                    .setParent(category)
-                    .reason(reason)
-                    .await()
-
-            guildSettings.generators.add(
-                GeneratorSettings(
-                    id = generatorChannel.id,
-                    category = category.id,
-                    chatCategory = category.id,
-                    waitingCategory = category.id,
-                    // the variables are kept as they are, they get replaced when the temporary VC is created
-                    defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
-                    defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),
-                    defaultWaitingName = L.t(guildSettings.javaLocale, "temporary.waiting.name.default", "vc_name" to "{vc_name}"),
-                ),
-            )
+            guildSettings.interfaces.add(setup.interfaceData)
+            guildSettings.generators.add(setup.generatorSettings)
 
             withContext(Dispatchers.IO) { guildSettingsRepository.save(guildSettings) }
 
@@ -103,9 +142,9 @@ class SetupManager(
                 Containers.default(
                     ctx.t(
                         "setup.success",
-                        "category" to category.asMention,
-                        "generator" to generatorChannel.asMention,
-                        "interface" to interfaceChannel.asMention,
+                        "category" to setup.category.asMention,
+                        "generator" to setup.generatorChannel.asMention,
+                        "interface" to setup.interfaceChannel.asMention,
                     ),
                 ),
                 ActionRow.of(Buttons.guildDashboard(ctx.locale, guild.id), Buttons.guides(ctx.locale)),

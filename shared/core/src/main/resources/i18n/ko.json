@@ -186,6 +186,7 @@
   "interface.footer": "아래 버튼으로 음성 채널을 관리하세요",
   "reason.roles.features": "생성기 및 연결 기능 설정에 따라 필요한 역할을 적용했어요",
   "reason.dashboard.profile_update": "대시보드에서 프로필 업데이트가 실행되었어요",
+  "reason.dashboard.setup": "대시보드에서 Astro 설정이 실행되었어요",
   "reason.dashboard.channel_create": "대시보드에서 채널 생성이 실행되었어요",
   "reason.dashboard.channel_delete": "대시보드에서 채널 삭제가 실행되었어요",
   "reason.dashboard.interface_delete": "대시보드에서 인터페이스 삭제가 실행되었어요",

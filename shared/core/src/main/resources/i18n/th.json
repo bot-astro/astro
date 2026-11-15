@@ -186,6 +186,7 @@
   "interface.footer": "ใช้ปุ่มด้านล่างเพื่อจัดการช่องเสียงของคุณ",
   "reason.roles.features": "ใช้บทบาทที่จำเป็นตามการตั้งค่า Generator และฟีเจอร์การเชื่อมต่อ",
   "reason.dashboard.profile_update": "อัปเดตโปรไฟล์จากแดชบอร์ด",
+  "reason.dashboard.setup": "เริ่มการตั้งค่า Astro จากแดชบอร์ด",
   "reason.dashboard.channel_create": "สร้างช่องจากแดชบอร์ด",
   "reason.dashboard.channel_delete": "ลบช่องจากแดชบอร์ด",
   "reason.dashboard.interface_delete": "ลบอินเทอร์เฟซจากแดชบอร์ด",

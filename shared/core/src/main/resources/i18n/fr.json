@@ -186,6 +186,7 @@
   "interface.footer": "Utilise les boutons ci-dessous pour gérer ton salon vocal",
   "reason.roles.features": "Rôles nécessaires appliqués selon les paramètres du générateur et des fonctionnalités de connexion",
   "reason.dashboard.profile_update": "Mise à jour du profil déclenchée depuis le tableau de bord",
+  "reason.dashboard.setup": "Configuration d'Astro déclenchée depuis le tableau de bord",
   "reason.dashboard.channel_create": "Création de salon déclenchée depuis le tableau de bord",
   "reason.dashboard.channel_delete": "Suppression de salon déclenchée depuis le tableau de bord",
   "reason.dashboard.interface_delete": "Suppression d'interface déclenchée depuis le tableau de bord",

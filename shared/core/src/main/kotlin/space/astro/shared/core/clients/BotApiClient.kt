@@ -14,6 +14,7 @@ import space.astro.shared.core.models.api.bot.request.InterfaceMoveBotApiRequest
 import space.astro.shared.core.models.api.bot.response.DiscordGuildBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildRoleBotApiResponse
+import space.astro.shared.core.models.api.bot.response.SetupBotApiResponse
 import space.astro.shared.core.models.database.guildSettings.InterfaceData
 import space.astro.shared.core.properties.bot.BotEndpointProperties
 import space.astro.shared.core.properties.bot.BotShardProperties
@@ -157,6 +158,23 @@ class BotApiClient(
             }
 
             throw AUnknownException("Failed to fetch guild roles", e)
+        }
+    }
+
+    fun setup(guildId: String): SetupBotApiResponse {
+        try {
+            return client
+                .post()
+                .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD_SETUP, guildId)
+                .retrieve()
+                .body()
+                ?: throw AUnknownException("Failed to set up the guild")
+        } catch (e: RestClientException) {
+            if (e is RestClientResponseException && e.statusCode.value() == 404) {
+                throw ANotFoundException("Guild with id $guildId not found")
+            }
+
+            throw AUnknownException("Failed to set up the guild", e)
         }
     }
 

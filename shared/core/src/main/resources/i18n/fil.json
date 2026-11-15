@@ -186,6 +186,7 @@
   "interface.footer": "Gamitin ang mga button sa ibaba para pamahalaan ang voice channel mo",
   "reason.roles.features": "Inilapat ang mga kinakailangang role batay sa mga setting ng generator at ng mga feature sa koneksyon",
   "reason.dashboard.profile_update": "Na-trigger mula sa dashboard ang pag-update ng profile",
+  "reason.dashboard.setup": "Na-trigger ang setup ng Astro mula sa dashboard",
   "reason.dashboard.channel_create": "Na-trigger mula sa dashboard ang paggawa ng channel",
   "reason.dashboard.channel_delete": "Na-trigger mula sa dashboard ang pagtanggal ng channel",
   "reason.dashboard.interface_delete": "Na-trigger mula sa dashboard ang pagtanggal ng interface",

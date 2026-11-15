@@ -6,6 +6,7 @@ object BotApiEndpoint {
     const val DISCORD_GUILD_CHANNELS = "/api/v2/guilds/{guildId}/channels"
     const val DISCORD_GUILD_CHANNEL = "/api/v2/guilds/{guildId}/channels/{channelId}"
     const val DISCORD_GUILD_ROLES = "/api/v2/guilds/{guildId}/roles"
+    const val DISCORD_GUILD_SETUP = "/api/v2/guilds/{guildId}/setup"
     const val DISCORD_GUILD_INTERFACE = "/api/v2/guilds/{guildId}/interface"
     const val DISCORD_GUILD_INTERFACE_MOVE = "/api/v2/guilds/{guildId}/interface/move"
     const val DISCORD_GUILD_INTERFACE_MESSAGE = "/api/v2/guilds/{guildId}/interface/{channelId}/{messageId}"
