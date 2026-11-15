@@ -91,8 +91,6 @@ class InteractionPipeline(
     }
 
     /**
-     * Runs the shared flow and replies to the user if something goes wrong
-     *
      * @return the outcome used as metric tag: ok, outside_guild, user_error, config_error, no_permission or failed
      */
     private suspend fun <E, C : InteractionContext> execute(
@@ -104,9 +102,6 @@ class InteractionPipeline(
         val settings = handler.settings
         var responder = InteractionResponder(event, settings.ack, L.default)
 
-        // /////////////////
-        // / GUILD CHECK ///
-        // /////////////////
         val guild = event.guild
         val member = event.member
 
@@ -116,41 +111,23 @@ class InteractionPipeline(
         }
 
         return try {
-            // //////////////
-            // / COOLDOWN ///
-            // //////////////
             // runs before the guild settings are retrieved so a user on cooldown costs no database read
             cooldownGuard.check(key, member, settings)
 
-            // ////////////////////
-            // / GUILD SETTINGS ///
-            // ////////////////////
             val guildSettings = retrieveGuildSettings(guild.id)
             responder = InteractionResponder(event, settings.ack, guildSettings.supportedLocale)
 
-            // ////////////
-            // / GUARDS ///
-            // ////////////
             val request = InteractionRequest(key, guild, member, guildSettings, settings)
             guards.forEach { it.check(request) }
 
-            // /////////////
-            // / CONTEXT ///
-            // /////////////
             val ctx =
                 handler.contextResolver.resolve(
                     event,
                     InteractionContext(guild, member, guildSettings, responder),
                 )
 
-            // /////////////////
-            // / ACKNOWLEDGE ///
-            // /////////////////
             acknowledge(event, settings.ack)
 
-            // /////////////
-            // / EXECUTE ///
-            // /////////////
             block(ctx)
 
             "ok"
