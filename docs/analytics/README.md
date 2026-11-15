@@ -1,6 +1,7 @@
 # Analytics queries
 
 SQL for the BigQuery dataset (`astro_bot` in production). Replace the dataset in the queries if you use another one.
+`create_views.sh` creates each query as a view named `ANALYTICS_<FILE>` (for example `ANALYTICS_RETENTION_COHORTS`) in `astro_bot`, so they can be opened from the BigQuery console or Looker Studio. Rerun it after editing a query. The queries use only date expressions that BigQuery can prune on, so they also work as views on partition-filtered tables.
 
 All tables are partitioned by `timestamp` with a required partition filter, so every query filters on it.
 Run them with a cost cap, for example `bq query --use_legacy_sql=false --maximum_bytes_billed=1000000000 < file.sql`.
