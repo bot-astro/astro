@@ -1,4 +1,5 @@
 -- Weekly join cohorts of the last 26 weeks and the share of each cohort that generated a VC N weeks after joining.
+-- A column is NULL while the cohort is not yet N+1 weeks old, so a missing value is not read as churn.
 DECLARE start_date DATE DEFAULT DATE_SUB(CURRENT_DATE(), INTERVAL 26 WEEK);
 
 WITH cohorts AS (
@@ -15,9 +16,15 @@ activity AS (
 SELECT
   c.cohort_week,
   COUNT(DISTINCT c.guild_id) AS guilds,
-  ROUND(COUNT(DISTINCT IF(DATE_DIFF(a.active_week, c.cohort_week, WEEK) = 1, c.guild_id, NULL)) / COUNT(DISTINCT c.guild_id), 3) AS week_1,
-  ROUND(COUNT(DISTINCT IF(DATE_DIFF(a.active_week, c.cohort_week, WEEK) = 4, c.guild_id, NULL)) / COUNT(DISTINCT c.guild_id), 3) AS week_4,
-  ROUND(COUNT(DISTINCT IF(DATE_DIFF(a.active_week, c.cohort_week, WEEK) = 12, c.guild_id, NULL)) / COUNT(DISTINCT c.guild_id), 3) AS week_12
+  IF(DATE_DIFF(CURRENT_DATE(), c.cohort_week, WEEK) > 1,
+    ROUND(COUNT(DISTINCT IF(DATE_DIFF(a.active_week, c.cohort_week, WEEK) = 1, c.guild_id, NULL)) / COUNT(DISTINCT c.guild_id), 3),
+    NULL) AS week_1,
+  IF(DATE_DIFF(CURRENT_DATE(), c.cohort_week, WEEK) > 4,
+    ROUND(COUNT(DISTINCT IF(DATE_DIFF(a.active_week, c.cohort_week, WEEK) = 4, c.guild_id, NULL)) / COUNT(DISTINCT c.guild_id), 3),
+    NULL) AS week_4,
+  IF(DATE_DIFF(CURRENT_DATE(), c.cohort_week, WEEK) > 12,
+    ROUND(COUNT(DISTINCT IF(DATE_DIFF(a.active_week, c.cohort_week, WEEK) = 12, c.guild_id, NULL)) / COUNT(DISTINCT c.guild_id), 3),
+    NULL) AS week_12
 FROM cohorts c
 LEFT JOIN activity a USING (guild_id)
 GROUP BY c.cohort_week

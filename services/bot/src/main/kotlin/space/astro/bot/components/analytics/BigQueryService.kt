@@ -19,6 +19,7 @@ import tools.jackson.module.kotlin.convertValue
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 private val log = KotlinLogging.logger { }
 
@@ -45,6 +46,9 @@ class BigQueryService(
     }
 
     private val pool = ConcurrentLinkedQueue<AnalyticsEventData>()
+
+    // ConcurrentLinkedQueue.size walks the whole queue, so the size is tracked separately
+    private val poolSize = AtomicInteger()
     private val executor = Executors.newSingleThreadExecutor()
 
     fun push(data: AnalyticsEventData) {
@@ -54,7 +58,8 @@ class BigQueryService(
         }
 
         pool.add(data)
-        if (pool.size >= properties.maxEventsEntry) {
+        // only the push that crosses the threshold schedules a dispatch, the others would queue useless tasks
+        if (poolSize.incrementAndGet() == properties.maxEventsEntry) {
             executor.submit { dispatch() }
         }
     }
@@ -69,6 +74,7 @@ class BigQueryService(
 
         val client = bigQuery ?: return
         val events = generateSequence { pool.poll() }.toList()
+        poolSize.addAndGet(-events.size)
 
         // the daily snapshot adds one row per guild at once, BigQuery recommends at most 500 rows per request
         val batches =

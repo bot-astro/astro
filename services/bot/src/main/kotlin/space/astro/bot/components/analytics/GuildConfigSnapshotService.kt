@@ -36,19 +36,19 @@ class GuildConfigSnapshotService(
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString()
 
             shardManager.guilds.chunked(500).forEach { guilds ->
-                val settingsByGuild = guildSettingsRepository.findByGuildIDIn(guilds.map { it.id }).associateBy { it.guildID }
+                val countsByGuild = guildSettingsRepository.findConfigCountsByGuildIDIn(guilds.map { it.id }).associateBy { it.guildID }
 
                 guilds.forEach { guild ->
-                    val settings = settingsByGuild[guild.id] ?: return@forEach
+                    val counts = countsByGuild[guild.id] ?: return@forEach
 
                     applicationEventPublisher.publishEvent(
                         GuildConfigSnapshotEventData(
                             guildId = guild.idLong,
-                            premium = premiumManager.isGuildPremium(settings),
-                            generators = settings.generators.size,
-                            interfaces = settings.interfaces.size,
-                            connections = settings.connections.size,
-                            templates = settings.templates.size,
+                            premium = premiumManager.isGuildPremium(counts.upgradedByUserID, counts.entitlements),
+                            generators = counts.generators,
+                            interfaces = counts.interfaces,
+                            connections = counts.connections,
+                            templates = counts.templates,
                             timestamp = timestamp,
                         ),
                     )

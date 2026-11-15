@@ -26,18 +26,23 @@ class PremiumManager(
         private val premiumVariablesRegex = """\{(n|nato|roman|activity_[^\s\\}]+)}""".toRegex()
     }
 
-    fun isGuildPremium(guildSettings: GuildSettingsEntity): Boolean {
+    fun isGuildPremium(guildSettings: GuildSettingsEntity) = isGuildPremium(guildSettings.upgradedByUserID, guildSettings.entitlements)
+
+    fun isGuildPremium(
+        upgradedByUserID: String?,
+        entitlements: List<GuildEntitlementData>,
+    ): Boolean {
         if (!premiumProperties.restrictions) {
             return true
         }
 
-        if (guildSettings.upgradedByUserID != null) {
+        if (upgradedByUserID != null) {
             return true
         }
 
         val now = System.currentTimeMillis()
 
-        return guildSettings.entitlements.any {
+        return entitlements.any {
             it.isActive(now) && it.skuId == premiumProperties.serverSkuId
         }
     }

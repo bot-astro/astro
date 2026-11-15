@@ -1,5 +1,5 @@
--- For each premium gate (PREMIUM_* error code): guilds that hit it in the last 90 days that were not premium at the time,
--- and how many became premium within 7 / 30 days of their first hit.
+-- For each premium gate (PREMIUM_* error code): guilds that hit it in the last 90 days (gates only fire for non-premium
+-- guilds), and how many became premium within 7 / 30 days of their first hit.
 DECLARE start_date DATE DEFAULT DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY);
 
 WITH first_hit AS (

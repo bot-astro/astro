@@ -1,4 +1,5 @@
 -- Guilds that joined in the last 90 days: did they configure a generator, did they generate a VC, how many days it took.
+-- Only VCs after the join count, so a guild that left and came back does not get a negative time.
 -- Generator creation is only visible from the daily snapshot, so it is accurate to the day.
 DECLARE start_date DATE DEFAULT DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY);
 
@@ -15,10 +16,11 @@ first_generator AS (
   GROUP BY guild_id
 ),
 first_vc AS (
-  SELECT guild_id, MIN(timestamp) AS at
-  FROM `astro_bot.TEMPORARY_VC_GENERATION`
-  WHERE timestamp >= TIMESTAMP(start_date)
-  GROUP BY guild_id
+  SELECT t.guild_id, MIN(t.timestamp) AS at
+  FROM `astro_bot.TEMPORARY_VC_GENERATION` t
+  JOIN joined j ON j.guild_id = t.guild_id AND t.timestamp >= j.joined_at
+  WHERE t.timestamp >= TIMESTAMP(start_date)
+  GROUP BY t.guild_id
 )
 SELECT
   COUNT(*) AS joined,
