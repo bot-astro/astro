@@ -57,6 +57,53 @@ object Messages {
     }
 
     /**
+     * Sent in DM to whoever invited Astro in [guild], no setup button because that one only works inside the guild
+     */
+    fun inviterOnboarding(
+        guild: Guild,
+        locale: Locale,
+    ): MessageCreateData {
+        val selfAvatar = guild.selfMember.user.effectiveAvatarUrl
+        val dashboard = Links.guildDashboard(guild.id)
+
+        return Containers.message(
+            Containers.container(
+                Containers.purple,
+                Containers.section(
+                    Thumbnail.fromUrl(guild.iconUrl ?: selfAvatar),
+                    L.t(locale, "inviter_onboarding.title", "guild" to guild.name, "link" to dashboard),
+                    L.t(locale, "inviter_onboarding.description"),
+                ),
+                Containers.field(
+                    L.t(locale, "welcome.setup.title"),
+                    L.t(locale, "help.setup.content", "emoji" to Emojis.dashboard.formatted, "link" to dashboard),
+                ),
+                Containers.field(
+                    L.t(locale, "help.features.title"),
+                    L.t(
+                        locale,
+                        "help.features.content",
+                        "generatorEmoji" to Emojis.generator.formatted,
+                        "voiceRoleEmoji" to Emojis.voiceRole.formatted,
+                        "interfaceEmoji" to Emojis.vcInterface.formatted,
+                        "templateEmoji" to Emojis.template.formatted,
+                        "guidesLink" to Links.GUIDES,
+                    ),
+                ),
+                Containers.field(
+                    L.t(locale, "help.support.title"),
+                    L.t(locale, "help.support.content", "emoji" to Emojis.helper.formatted, "link" to Links.SUPPORT_SERVER),
+                ),
+            ),
+            ActionRow.of(
+                Buttons.guildDashboard(locale, guild.id),
+                Buttons.guides(locale),
+                Buttons.support(locale),
+            ),
+        )
+    }
+
+    /**
      * Log about a member in the chat of a temporary VC, [key] is the translation key of the log text
      */
     fun vcLog(
