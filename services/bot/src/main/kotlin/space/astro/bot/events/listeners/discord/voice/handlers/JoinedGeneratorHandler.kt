@@ -249,6 +249,13 @@ class JoinedGeneratorHandler(
                 throw unknownError(guild.id, "creating a temporary VC", e)
             }
 
+        // the creation can take a while (e.g. guild rate limits) and the owner may have left the generator in the meantime
+        if (owner.voiceState?.inAudioChannel() != true) {
+            temporaryVC.delete().reason(L.t(locale, "reason.vc.deleted_left_too_quickly")).queueAfter(1, TimeUnit.SECONDS)
+
+            return false
+        }
+
         try {
             guild.moveVoiceMember(owner, temporaryVC).await()
         } catch (e: Exception) {
