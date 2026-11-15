@@ -13,15 +13,15 @@ interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String>
 
     @Aggregation(
         pipeline = [
-            "{ \$match: { guildID: { \$in: ?0 } } }",
-            """{ ${'$'}project: {
+            $$"{ $match: { guildID: { $in: ?0 } } }",
+            $$"""{ $project: {
                 guildID: 1,
                 upgradedByUserID: 1,
                 entitlements: 1,
-                generators: { ${'$'}size: { ${'$'}ifNull: ['${'$'}generators', []] } },
-                interfaces: { ${'$'}size: { ${'$'}ifNull: ['${'$'}interfaces', []] } },
-                connections: { ${'$'}size: { ${'$'}ifNull: ['${'$'}connections', []] } },
-                templates: { ${'$'}size: { ${'$'}ifNull: ['${'$'}templates', []] } }
+                generators: { $size: { $ifNull: ['$generators', []] } },
+                interfaces: { $size: { $ifNull: ['$interfaces', []] } },
+                connections: { $size: { $ifNull: ['$connections', []] } },
+                templates: { $size: { $ifNull: ['$templates', []] } }
             } }""",
         ],
     )
