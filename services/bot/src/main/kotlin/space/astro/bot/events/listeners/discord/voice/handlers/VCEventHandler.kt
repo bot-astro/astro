@@ -12,6 +12,7 @@ import space.astro.bot.models.analytics.ConnectionInvocationEventData
 import space.astro.bot.models.analytics.TemporaryVCGenerationEventData
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
+import space.astro.bot.properties.PodProperties
 import space.astro.bot.utils.extensions.toConfigurationErrorDto
 import space.astro.shared.core.models.database.ConfigurationErrorCode
 import java.time.Duration
@@ -30,10 +31,14 @@ class VCEventHandler(
     private val leftTemporaryVCHandler: LeftTemporaryVCHandler,
     private val connectedVCHandler: ConnectedVCHandler,
     private val registry: MeterRegistry,
+    podProperties: PodProperties,
 ) {
+    private val podId = podProperties.getParsedOrdinal().toString()
+
     private val creationTimer =
         Timer
             .builder("astro.vc.create.duration")
+            .tag("pod_id", podId)
             .serviceLevelObjectives(
                 Duration.ofMillis(500),
                 Duration.ofSeconds(1),
@@ -50,6 +55,7 @@ class VCEventHandler(
         VCCreationOutcome.entries.associateWith {
             Counter
                 .builder("astro.vc.created")
+                .tag("pod_id", podId)
                 .tag("outcome", it.tag)
                 .register(registry)
         }
