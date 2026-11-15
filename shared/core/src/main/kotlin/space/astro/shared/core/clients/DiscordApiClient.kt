@@ -11,6 +11,7 @@ import org.springframework.web.client.body
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.exceptions.AUnknownException
+import space.astro.shared.core.models.discord.DiscordApplicationDto
 import space.astro.shared.core.models.discord.DiscordEntitlementDto
 import space.astro.shared.core.models.discord.DiscordPartialGuildDto
 import space.astro.shared.core.models.discord.DiscordTokenDto
@@ -215,6 +216,30 @@ class DiscordApiClient(
             return entitlements
         } catch (e: RestClientResponseException) {
             throw AUnknownException("Failed to fetch Discord entitlements of application $applicationId", e)
+        }
+    }
+
+    /**
+     * Fetches the application of the bot with [botToken]
+     *
+     * @param botToken token of the bot of the application
+     * @return the application data, with the approximate guild count of the whole bot
+     * @throws AException
+     */
+    fun getApplication(botToken: String): DiscordApplicationDto {
+        try {
+            return client
+                .get()
+                .uri("/applications/@me")
+                .header("Authorization", "Bot $botToken")
+                .retrieve()
+                .body<DiscordApplicationDto>()
+                ?: run {
+                    log.error { "Discord returned an empty application response" }
+                    throw AUnknownException("Failed to fetch the Discord application")
+                }
+        } catch (e: RestClientResponseException) {
+            throw AUnknownException("Failed to fetch the Discord application", e)
         }
     }
 }
