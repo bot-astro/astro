@@ -26,7 +26,8 @@ class GuildConfigSnapshotService(
     private val premiumManager: PremiumManager,
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
-    // fixed time instead of a delay so that restarts don't produce more than one snapshot per day
+    // fixed time instead of a delay so that restarts don't produce more than one snapshot per day,
+    // 08:00 UTC is the quietest hour of voice activity
     @Scheduled(cron = "0 0 3 * * *", zone = "UTC")
     fun snapshot() {
         if (!properties.enabled) return
