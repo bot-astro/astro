@@ -7,7 +7,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import space.astro.bot.models.analytics.AnalyticsEventData
+import space.astro.bot.models.analytics.ConfigurationErrorEventData
 import space.astro.bot.models.analytics.ConnectionInvocationEventData
+import space.astro.bot.models.analytics.GuildConfigSnapshotEventData
 import space.astro.bot.models.analytics.GuildEventData
 import space.astro.bot.models.analytics.SlashCommandInvocationEventData
 import space.astro.bot.models.analytics.TemporaryVCGenerationEventData
@@ -37,6 +39,11 @@ class BigQueryService(
             null
         }
     }
+
+    private companion object {
+        const val MAX_ROWS_PER_REQUEST = 500
+    }
+
     private val pool = ConcurrentLinkedQueue<AnalyticsEventData>()
     private val executor = Executors.newSingleThreadExecutor()
 
@@ -66,20 +73,23 @@ class BigQueryService(
         events
             .groupBy { tableName(it) }
             .forEach { (table, tableEvents) ->
-                try {
-                    val request =
-                        InsertAllRequest
-                            .newBuilder(properties.datasetName, table)
-                            .also { builder ->
-                                tableEvents.forEach { builder.addRow(jsonMapper.convertValue<Map<String, Any?>>(it)) }
-                            }.build()
+                // the daily snapshot adds one row per guild at once, BigQuery recommends at most 500 rows per request
+                tableEvents.chunked(MAX_ROWS_PER_REQUEST).forEach { chunk ->
+                    try {
+                        val request =
+                            InsertAllRequest
+                                .newBuilder(properties.datasetName, table)
+                                .also { builder ->
+                                    chunk.forEach { builder.addRow(jsonMapper.convertValue<Map<String, Any?>>(it)) }
+                                }.build()
 
-                    val response = client.insertAll(request)
-                    if (response.hasErrors()) {
-                        response.insertErrors.values.forEach { log.error { "Failed while inserting analytics event in $table: $it" } }
+                        val response = client.insertAll(request)
+                        if (response.hasErrors()) {
+                            response.insertErrors.values.forEach { log.error { "Failed while inserting analytics event in $table: $it" } }
+                        }
+                    } catch (e: Exception) {
+                        log.error(e) { "Failed to dispatch ${chunk.size} analytics events to $table" }
                     }
-                } catch (e: Exception) {
-                    log.error(e) { "Failed to dispatch ${tableEvents.size} analytics events to $table" }
                 }
             }
     }
@@ -90,5 +100,7 @@ class BigQueryService(
             is SlashCommandInvocationEventData -> "SLASH_COMMAND_INVOCATION"
             is TemporaryVCGenerationEventData -> "TEMPORARY_VC_GENERATION"
             is ConnectionInvocationEventData -> "CONNECTION_INVOCATION"
+            is ConfigurationErrorEventData -> "CONFIGURATION_ERROR"
+            is GuildConfigSnapshotEventData -> "GUILD_CONFIG_SNAPSHOT"
         }
 }

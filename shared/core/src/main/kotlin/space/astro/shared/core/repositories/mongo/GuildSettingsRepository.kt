@@ -9,6 +9,8 @@ interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String>
 
     fun findByGuildID(guildID: String): GuildSettingsEntity? = findFirstByGuildID(guildID)
 
+    fun findByGuildIDIn(guildIDs: Collection<String>): List<GuildSettingsEntity>
+
     fun createNewGuildSettings(
         guildID: String,
         locale: String,

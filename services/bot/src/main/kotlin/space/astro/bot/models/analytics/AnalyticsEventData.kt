@@ -43,3 +43,22 @@ data class ConnectionInvocationEventData(
     val connectionId: Long,
     val timestamp: String,
 ) : AnalyticsEventData
+
+data class ConfigurationErrorEventData(
+    val guildId: Long,
+    val code: String,
+    val timestamp: String,
+) : AnalyticsEventData
+
+/**
+ * Daily picture of the configuration of a guild, used to follow premium status and setup depth over time
+ */
+data class GuildConfigSnapshotEventData(
+    val guildId: Long,
+    val premium: Boolean,
+    val generators: Int,
+    val interfaces: Int,
+    val connections: Int,
+    val templates: Int,
+    val timestamp: String,
+) : AnalyticsEventData
