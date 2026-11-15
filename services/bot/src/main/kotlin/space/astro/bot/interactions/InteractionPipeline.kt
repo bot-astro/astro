@@ -2,6 +2,9 @@ package space.astro.bot.interactions
 
 import dev.minn.jda.ktx.coroutines.await
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
@@ -24,6 +27,7 @@ import space.astro.shared.core.models.database.ConfigurationErrorCode
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
+import java.time.Duration
 
 private val log = KotlinLogging.logger { }
 
@@ -40,6 +44,7 @@ class InteractionPipeline(
     private val guards: List<InteractionGuard>,
     private val guildSettingsRepository: GuildSettingsRepository,
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
+    private val registry: MeterRegistry,
 ) {
     suspend fun <E, C : InteractionContext> run(
         event: E,
@@ -47,6 +52,53 @@ class InteractionPipeline(
         handler: InteractionHandler<C>,
         block: suspend (C) -> Unit,
     ) where E : GenericInteractionCreateEvent, E : IReplyCallback {
+        val sample = Timer.start(registry)
+
+        // /////////////
+        // / EXECUTE ///
+        // /////////////
+        val outcome = execute(event, key, handler, block)
+
+        // /////////////
+        // / METRICS ///
+        // /////////////
+        val type = event.type.name.lowercase()
+
+        Counter
+            .builder("astro.interactions")
+            .tag("type", type)
+            .tag("name", key)
+            .tag("outcome", outcome.tag)
+            .register(registry)
+            .increment()
+
+        sample.stop(
+            Timer
+                .builder("astro.interactions.duration")
+                .tag("type", type)
+                .tag("name", key)
+                .serviceLevelObjectives(
+                    Duration.ofMillis(100),
+                    Duration.ofMillis(250),
+                    Duration.ofMillis(500),
+                    Duration.ofSeconds(1),
+                    Duration.ofSeconds(2),
+                    Duration.ofSeconds(3),
+                    Duration.ofSeconds(5),
+                    Duration.ofSeconds(10),
+                ).register(registry),
+        )
+    }
+
+    /**
+     * @return the outcome used as metric tag
+     */
+    private suspend fun <E, C : InteractionContext> execute(
+        event: E,
+        key: String,
+        handler: InteractionHandler<C>,
+        block: suspend (C) -> Unit,
+    ): InteractionOutcome where E : GenericInteractionCreateEvent, E : IReplyCallback {
         val settings = handler.settings
         var responder = InteractionResponder(event, settings.ack, L.default)
 
@@ -55,10 +107,10 @@ class InteractionPipeline(
 
         if (guild == null || member == null) {
             responder.error("error.outside_guild")
-            return
+            return InteractionOutcome.OUTSIDE_GUILD
         }
 
-        try {
+        return try {
             // runs before the guild settings are retrieved so a user on cooldown costs no database read
             cooldownGuard.check(key, member, settings)
 
@@ -77,19 +129,24 @@ class InteractionPipeline(
             acknowledge(event, settings.ack)
 
             block(ctx)
+
+            InteractionOutcome.OK
         } catch (e: InteractionException) {
             responder.error(e.key, *e.args)
+            InteractionOutcome.USER_ERROR
         } catch (e: ConfigurationException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(e.configurationErrorEntity)
             responder.error(
                 "error.invalid_configuration",
                 "description" to e.configurationErrorEntity.localizedDescription(responder.locale),
             )
+            InteractionOutcome.CONFIG_ERROR
         } catch (e: InsufficientPermissionException) {
             val configurationError = e.toConfigurationErrorDto(guild.id)
 
             configurationErrorEventPublisher.publishConfigurationErrorEvent(configurationError)
             responder.error("error.missing_permissions", "description" to configurationError.localizedDescription(responder.locale))
+            InteractionOutcome.NO_PERMISSION
         } catch (e: Exception) {
             log.error(e) { "Unhandled exception in interaction $key (guild ${guild.id})" }
 
@@ -101,6 +158,7 @@ class InteractionPipeline(
                 ),
             )
             responder.error("error.unknown")
+            InteractionOutcome.FAILED
         }
     }
 
