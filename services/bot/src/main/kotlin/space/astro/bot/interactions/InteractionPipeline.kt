@@ -68,7 +68,7 @@ class InteractionPipeline(
             .builder("astro.interactions")
             .tag("type", type)
             .tag("name", key)
-            .tag("outcome", outcome)
+            .tag("outcome", outcome.tag)
             .register(registry)
             .increment()
 
@@ -91,14 +91,14 @@ class InteractionPipeline(
     }
 
     /**
-     * @return the outcome used as metric tag: ok, outside_guild, user_error, config_error, no_permission or failed
+     * @return the outcome used as metric tag
      */
     private suspend fun <E, C : InteractionContext> execute(
         event: E,
         key: String,
         handler: InteractionHandler<C>,
         block: suspend (C) -> Unit,
-    ): String where E : GenericInteractionCreateEvent, E : IReplyCallback {
+    ): InteractionOutcome where E : GenericInteractionCreateEvent, E : IReplyCallback {
         val settings = handler.settings
         var responder = InteractionResponder(event, settings.ack, L.default)
 
@@ -107,7 +107,7 @@ class InteractionPipeline(
 
         if (guild == null || member == null) {
             responder.error("error.outside_guild")
-            return "outside_guild"
+            return InteractionOutcome.OUTSIDE_GUILD
         }
 
         return try {
@@ -130,23 +130,23 @@ class InteractionPipeline(
 
             block(ctx)
 
-            "ok"
+            InteractionOutcome.OK
         } catch (e: InteractionException) {
             responder.error(e.key, *e.args)
-            "user_error"
+            InteractionOutcome.USER_ERROR
         } catch (e: ConfigurationException) {
             configurationErrorEventPublisher.publishConfigurationErrorEvent(e.configurationErrorEntity)
             responder.error(
                 "error.invalid_configuration",
                 "description" to e.configurationErrorEntity.localizedDescription(responder.locale),
             )
-            "config_error"
+            InteractionOutcome.CONFIG_ERROR
         } catch (e: InsufficientPermissionException) {
             val configurationError = e.toConfigurationErrorDto(guild.id)
 
             configurationErrorEventPublisher.publishConfigurationErrorEvent(configurationError)
             responder.error("error.missing_permissions", "description" to configurationError.localizedDescription(responder.locale))
-            "no_permission"
+            InteractionOutcome.NO_PERMISSION
         } catch (e: Exception) {
             log.error(e) { "Unhandled exception in interaction $key (guild ${guild.id})" }
 
@@ -158,7 +158,7 @@ class InteractionPipeline(
                 ),
             )
             responder.error("error.unknown")
-            "failed"
+            InteractionOutcome.FAILED
         }
     }
 

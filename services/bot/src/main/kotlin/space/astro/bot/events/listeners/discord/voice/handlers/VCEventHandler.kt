@@ -47,10 +47,10 @@ class VCEventHandler(
     // registered upfront at 0: a counter created on its first increment appears already at 1,
     // and Prometheus increase() ignores that first event
     private val creationCounters =
-        listOf("created", "skipped", "config_error", "no_permission", "failed").associateWith {
+        VCCreationOutcome.entries.associateWith {
             Counter
                 .builder("astro.vc.created")
-                .tag("outcome", it)
+                .tag("outcome", it.tag)
                 .register(registry)
         }
 
@@ -63,15 +63,15 @@ class VCEventHandler(
 
         generatorEvents.forEach { event ->
             val sample = Timer.start(registry)
-            // stays "failed" if an exception that is not handled below escapes
-            var outcome = "failed"
+            // stays FAILED if an exception that is not handled below escapes
+            var outcome = VCCreationOutcome.FAILED
 
             try {
                 if (joinedGeneratorHandler.handle(event, memberRolesManager)) {
-                    outcome = "created"
+                    outcome = VCCreationOutcome.CREATED
                     publishTemporaryVCGeneration(event)
                 } else {
-                    outcome = "skipped"
+                    outcome = VCCreationOutcome.SKIPPED
                 }
             } catch (e: Exception) {
                 outcome = generationOutcome(e)
@@ -85,7 +85,7 @@ class VCEventHandler(
             } finally {
                 creationCounters.getValue(outcome).increment()
 
-                if (outcome == "created") sample.stop(creationTimer)
+                if (outcome == VCCreationOutcome.CREATED) sample.stop(creationTimer)
             }
         }
 
@@ -110,9 +110,9 @@ class VCEventHandler(
     // UNKNOWN configuration errors wrap Discord API failures while creating the channel, the other codes are guild misconfigurations
     private fun generationOutcome(e: Exception) =
         when (e) {
-            is InsufficientPermissionException -> "no_permission"
-            is ConfigurationException if e.configurationErrorEntity.code != ConfigurationErrorCode.UNKNOWN -> "config_error"
-            else -> "failed"
+            is InsufficientPermissionException -> VCCreationOutcome.NO_PERMISSION
+            is ConfigurationException if e.configurationErrorEntity.code != ConfigurationErrorCode.UNKNOWN -> VCCreationOutcome.CONFIG_ERROR
+            else -> VCCreationOutcome.FAILED
         }
 
     private fun publishTemporaryVCGeneration(event: VCEvent.JoinedGenerator) {
