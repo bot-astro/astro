@@ -122,6 +122,9 @@ pod:
   ordinal: ${BOT__POD_ORDINAL}
 
 discord:
+  api:
+    base-url: ${DISCORD_API_BASE_URL:https://discord.com/api/v10}
+    enabled: true
   application:
     id: ${BOT__DISCORD_APPLICATION_ID}
     token: ${BOT__DISCORD_APPLICATION_TOKEN}
@@ -148,6 +151,11 @@ vote-tracker:
   guard-enabled: ${VOTE_TRACKER_GUARD_ENABLED}
   token: ${VOTE_TRACKER_TOKEN}
   integration-id: ${VOTE_TRACKER_INTEGRATION_ID}
+
+topgg:
+  enabled: ${TOPGG_ENABLED:false}
+  token: ${TOPGG_TOKEN:}
+  interval-hours: 12
 
 bigquery:
   enabled: ${BOT__BIGQUERY_ENABLED}
