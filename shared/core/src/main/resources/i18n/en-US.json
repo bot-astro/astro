@@ -185,6 +185,8 @@
   "welcome.title": "## Astro just landed in [{guild}]({link})!",
   "welcome.description": "Thanks for inviting Astro in this amazing server, let's get it to the next level now!",
   "welcome.setup.title": "Setup",
+  "inviter_onboarding.title": "## Thanks for adding Astro to [{guild}]({link})!",
+  "inviter_onboarding.description": "You're getting this message because you invited Astro. Here is how to get started, it takes just a minute!",
   "interface.description": "You can use this interface to manage your voice channel.\nYou can also use `/` slash commands!",
   "interface.author": "Astro Interface",
   "interface.footer": "Use the buttons below to manage your voice channel",

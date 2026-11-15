@@ -30,6 +30,7 @@ class DevMessageCommand : SlashHandler<InteractionContext> {
         val label: String,
     ) {
         WELCOME("Welcome (guild join)"),
+        INVITER_ONBOARDING("Inviter onboarding (DM)"),
         VC_LOG_JOINED("VC log: member joined"),
         VC_LOG_LEFT("VC log: member left"),
     }
@@ -56,6 +57,7 @@ class DevMessageCommand : SlashHandler<InteractionContext> {
         val data =
             when (message) {
                 DevMessage.WELCOME -> Messages.welcome(guild, ctx.locale)
+                DevMessage.INVITER_ONBOARDING -> Messages.inviterOnboarding(guild, ctx.locale)
                 DevMessage.VC_LOG_JOINED -> Messages.vcLog(guild, ctx.locale, "vc.log.joined", "user" to mention)
                 DevMessage.VC_LOG_LEFT -> Messages.vcLog(guild, ctx.locale, "vc.log.left", "user" to mention)
             }

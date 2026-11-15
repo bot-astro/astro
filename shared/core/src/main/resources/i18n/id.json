@@ -181,6 +181,8 @@
   "welcome.title": "## Astro baru saja mendarat di [{guild}]({link})!",
   "welcome.description": "Terima kasih telah mengundang Astro ke server yang luar biasa ini, mari kita bawa ke level berikutnya sekarang!",
   "welcome.setup.title": "Pengaturan",
+  "inviter_onboarding.title": "## Terima kasih telah menambahkan Astro ke [{guild}]({link})!",
+  "inviter_onboarding.description": "Kamu menerima pesan ini karena kamu mengundang Astro. Begini cara memulainya, hanya butuh satu menit!",
   "interface.description": "Kamu bisa menggunakan interface ini untuk mengelola saluran suaramu.\nKamu juga bisa menggunakan perintah slash dengan `/`!",
   "interface.author": "Interface Astro",
   "interface.footer": "Gunakan tombol di bawah untuk mengelola saluran suaramu",

@@ -181,6 +181,8 @@
   "welcome.title": "## Kalalapag lang ng Astro sa [{guild}]({link})!",
   "welcome.description": "Salamat sa pag-imbita sa Astro sa napakagandang server na ito, dalhin na natin ito sa susunod na antas!",
   "welcome.setup.title": "Setup",
+  "inviter_onboarding.title": "## Salamat sa pagdagdag ng Astro sa [{guild}]({link})!",
+  "inviter_onboarding.description": "Natanggap mo ang mensaheng ito dahil ikaw ang nag-invite kay Astro. Ganito magsimula, isang minuto lang!",
   "interface.description": "Magagamit mo ang interface na ito para pamahalaan ang voice channel mo.\nMagagamit mo rin ang mga slash command gamit ang `/`!",
   "interface.author": "Interface ng Astro",
   "interface.footer": "Gamitin ang mga button sa ibaba para pamahalaan ang voice channel mo",
