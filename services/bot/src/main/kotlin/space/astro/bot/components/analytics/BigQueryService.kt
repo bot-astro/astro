@@ -58,7 +58,7 @@ class BigQueryService(
         }
 
         pool.add(data)
-        // only the push that crosses the threshold schedules a dispatch, the others would queue useless tasks
+
         if (poolSize.incrementAndGet() == properties.maxEventsEntry) {
             executor.submit { dispatch() }
         }

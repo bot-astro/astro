@@ -9,16 +9,16 @@ WITH first_hit AS (
   GROUP BY guild_id, code
 ),
 premium_days AS (
-  SELECT guild_id, timestamp AS at
+  SELECT guild_id, timestamp AS event_at
   FROM `astro_bot.GUILD_CONFIG_SNAPSHOT`
   WHERE timestamp >= TIMESTAMP(start_date) AND premium
 )
 SELECT
   h.code,
   COUNT(DISTINCT h.guild_id) AS guilds_hit,
-  COUNT(DISTINCT IF(p.at <= TIMESTAMP_ADD(h.hit_at, INTERVAL 7 DAY), h.guild_id, NULL)) AS premium_within_7d,
-  COUNT(DISTINCT IF(p.at <= TIMESTAMP_ADD(h.hit_at, INTERVAL 30 DAY), h.guild_id, NULL)) AS premium_within_30d
+  COUNT(DISTINCT IF(p.event_at <= TIMESTAMP_ADD(h.hit_at, INTERVAL 7 DAY), h.guild_id, NULL)) AS premium_within_7d,
+  COUNT(DISTINCT IF(p.event_at <= TIMESTAMP_ADD(h.hit_at, INTERVAL 30 DAY), h.guild_id, NULL)) AS premium_within_30d
 FROM first_hit h
-LEFT JOIN premium_days p ON p.guild_id = h.guild_id AND p.at >= h.hit_at
+LEFT JOIN premium_days p ON p.guild_id = h.guild_id AND p.event_at >= h.hit_at
 GROUP BY h.code
 ORDER BY guilds_hit DESC;

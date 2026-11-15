@@ -10,13 +10,13 @@ WITH joined AS (
   GROUP BY guild_id
 ),
 first_generator AS (
-  SELECT guild_id, MIN(timestamp) AS at
+  SELECT guild_id, MIN(timestamp) AS event_at
   FROM `astro_bot.GUILD_CONFIG_SNAPSHOT`
   WHERE timestamp >= TIMESTAMP(start_date) AND generators > 0
   GROUP BY guild_id
 ),
 first_vc AS (
-  SELECT t.guild_id, MIN(t.timestamp) AS at
+  SELECT t.guild_id, MIN(t.timestamp) AS event_at
   FROM `astro_bot.TEMPORARY_VC_GENERATION` t
   JOIN joined j ON j.guild_id = t.guild_id AND t.timestamp >= j.joined_at
   WHERE t.timestamp >= TIMESTAMP(start_date)
@@ -24,11 +24,11 @@ first_vc AS (
 )
 SELECT
   COUNT(*) AS joined,
-  COUNTIF(g.at IS NOT NULL) AS generator_created,
-  COUNTIF(v.at IS NOT NULL) AS first_vc,
-  COUNTIF(v.at IS NOT NULL AND v.at <= TIMESTAMP_ADD(j.joined_at, INTERVAL 7 DAY)) AS active_within_7d,
-  COUNTIF(v.at IS NOT NULL AND v.at <= TIMESTAMP_ADD(j.joined_at, INTERVAL 30 DAY)) AS active_within_30d,
-  APPROX_QUANTILES(TIMESTAMP_DIFF(v.at, j.joined_at, HOUR), 2)[OFFSET(1)] AS median_hours_to_first_vc
+  COUNTIF(g.event_at IS NOT NULL) AS generator_created,
+  COUNTIF(v.event_at IS NOT NULL) AS first_vc,
+  COUNTIF(v.event_at IS NOT NULL AND v.event_at <= TIMESTAMP_ADD(j.joined_at, INTERVAL 7 DAY)) AS active_within_7d,
+  COUNTIF(v.event_at IS NOT NULL AND v.event_at <= TIMESTAMP_ADD(j.joined_at, INTERVAL 30 DAY)) AS active_within_30d,
+  APPROX_QUANTILES(TIMESTAMP_DIFF(v.event_at, j.joined_at, HOUR), 2)[OFFSET(1)] AS median_hours_to_first_vc
 FROM joined j
 LEFT JOIN first_generator g USING (guild_id)
 LEFT JOIN first_vc v USING (guild_id);
