@@ -19,6 +19,7 @@ import space.astro.bot.interactions.guards.CooldownGuard
 import space.astro.bot.interactions.guards.InteractionGuard
 import space.astro.bot.interactions.guards.InteractionRequest
 import space.astro.bot.interactions.handlers.InteractionHandler
+import space.astro.bot.properties.PodProperties
 import space.astro.bot.utils.extensions.supportedLocale
 import space.astro.bot.utils.extensions.toConfigurationErrorDto
 import space.astro.shared.core.lang.L
@@ -45,7 +46,10 @@ class InteractionPipeline(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val configurationErrorEventPublisher: ConfigurationErrorEventPublisher,
     private val registry: MeterRegistry,
+    podProperties: PodProperties,
 ) {
+    private val podId = podProperties.getParsedOrdinal().toString()
+
     suspend fun <E, C : InteractionContext> run(
         event: E,
         key: String,
@@ -66,6 +70,7 @@ class InteractionPipeline(
 
         Counter
             .builder("astro.interactions")
+            .tag("pod_id", podId)
             .tag("type", type)
             .tag("name", key)
             .tag("outcome", outcome.tag)
@@ -75,6 +80,7 @@ class InteractionPipeline(
         sample.stop(
             Timer
                 .builder("astro.interactions.duration")
+                .tag("pod_id", podId)
                 .tag("type", type)
                 .tag("name", key)
                 .serviceLevelObjectives(
