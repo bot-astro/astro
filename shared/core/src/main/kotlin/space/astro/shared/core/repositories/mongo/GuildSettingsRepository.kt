@@ -1,13 +1,31 @@
 package space.astro.shared.core.repositories.mongo
 
+import org.springframework.data.mongodb.repository.Aggregation
 import org.springframework.data.mongodb.repository.MongoRepository
 import space.astro.shared.core.lang.L
+import space.astro.shared.core.models.database.guildSettings.GuildConfigCounts
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 
 interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String> {
     fun findFirstByGuildID(guildID: String): GuildSettingsEntity?
 
     fun findByGuildID(guildID: String): GuildSettingsEntity? = findFirstByGuildID(guildID)
+
+    @Aggregation(
+        pipeline = [
+            "{ \$match: { guildID: { \$in: ?0 } } }",
+            """{ ${'$'}project: {
+                guildID: 1,
+                upgradedByUserID: 1,
+                entitlements: 1,
+                generators: { ${'$'}size: { ${'$'}ifNull: ['${'$'}generators', []] } },
+                interfaces: { ${'$'}size: { ${'$'}ifNull: ['${'$'}interfaces', []] } },
+                connections: { ${'$'}size: { ${'$'}ifNull: ['${'$'}connections', []] } },
+                templates: { ${'$'}size: { ${'$'}ifNull: ['${'$'}templates', []] } }
+            } }""",
+        ],
+    )
+    fun findConfigCountsByGuildIDIn(guildIDs: Collection<String>): List<GuildConfigCounts>
 
     fun createNewGuildSettings(
         guildID: String,

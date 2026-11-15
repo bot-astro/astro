@@ -7,7 +7,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import space.astro.bot.models.analytics.AnalyticsEventData
+import space.astro.bot.models.analytics.ConfigurationErrorEventData
 import space.astro.bot.models.analytics.ConnectionInvocationEventData
+import space.astro.bot.models.analytics.GuildConfigSnapshotEventData
 import space.astro.bot.models.analytics.GuildEventData
 import space.astro.bot.models.analytics.SlashCommandInvocationEventData
 import space.astro.bot.models.analytics.TemporaryVCGenerationEventData
@@ -17,6 +19,7 @@ import tools.jackson.module.kotlin.convertValue
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 private val log = KotlinLogging.logger { }
 
@@ -37,7 +40,15 @@ class BigQueryService(
             null
         }
     }
+
+    private companion object {
+        const val MAX_ROWS_PER_REQUEST = 500
+    }
+
     private val pool = ConcurrentLinkedQueue<AnalyticsEventData>()
+
+    // ConcurrentLinkedQueue.size walks the whole queue, so the size is tracked separately
+    private val poolSize = AtomicInteger()
     private val executor = Executors.newSingleThreadExecutor()
 
     fun push(data: AnalyticsEventData) {
@@ -47,7 +58,8 @@ class BigQueryService(
         }
 
         pool.add(data)
-        if (pool.size >= properties.maxEventsEntry) {
+
+        if (poolSize.incrementAndGet() == properties.maxEventsEntry) {
             executor.submit { dispatch() }
         }
     }
@@ -62,26 +74,31 @@ class BigQueryService(
 
         val client = bigQuery ?: return
         val events = generateSequence { pool.poll() }.toList()
+        poolSize.addAndGet(-events.size)
 
-        events
-            .groupBy { tableName(it) }
-            .forEach { (table, tableEvents) ->
-                try {
-                    val request =
-                        InsertAllRequest
-                            .newBuilder(properties.datasetName, table)
-                            .also { builder ->
-                                tableEvents.forEach { builder.addRow(jsonMapper.convertValue<Map<String, Any?>>(it)) }
-                            }.build()
+        // the daily snapshot adds one row per guild at once, BigQuery recommends at most 500 rows per request
+        val batches =
+            events
+                .groupBy { tableName(it) }
+                .flatMap { (table, tableEvents) -> tableEvents.chunked(MAX_ROWS_PER_REQUEST).map { table to it } }
 
-                    val response = client.insertAll(request)
-                    if (response.hasErrors()) {
-                        response.insertErrors.values.forEach { log.error { "Failed while inserting analytics event in $table: $it" } }
-                    }
-                } catch (e: Exception) {
-                    log.error(e) { "Failed to dispatch ${tableEvents.size} analytics events to $table" }
+        batches.forEach { (table, batch) ->
+            try {
+                val request =
+                    InsertAllRequest
+                        .newBuilder(properties.datasetName, table)
+                        .also { builder ->
+                            batch.forEach { builder.addRow(jsonMapper.convertValue<Map<String, Any?>>(it)) }
+                        }.build()
+
+                val response = client.insertAll(request)
+                if (response.hasErrors()) {
+                    response.insertErrors.values.forEach { log.error { "Failed while inserting analytics event in $table: $it" } }
                 }
+            } catch (e: Exception) {
+                log.error(e) { "Failed to dispatch ${batch.size} analytics events to $table" }
             }
+        }
     }
 
     private fun tableName(data: AnalyticsEventData) =
@@ -90,5 +107,7 @@ class BigQueryService(
             is SlashCommandInvocationEventData -> "SLASH_COMMAND_INVOCATION"
             is TemporaryVCGenerationEventData -> "TEMPORARY_VC_GENERATION"
             is ConnectionInvocationEventData -> "CONNECTION_INVOCATION"
+            is ConfigurationErrorEventData -> "CONFIGURATION_ERROR"
+            is GuildConfigSnapshotEventData -> "GUILD_CONFIG_SNAPSHOT"
         }
 }
