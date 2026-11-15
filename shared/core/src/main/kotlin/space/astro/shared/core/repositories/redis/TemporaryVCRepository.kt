@@ -1,5 +1,6 @@
 package space.astro.shared.core.repositories.redis
 
+import org.springframework.data.redis.core.ScanOptions
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Repository
 import space.astro.shared.core.models.database.TemporaryVCEntity
@@ -50,4 +51,14 @@ class TemporaryVCRepository(
     fun deleteAll(guildId: String) {
         cacheManager.deleteAll(guildId)
     }
+
+    fun countAll(): Long =
+        redis
+            .scan(
+                ScanOptions
+                    .scanOptions()
+                    .match("${RedisKey.TEMPORARY_VCS()}:*")
+                    .count(1000)
+                    .build(),
+            ).use { keys -> keys.asSequence().sumOf { cacheManager.hashOps.size(it) } }
 }
