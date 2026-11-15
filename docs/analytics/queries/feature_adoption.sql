@@ -1,15 +1,13 @@
 -- Among guilds active in the last 30 days, the share that has configured each feature (latest snapshot).
-DECLARE start_date DATE DEFAULT DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY);
-
 WITH active AS (
   SELECT DISTINCT guild_id
   FROM `astro_bot.TEMPORARY_VC_GENERATION`
-  WHERE timestamp >= TIMESTAMP(start_date)
+  WHERE timestamp >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))
 ),
 latest AS (
   SELECT *
   FROM `astro_bot.GUILD_CONFIG_SNAPSHOT`
-  WHERE timestamp >= TIMESTAMP(start_date)
+  WHERE timestamp >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY))
   QUALIFY ROW_NUMBER() OVER (PARTITION BY guild_id ORDER BY timestamp DESC) = 1
 )
 SELECT
@@ -20,4 +18,4 @@ SELECT
   ROUND(AVG(IF(l.templates > 0, 1, 0)), 3) AS templates,
   ROUND(AVG(IF(l.premium, 1, 0)), 3) AS premium
 FROM active
-JOIN latest l USING (guild_id);
+JOIN latest l USING (guild_id)

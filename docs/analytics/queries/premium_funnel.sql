@@ -1,17 +1,15 @@
 -- For each premium gate (PREMIUM_* error code): guilds that hit it in the last 90 days (gates only fire for non-premium
 -- guilds), and how many became premium within 7 / 30 days of their first hit.
-DECLARE start_date DATE DEFAULT DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY);
-
 WITH first_hit AS (
   SELECT guild_id, code, MIN(timestamp) AS hit_at
   FROM `astro_bot.CONFIGURATION_ERROR`
-  WHERE timestamp >= TIMESTAMP(start_date) AND STARTS_WITH(code, 'PREMIUM_')
+  WHERE timestamp >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)) AND STARTS_WITH(code, 'PREMIUM_')
   GROUP BY guild_id, code
 ),
 premium_days AS (
   SELECT guild_id, timestamp AS event_at
   FROM `astro_bot.GUILD_CONFIG_SNAPSHOT`
-  WHERE timestamp >= TIMESTAMP(start_date) AND premium
+  WHERE timestamp >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)) AND premium
 )
 SELECT
   h.code,
@@ -21,4 +19,4 @@ SELECT
 FROM first_hit h
 LEFT JOIN premium_days p ON p.guild_id = h.guild_id AND p.event_at >= h.hit_at
 GROUP BY h.code
-ORDER BY guilds_hit DESC;
+ORDER BY guilds_hit DESC

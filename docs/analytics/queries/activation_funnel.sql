@@ -1,25 +1,23 @@
 -- Guilds that joined in the last 90 days: did they configure a generator, did they generate a VC, how many days it took.
 -- Only VCs after the join count, so a guild that left and came back does not get a negative time.
 -- Generator creation is only visible from the daily snapshot, so it is accurate to the day.
-DECLARE start_date DATE DEFAULT DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY);
-
 WITH joined AS (
   SELECT guild_id, MIN(timestamp) AS joined_at
   FROM `astro_bot.GUILD_EVENT`
-  WHERE timestamp >= TIMESTAMP(start_date) AND action = 'JOINED'
+  WHERE timestamp >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)) AND action = 'JOINED'
   GROUP BY guild_id
 ),
 first_generator AS (
   SELECT guild_id, MIN(timestamp) AS event_at
   FROM `astro_bot.GUILD_CONFIG_SNAPSHOT`
-  WHERE timestamp >= TIMESTAMP(start_date) AND generators > 0
+  WHERE timestamp >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)) AND generators > 0
   GROUP BY guild_id
 ),
 first_vc AS (
   SELECT t.guild_id, MIN(t.timestamp) AS event_at
   FROM `astro_bot.TEMPORARY_VC_GENERATION` t
   JOIN joined j ON j.guild_id = t.guild_id AND t.timestamp >= j.joined_at
-  WHERE t.timestamp >= TIMESTAMP(start_date)
+  WHERE t.timestamp >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY))
   GROUP BY t.guild_id
 )
 SELECT
@@ -31,4 +29,4 @@ SELECT
   APPROX_QUANTILES(TIMESTAMP_DIFF(v.event_at, j.joined_at, HOUR), 2)[OFFSET(1)] AS median_hours_to_first_vc
 FROM joined j
 LEFT JOIN first_generator g USING (guild_id)
-LEFT JOIN first_vc v USING (guild_id);
+LEFT JOIN first_vc v USING (guild_id)
