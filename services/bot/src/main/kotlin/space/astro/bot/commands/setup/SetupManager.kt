@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.entities.channel.concrete.Category
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import org.springframework.stereotype.Component
@@ -119,7 +120,10 @@ class SetupManager(
         }
     }
 
-    suspend fun createGenerator(ctx: InteractionContext) {
+    suspend fun createGenerator(
+        ctx: InteractionContext,
+        category: Category?,
+    ) {
         val guild = ctx.guild
 
         val guildSettings =
@@ -142,12 +146,15 @@ class SetupManager(
             val generatorChannel =
                 guild
                     .createVoiceChannel("➕ Generator")
+                    .setParent(category)
                     .reason(ctx.t("setup.reason"))
                     .await()
 
             guildSettings.generators.add(
                 GeneratorSettings(
                     id = generatorChannel.id,
+                    chatCategory = category?.id,
+                    waitingCategory = category?.id,
                     // the variables are kept as they are, they get replaced when the temporary VC is created
                     defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
                     defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),

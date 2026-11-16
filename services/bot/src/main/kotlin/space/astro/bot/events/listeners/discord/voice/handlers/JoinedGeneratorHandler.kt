@@ -180,8 +180,8 @@ class JoinedGeneratorHandler(
             generatorVC
                 .createCopy()
                 .setName(name)
-                // createCopy inherits the generator's category, so a null category must be set explicitly
-                .setParent(category)
+                // createCopy inherits the generator's category, which is the intended fallback when no category is set
+                .apply { category?.also { setParent(it) } }
                 .setUserlimit(userLimit)
                 .setBitrate(bitrate)
                 .setPosition(rawPosition)
