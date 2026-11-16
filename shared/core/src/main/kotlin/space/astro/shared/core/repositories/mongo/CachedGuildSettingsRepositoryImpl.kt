@@ -2,6 +2,8 @@ package space.astro.shared.core.repositories.mongo
 
 import org.bson.Document
 import org.springframework.data.mongodb.core.MongoOperations
+import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener
+import org.springframework.data.mongodb.core.mapping.event.AfterSaveEvent
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -15,13 +17,15 @@ import java.time.Duration
  *
  * Saves invalidate the key instead of rewriting it: bot and api-central both save the whole document,
  * so rewriting could leave an older copy in the cache until the TTL expires.
+ * This is done with a Mongo event because Spring Data does not let a fragment override `save`.
  */
 class CachedGuildSettingsRepositoryImpl(
     private val mongoOperations: MongoOperations,
     private val redis: StringRedisTemplate,
-) : CachedGuildSettingsRepository {
-    companion object {
-        private val CACHE_TTL = Duration.ofDays(7)
+) : AbstractMongoEventListener<GuildSettingsEntity>(),
+    CachedGuildSettingsRepository {
+    private companion object {
+        val CACHE_TTL: Duration = Duration.ofDays(7)
     }
 
     override fun findByGuildID(guildID: String): GuildSettingsEntity? {
@@ -40,5 +44,9 @@ class CachedGuildSettingsRepositoryImpl(
                 mongoOperations.converter.write(it, document)
                 redis.opsForValue().set(key, document.toJson(), CACHE_TTL)
             }
+    }
+
+    override fun onAfterSave(event: AfterSaveEvent<GuildSettingsEntity>) {
+        redis.delete(RedisKey.GUILD_SETTINGS(event.source.guildID))
     }
 }
