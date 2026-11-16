@@ -52,6 +52,7 @@ class GuildGeneratorsController(
         val generatorSettings =
             GeneratorSettings(
                 id = generatorDiscordChannel.id,
+                category = generatorCreateBody.categoryId,
                 chatCategory = generatorCreateBody.categoryId,
                 waitingCategory = generatorCreateBody.categoryId,
                 // the variables are kept as they are, they get replaced when the temporary VC is created

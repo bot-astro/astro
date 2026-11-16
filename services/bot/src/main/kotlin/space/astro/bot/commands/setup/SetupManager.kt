@@ -153,6 +153,7 @@ class SetupManager(
             guildSettings.generators.add(
                 GeneratorSettings(
                     id = generatorChannel.id,
+                    category = category?.id,
                     chatCategory = category?.id,
                     waitingCategory = category?.id,
                     // the variables are kept as they are, they get replaced when the temporary VC is created
