@@ -88,7 +88,7 @@ scalar:
 
 
 sentry:
-  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.us.sentry.io/4506708023967744
+  dsn: https://57acc0d723f47fa990648188825a43bb@o4506708022263808.ingest.us.sentry.io/4506708031963136
   environment: ${CA__SENTRY_ENVIRONMENT:local}
   logs:
     enabled: true
