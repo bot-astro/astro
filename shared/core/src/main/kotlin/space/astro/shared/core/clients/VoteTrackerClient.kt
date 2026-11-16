@@ -36,9 +36,9 @@ class VoteTrackerClient(
     /**
      * Whether the user has an active vote (the vote lock is open).
      *
-     * Fails open: if Vote Tracker is unreachable the user is let through, so that an outage of it does not lock the bot
+     * @return NULL if Vote Tracker is unreachable, the caller decides how to handle it and must not cache it
      */
-    fun hasActiveVote(userId: String): Boolean =
+    fun hasActiveVote(userId: String): Boolean? =
         try {
             client
                 .get()
@@ -51,10 +51,10 @@ class VoteTrackerClient(
                 false
             } else {
                 log.error(e) { "Failed fetching the vote status of user $userId from Vote Tracker" }
-                true
+                null
             }
         } catch (e: RestClientException) {
             log.error(e) { "Failed fetching the vote status of user $userId from Vote Tracker" }
-            true
+            null
         }
 }
