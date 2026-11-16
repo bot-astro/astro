@@ -13,7 +13,7 @@ import java.time.Duration
  * Entities are cached as the JSON of their Mongo document (written and read by the Mongo converter),
  * so the cache can never disagree with how the entity is stored (ObjectId, `@Field` names...).
  *
- * Writes invalidate the key instead of rewriting it: bot and api-central both save the whole document,
+ * Saves invalidate the key instead of rewriting it: bot and api-central both save the whole document,
  * so rewriting could leave an older copy in the cache until the TTL expires.
  */
 class CachedGuildSettingsRepositoryImpl(
@@ -40,11 +40,5 @@ class CachedGuildSettingsRepositoryImpl(
                 mongoOperations.converter.write(it, document)
                 redis.opsForValue().set(key, document.toJson(), CACHE_TTL)
             }
-    }
-
-    override fun <S : GuildSettingsEntity> save(entity: S): S {
-        val saved = mongoOperations.save(entity)
-        redis.delete(RedisKey.GUILD_SETTINGS(entity.guildID))
-        return saved
     }
 }
