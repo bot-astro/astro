@@ -7,18 +7,16 @@ import org.springframework.stereotype.Component
 import space.astro.bot.interactions.InteractionException
 import space.astro.bot.ui.Links
 import space.astro.shared.core.clients.PremiumManager
-import space.astro.shared.core.clients.VoteTrackerClient
 import space.astro.shared.core.properties.VoteTrackerProperties
 import space.astro.shared.core.repositories.redis.VoteStatusRepository
 
 /**
  * Locks the interactions marked with `voteRequired` behind a vote, premium guilds skip the lock,
- * disabled entirely with `vote-tracker.guard-enabled`. If Vote Tracker is unreachable the member is let through
+ * disabled entirely with `vote-tracker.guard-enabled`
  */
 @Component
 @Order(20)
 class VoteGuard(
-    private val voteTrackerClient: VoteTrackerClient,
     private val voteStatusRepository: VoteStatusRepository,
     private val premiumManager: PremiumManager,
     private val voteTrackerProperties: VoteTrackerProperties,
@@ -34,11 +32,7 @@ class VoteGuard(
 
         val hasVoted =
             withContext(Dispatchers.IO) {
-                voteStatusRepository.get(request.member.id)
-                    ?: voteTrackerClient.hasActiveVote(request.member.id)?.also {
-                        voteStatusRepository.save(request.member.id, it)
-                    }
-                    ?: true
+                voteStatusRepository.hasActiveVote(request.member.id)
             }
 
         if (!hasVoted) {

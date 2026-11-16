@@ -172,3 +172,4 @@ central:
     cors-allowed-origins:
       - ${CA__CORS_ALLOWED_ORIGIN}
     chargebee-webhook-token: ${CA__CHARGEBEE_WEBHOOK_TOKEN}
+    vote-tracker-webhook-secret: ${CA__VOTE_TRACKER_WEBHOOK_SECRET}

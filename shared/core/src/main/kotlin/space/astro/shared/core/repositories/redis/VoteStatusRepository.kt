@@ -4,27 +4,28 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Repository
 import space.astro.shared.core.utils.redis.RedisKey
 import java.time.Duration
+import java.time.Instant
 
 /**
- * Caches the vote status of the users, so the Vote Tracker API is not called on every interaction.
+ * Active votes of the users, written by the Vote Tracker forwarding webhook and read by the vote guard.
  *
- * Active votes are cached longer, a user who just voted must not wait long to be unlocked.
+ * The key lives until the vote expires, so no key means no active vote.
  */
 @Repository
 class VoteStatusRepository(
     private val redis: StringRedisTemplate,
 ) {
-    companion object {
-        private val ACTIVE_TTL = Duration.ofHours(1)
-        private val INACTIVE_TTL = Duration.ofMinutes(1)
-    }
-
-    fun get(userId: String): Boolean? = redis.opsForValue().get(RedisKey.VOTE_STATUS(userId))?.toBooleanStrictOrNull()
+    fun hasActiveVote(userId: String): Boolean = redis.hasKey(RedisKey.VOTE_STATUS(userId))
 
     fun save(
         userId: String,
-        hasVoted: Boolean,
+        expiresAt: Instant,
     ) {
-        redis.opsForValue().set(RedisKey.VOTE_STATUS(userId), hasVoted.toString(), if (hasVoted) ACTIVE_TTL else INACTIVE_TTL)
+        val ttl = Duration.between(Instant.now(), expiresAt)
+        if (ttl.isNegative || ttl.isZero) {
+            return
+        }
+
+        redis.opsForValue().set(RedisKey.VOTE_STATUS(userId), "1", ttl)
     }
 }

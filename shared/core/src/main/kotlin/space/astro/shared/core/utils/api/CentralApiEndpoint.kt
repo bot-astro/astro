@@ -34,6 +34,8 @@ object CentralApiEndpoint {
     const val CHARGEBEE_EVENT_SUBSCRIPTION_CREATE = "/v2/chargebee/events/subscription/create"
     const val CHARGEBEE_EVENT_SUBSCRIPTION_CANCEL = "/v2/chargebee/events/subscription/cancel"
 
+    const val VOTE_TRACKER_EVENTS = "/v2/vote-tracker/events"
+
     const val DISCORD_CHANNEL_RELATED_PERMISSIONS = "/v2/discord/constants/permissions"
 
     const val DISCORD_SELF_USER = "/v2/discord/users/@me"

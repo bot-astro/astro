@@ -10,6 +10,7 @@ import org.springframework.boot.runApplication
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
 import org.springframework.scheduling.annotation.EnableScheduling
 import space.astro.shared.core.properties.PremiumProperties
+import space.astro.shared.core.properties.VoteTrackerProperties
 
 @SpringBootApplication(
     exclude = [
@@ -22,7 +23,7 @@ import space.astro.shared.core.properties.PremiumProperties
         "space.astro.bot.properties",
     ],
 )
-@EnableConfigurationProperties(PremiumProperties::class)
+@EnableConfigurationProperties(PremiumProperties::class, VoteTrackerProperties::class)
 @EnableScheduling
 class Application
 
