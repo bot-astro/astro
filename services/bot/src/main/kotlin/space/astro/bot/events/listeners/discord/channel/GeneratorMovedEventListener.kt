@@ -39,8 +39,8 @@ class GeneratorMovedEventListener(
 
         val guildId = event.guild.id
         val channelId = event.channel.id
-        val oldCategoryId = event.oldParent?.id
-        val newCategoryId = event.newParent?.id
+        val oldCategoryId = event.oldValue?.id
+        val newCategoryId = event.newValue?.id
 
         scope.launch {
             try {
