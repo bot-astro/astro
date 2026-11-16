@@ -17,18 +17,19 @@ import java.time.Duration
  *
  * Saves invalidate the key instead of rewriting it: bot and api-central both save the whole document,
  * so rewriting could leave an older copy in the cache until the TTL expires.
- * This is done with a Mongo event because Spring Data does not let a fragment override `save`.
+ * This is done with a Mongo event because Spring Data does not let a custom implementation override `save`.
+ *
+ * Implements the custom methods of [GuildSettingsRepository], Spring Data finds it by its name.
  */
-class CachedGuildSettingsRepositoryImpl(
+class GuildSettingsRepositoryImpl(
     private val mongoOperations: MongoOperations,
     private val redis: StringRedisTemplate,
-) : AbstractMongoEventListener<GuildSettingsEntity>(),
-    CachedGuildSettingsRepository {
+) : AbstractMongoEventListener<GuildSettingsEntity>() {
     private companion object {
         val CACHE_TTL: Duration = Duration.ofDays(7)
     }
 
-    override fun findByGuildID(guildID: String): GuildSettingsEntity? {
+    fun findByGuildID(guildID: String): GuildSettingsEntity? {
         val key = RedisKey.GUILD_SETTINGS(guildID)
 
         redis.opsForValue().get(key)?.let {

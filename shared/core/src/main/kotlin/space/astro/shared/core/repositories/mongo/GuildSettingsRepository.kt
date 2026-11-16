@@ -6,9 +6,12 @@ import space.astro.shared.core.lang.L
 import space.astro.shared.core.models.database.guildSettings.GuildConfigCounts
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 
-interface GuildSettingsRepository :
-    MongoRepository<GuildSettingsEntity, String>,
-    CachedGuildSettingsRepository {
+interface GuildSettingsRepository : MongoRepository<GuildSettingsEntity, String> {
+    /**
+     * Reads through the Redis cache, see [GuildSettingsRepositoryImpl]
+     */
+    fun findByGuildID(guildID: String): GuildSettingsEntity?
+
     @Aggregation(
         pipeline = [
             $$"{ $match: { guildID: { $in: ?0 } } }",
