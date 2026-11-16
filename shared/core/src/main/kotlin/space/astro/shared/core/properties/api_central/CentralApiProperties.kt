@@ -13,4 +13,6 @@ data class CentralApiProperties(
     val corsAllowedOrigins: List<String>,
     /** Password of the basic auth that Chargebee uses when calling the webhooks */
     val chargebeeWebhookToken: String,
+    /** Signing secret of the Vote Tracker forwarding, used to verify the signature of the vote webhooks */
+    val voteTrackerWebhookSecret: String,
 )
