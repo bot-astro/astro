@@ -1,15 +1,18 @@
 package space.astro.shared.core.clients
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.body
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AException
+import space.astro.shared.core.exceptions.ATooManyRequestsException
 import space.astro.shared.core.exceptions.AUnknownException
 import space.astro.shared.core.models.discord.DiscordApplicationDto
 import space.astro.shared.core.models.discord.DiscordEntitlementDto
@@ -21,10 +24,14 @@ import space.astro.shared.core.properties.DiscordOAuthProperties
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
 import java.util.Optional
+import kotlin.math.ceil
 
 private val log = KotlinLogging.logger { }
 
 private const val ENTITLEMENTS_PAGE_SIZE = 100
+
+// longer Discord rate limit waits are returned to the caller as a 429 instead of blocking the request thread
+private const val MAX_RATE_LIMIT_WAIT_SECONDS = 2.0
 
 class DiscordApiClient(
     discordApiConfig: DiscordApiProperties,
@@ -148,23 +155,45 @@ class DiscordApiClient(
      * Fetches the user guilds
      *
      * @param accessToken
-     * @return the list of guilds of the user
+     * @return the list of guilds of the user, waits and retries once if Discord rate limits for a short time
+     * @throws ATooManyRequestsException if Discord rate limits for longer than [MAX_RATE_LIMIT_WAIT_SECONDS] or again after the retry
      * @throws AException
      */
     fun getGuilds(accessToken: String): List<DiscordPartialGuildDto> {
-        try {
-            return client
-                .get()
-                .uri("/users/@me/guilds")
-                .header("Authorization", "Bearer $accessToken")
-                .retrieve()
-                .body<List<DiscordPartialGuildDto>>()
-                ?: run {
-                    log.error { "Discord returned an empty guilds response" }
-                    throw AUnknownException("Failed to fetch Discord user guilds")
+        var retried = false
+
+        while (true) {
+            try {
+                return client
+                    .get()
+                    .uri("/users/@me/guilds")
+                    .header("Authorization", "Bearer $accessToken")
+                    .retrieve()
+                    .body<List<DiscordPartialGuildDto>>()
+                    ?: run {
+                        log.error { "Discord returned an empty guilds response" }
+                        throw AUnknownException("Failed to fetch Discord user guilds")
+                    }
+            } catch (e: HttpClientErrorException.TooManyRequests) {
+                val retryAfterSeconds =
+                    runCatching { discordJsonMapper.readTree(e.responseBodyAsString).get("retry_after").asDouble() }
+                        .getOrNull()
+                        ?: e.responseHeaders?.getFirst(HttpHeaders.RETRY_AFTER)?.toDoubleOrNull()
+                        ?: 1.0
+
+                if (retried || retryAfterSeconds > MAX_RATE_LIMIT_WAIT_SECONDS) {
+                    throw ATooManyRequestsException(
+                        "Discord is rate limiting this request, try again in ${ceil(retryAfterSeconds).toLong()} seconds",
+                        ceil(retryAfterSeconds).toLong(),
+                        e,
+                    )
                 }
-        } catch (e: RestClientResponseException) {
-            throw AUnknownException("Failed to fetch Discord user guilds", e)
+
+                retried = true
+                Thread.sleep((retryAfterSeconds * 1000).toLong())
+            } catch (e: RestClientResponseException) {
+                throw AUnknownException("Failed to fetch Discord user guilds", e)
+            }
         }
     }
 

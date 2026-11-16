@@ -19,6 +19,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import space.astro.shared.core.exceptions.AErrorCode
 import space.astro.shared.core.exceptions.AErrorResponse
 import space.astro.shared.core.exceptions.AException
+import space.astro.shared.core.exceptions.ATooManyRequestsException
 import tools.jackson.databind.json.JsonMapper
 
 private val log = KotlinLogging.logger { }
@@ -56,6 +57,14 @@ class ControllersExceptionHandler(
 
     private fun resolve(e: Exception): Resolved =
         when (e) {
+            is ATooManyRequestsException ->
+                Resolved(
+                    e.httpStatusCode,
+                    e.errorCode,
+                    e.message ?: "Rate limited.",
+                    HttpHeaders().apply { set(HttpHeaders.RETRY_AFTER, e.retryAfterSeconds.toString()) },
+                )
+
             is AException ->
                 Resolved(e.httpStatusCode, e.errorCode, e.message ?: "Request failed.")
 
