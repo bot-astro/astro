@@ -119,6 +119,7 @@ class SecurityConfig(
                 allowedOrigins = centralApiProperties.corsAllowedOrigins
                 allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 allowedHeaders = listOf("authorization", "content-type")
+                exposedHeaders = listOf("Retry-After")
                 allowCredentials = true
             }
 

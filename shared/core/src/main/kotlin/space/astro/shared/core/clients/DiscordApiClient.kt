@@ -30,9 +30,6 @@ private val log = KotlinLogging.logger { }
 
 private const val ENTITLEMENTS_PAGE_SIZE = 100
 
-// longer Discord rate limit waits are returned to the caller as a 429 instead of blocking the request thread
-private const val MAX_RATE_LIMIT_WAIT_SECONDS = 2.0
-
 class DiscordApiClient(
     discordApiConfig: DiscordApiProperties,
     jsonMapper: JsonMapper,
@@ -155,45 +152,37 @@ class DiscordApiClient(
      * Fetches the user guilds
      *
      * @param accessToken
-     * @return the list of guilds of the user, waits and retries once if Discord rate limits for a short time
-     * @throws ATooManyRequestsException if Discord rate limits for longer than [MAX_RATE_LIMIT_WAIT_SECONDS] or again after the retry
+     * @return the list of guilds of the user
+     * @throws ATooManyRequestsException if Discord rate limits the request, carrying the seconds to wait before retrying
      * @throws AException
      */
     fun getGuilds(accessToken: String): List<DiscordPartialGuildDto> {
-        var retried = false
-
-        while (true) {
-            try {
-                return client
-                    .get()
-                    .uri("/users/@me/guilds")
-                    .header("Authorization", "Bearer $accessToken")
-                    .retrieve()
-                    .body<List<DiscordPartialGuildDto>>()
-                    ?: run {
-                        log.error { "Discord returned an empty guilds response" }
-                        throw AUnknownException("Failed to fetch Discord user guilds")
-                    }
-            } catch (e: HttpClientErrorException.TooManyRequests) {
-                val retryAfterSeconds =
-                    runCatching { discordJsonMapper.readTree(e.responseBodyAsString).get("retry_after").asDouble() }
-                        .getOrNull()
-                        ?: e.responseHeaders?.getFirst(HttpHeaders.RETRY_AFTER)?.toDoubleOrNull()
-                        ?: 1.0
-
-                if (retried || retryAfterSeconds > MAX_RATE_LIMIT_WAIT_SECONDS) {
-                    throw ATooManyRequestsException(
-                        "Discord is rate limiting this request, try again in ${ceil(retryAfterSeconds).toLong()} seconds",
-                        ceil(retryAfterSeconds).toLong(),
-                        e,
-                    )
+        try {
+            return client
+                .get()
+                .uri("/users/@me/guilds")
+                .header("Authorization", "Bearer $accessToken")
+                .retrieve()
+                .body<List<DiscordPartialGuildDto>>()
+                ?: run {
+                    log.error { "Discord returned an empty guilds response" }
+                    throw AUnknownException("Failed to fetch Discord user guilds")
                 }
+        } catch (e: HttpClientErrorException.TooManyRequests) {
+            val retryAfterSeconds =
+                runCatching { discordJsonMapper.readTree(e.responseBodyAsString).get("retry_after").asDouble() }
+                    .getOrNull()
+                    ?: e.responseHeaders?.getFirst(HttpHeaders.RETRY_AFTER)?.toDoubleOrNull()
+                    ?: 1.0
+            val retryAfterWholeSeconds = ceil(retryAfterSeconds).toLong()
 
-                retried = true
-                Thread.sleep((retryAfterSeconds * 1000).toLong())
-            } catch (e: RestClientResponseException) {
-                throw AUnknownException("Failed to fetch Discord user guilds", e)
-            }
+            throw ATooManyRequestsException(
+                "Discord is rate limiting this request, try again in $retryAfterWholeSeconds seconds",
+                retryAfterWholeSeconds,
+                e,
+            )
+        } catch (e: RestClientResponseException) {
+            throw AUnknownException("Failed to fetch Discord user guilds", e)
         }
     }
 
