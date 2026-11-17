@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import org.springframework.stereotype.Component
 import space.astro.bot.components.InterfaceManager
+import space.astro.bot.components.UpdatesChannelManager
 import space.astro.bot.interactions.InteractionException
 import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.ui.Buttons
@@ -23,6 +24,7 @@ import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 class SetupManager(
     private val premiumManager: PremiumManager,
     private val interfaceManager: InterfaceManager,
+    private val updatesChannelManager: UpdatesChannelManager,
     private val guildSettingsRepository: GuildSettingsRepository,
 ) {
     companion object {
@@ -58,8 +60,8 @@ class SetupManager(
             return
         }
 
-        // category + interface + generator
-        if (guild.channels.size > MAX_GUILD_CHANNELS - 3) {
+        // category + interface + generator + updates channel
+        if (guild.channels.size > MAX_GUILD_CHANNELS - 4) {
             throw InteractionException("setup.max_channels")
         }
 
@@ -98,6 +100,13 @@ class SetupManager(
                 ),
             )
 
+            val updatesChannelId =
+                guildSettings.updatesChannel?.channelId?.takeIf { guild.getTextChannelById(it) != null }
+                    ?: updatesChannelManager
+                        .createAndConfigure(guild, category, ctx.locale, reason, guildSettings.updatesChannel)
+                        .also { guildSettings.updatesChannel = it }
+                        .channelId
+
             withContext(Dispatchers.IO) { guildSettingsRepository.save(guildSettings) }
 
             ctx.responder.reply(
@@ -107,6 +116,7 @@ class SetupManager(
                         "category" to category.asMention,
                         "generator" to generatorChannel.asMention,
                         "interface" to interfaceChannel.asMention,
+                        "updates" to "<#$updatesChannelId>",
                     ),
                 ),
                 ActionRow.of(Buttons.guildDashboard(ctx.locale, guild.id), Buttons.guides(ctx.locale)),

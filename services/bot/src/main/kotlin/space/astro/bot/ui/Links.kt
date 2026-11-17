@@ -1,5 +1,7 @@
 package space.astro.bot.ui
 
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
+
 /**
  * Astro most used links
  */
@@ -17,4 +19,8 @@ object Links {
     const val BLOG_ARTICLE = "https://giuliopime.dev/blog/so-i-built-a-discord-bot"
 
     fun guildDashboard(guildId: String) = "https://astro-bot.space/guilds/$guildId"
+
+    fun guildErrors(guildId: String) = "${guildDashboard(guildId)}/errors"
+
+    fun guide(guide: ConfigurationErrorEntity.Guide) = "$GUIDES/${guide.name.lowercase().replace('_', '-')}"
 }

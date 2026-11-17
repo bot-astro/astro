@@ -1,5 +1,6 @@
 package space.astro.shared.core.models.database.guildSettings
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
@@ -28,6 +29,11 @@ data class GuildSettingsEntity(
     val connections: MutableList<ConnectionData> = mutableListOf(),
     val generators: MutableList<GeneratorSettings> = mutableListOf(),
     var interfaces: MutableList<InterfaceData> = mutableListOf(),
+    /**
+     * Not serialized because of the webhook token, the dashboard gets it from the updates channel endpoint
+     */
+    @get:JsonIgnore
+    var updatesChannel: UpdatesChannelData? = null,
 ) {
     val javaLocale: Locale = Locale.forLanguageTag(locale)
 }

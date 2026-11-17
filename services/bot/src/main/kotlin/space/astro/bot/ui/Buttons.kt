@@ -5,6 +5,7 @@ import space.astro.bot.commands.setup.CreateGeneratorButton
 import space.astro.bot.commands.setup.CreateInterfaceButton
 import space.astro.bot.commands.setup.SetupButton
 import space.astro.shared.core.lang.L
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import java.util.Locale
 
 object Buttons {
@@ -25,6 +26,16 @@ object Buttons {
     fun ultimate(locale: Locale) = Button.link(Links.APP_DIRECTORY_ULTIMATE, L.t(locale, "button.ultimate")).withEmoji(Emojis.premium)
 
     fun github(locale: Locale) = Button.link(Links.GITHUB, L.t(locale, "button.github")).withEmoji(Emojis.developer)
+
+    fun guildErrors(
+        locale: Locale,
+        guildId: String,
+    ) = Button.link(Links.guildErrors(guildId), L.t(locale, "button.errors")).withEmoji(Emojis.logs)
+
+    fun guide(
+        locale: Locale,
+        guide: ConfigurationErrorEntity.Guide,
+    ) = Button.link(Links.guide(guide), L.t(locale, "button.guide")).withEmoji(Emojis.help)
 
     fun guildDashboard(
         locale: Locale,

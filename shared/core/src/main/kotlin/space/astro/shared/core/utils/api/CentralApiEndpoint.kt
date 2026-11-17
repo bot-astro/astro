@@ -12,6 +12,7 @@ object CentralApiEndpoint {
     const val GUILD_MEDIA = "/v2/guilds/{guildId}/media"
     const val GUILD_MEDIA_ITEM = "/v2/guilds/{guildId}/media/{mediaId}"
     const val GUILD_ERRORS = "/v2/guilds/{guildId}/errors"
+    const val GUILD_UPDATES_CHANNEL = "/v2/guilds/{guildId}/updates-channel"
     const val GUILD_SETTINGS = "/v2/guilds/{guildId}/settings"
     const val GUILD_SETTINGS_VC_CACHE = "/v2/guilds/{guildId}/settings/vcs/cache"
     const val GUILD_SETTINGS_PROFILE = "/v2/guilds/{guildId}/settings/profile"
