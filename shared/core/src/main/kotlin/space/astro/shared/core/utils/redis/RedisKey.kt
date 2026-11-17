@@ -83,4 +83,14 @@ object RedisKey {
         userId: String,
         key: String,
     ) = "IC:$userId:$key"
+
+    /**
+     * Set while an alert is muted, [errorHash] identifies the code and args of the error
+     */
+    fun ALERT_MUTE(
+        guildId: String,
+        errorHash: String,
+    ) = "AM:$guildId:$errorHash"
+
+    fun ALERT_GUILD_RATE(guildId: String) = "AR:$guildId"
 }

@@ -1,10 +1,13 @@
 package space.astro.bot.ui
 
 import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import space.astro.shared.core.lang.L
+import space.astro.shared.core.lang.localizedDescription
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 import java.util.Locale
 
 object Messages {
@@ -102,6 +105,58 @@ object Messages {
             ),
         )
     }
+
+    /**
+     * First message of an updates channel
+     */
+    fun updatesChannelReady(
+        guild: Guild,
+        locale: Locale,
+    ): MessageCreateData =
+        Containers.message(
+            Containers.container(
+                Containers.purple,
+                Containers.title(L.t(locale, "updates_channel.ready.title")),
+                Containers.text(L.t(locale, "updates_channel.ready.description")),
+            ),
+            ActionRow.of(Buttons.guildDashboard(locale, guild.id), Buttons.support(locale)),
+        )
+
+    /**
+     * Alert about a configuration error of a guild
+     */
+    fun configurationErrorAlert(
+        guildId: String,
+        locale: Locale,
+        error: ConfigurationErrorEntity,
+    ): MessageCreateData {
+        val buttons = mutableListOf(Buttons.guildErrors(locale, guildId))
+        error.code.guide?.let { buttons += Button.link(Links.guide(it), L.t(locale, "button.guide")).withEmoji(Emojis.help) }
+
+        return Containers.message(
+            Containers.container(
+                Containers.red,
+                Containers.title("⚠️ ${L.t(locale, "alert.configuration_error.title")}"),
+                Containers.text(error.localizedDescription(locale)),
+            ),
+            ActionRow.of(buttons),
+        )
+    }
+
+    /**
+     * Sent once when a guild reached the limit of alerts, the others are not posted until the limit resets
+     */
+    fun alertsHeldBack(
+        guildId: String,
+        locale: Locale,
+    ): MessageCreateData =
+        Containers.message(
+            Containers.container(
+                Containers.purple,
+                Containers.text(L.t(locale, "alert.held_back")),
+            ),
+            ActionRow.of(Buttons.guildErrors(locale, guildId)),
+        )
 
     /**
      * Log about a member in the chat of a temporary VC, [key] is the translation key of the log text

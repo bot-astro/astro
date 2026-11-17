@@ -9,4 +9,5 @@ object BotApiEndpoint {
     const val DISCORD_GUILD_INTERFACE = "/api/v2/guilds/{guildId}/interface"
     const val DISCORD_GUILD_INTERFACE_MOVE = "/api/v2/guilds/{guildId}/interface/move"
     const val DISCORD_GUILD_INTERFACE_MESSAGE = "/api/v2/guilds/{guildId}/interface/{channelId}/{messageId}"
+    const val DISCORD_GUILD_UPDATES_CHANNEL = "/api/v2/guilds/{guildId}/updates-channel"
 }

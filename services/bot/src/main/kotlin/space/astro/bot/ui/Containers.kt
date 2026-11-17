@@ -18,7 +18,7 @@ import java.awt.Color
  */
 object Containers {
     val purple: Color = Color.decode("#B125EA")
-    private val red = Color.decode("#F04747")
+    val red: Color = Color.decode("#F04747")
 
     /**
      * Container with a purple accent, [description] is rendered as markdown text followed by [children]

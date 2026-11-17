@@ -26,6 +26,11 @@ object Buttons {
 
     fun github(locale: Locale) = Button.link(Links.GITHUB, L.t(locale, "button.github")).withEmoji(Emojis.developer)
 
+    fun guildErrors(
+        locale: Locale,
+        guildId: String,
+    ) = Button.link(Links.guildErrors(guildId), L.t(locale, "button.errors")).withEmoji(Emojis.logs)
+
     fun guildDashboard(
         locale: Locale,
         guildId: String,

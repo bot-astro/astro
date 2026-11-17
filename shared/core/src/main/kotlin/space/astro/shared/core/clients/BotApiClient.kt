@@ -11,10 +11,13 @@ import space.astro.shared.core.models.api.bot.request.ChannelCreateBotApiRequest
 import space.astro.shared.core.models.api.bot.request.GuildProfileUpdateBotApiRequest
 import space.astro.shared.core.models.api.bot.request.InterfaceCreateBotApiRequest
 import space.astro.shared.core.models.api.bot.request.InterfaceMoveBotApiRequest
+import space.astro.shared.core.models.api.bot.request.UpdatesChannelUpdateBotApiRequest
 import space.astro.shared.core.models.api.bot.response.DiscordGuildBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildChannelBotApiResponse
 import space.astro.shared.core.models.api.bot.response.DiscordGuildRoleBotApiResponse
+import space.astro.shared.core.models.api.bot.response.UpdatesChannelBotApiResponse
 import space.astro.shared.core.models.database.guildSettings.InterfaceData
+import space.astro.shared.core.models.database.guildSettings.UpdatesChannelData
 import space.astro.shared.core.properties.bot.BotEndpointProperties
 import space.astro.shared.core.properties.bot.BotShardProperties
 import space.astro.shared.core.utils.api.BotApiEndpoint
@@ -239,6 +242,30 @@ class BotApiClient(
             }
 
             throw AUnknownException("Failed to delete interface", e)
+        }
+    }
+
+    /**
+     * @return the new data of the updates channel, null if it has been disabled
+     */
+    fun updateUpdatesChannel(
+        guildId: String,
+        request: UpdatesChannelUpdateBotApiRequest,
+    ): UpdatesChannelData? {
+        try {
+            return client
+                .put()
+                .uri(baseUrlForGuild(guildId) + BotApiEndpoint.DISCORD_GUILD_UPDATES_CHANNEL, guildId)
+                .body(request)
+                .retrieve()
+                .body<UpdatesChannelBotApiResponse>()
+                ?.updatesChannel
+        } catch (e: RestClientException) {
+            if (e is RestClientResponseException && e.statusCode.value() == 404) {
+                throw ANotFoundException("Guild or channel not found for guild with id $guildId")
+            }
+
+            throw AUnknownException("Failed to update the updates channel", e)
         }
     }
 }
