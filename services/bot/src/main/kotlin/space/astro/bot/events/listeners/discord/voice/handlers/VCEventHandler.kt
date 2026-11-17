@@ -117,6 +117,8 @@ class VCEventHandler(
     private fun generationOutcome(e: Exception) =
         when (e) {
             is InsufficientPermissionException -> VCCreationOutcome.NO_PERMISSION
+            is ConfigurationException if e.configurationErrorEntity.code == ConfigurationErrorCode.MISSING_PERMISSION ->
+                VCCreationOutcome.NO_PERMISSION
             is ConfigurationException if e.configurationErrorEntity.code != ConfigurationErrorCode.UNKNOWN -> VCCreationOutcome.CONFIG_ERROR
             else -> VCCreationOutcome.FAILED
         }

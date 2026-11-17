@@ -6,7 +6,9 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.PermissionOverride
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.springframework.stereotype.Component
 import space.astro.bot.components.InterfaceManager
@@ -267,6 +269,24 @@ class JoinedGeneratorHandler(
             try {
                 temporaryVCBuilder.await()
             } catch (e: Exception) {
+                if (e is ErrorResponseException &&
+                    (e.errorResponse == ErrorResponse.MISSING_PERMISSIONS || e.errorResponse == ErrorResponse.MISSING_ACCESS)
+                ) {
+                    // Discord does not say which permission is missing
+                    throw ConfigurationException(
+                        ConfigurationErrorEntity(
+                            guildId = guild.id,
+                            code = ConfigurationErrorCode.MISSING_PERMISSION,
+                            args =
+                                mapOf(
+                                    "permission" to "${Permission.MANAGE_CHANNEL.getName()}, ${Permission.MANAGE_PERMISSIONS.getName()}",
+                                    "channelId" to (category ?: generatorVC).id,
+                                ),
+                        ),
+                    )
+                }
+
+                log.error(e) { "Failed creating a temporary VC in guild ${guild.id}" }
                 throw unknownError(guild.id, "creating a temporary VC", e)
             }
 
