@@ -31,6 +31,7 @@ class DevMessageCommand : SlashHandler<InteractionContext> {
     ) {
         WELCOME("Welcome (guild join)"),
         INVITER_ONBOARDING("Inviter onboarding (DM)"),
+        UPDATES_CHANNEL_READY("Updates channel: first message"),
         VC_LOG_JOINED("VC log: member joined"),
         VC_LOG_LEFT("VC log: member left"),
     }
@@ -58,6 +59,7 @@ class DevMessageCommand : SlashHandler<InteractionContext> {
             when (message) {
                 DevMessage.WELCOME -> Messages.welcome(guild, ctx.locale)
                 DevMessage.INVITER_ONBOARDING -> Messages.inviterOnboarding(guild, ctx.locale)
+                DevMessage.UPDATES_CHANNEL_READY -> Messages.updatesChannelReady(guild, ctx.locale)
                 DevMessage.VC_LOG_JOINED -> Messages.vcLog(guild, ctx.locale, "vc.log.joined", "user" to mention)
                 DevMessage.VC_LOG_LEFT -> Messages.vcLog(guild, ctx.locale, "vc.log.left", "user" to mention)
             }
