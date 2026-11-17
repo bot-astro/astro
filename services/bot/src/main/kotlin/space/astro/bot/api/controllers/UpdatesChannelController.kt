@@ -47,6 +47,7 @@ class UpdatesChannelController(
                 ?: throw ANotFoundException("Guild not found")
 
         val locale = guildSettingsRepository.findByGuildID(guildId).supportedLocale
+        val channelId = request.channelId
 
         try {
             val updatesChannel =
@@ -61,10 +62,10 @@ class UpdatesChannelController(
                                 current = request.current,
                             )
 
-                        request.channelId != null -> {
+                        channelId != null -> {
                             val channel =
-                                guild.getTextChannelById(request.channelId)
-                                    ?: throw ANotFoundException("Text channel with id ${request.channelId} not found")
+                                guild.getTextChannelById(channelId)
+                                    ?: throw ANotFoundException("Text channel with id $channelId not found")
 
                             updatesChannelManager.configure(guild, channel, locale, request.current)
                         }
