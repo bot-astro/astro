@@ -39,9 +39,6 @@ class GuildAlertService(
 ) {
     private companion object {
         val MUTE_DURATION: Duration = Duration.ofHours(6)
-
-        // longer than the mute so the count survives until the alert is posted again
-        val SUPPRESSED_TTL: Duration = Duration.ofHours(12)
         val RATE_WINDOW: Duration = Duration.ofHours(1)
         const val MAX_ALERTS_PER_HOUR = 5
     }
@@ -65,14 +62,16 @@ class GuildAlertService(
         if (updatesChannel.alertWebhookId == null || updatesChannel.alertWebhookToken == null) return
 
         val guildId = error.guildId
-        val errorHash = hash(error)
+        val errorIdentity =
+            error.code.name +
+                error.args
+                    .toSortedMap()
+                    .entries
+                    .joinToString("|") { "${it.key}=${it.value}" }
+        val errorHash = UUID.nameUUIDFromBytes(errorIdentity.toByteArray()).toString()
         val muteKey = RedisKey.ALERT_MUTE(guildId, errorHash)
-        val suppressedKey = RedisKey.ALERT_SUPPRESSED(guildId, errorHash)
 
-        if (redis.opsForValue().setIfAbsent(muteKey, "1", MUTE_DURATION) != true) {
-            countSuppressed(suppressedKey)
-            return
-        }
+        if (redis.opsForValue().setIfAbsent(muteKey, "1", MUTE_DURATION) != true) return
 
         val rateKey = RedisKey.ALERT_GUILD_RATE(guildId)
         val alertsThisHour = redis.opsForValue().increment(rateKey) ?: 1
@@ -81,7 +80,6 @@ class GuildAlertService(
         if (alertsThisHour > MAX_ALERTS_PER_HOUR) {
             // not posted, so it must not stay muted
             redis.delete(muteKey)
-            countSuppressed(suppressedKey)
 
             // a single summary, the alerts after it are dropped until the hour is over
             if (alertsThisHour == MAX_ALERTS_PER_HOUR + 1L) {
@@ -90,18 +88,7 @@ class GuildAlertService(
             return
         }
 
-        val occurrences = 1 + (redis.opsForValue().getAndDelete(suppressedKey)?.toLongOrNull() ?: 0L)
-
-        send(
-            guildSettings,
-            updatesChannel,
-            Messages.configurationErrorAlert(guildId, guildSettings.supportedLocale, error, occurrences),
-        )
-    }
-
-    private fun countSuppressed(suppressedKey: String) {
-        redis.opsForValue().increment(suppressedKey)
-        redis.expire(suppressedKey, SUPPRESSED_TTL)
+        send(guildSettings, updatesChannel, Messages.configurationErrorAlert(guildId, guildSettings.supportedLocale, error))
     }
 
     private suspend fun send(
@@ -121,44 +108,19 @@ class GuildAlertService(
             WebhookClient.createClient(jda, webhookId, webhookToken).sendMessage(message).await()
         } catch (e: ErrorResponseException) {
             when (e.errorResponse) {
-                ErrorResponse.UNKNOWN_WEBHOOK, ErrorResponse.UNKNOWN_CHANNEL, ErrorResponse.INVALID_WEBHOOK_TOKEN ->
-                    markWebhookMissing(guildSettings.guildID, webhookId)
+                ErrorResponse.UNKNOWN_WEBHOOK, ErrorResponse.UNKNOWN_CHANNEL, ErrorResponse.INVALID_WEBHOOK_TOKEN -> {
+                    // alerts are not sent anymore until the updates channel is set up again
+                    guildSettings.updatesChannel =
+                        updatesChannel.copy(
+                            alertWebhookId = null,
+                            alertWebhookToken = null,
+                        )
+                    guildSettingsRepository.save(guildSettings)
+                }
 
                 // rate limits and everything else: the alert is dropped, the cap and the mute already bound how many are sent
                 else -> log.debug(e) { "Alert dropped for guild ${guildSettings.guildID}" }
             }
         }
-    }
-
-    /**
-     * The dashboard keeps showing the error and offers to set the webhook up again
-     */
-    private fun markWebhookMissing(
-        guildId: String,
-        webhookId: String,
-    ) {
-        val guildSettings = guildSettingsRepository.findByGuildID(guildId) ?: return
-        val updatesChannel = guildSettings.updatesChannel ?: return
-
-        // the webhook may have been replaced in the meantime
-        if (updatesChannel.alertWebhookId != webhookId) return
-
-        guildSettings.updatesChannel =
-            updatesChannel.copy(
-                alertWebhookId = null,
-                alertWebhookToken = null,
-                status = UpdatesChannelData.Status.WEBHOOK_MISSING,
-            )
-        guildSettingsRepository.save(guildSettings)
-    }
-
-    private fun hash(error: ConfigurationErrorEntity): String {
-        val identity =
-            error.code.name +
-                error.args
-                    .toSortedMap()
-                    .entries
-                    .joinToString("|") { "${it.key}=${it.value}" }
-        return UUID.nameUUIDFromBytes(identity.toByteArray()).toString()
     }
 }

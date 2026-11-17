@@ -70,6 +70,18 @@ class SetupManager(
         try {
             val category = guild.createCategory("Astro").reason(reason).await()
 
+            // the updates channel is skipped when it already exists or when Astro can't set up its webhooks
+            val updatesChannelId =
+                guildSettings.updatesChannel?.channelId?.takeIf { guild.getTextChannelById(it) != null }
+                    ?: if (guild.selfMember.hasPermission(Permission.MANAGE_WEBHOOKS)) {
+                        updatesChannelManager
+                            .createAndConfigure(guild, category, ctx.locale, reason, guildSettings.updatesChannel)
+                            .also { guildSettings.updatesChannel = it }
+                            .channelId
+                    } else {
+                        null
+                    }
+
             val interfaceChannel =
                 guild
                     .createTextChannel("interface")
@@ -100,24 +112,26 @@ class SetupManager(
                 ),
             )
 
-            val updatesChannelId =
-                guildSettings.updatesChannel?.channelId?.takeIf { guild.getTextChannelById(it) != null }
-                    ?: updatesChannelManager
-                        .createAndConfigure(guild, category, ctx.locale, reason, guildSettings.updatesChannel)
-                        .also { guildSettings.updatesChannel = it }
-                        .channelId
-
             withContext(Dispatchers.IO) { guildSettingsRepository.save(guildSettings) }
 
             ctx.responder.reply(
                 Containers.default(
-                    ctx.t(
-                        "setup.success",
-                        "category" to category.asMention,
-                        "generator" to generatorChannel.asMention,
-                        "interface" to interfaceChannel.asMention,
-                        "updates" to "<#$updatesChannelId>",
-                    ),
+                    if (updatesChannelId != null) {
+                        ctx.t(
+                            "setup.success",
+                            "category" to category.asMention,
+                            "generator" to generatorChannel.asMention,
+                            "interface" to interfaceChannel.asMention,
+                            "updates" to "<#$updatesChannelId>",
+                        )
+                    } else {
+                        ctx.t(
+                            "setup.success_no_updates",
+                            "category" to category.asMention,
+                            "generator" to generatorChannel.asMention,
+                            "interface" to interfaceChannel.asMention,
+                        )
+                    },
                 ),
                 ActionRow.of(Buttons.guildDashboard(ctx.locale, guild.id), Buttons.guides(ctx.locale)),
             )

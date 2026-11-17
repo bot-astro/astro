@@ -92,13 +92,5 @@ object RedisKey {
         errorHash: String,
     ) = "AM:$guildId:$errorHash"
 
-    /**
-     * Occurrences of an error that were not posted because it was muted
-     */
-    fun ALERT_SUPPRESSED(
-        guildId: String,
-        errorHash: String,
-    ) = "AS:$guildId:$errorHash"
-
     fun ALERT_GUILD_RATE(guildId: String) = "AR:$guildId"
 }

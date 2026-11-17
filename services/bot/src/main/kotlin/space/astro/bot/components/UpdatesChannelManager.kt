@@ -5,7 +5,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.WebhookClient
 import net.dv8tion.jda.api.entities.WebhookType
 import net.dv8tion.jda.api.entities.channel.concrete.Category
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
@@ -14,7 +13,6 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.requests.Route
 import net.dv8tion.jda.api.utils.data.DataObject
-import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import net.dv8tion.jda.internal.requests.RestActionImpl
 import org.springframework.stereotype.Component
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
@@ -56,29 +54,8 @@ class UpdatesChannelManager(
     }
 
     /**
-     * Creates the channel hidden from everyone, the bot gets an explicit overwrite
-     * (Discord only accepts permissions the bot already has in the guild, so the missing ones are left out)
-     */
-    suspend fun createChannel(
-        guild: Guild,
-        category: Category?,
-        reason: String,
-    ): TextChannel {
-        val self = guild.selfMember
-        val allowed = Permission.getRaw(CHANNEL_PERMISSIONS.filter { self.hasPermission(it) })
-
-        return guild
-            .createTextChannel(CHANNEL_NAME)
-            .setParent(category)
-            .addRolePermissionOverride(guild.publicRole.idLong, 0, Permission.VIEW_CHANNEL.rawValue)
-            .addMemberPermissionOverride(self.idLong, allowed, 0)
-            .reason(reason)
-            .await()
-    }
-
-    /**
-     * Creates a new channel and configures it, if the webhooks cannot be set up the channel is kept
-     * and the returned status tells the dashboard to offer a retry
+     * Creates a new channel hidden from everyone and configures it, if the webhooks cannot be set up the channel is kept
+     * without them
      */
     suspend fun createAndConfigure(
         guild: Guild,
@@ -87,7 +64,17 @@ class UpdatesChannelManager(
         reason: String,
         current: UpdatesChannelData? = null,
     ): UpdatesChannelData {
-        val channel = createChannel(guild, category, reason)
+        val self = guild.selfMember
+        // Discord only accepts overwrites with permissions the bot already has in the guild
+        val allowed = Permission.getRaw(CHANNEL_PERMISSIONS.filter { self.hasPermission(it) })
+        val channel =
+            guild
+                .createTextChannel(CHANNEL_NAME)
+                .setParent(category)
+                .addRolePermissionOverride(guild.publicRole.idLong, 0, Permission.VIEW_CHANNEL.rawValue)
+                .addMemberPermissionOverride(self.idLong, allowed, 0)
+                .reason(reason)
+                .await()
 
         return try {
             configure(guild, channel, locale, current)
@@ -100,7 +87,7 @@ class UpdatesChannelManager(
             )
             deleteWebhooks(guild.jda, current.webhookIds())
 
-            UpdatesChannelData(channelId = channel.id, status = UpdatesChannelData.Status.WEBHOOK_MISSING)
+            UpdatesChannelData(channelId = channel.id)
         } catch (e: InsufficientPermissionException) {
             recordError(
                 guild.id,
@@ -109,7 +96,7 @@ class UpdatesChannelManager(
             )
             deleteWebhooks(guild.jda, current.webhookIds())
 
-            UpdatesChannelData(channelId = channel.id, status = UpdatesChannelData.Status.WEBHOOK_MISSING)
+            UpdatesChannelData(channelId = channel.id)
         }
     }
 
@@ -118,7 +105,7 @@ class UpdatesChannelManager(
      * so if something fails halfway the previous setup keeps working
      *
      * @throws InsufficientPermissionException if Astro can't send messages in [channel]
-     * @throws ErrorResponseException if Discord refuses to create the webhooks, follow the channels or send the message
+     * @throws ErrorResponseException if Discord refuses to send the message, create the webhooks or follow the channels
      */
     suspend fun configure(
         guild: Guild,
@@ -135,20 +122,19 @@ class UpdatesChannelManager(
             throw InsufficientPermissionException(channel, Permission.MESSAGE_SEND)
         }
 
-        val message = Messages.updatesChannelReady(guild, locale)
+        channel.sendMessage(Messages.updatesChannelReady(guild, locale)).await()
 
         val updated =
             if (self.hasPermission(channel, Permission.MANAGE_WEBHOOKS)) {
-                setUpWebhooks(guild, channel, current, message)
+                setUpWebhooks(guild, channel, current)
             } else {
-                channel.sendMessage(message).await()
                 recordError(
                     guild.id,
                     ConfigurationErrorCode.MISSING_PERMISSION,
                     mapOf("permission" to Permission.MANAGE_WEBHOOKS.getName(), "channelId" to channel.id),
                 )
 
-                UpdatesChannelData(channelId = channel.id, status = UpdatesChannelData.Status.MISSING_PERMISSION)
+                UpdatesChannelData(channelId = channel.id)
             }
 
         val keep = updated.webhookIds().toSet()
@@ -166,14 +152,13 @@ class UpdatesChannelManager(
     ) = deleteWebhooks(guild.jda, current.webhookIds())
 
     /**
-     * Creates the alert webhook, follows the official channels that are not followed yet and sends [message]
-     * through the webhook (which also checks that it works), what has been created is deleted again if something fails
+     * Creates the alert webhook and follows the official channels that are not followed yet,
+     * what has been created is deleted again if something fails
      */
     private suspend fun setUpWebhooks(
         guild: Guild,
         channel: TextChannel,
         current: UpdatesChannelData?,
-        message: MessageCreateData,
     ): UpdatesChannelData {
         val jda = guild.jda
         // followers created by a previous setup of this same channel (a retry) are still ours
@@ -207,12 +192,16 @@ class UpdatesChannelManager(
                     continue
                 }
 
-                val followerId = follow(jda, source, channel.id)
+                // not done with NewsChannel.follow because the official server may be on another shard and so not cached
+                val followerId =
+                    RestActionImpl(
+                        jda,
+                        Route.Channels.FOLLOW_CHANNEL.compile(source),
+                        DataObject.empty().put("webhook_channel_id", channel.id),
+                    ) { response, _ -> response.getObject().getString("webhook_id") }.await()
                 created += followerId
                 followerIds += followerId
             }
-
-            WebhookClient.createClient(jda, webhook.id, webhook.token!!).sendMessage(message).await()
 
             return UpdatesChannelData(
                 channelId = channel.id,
@@ -225,23 +214,6 @@ class UpdatesChannelManager(
             throw e
         }
     }
-
-    /**
-     * Not done with [net.dv8tion.jda.api.entities.channel.concrete.NewsChannel.follow] because the official
-     * server may be on another shard and so not cached
-     *
-     * @return the id of the follower webhook created in [targetChannelId]
-     */
-    private suspend fun follow(
-        jda: JDA,
-        sourceChannelId: String,
-        targetChannelId: String,
-    ): String =
-        RestActionImpl<String>(
-            jda,
-            Route.Channels.FOLLOW_CHANNEL.compile(sourceChannelId),
-            DataObject.empty().put("webhook_channel_id", targetChannelId),
-        ) { response, _ -> response.getObject().getString("webhook_id") }.await()
 
     private suspend fun deleteWebhooks(
         jda: JDA,

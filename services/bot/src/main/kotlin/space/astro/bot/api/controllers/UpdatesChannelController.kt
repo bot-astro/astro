@@ -46,7 +46,9 @@ class UpdatesChannelController(
             shardManager.getGuildById(guildId)
                 ?: throw ANotFoundException("Guild not found")
 
-        val locale = guildSettingsRepository.findByGuildID(guildId).supportedLocale
+        val guildSettings = guildSettingsRepository.findByGuildID(guildId)
+        val locale = guildSettings.supportedLocale
+        val current = guildSettings?.updatesChannel
         val channelId = request.channelId
 
         try {
@@ -59,7 +61,7 @@ class UpdatesChannelController(
                                 category = null,
                                 locale = locale,
                                 reason = L.t(locale, "reason.dashboard.updates_channel_create"),
-                                current = request.current,
+                                current = current,
                             )
 
                         channelId != null -> {
@@ -67,11 +69,11 @@ class UpdatesChannelController(
                                 guild.getTextChannelById(channelId)
                                     ?: throw ANotFoundException("Text channel with id $channelId not found")
 
-                            updatesChannelManager.configure(guild, channel, locale, request.current)
+                            updatesChannelManager.configure(guild, channel, locale, current)
                         }
 
                         else -> {
-                            updatesChannelManager.disable(guild, request.current)
+                            updatesChannelManager.disable(guild, current)
                             null
                         }
                     }

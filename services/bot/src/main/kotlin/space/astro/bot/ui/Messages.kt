@@ -2,7 +2,6 @@ package space.astro.bot.ui
 
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.components.buttons.Button
-import net.dv8tion.jda.api.components.container.ContainerChildComponent
 import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
@@ -124,28 +123,21 @@ object Messages {
         )
 
     /**
-     * Alert about a configuration error of a guild, [occurrences] is the amount of times it happened since the last alert
+     * Alert about a configuration error of a guild
      */
     fun configurationErrorAlert(
         guildId: String,
         locale: Locale,
         error: ConfigurationErrorEntity,
-        occurrences: Long,
     ): MessageCreateData {
-        val buttons = mutableListOf<Button>(Buttons.guildErrors(locale, guildId))
-        error.code.guide?.let { buttons += Buttons.guide(locale, it) }
-
-        val children = mutableListOf<ContainerChildComponent>()
-        if (occurrences > 1) {
-            children += Containers.footer(L.t(locale, "alert.occurrences", "count" to occurrences))
-        }
+        val buttons = mutableListOf(Buttons.guildErrors(locale, guildId))
+        error.code.guide?.let { buttons += Button.link(Links.guide(it), L.t(locale, "button.guide")).withEmoji(Emojis.help) }
 
         return Containers.message(
             Containers.container(
                 Containers.red,
                 Containers.title("⚠️ ${L.t(locale, "alert.configuration_error.title")}"),
                 Containers.text(error.localizedDescription(locale)),
-                *children.toTypedArray(),
             ),
             ActionRow.of(buttons),
         )

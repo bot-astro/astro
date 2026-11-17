@@ -13,11 +13,4 @@ data class UpdatesChannelData(
     val alertWebhookId: String? = null,
     val alertWebhookToken: String? = null,
     val followerWebhookIds: List<String> = emptyList(),
-    val status: Status = Status.OK,
-) {
-    enum class Status {
-        OK,
-        MISSING_PERMISSION,
-        WEBHOOK_MISSING,
-    }
-}
+)

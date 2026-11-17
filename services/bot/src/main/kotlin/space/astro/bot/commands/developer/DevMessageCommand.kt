@@ -73,7 +73,6 @@ class DevMessageCommand : SlashHandler<InteractionContext> {
                             code = ConfigurationErrorCode.GENERATOR_CATEGORY_FULL,
                             args = mapOf("generator" to "Sample generator"),
                         ),
-                        occurrences = 3,
                     )
                 DevMessage.ALERT_HELD_BACK -> Messages.alertsHeldBack(guild.id, ctx.locale)
                 DevMessage.VC_LOG_JOINED -> Messages.vcLog(guild, ctx.locale, "vc.log.joined", "user" to mention)

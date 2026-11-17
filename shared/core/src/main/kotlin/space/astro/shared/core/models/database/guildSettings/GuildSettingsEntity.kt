@@ -30,10 +30,13 @@ data class GuildSettingsEntity(
     val generators: MutableList<GeneratorSettings> = mutableListOf(),
     var interfaces: MutableList<InterfaceData> = mutableListOf(),
     /**
-     * Not serialized because of the webhook token, the dashboard gets it from the updates channel endpoint
+     * Not serialized because of the webhook token, the dashboard gets [updatesChannelId] instead
      */
     @get:JsonIgnore
     var updatesChannel: UpdatesChannelData? = null,
 ) {
     val javaLocale: Locale = Locale.forLanguageTag(locale)
+
+    val updatesChannelId: String?
+        get() = updatesChannel?.channelId
 }
