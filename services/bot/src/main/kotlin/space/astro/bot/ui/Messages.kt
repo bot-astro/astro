@@ -44,7 +44,7 @@ object Messages {
                 ),
                 Containers.field(
                     L.t(locale, "welcome.setup.title"),
-                    L.t(locale, "welcome.setup.content", "emoji" to Emojis.dashboard.formatted, "link" to dashboard),
+                    L.t(locale, "help.setup.content", "emoji" to Emojis.dashboard.formatted, "link" to dashboard),
                 ),
                 Containers.field(
                     L.t(locale, "help.support.title"),
