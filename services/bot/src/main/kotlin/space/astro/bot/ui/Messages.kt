@@ -141,8 +141,10 @@ object Messages {
         }
 
         return Containers.message(
-            Containers.error(
-                "## ⚠️ ${L.t(locale, "alert.configuration_error.title")}\n${error.localizedDescription(locale)}",
+            Containers.container(
+                Containers.red,
+                Containers.title("⚠️ ${L.t(locale, "alert.configuration_error.title")}"),
+                Containers.text(error.localizedDescription(locale)),
                 *children.toTypedArray(),
             ),
             ActionRow.of(buttons),
@@ -157,7 +159,10 @@ object Messages {
         locale: Locale,
     ): MessageCreateData =
         Containers.message(
-            Containers.default(L.t(locale, "alert.held_back")),
+            Containers.container(
+                Containers.purple,
+                Containers.text(L.t(locale, "alert.held_back")),
+            ),
             ActionRow.of(Buttons.guildErrors(locale, guildId)),
         )
 
