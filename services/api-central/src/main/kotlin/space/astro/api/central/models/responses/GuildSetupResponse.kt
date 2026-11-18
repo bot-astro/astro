@@ -8,4 +8,5 @@ data class GuildSetupResponse(
     val category: DiscordGuildChannelBotApiResponse,
     val interfaceChannel: DiscordGuildChannelBotApiResponse,
     val generatorChannel: DiscordGuildChannelBotApiResponse,
+    val updatesChannel: DiscordGuildChannelBotApiResponse?,
 )

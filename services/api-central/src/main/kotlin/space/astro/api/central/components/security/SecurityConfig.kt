@@ -64,8 +64,21 @@ class SecurityConfig(
             ).authorizeHttpRequests { it.anyRequest().authenticated() }
             .build()
 
+    /**
+     * Vote Tracker forwarding, the signature is verified by the controller because it needs the raw body
+     */
     @Bean
     @Order(2)
+    fun voteTrackerWebhookSecurityFilterChain(http: HttpSecurity): SecurityFilterChain =
+        http
+            .securityMatcher(CentralApiEndpoint.VOTE_TRACKER_EVENTS)
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .csrf { it.disable() }
+            .authorizeHttpRequests { it.anyRequest().permitAll() }
+            .build()
+
+    @Bean
+    @Order(3)
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain =
         http
             .cors {}
@@ -106,6 +119,7 @@ class SecurityConfig(
                 allowedOrigins = centralApiProperties.corsAllowedOrigins
                 allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 allowedHeaders = listOf("authorization", "content-type")
+                exposedHeaders = listOf("Retry-After")
                 allowCredentials = true
             }
 

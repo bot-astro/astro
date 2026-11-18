@@ -42,6 +42,7 @@ class GuildSetupController(
 
         val setup = botApiClient.setup(guildId)
 
+        setup.updatesChannelData?.let { guildSettings.updatesChannel = it }
         guildSettings.interfaces.add(setup.interfaceData)
         guildSettings.generators.add(setup.generatorSettings)
         guildSettingsRepository.save(guildSettings)
@@ -52,6 +53,7 @@ class GuildSetupController(
                 category = setup.category,
                 interfaceChannel = setup.interfaceChannel,
                 generatorChannel = setup.generatorChannel,
+                updatesChannel = setup.updatesChannel,
             ),
         )
     }

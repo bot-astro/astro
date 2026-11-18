@@ -67,6 +67,8 @@ class SetupController(
                     category = setup.category.toResponse(),
                     interfaceChannel = setup.interfaceChannel.toResponse(),
                     generatorChannel = setup.generatorChannel.toResponse(),
+                    updatesChannel = setup.newUpdatesChannel?.let { guild.getTextChannelById(it.channelId)?.toResponse() },
+                    updatesChannelData = setup.newUpdatesChannel,
                     interfaceData = setup.interfaceData,
                     generatorSettings = setup.generatorSettings,
                 ),

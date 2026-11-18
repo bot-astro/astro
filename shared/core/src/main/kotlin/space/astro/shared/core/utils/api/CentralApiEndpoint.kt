@@ -21,6 +21,7 @@ object CentralApiEndpoint {
     const val GUILD_SETTINGS_INTERFACES = "/v2/guilds/{guildId}/settings/interfaces"
     const val GUILD_SETTINGS_INTERFACE = "/v2/guilds/{guildId}/settings/interfaces/{interfaceId}"
     const val GUILD_SETTINGS_INTERFACE_MOVE = "/v2/guilds/{guildId}/settings/interfaces/{interfaceId}/move"
+    const val GUILD_SETTINGS_UPDATES_CHANNEL = "/v2/guilds/{guildId}/settings/updates-channel"
     const val GUILD_SETTINGS_CONNECTIONS = "/v2/guilds/{guildId}/settings/connections"
     const val GUILD_SETTINGS_CONNECTION = "/v2/guilds/{guildId}/settings/connections/{connectionId}"
     const val GUILD_SETTINGS_TEMPLATES = "/v2/guilds/{guildId}/settings/templates"
@@ -34,6 +35,8 @@ object CentralApiEndpoint {
     const val CHARGEBEE_SUBSCRIPTIONS = "/v2/chargebee/subscriptions"
     const val CHARGEBEE_EVENT_SUBSCRIPTION_CREATE = "/v2/chargebee/events/subscription/create"
     const val CHARGEBEE_EVENT_SUBSCRIPTION_CANCEL = "/v2/chargebee/events/subscription/cancel"
+
+    const val VOTE_TRACKER_EVENTS = "/v2/vote-tracker/events"
 
     const val DISCORD_CHANNEL_RELATED_PERMISSIONS = "/v2/discord/constants/permissions"
 

@@ -1,15 +1,18 @@
 package space.astro.shared.core.clients
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.body
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AException
+import space.astro.shared.core.exceptions.ATooManyRequestsException
 import space.astro.shared.core.exceptions.AUnknownException
 import space.astro.shared.core.models.discord.DiscordApplicationDto
 import space.astro.shared.core.models.discord.DiscordEntitlementDto
@@ -21,6 +24,7 @@ import space.astro.shared.core.properties.DiscordOAuthProperties
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.json.JsonMapper
 import java.util.Optional
+import kotlin.math.ceil
 
 private val log = KotlinLogging.logger { }
 
@@ -149,6 +153,7 @@ class DiscordApiClient(
      *
      * @param accessToken
      * @return the list of guilds of the user
+     * @throws ATooManyRequestsException if Discord rate limits the request, carrying the seconds to wait before retrying
      * @throws AException
      */
     fun getGuilds(accessToken: String): List<DiscordPartialGuildDto> {
@@ -163,6 +168,19 @@ class DiscordApiClient(
                     log.error { "Discord returned an empty guilds response" }
                     throw AUnknownException("Failed to fetch Discord user guilds")
                 }
+        } catch (e: HttpClientErrorException.TooManyRequests) {
+            val retryAfterSeconds =
+                runCatching { discordJsonMapper.readTree(e.responseBodyAsString).get("retry_after").asDouble() }
+                    .getOrNull()
+                    ?: e.responseHeaders?.getFirst(HttpHeaders.RETRY_AFTER)?.toDoubleOrNull()
+                    ?: 1.0
+            val retryAfterWholeSeconds = ceil(retryAfterSeconds).toLong()
+
+            throw ATooManyRequestsException(
+                "Discord is rate limiting this request, try again in $retryAfterWholeSeconds seconds",
+                retryAfterWholeSeconds,
+                e,
+            )
         } catch (e: RestClientResponseException) {
             throw AUnknownException("Failed to fetch Discord user guilds", e)
         }

@@ -133,6 +133,9 @@ discord:
   developer:
     guild-id: ${BOT__DISCORD_DEVELOPER_GUILD_ID:}
     user-id: ${BOT__DISCORD_DEVELOPER_USER_ID:}
+  updates-channel:
+    announcements-channel-id: ${BOT__DISCORD_UPDATES_CHANNEL_ANNOUNCEMENTS_ID:}
+    status-channel-id: ${BOT__DISCORD_UPDATES_CHANNEL_STATUS_ID:}
 
 premium:
   server-sku-id: ${PREMIUM_SERVER_SKU_ID:}
@@ -149,8 +152,6 @@ support:
 
 vote-tracker:
   guard-enabled: ${VOTE_TRACKER_GUARD_ENABLED}
-  token: ${VOTE_TRACKER_TOKEN}
-  integration-id: ${VOTE_TRACKER_INTEGRATION_ID}
 
 topgg:
   enabled: ${TOPGG_ENABLED:false}

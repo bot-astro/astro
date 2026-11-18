@@ -56,3 +56,14 @@ class APremiumRequiredException(
         message = message,
         cause = cause,
     )
+
+class ATooManyRequestsException(
+    message: String,
+    val retryAfterSeconds: Long,
+    cause: Throwable? = null,
+) : AException(
+        httpStatusCode = 429,
+        errorCode = AErrorCode.TOO_MANY_REQUESTS,
+        message = message,
+        cause = cause,
+    )

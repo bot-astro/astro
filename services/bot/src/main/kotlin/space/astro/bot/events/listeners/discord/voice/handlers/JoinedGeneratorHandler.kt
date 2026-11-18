@@ -138,7 +138,12 @@ class JoinedGeneratorHandler(
         // //////////////
         // / COOLDOWN ///
         // //////////////
-        if (interactionCooldownService.acquire(data.userId, GENERATOR_COOLDOWN_KEY, GENERATOR_COOLDOWN) > Duration.ZERO) {
+        if (interactionCooldownService.acquire(
+                data.userId,
+                GENERATOR_COOLDOWN_KEY,
+                GENERATOR_COOLDOWN,
+            ) > Duration.ZERO
+        ) {
             return false
         }
 
@@ -174,14 +179,23 @@ class JoinedGeneratorHandler(
                 ?: 64000
         // DEPRECATED: 0 is a legacy value for unset, same as null
         val userLimit = (settings.userLimit ?: 0).coerceIn(0, VoiceChannel.MAX_USERLIMIT)
-        val name = VariablesManager.computeVcNameForCreation(nameTemplate, locale, owner, bitrate, userLimit, incrementalPosition)
+        val name =
+            VariablesManager.computeVcNameForCreation(
+                nameTemplate,
+                locale,
+                owner,
+                bitrate,
+                userLimit,
+                incrementalPosition,
+            )
 
         val temporaryVCBuilder =
             generatorVC
                 .createCopy()
                 .setName(name)
-                // createCopy inherits the generator's category, so a null category must be set explicitly
-                .setParent(category)
+                // for backward compatibility, we leave the generator category applied
+                // if the category setting is null
+                .apply { category?.also { setParent(it) } }
                 .setUserlimit(userLimit)
                 .setBitrate(bitrate)
                 .setPosition(rawPosition)
@@ -194,6 +208,7 @@ class JoinedGeneratorHandler(
                     temporaryVCBuilder.clearPermissionOverrides()
                     emptyList()
                 }
+
                 GeneratorSettings.PermissionsInherited.GENERATOR -> generatorVC.permissionOverrides
                 GeneratorSettings.PermissionsInherited.CATEGORY -> {
                     if (category != null) temporaryVCBuilder.syncPermissionOverrides()
@@ -228,7 +243,13 @@ class JoinedGeneratorHandler(
         // immune role permissions (moderator role)
         settings.permissionsImmuneRole
             ?.let { guild.getRoleById(it) }
-            ?.also { temporaryVCBuilder.addRolePermissionOverride(it.idLong, PermissionSets.immuneRoleVCPermissions, 0L) }
+            ?.also {
+                temporaryVCBuilder.addRolePermissionOverride(
+                    it.idLong,
+                    PermissionSets.immuneRoleVCPermissions,
+                    0L,
+                )
+            }
 
         // owner permissions
         temporaryVCBuilder.modifyPermissionOverride(
@@ -248,6 +269,16 @@ class JoinedGeneratorHandler(
             } catch (e: Exception) {
                 throw unknownError(guild.id, "creating a temporary VC", e)
             }
+
+        // the creation can take a while (e.g. guild rate limits) and the owner may have left the generator in the meantime
+        if (owner.voiceState?.inAudioChannel() != true) {
+            temporaryVC
+                .delete()
+                .reason(L.t(locale, "reason.vc.deleted_left_too_quickly"))
+                .queueAfter(1, TimeUnit.SECONDS)
+
+            return false
+        }
 
         try {
             guild.moveVoiceMember(owner, temporaryVC).await()
@@ -271,8 +302,14 @@ class JoinedGeneratorHandler(
                     when (e) {
                         is ConfigurationException ->
                             configurationErrorEventPublisher.publishConfigurationErrorEvent(e.configurationErrorEntity)
+
                         is InsufficientPermissionException ->
-                            configurationErrorEventPublisher.publishConfigurationErrorEvent(e.toConfigurationErrorDto(guild.id))
+                            configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                                e.toConfigurationErrorDto(
+                                    guild.id,
+                                ),
+                            )
+
                         else -> log.error(e) { "Failed creating the private chat of temporary VC ${temporaryVC.id} in guild ${guild.id}" }
                     }
                 }
@@ -291,8 +328,14 @@ class JoinedGeneratorHandler(
                     when (e) {
                         is ConfigurationException ->
                             configurationErrorEventPublisher.publishConfigurationErrorEvent(e.configurationErrorEntity)
+
                         is InsufficientPermissionException ->
-                            configurationErrorEventPublisher.publishConfigurationErrorEvent(e.toConfigurationErrorDto(guild.id))
+                            configurationErrorEventPublisher.publishConfigurationErrorEvent(
+                                e.toConfigurationErrorDto(
+                                    guild.id,
+                                ),
+                            )
+
                         else -> log.error(e) { "Failed creating the waiting room of temporary VC ${temporaryVC.id} in guild ${guild.id}" }
                     }
                 }

@@ -81,7 +81,7 @@ scalar:
   operation-sorter: method
 
 sentry:
-  dsn: https://16d5963ef1bc772e7881083afe2807d8@o4506708022263808.ingest.us.sentry.io/4506708023967744
+  dsn: https://fd05f462a5f47e39c3cd927fc63a3021@o4506708022263808.ingest.us.sentry.io/4506708030128128
   environment: ${SB__SENTRY_ENVIRONMENT:local}
   logs:
     enabled: true

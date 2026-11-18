@@ -7,5 +7,4 @@ space.astro.shared.core.autoconfigure.ASupportBotApiClient
 space.astro.shared.core.autoconfigure.ADiscordApiClient
 space.astro.shared.core.autoconfigure.AJsonMapperBuilder
 space.astro.shared.core.autoconfigure.ARedisRepositoriesAutoConfiguration
-space.astro.shared.core.autoconfigure.AVoteTrackerClient
 space.astro.shared.core.autoconfigure.ATopGGClient

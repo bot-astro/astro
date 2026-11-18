@@ -1,6 +1,7 @@
 package space.astro.bot.commands.setup
 
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.channel.attribute.ICategorizableChannel
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import org.springframework.stereotype.Component
 import space.astro.bot.interactions.Ack
@@ -29,5 +30,5 @@ class CreateGeneratorButton(
     override suspend fun handle(
         event: ButtonInteractionEvent,
         ctx: InteractionContext,
-    ) = setupManager.createGenerator(ctx)
+    ) = setupManager.createGenerator(ctx, (event.channel as? ICategorizableChannel)?.parentCategory)
 }

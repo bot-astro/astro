@@ -16,6 +16,8 @@ import space.astro.bot.interactions.context.InteractionContext
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Messages
+import space.astro.shared.core.models.database.ConfigurationErrorCode
+import space.astro.shared.core.models.database.ConfigurationErrorEntity
 
 /**
  * Sends in the current channel messages that Astro normally sends on its own and are hard to trigger on demand,
@@ -30,6 +32,10 @@ class DevMessageCommand : SlashHandler<InteractionContext> {
         val label: String,
     ) {
         WELCOME("Welcome (guild join)"),
+        INVITER_ONBOARDING("Inviter onboarding (DM)"),
+        UPDATES_CHANNEL_READY("Updates channel: first message"),
+        ALERT_CONFIGURATION_ERROR("Alert: configuration error"),
+        ALERT_HELD_BACK("Alert: held back"),
         VC_LOG_JOINED("VC log: member joined"),
         VC_LOG_LEFT("VC log: member left"),
     }
@@ -56,6 +62,19 @@ class DevMessageCommand : SlashHandler<InteractionContext> {
         val data =
             when (message) {
                 DevMessage.WELCOME -> Messages.welcome(guild, ctx.locale)
+                DevMessage.INVITER_ONBOARDING -> Messages.inviterOnboarding(guild, ctx.locale)
+                DevMessage.UPDATES_CHANNEL_READY -> Messages.updatesChannelReady(guild, ctx.locale)
+                DevMessage.ALERT_CONFIGURATION_ERROR ->
+                    Messages.configurationErrorAlert(
+                        guild.id,
+                        ctx.locale,
+                        ConfigurationErrorEntity(
+                            guildId = guild.id,
+                            code = ConfigurationErrorCode.GENERATOR_CATEGORY_FULL,
+                            args = mapOf("generator" to "Sample generator"),
+                        ),
+                    )
+                DevMessage.ALERT_HELD_BACK -> Messages.alertsHeldBack(guild.id, ctx.locale)
                 DevMessage.VC_LOG_JOINED -> Messages.vcLog(guild, ctx.locale, "vc.log.joined", "user" to mention)
                 DevMessage.VC_LOG_LEFT -> Messages.vcLog(guild, ctx.locale, "vc.log.left", "user" to mention)
             }
