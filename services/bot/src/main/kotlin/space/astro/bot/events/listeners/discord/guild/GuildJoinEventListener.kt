@@ -41,6 +41,13 @@ class GuildJoinEventListener(
         val MAX_ENTRY_AGE: Duration = Duration.ofMinutes(2)
         const val AUDIT_LOG_ENTRIES_LIMIT = 10
 
+        // bots that do the same job as Astro, id to name shown in the onboarding
+        val COMPETITORS =
+            mapOf(
+                472911936951156740L to "VoiceMaster",
+                762217899355013120L to "TempVoice",
+            )
+
         val IGNORED_ERROR_RESPONSES =
             setOf(
                 ErrorResponse.CANNOT_SEND_TO_USER,
@@ -107,8 +114,27 @@ class GuildJoinEventListener(
         }
 
         val locale = L.closestSupportedLocale(guild.locale.locale)
+        val competitor = findCompetitor(guild)
         val privateChannel = inviter.openPrivateChannel().await()
-        privateChannel.sendMessage(Messages.inviterOnboarding(guild, locale)).await()
+        privateChannel.sendMessage(Messages.inviterOnboarding(guild, locale, competitor)).await()
+    }
+
+    /**
+     * Name of the first competitor bot that is a member of [guild], null if none is
+     */
+    private suspend fun findCompetitor(guild: Guild): String? {
+        for ((botId, name) in COMPETITORS) {
+            try {
+                guild.retrieveMemberById(botId).await()
+                return name
+            } catch (e: ErrorResponseException) {
+                if (e.errorResponse != ErrorResponse.UNKNOWN_MEMBER) {
+                    log.debug { "Competitor check failed in guild ${guild.id}: ${e.meaning}" }
+                }
+            }
+        }
+
+        return null
     }
 
     /**
