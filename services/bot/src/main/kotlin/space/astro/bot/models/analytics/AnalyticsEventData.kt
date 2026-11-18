@@ -10,6 +10,7 @@ sealed interface AnalyticsEventData
 data class GuildEventData(
     val guildId: Long,
     val usersCount: Int,
+    val locale: String?,
     val action: GuildEventAction,
     val timestamp: String,
 ) : AnalyticsEventData {

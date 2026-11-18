@@ -67,6 +67,7 @@ class GuildJoinEventListener(
             GuildEventData(
                 guildId = guild.idLong,
                 usersCount = guild.memberCount,
+                locale = guild.locale.locale,
                 action = GuildEventData.GuildEventAction.JOINED,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString(),
             ),

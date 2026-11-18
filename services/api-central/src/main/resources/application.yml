@@ -159,6 +159,10 @@ r2:
   bucket-name: ${R2_BUCKET_NAME}
   public-url: ${R2_PUBLIC_URL}
 
+bigquery:
+  enabled: ${CA__BIGQUERY_ENABLED:false}
+  dataset-name: ${CA__BIGQUERY_DATASET_NAME:astro_local}
+
 ### SERVICE SPECIFIC ###
 
 central:

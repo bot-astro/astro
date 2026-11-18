@@ -20,6 +20,7 @@ class GuildLeaveEventListener(
             GuildEventData(
                 guildId = guild.idLong,
                 usersCount = guild.memberCount,
+                locale = guild.locale.locale,
                 action = GuildEventData.GuildEventAction.KICKED,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString(),
             ),

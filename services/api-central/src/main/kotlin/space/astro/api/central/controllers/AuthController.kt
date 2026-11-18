@@ -17,6 +17,7 @@ import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.responses.AuthUserResponse
 import space.astro.api.central.services.AuthSessionService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
+import space.astro.api.central.services.InstallAnalyticsService
 import space.astro.api.central.services.OAuthStateService
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.exceptions.ABadRequestException
@@ -29,6 +30,9 @@ import java.net.URI
 
 private val log = KotlinLogging.logger { }
 
+private const val UNKNOWN_INSTALL_SOURCE = "unknown"
+private val INSTALL_SOURCES = setOf("topgg", "dbl", "interface", "help", "web-guide", "youtube", "reddit", "partner")
+
 @RestController
 @RequestMapping
 @Tag(name = "Authentication")
@@ -40,6 +44,7 @@ class AuthController(
     private val oAuthStateService: OAuthStateService,
     private val frontendProperties: FrontendProperties,
     private val userRepository: UserRepository,
+    private val installAnalyticsService: InstallAnalyticsService,
 ) {
     @Operation(
         summary = "Login via Discord",
@@ -49,7 +54,9 @@ class AuthController(
                 "a redirect to the provided `redirect_path` (if it contains `{guild_id}` " +
                 "that will be replaced with the id of the guild the bot was added to.\n" +
                 "Instead on a query parameter called `error_code` set in the baseUrl of the frontend on errors " +
-                "(errors can be: discord_oauth_error, invalid_oauth_state, internal).",
+                "(errors can be: discord_oauth_error, invalid_oauth_state, internal).\n" +
+                "`source` tells where an invite came from (topgg, dbl, interface, help, web-guide, youtube, reddit, partner), " +
+                "any other value is recorded as unknown.",
     )
     @ApiResponses(
         ApiResponse(
@@ -62,8 +69,9 @@ class AuthController(
         @RequestParam("redirect_path") redirectPath: String,
         @RequestParam("invite", defaultValue = "false") invite: Boolean,
         @RequestParam("invite_guild_id", required = false) inviteGuildId: String? = null,
+        @RequestParam("source", required = false) source: String? = null,
     ): ResponseEntity<Void> {
-        val state = oAuthStateService.create(redirectPath)
+        val state = oAuthStateService.create(redirectPath, source?.takeIf { it in INSTALL_SOURCES } ?: UNKNOWN_INSTALL_SOURCE)
 
         val scopes =
             if (invite || inviteGuildId != null) {
@@ -117,12 +125,14 @@ class AuthController(
                 .build()
         }
 
-        var redirectPath =
+        val oAuthState =
             oAuthStateService.consume(state)
                 ?: return ResponseEntity
                     .status(HttpStatus.FOUND)
                     .location(URI("${frontendProperties.baseUrl}?error_code=invalid_oauth_state"))
                     .build()
+
+        var redirectPath = oAuthState.redirectPath
 
         try {
             val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
@@ -142,6 +152,7 @@ class AuthController(
             val guildId = discordToken.guild?.id
             if (guildId != null) {
                 redirectPath = redirectPath.replace("{guild_id}", guildId)
+                installAnalyticsService.recordInstall(oAuthState.source, guildId, discordUser.id)
             }
 
             return ResponseEntity
