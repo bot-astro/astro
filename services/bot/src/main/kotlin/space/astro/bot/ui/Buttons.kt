@@ -24,11 +24,6 @@ object Buttons {
 
     fun ultimate(locale: Locale) = Button.link(Links.APP_DIRECTORY_ULTIMATE, L.t(locale, "button.ultimate")).withEmoji(Emojis.premium)
 
-    fun addToServer(
-        locale: Locale,
-        source: String,
-    ) = Button.link(Links.invite(source), L.t(locale, "button.add_to_server")).withEmoji(Emojis.invite)
-
     fun github(locale: Locale) = Button.link(Links.GITHUB, L.t(locale, "button.github")).withEmoji(Emojis.developer)
 
     fun guildErrors(

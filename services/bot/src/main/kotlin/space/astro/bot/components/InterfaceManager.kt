@@ -68,37 +68,43 @@ class InterfaceManager {
             defaultButton("button/vc/transfer", Emojis.transferOwner, 3, 3),
         )
 
-    private fun defaultEmbedStyle(locale: Locale) =
-        InterfaceData.EmbedStyle(
-            url = Links.WEBSITE,
-            title = null,
-            description = L.t(locale, "interface.description"),
-            timestamp = null,
-            color = Containers.purple.rgb,
-            thumbnail = null,
-            image = Links.INTERFACE_BUTTONS_IMAGE,
-            authorName = L.t(locale, "interface.author"),
-            authorUrl = Links.WEBSITE,
-            authorIconUrl = Links.LOGO,
-            footer = L.t(locale, "interface.footer"),
-            footerIconUrl = null,
-        )
+    private fun defaultEmbedStyle(
+        locale: Locale,
+        showInvite: Boolean,
+    ) = InterfaceData.EmbedStyle(
+        url = Links.WEBSITE,
+        title = null,
+        description =
+            L.t(locale, "interface.description") +
+                if (showInvite) "\n\n" + L.t(locale, "interface.invite", "link" to Links.invite("interface")) else "",
+        timestamp = null,
+        color = Containers.purple.rgb,
+        thumbnail = null,
+        image = Links.INTERFACE_BUTTONS_IMAGE,
+        authorName = L.t(locale, "interface.author"),
+        authorUrl = Links.WEBSITE,
+        authorIconUrl = Links.LOGO,
+        footer = L.t(locale, "interface.footer"),
+        footerIconUrl = null,
+    )
 
     suspend fun createInterface(
         guild: Guild,
         channelId: String,
         locale: Locale,
+        showInvite: Boolean,
     ): InterfaceData {
         val channel =
             guild.getTextChannelById(channelId)
                 ?: throw ANotFoundException("Text channel with id $channelId not found")
 
-        return sendInterface(channel, locale)
+        return sendInterface(channel, locale, showInvite)
     }
 
     private suspend fun sendInterface(
         channel: TextChannel,
         locale: Locale,
+        showInvite: Boolean,
     ): InterfaceData {
         val interfaceData =
             InterfaceData(
@@ -106,7 +112,7 @@ class InterfaceManager {
                 // replaced with the real message id once the message is sent
                 messageID = "0",
                 buttons = defaultButtons(),
-                embedStyle = defaultEmbedStyle(locale),
+                embedStyle = defaultEmbedStyle(locale, showInvite),
             )
 
         val message = channel.sendMessage(computeMessage(interfaceData)).await()

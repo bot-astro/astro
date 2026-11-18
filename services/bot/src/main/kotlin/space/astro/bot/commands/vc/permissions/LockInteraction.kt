@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Component
-import space.astro.bot.components.InstallPromptService
 import space.astro.bot.components.managers.vc.VCPermissionManager
 import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.CommandLocalization
@@ -26,7 +25,6 @@ import space.astro.shared.core.models.database.TemporaryVCEntity.TemporaryVCStat
 class LockInteraction(
     contextResolverFactory: VcContextResolverFactory,
     private val vcPermissionManager: VCPermissionManager,
-    private val installPromptService: InstallPromptService,
 ) : SlashHandler<VcInteractionContext>,
     ButtonHandler<VcInteractionContext> {
     companion object {
@@ -57,6 +55,5 @@ class LockInteraction(
         ctx.vcOperationCTX.queueUpdatedManagers()
 
         ctx.responder.reply(Containers.default(ctx.t("vc.lock.done", "emoji" to Emojis.lock.formatted)))
-        installPromptService.promptIfEligible(ctx)
     }
 }

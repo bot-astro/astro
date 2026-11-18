@@ -92,7 +92,13 @@ class SetupManager(
                 .reason(reason)
                 .await()
 
-        val interfaceData = interfaceManager.createInterface(guild, interfaceChannel.id, locale)
+        val interfaceData =
+            interfaceManager.createInterface(
+                guild,
+                interfaceChannel.id,
+                locale,
+                !premiumManager.canEditInterfaceMessage(guildSettings),
+            )
 
         val generatorChannel =
             guild
@@ -107,6 +113,9 @@ class SetupManager(
                 category = category.id,
                 chatCategory = category.id,
                 waitingCategory = category.id,
+                // index the new interface will have once the caller adds it to the guild settings
+                chatInterface =
+                    guildSettings.interfaces.size.takeIf { premiumManager.canSendMessageInVCChatOnVCGeneration(guildSettings) },
                 defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
                 defaultChatName =
                     L.t(
@@ -241,6 +250,10 @@ class SetupManager(
                     category = category?.id,
                     chatCategory = category?.id,
                     waitingCategory = category?.id,
+                    chatInterface =
+                        0.takeIf {
+                            guildSettings.interfaces.isNotEmpty() && premiumManager.canSendMessageInVCChatOnVCGeneration(guildSettings)
+                        },
                     defaultName =
                         L.t(
                             guildSettings.javaLocale,
@@ -304,7 +317,14 @@ class SetupManager(
                     .reason(ctx.t("setup.reason"))
                     .await()
 
-            guildSettings.interfaces.add(interfaceManager.createInterface(guild, interfaceChannel.id, ctx.locale))
+            guildSettings.interfaces.add(
+                interfaceManager.createInterface(
+                    guild,
+                    interfaceChannel.id,
+                    ctx.locale,
+                    !premiumManager.canEditInterfaceMessage(guildSettings),
+                ),
+            )
 
             withContext(Dispatchers.IO) { guildSettingsRepository.save(guildSettings) }
 

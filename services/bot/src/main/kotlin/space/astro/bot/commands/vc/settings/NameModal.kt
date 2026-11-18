@@ -2,7 +2,6 @@ package space.astro.bot.commands.vc.settings
 
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
-import space.astro.bot.components.InstallPromptService
 import space.astro.bot.components.managers.vc.VCNameManager
 import space.astro.bot.interactions.Ack
 import space.astro.bot.interactions.InteractionSettings
@@ -17,7 +16,6 @@ import space.astro.bot.ui.Emojis
 class NameModal(
     contextResolverFactory: VcContextResolverFactory,
     private val vcNameManager: VCNameManager,
-    private val installPromptService: InstallPromptService,
 ) : ModalHandler<VcInteractionContext> {
     companion object {
         const val MODAL_ID = "modal/vc/name"
@@ -47,6 +45,5 @@ class NameModal(
         ctx.vcOperationCTX.queueUpdatedManagers()
 
         ctx.responder.reply(Containers.default(ctx.t("vc.name.set", "emoji" to Emojis.name.formatted, "name" to name)))
-        installPromptService.promptIfEligible(ctx)
     }
 }
