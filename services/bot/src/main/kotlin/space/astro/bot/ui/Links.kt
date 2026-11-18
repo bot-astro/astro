@@ -8,7 +8,6 @@ import space.astro.shared.core.models.database.ConfigurationErrorEntity
 object Links {
     const val WEBSITE = "https://astro-bot.space"
     const val LOGO = "https://cdn.discordapp.com/avatars/715621848489918495/dc0affdf8de07a3d88c4d192efad649f.png?size=2048"
-    const val INTERFACE_BUTTONS_IMAGE = "$WEBSITE/new-interface-image.png"
     const val SUPPORT_SERVER = "https://discord.gg/yeXwVhg"
     const val DASHBOARD = "https://astro-bot.space/guilds"
     const val GUIDES = "https://astro-bot.space/guides"

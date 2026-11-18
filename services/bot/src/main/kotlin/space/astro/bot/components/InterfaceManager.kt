@@ -35,37 +35,38 @@ class InterfaceManager {
     private val maxButtonsPerRow = 5
 
     private fun defaultButton(
+        locale: Locale,
         id: String,
         emoji: CustomEmoji,
         row: Int,
         column: Int,
     ) = InterfaceButton(
         id = id,
-        name = null,
+        name = L.t(locale, "interface.button.${id.substringAfterLast('/')}"),
         emoji = emoji.asMention,
         buttonStyleKey = ButtonStyle.SECONDARY.key,
         buttonDisabled = false,
         position = Pair(row, column),
     )
 
-    private fun defaultButtons() =
+    private fun defaultButtons(locale: Locale) =
         mutableListOf(
-            defaultButton("button/vc/lock", Emojis.lock, 0, 0),
-            defaultButton("button/vc/unlock", Emojis.unlock, 0, 1),
-            defaultButton("button/vc/hide", Emojis.hide, 0, 2),
-            defaultButton("button/vc/unhide", Emojis.unhide, 0, 3),
-            defaultButton("button/vc/limit", Emojis.limit, 1, 0),
-            defaultButton("button/vc/invite", Emojis.invite, 1, 1),
-            defaultButton("button/vc/ban", Emojis.ban, 1, 2),
-            defaultButton("button/vc/permit", Emojis.permit, 1, 3),
-            defaultButton("button/vc/name", Emojis.name, 2, 0),
-            defaultButton("button/vc/bitrate", Emojis.bitrate, 2, 1),
-            defaultButton("button/vc/region", Emojis.region, 2, 2),
-            defaultButton("button/vc/template", Emojis.template, 2, 3),
-            defaultButton("button/vc/chat", Emojis.chat, 3, 0),
-            defaultButton("button/vc/waiting-room", Emojis.waitingRoom, 3, 1),
-            defaultButton("button/vc/claim", Emojis.owner, 3, 2),
-            defaultButton("button/vc/transfer", Emojis.transferOwner, 3, 3),
+            defaultButton(locale, "button/vc/lock", Emojis.lock, 0, 0),
+            defaultButton(locale, "button/vc/unlock", Emojis.unlock, 0, 1),
+            defaultButton(locale, "button/vc/hide", Emojis.hide, 0, 2),
+            defaultButton(locale, "button/vc/unhide", Emojis.unhide, 0, 3),
+            defaultButton(locale, "button/vc/limit", Emojis.limit, 1, 0),
+            defaultButton(locale, "button/vc/invite", Emojis.invite, 1, 1),
+            defaultButton(locale, "button/vc/ban", Emojis.ban, 1, 2),
+            defaultButton(locale, "button/vc/permit", Emojis.permit, 1, 3),
+            defaultButton(locale, "button/vc/name", Emojis.name, 2, 0),
+            defaultButton(locale, "button/vc/bitrate", Emojis.bitrate, 2, 1),
+            defaultButton(locale, "button/vc/region", Emojis.region, 2, 2),
+            defaultButton(locale, "button/vc/template", Emojis.template, 2, 3),
+            defaultButton(locale, "button/vc/chat", Emojis.chat, 3, 0),
+            defaultButton(locale, "button/vc/waiting-room", Emojis.waitingRoom, 3, 1),
+            defaultButton(locale, "button/vc/claim", Emojis.owner, 3, 2),
+            defaultButton(locale, "button/vc/transfer", Emojis.transferOwner, 3, 3),
         )
 
     private fun defaultEmbedStyle(
@@ -78,7 +79,7 @@ class InterfaceManager {
         timestamp = null,
         color = Containers.purple.rgb,
         thumbnail = null,
-        image = Links.INTERFACE_BUTTONS_IMAGE,
+        image = null,
         authorName = L.t(locale, "interface.author"),
         authorUrl = if (showInvite) Links.invite("interface") else Links.WEBSITE,
         authorIconUrl = Links.LOGO,
@@ -109,7 +110,7 @@ class InterfaceManager {
                 channelID = channel.id,
                 // replaced with the real message id once the message is sent
                 messageID = "0",
-                buttons = defaultButtons(),
+                buttons = defaultButtons(locale),
                 embedStyle = defaultEmbedStyle(locale, showInvite),
             )
 
