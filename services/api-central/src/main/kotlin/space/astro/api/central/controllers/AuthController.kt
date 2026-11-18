@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import net.dv8tion.jda.api.Permission
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -24,6 +25,7 @@ import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.models.database.UserEntity
 import space.astro.shared.core.properties.DiscordOAuthProperties
 import space.astro.shared.core.properties.FrontendProperties
+import space.astro.shared.core.properties.api_central.CentralApiProperties
 import space.astro.shared.core.repositories.mongo.UserRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 import java.net.URI
@@ -31,6 +33,31 @@ import java.net.URI
 private val log = KotlinLogging.logger { }
 
 private const val UNKNOWN_INSTALL_SOURCE = "unknown"
+private const val ADMIN_PERMISSIONS = "8"
+
+// what Astro uses: voice channel management (also needed to grant them in channel overwrites), moving members,
+// voice roles, the updates channel webhook, the inviter lookup in the audit log, messages in interfaces and VC chats
+private val MINIMAL_PERMISSIONS =
+    Permission
+        .getRaw(
+            Permission.VIEW_CHANNEL,
+            Permission.MANAGE_CHANNEL,
+            Permission.MANAGE_ROLES,
+            Permission.MANAGE_WEBHOOKS,
+            Permission.VIEW_AUDIT_LOGS,
+            Permission.CREATE_INSTANT_INVITE,
+            Permission.VOICE_CONNECT,
+            Permission.VOICE_SPEAK,
+            Permission.VOICE_USE_VAD,
+            Permission.VOICE_MOVE_OTHERS,
+            Permission.VOICE_SET_STATUS,
+            Permission.MESSAGE_SEND,
+            Permission.MESSAGE_EMBED_LINKS,
+            Permission.MESSAGE_EXT_EMOJI,
+            Permission.MESSAGE_HISTORY,
+            Permission.MESSAGE_ATTACH_FILES,
+        ).toString()
+
 private val INSTALL_SOURCES = setOf("topgg", "dbl", "interface", "help", "web-guide", "youtube", "reddit", "partner")
 
 @RestController
@@ -45,6 +72,7 @@ class AuthController(
     private val frontendProperties: FrontendProperties,
     private val userRepository: UserRepository,
     private val installAnalyticsService: InstallAnalyticsService,
+    private val centralApiProperties: CentralApiProperties,
 ) {
     @Operation(
         summary = "Login via Discord",
@@ -91,7 +119,10 @@ class AuthController(
                 .queryParam("prompt", "none")
                 .also {
                     if (invite || inviteGuildId != null) {
-                        it.queryParam("permissions", "8")
+                        it.queryParam(
+                            "permissions",
+                            if (centralApiProperties.minimalInvitePermissions) MINIMAL_PERMISSIONS else ADMIN_PERMISSIONS,
+                        )
                     }
                     if (inviteGuildId != null) {
                         it.queryParam("disable_guild_select", "true")
