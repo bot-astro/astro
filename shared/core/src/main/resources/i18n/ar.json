@@ -195,6 +195,7 @@
   "interface.footer": "استخدم الأزرار أدناه لإدارة قناتك الصوتية",
   "reason.roles.features": "تم تطبيق الرتب اللازمة بناءً على إعدادات المولّد وميزات الاتصال",
   "reason.dashboard.profile_update": "تم بدء تحديث الملف الشخصي من لوحة التحكم",
+  "reason.dashboard.setup": "تم بدء الإعداد من لوحة التحكم",
   "reason.dashboard.channel_create": "تم بدء إنشاء القناة من لوحة التحكم",
   "reason.dashboard.updates_channel_create": "تم تشغيل إنشاء قناة التحديثات من لوحة التحكم",
   "reason.dashboard.channel_delete": "تم بدء حذف القناة من لوحة التحكم",

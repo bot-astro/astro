@@ -195,6 +195,7 @@
   "interface.footer": "Usa i pulsanti qui sotto per gestire il tuo canale vocale",
   "reason.roles.features": "Applicati i ruoli necessari in base alle impostazioni del generatore e delle funzionalità di connessione",
   "reason.dashboard.profile_update": "Aggiornamento del profilo avviato dalla dashboard",
+  "reason.dashboard.setup": "Configurazione di Astro avviata dalla dashboard",
   "reason.dashboard.channel_create": "Creazione del canale avviata dalla dashboard",
   "reason.dashboard.updates_channel_create": "Creazione del canale aggiornamenti avviata dalla dashboard",
   "reason.dashboard.channel_delete": "Eliminazione del canale avviata dalla dashboard",

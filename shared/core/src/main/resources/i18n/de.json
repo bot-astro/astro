@@ -195,6 +195,7 @@
   "interface.footer": "Verwende die Buttons unten, um deinen Sprachkanal zu verwalten",
   "reason.roles.features": "Die erforderlichen Rollen wurden anhand der Einstellungen für Generator und Verbindungsfunktionen angewendet",
   "reason.dashboard.profile_update": "Profilaktualisierung über das Dashboard ausgelöst",
+  "reason.dashboard.setup": "Astro-Einrichtung über das Dashboard ausgelöst",
   "reason.dashboard.channel_create": "Kanalerstellung über das Dashboard ausgelöst",
   "reason.dashboard.updates_channel_create": "Erstellung des Update-Kanals über das Dashboard ausgelöst",
   "reason.dashboard.channel_delete": "Kanallöschung über das Dashboard ausgelöst",
