@@ -83,6 +83,8 @@ class GuiltInterfaceController(
             throw APremiumRequiredException("Upgrade the server to edit the order of the interface buttons")
         }
 
+        updatedInterfaceData.componentsV2 = currentInterface.componentsV2
+
         botApiClient.updateInterface(guildId, updatedInterfaceData)
 
         guildSettings.interfaces[interfaceIndex] = updatedInterfaceData

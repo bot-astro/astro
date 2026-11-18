@@ -13,8 +13,8 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import java.awt.Color
 
 /**
- * Components v2 building blocks, every message of the bot (except the voice channel interfaces, which keep
- * using embeds) should be built from these so the look can be changed from a single place
+ * Components v2 building blocks, every message of the bot (except the interfaces created before they moved to
+ * components v2, which stay embeds) should be built from these so the look can be changed from a single place
  */
 object Containers {
     val purple: Color = Color.decode("#B125EA")

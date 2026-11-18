@@ -6,6 +6,11 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.container.ContainerChildComponent
+import net.dv8tion.jda.api.components.mediagallery.MediaGallery
+import net.dv8tion.jda.api.components.mediagallery.MediaGalleryItem
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -17,6 +22,7 @@ import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder
+import net.dv8tion.jda.api.utils.messages.MessageEditData
 import org.springframework.stereotype.Component
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
@@ -42,12 +48,18 @@ class InterfaceManager {
         column: Int,
     ) = InterfaceButton(
         id = id,
-        name = L.t(locale, "interface.button.${id.substringAfterLast('/')}"),
+        name = L.t(locale, "interface.button.${id.substringAfterLast('/')}").padCenter(),
         emoji = emoji.asMention,
         buttonStyleKey = ButtonStyle.SECONDARY.key,
         buttonDisabled = false,
         position = Pair(row, column),
     )
+
+    // buttons are as wide as their label, the invisible padding makes them all look the same size
+    private fun String.padCenter(width: Int = 9): String {
+        val pad = (width - length).coerceAtLeast(0)
+        return "\u2800".repeat(pad / 2) + this + "\u2800".repeat(pad - pad / 2)
+    }
 
     private fun defaultButtons(locale: Locale) =
         mutableListOf(
@@ -112,6 +124,7 @@ class InterfaceManager {
                 messageID = "0",
                 buttons = defaultButtons(locale),
                 embedStyle = defaultEmbedStyle(locale, showInvite),
+                componentsV2 = true,
             )
 
         val message = channel.sendMessage(computeMessage(interfaceData)).await()
@@ -127,13 +140,8 @@ class InterfaceManager {
         val message = retrieveMessage(guild, interfaceData)
 
         message
-            .editMessage(
-                MessageEditBuilder()
-                    .useComponentsV2(false)
-                    .setEmbeds(computeEmbed(interfaceData))
-                    .setComponents(computeComponents(interfaceData))
-                    .build(),
-            ).await()
+            .editMessage(computeEdit(interfaceData))
+            .await()
     }
 
     suspend fun moveInterface(
@@ -210,11 +218,48 @@ class InterfaceManager {
     }
 
     fun computeMessage(interfaceData: InterfaceData): MessageCreateData =
-        MessageCreateBuilder()
-            .useComponentsV2(false)
-            .setEmbeds(computeEmbed(interfaceData))
-            .setComponents(computeComponents(interfaceData))
-            .build()
+        if (interfaceData.componentsV2) {
+            MessageCreateBuilder()
+                .useComponentsV2()
+                .setComponents(computeContainer(interfaceData))
+                .build()
+        } else {
+            MessageCreateBuilder()
+                .useComponentsV2(false)
+                .setEmbeds(computeEmbed(interfaceData))
+                .setComponents(computeComponents(interfaceData))
+                .build()
+        }
+
+    private fun computeEdit(interfaceData: InterfaceData): MessageEditData =
+        if (interfaceData.componentsV2) {
+            MessageEditBuilder()
+                .useComponentsV2()
+                .setComponents(computeContainer(interfaceData))
+                .build()
+        } else {
+            MessageEditBuilder()
+                .useComponentsV2(false)
+                .setEmbeds(computeEmbed(interfaceData))
+                .setComponents(computeComponents(interfaceData))
+                .build()
+        }
+
+    private fun computeContainer(interfaceData: InterfaceData): Container {
+        val style = interfaceData.embedStyle
+        val children = mutableListOf<ContainerChildComponent>()
+
+        style.authorName?.let { name ->
+            children += TextDisplay.of("**" + (style.authorUrl?.let { "[$name]($it)" } ?: name) + "**")
+        }
+        style.title?.let { children += TextDisplay.of("### $it") }
+        style.description?.takeIf { it.isNotBlank() }?.let { children += TextDisplay.of(it) }
+        style.image?.let { children += MediaGallery.of(MediaGalleryItem.fromUrl(it)) }
+        children += computeComponents(interfaceData)
+        style.footer?.let { children += TextDisplay.of("-# $it") }
+
+        return Containers.container(style.color, *children.toTypedArray())
+    }
 
     private fun computeEmbed(interfaceData: InterfaceData): MessageEmbed {
         val embedStyle = interfaceData.embedStyle

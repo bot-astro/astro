@@ -12,6 +12,8 @@ data class InterfaceData(
     var messageID: String,
     var buttons: MutableList<InterfaceButton> = mutableListOf(),
     val embedStyle: EmbedStyle,
+    // messages sent as embeds can't be edited into components v2 ones, so interfaces created before this flag stay embeds
+    var componentsV2: Boolean = false,
 ) : Validatable {
     override fun validate(): ValidationResult {
         val channelIdValidation = channelID.isValidSnowflake().asValidationResult("invalid channel id")
