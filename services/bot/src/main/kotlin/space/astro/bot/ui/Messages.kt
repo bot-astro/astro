@@ -60,13 +60,11 @@ object Messages {
     }
 
     /**
-     * Sent in DM to whoever invited Astro in [guild], no setup button because that one only works inside the guild.
-     * [competitor] is the name of a similar bot found in the guild, if any
+     * Sent in DM to whoever invited Astro in [guild], no setup button because that one only works inside the guild
      */
     fun inviterOnboarding(
         guild: Guild,
         locale: Locale,
-        competitor: String? = null,
     ): MessageCreateData {
         val selfAvatar = guild.selfMember.user.effectiveAvatarUrl
         val dashboard = Links.guildDashboard(guild.id)
@@ -79,20 +77,6 @@ object Messages {
                     L.t(locale, "inviter_onboarding.title", "guild" to guild.name, "link" to dashboard),
                     L.t(locale, "inviter_onboarding.description"),
                 ),
-                *listOfNotNull(
-                    competitor?.let {
-                        Containers.field(
-                            L.t(locale, "inviter_onboarding.switching.title", "competitor" to it),
-                            L.t(
-                                locale,
-                                "inviter_onboarding.switching.content",
-                                "emoji" to Emojis.dashboard.formatted,
-                                "link" to dashboard,
-                                "competitor" to it,
-                            ),
-                        )
-                    },
-                ).toTypedArray(),
                 Containers.field(
                     L.t(locale, "welcome.setup.title"),
                     L.t(locale, "help.setup.content", "emoji" to Emojis.dashboard.formatted, "link" to dashboard),
