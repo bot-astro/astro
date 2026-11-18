@@ -39,7 +39,7 @@ class SetupManager(
     }
 
     /**
-     * What [createSetup] created, none of it is saved in the guild settings yet
+     * What [createSetup] created
      *
      * @param updatesChannelId the updates channel of the guild, null if it has none
      * @param newUpdatesChannel the data of the updates channel when it has been created by the setup, null if it
@@ -107,10 +107,19 @@ class SetupManager(
                 category = category.id,
                 chatCategory = category.id,
                 waitingCategory = category.id,
-                // the variables are kept as they are, they get replaced when the temporary VC is created
                 defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
-                defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),
-                defaultWaitingName = L.t(guildSettings.javaLocale, "temporary.waiting.name.default", "vc_name" to "{vc_name}"),
+                defaultChatName =
+                    L.t(
+                        guildSettings.javaLocale,
+                        "temporary.chat.name.default",
+                        "vc_name" to "{vc_name}",
+                    ),
+                defaultWaitingName =
+                    L.t(
+                        guildSettings.javaLocale,
+                        "temporary.waiting.name.default",
+                        "vc_name" to "{vc_name}",
+                    ),
             )
 
         return SetupResult(
@@ -232,10 +241,24 @@ class SetupManager(
                     category = category?.id,
                     chatCategory = category?.id,
                     waitingCategory = category?.id,
-                    // the variables are kept as they are, they get replaced when the temporary VC is created
-                    defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
-                    defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),
-                    defaultWaitingName = L.t(guildSettings.javaLocale, "temporary.waiting.name.default", "vc_name" to "{vc_name}"),
+                    defaultName =
+                        L.t(
+                            guildSettings.javaLocale,
+                            "temporary.vc.name.default",
+                            "nickname" to "{nickname}",
+                        ),
+                    defaultChatName =
+                        L.t(
+                            guildSettings.javaLocale,
+                            "temporary.chat.name.default",
+                            "vc_name" to "{vc_name}",
+                        ),
+                    defaultWaitingName =
+                        L.t(
+                            guildSettings.javaLocale,
+                            "temporary.waiting.name.default",
+                            "vc_name" to "{vc_name}",
+                        ),
                 ),
             )
 
