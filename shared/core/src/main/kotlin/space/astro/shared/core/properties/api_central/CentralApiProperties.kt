@@ -15,6 +15,4 @@ data class CentralApiProperties(
     val chargebeeWebhookToken: String,
     /** Signing secret of the Vote Tracker forwarding, used to verify the signature of the vote webhooks */
     val voteTrackerWebhookSecret: String,
-    /** When true the bot invite requests only the permissions Astro uses instead of Administrator */
-    val minimalInvitePermissions: Boolean = false,
 )
