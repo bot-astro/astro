@@ -55,10 +55,10 @@ class InterfaceManager {
         position = Pair(row, column),
     )
 
-    // buttons are as wide as their label, the invisible padding makes them all look the same size
-    private fun String.padCenter(width: Int = 9): String {
-        val pad = (width - length).coerceAtLeast(0)
-        return "\u2800".repeat(pad / 2) + this + "\u2800".repeat(pad - pad / 2)
+    // buttons are as wide as their label, the invisible Hangul fillers (about two letters wide each) make them look the same size
+    private fun String.padCenter(widestLabel: Int = 8): String {
+        val fillers = Math.round((widestLabel - length) / 2.0).toInt().coerceAtLeast(0)
+        return "\u3164".repeat(fillers / 2) + this + "\u3164".repeat(fillers - fillers / 2)
     }
 
     private fun defaultButtons(locale: Locale) =
@@ -93,9 +93,11 @@ class InterfaceManager {
         thumbnail = null,
         image = null,
         authorName = L.t(locale, "interface.author"),
-        authorUrl = if (showInvite) Links.invite("interface") else Links.WEBSITE,
+        authorUrl = Links.WEBSITE,
         authorIconUrl = Links.LOGO,
-        footer = L.t(locale, "interface.footer") + if (showInvite) " • " + L.t(locale, "interface.invite") else "",
+        footer =
+            L.t(locale, "interface.footer") +
+                if (showInvite) " • " + L.t(locale, "interface.invite", "link" to Links.invite("interface")) else "",
         footerIconUrl = null,
     )
 
@@ -250,7 +252,7 @@ class InterfaceManager {
         val children = mutableListOf<ContainerChildComponent>()
 
         style.authorName?.let { name ->
-            children += TextDisplay.of("**" + (style.authorUrl?.let { "[$name]($it)" } ?: name) + "**")
+            children += TextDisplay.of("**$name**")
         }
         style.title?.let { children += TextDisplay.of("### $it") }
         style.description?.takeIf { it.isNotBlank() }?.let { children += TextDisplay.of(it) }
