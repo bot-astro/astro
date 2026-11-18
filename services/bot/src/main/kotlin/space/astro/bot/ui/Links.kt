@@ -18,6 +18,8 @@ object Links {
     const val GITHUB = "https://github.com/bot-astro/astro"
     const val BLOG_ARTICLE = "https://giuliopime.dev/blog/so-i-built-a-discord-bot"
 
+    fun invite(source: String) = "$WEBSITE/invite?src=$source"
+
     fun guildDashboard(guildId: String) = "https://astro-bot.space/guilds/$guildId"
 
     fun guildErrors(guildId: String) = "${guildDashboard(guildId)}/errors"

@@ -88,6 +88,10 @@ class HelpCommand(
                     ctx.t("help.ultimate.content", "emoji" to Emojis.premium.formatted, "link" to Links.ULTIMATE),
                 ),
                 Containers.field(
+                    ctx.t("help.invite.title"),
+                    ctx.t("help.invite.content", "emoji" to Emojis.invite.formatted, "link" to Links.invite("help")),
+                ),
+                Containers.field(
                     ctx.t("help.support.title"),
                     ctx.t("help.support.content", "emoji" to Emojis.helper.formatted, "link" to Links.SUPPORT_SERVER),
                 ),
