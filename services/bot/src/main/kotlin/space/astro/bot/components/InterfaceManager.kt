@@ -74,17 +74,15 @@ class InterfaceManager {
     ) = InterfaceData.EmbedStyle(
         url = Links.WEBSITE,
         title = null,
-        description =
-            L.t(locale, "interface.description") +
-                if (showInvite) "\n\n" + L.t(locale, "interface.invite", "link" to Links.invite("interface")) else "",
+        description = L.t(locale, "interface.description"),
         timestamp = null,
         color = Containers.purple.rgb,
         thumbnail = null,
         image = Links.INTERFACE_BUTTONS_IMAGE,
         authorName = L.t(locale, "interface.author"),
-        authorUrl = Links.WEBSITE,
+        authorUrl = if (showInvite) Links.invite("interface") else Links.WEBSITE,
         authorIconUrl = Links.LOGO,
-        footer = L.t(locale, "interface.footer"),
+        footer = L.t(locale, "interface.footer") + if (showInvite) " • " + L.t(locale, "interface.invite") else "",
         footerIconUrl = null,
     )
 
