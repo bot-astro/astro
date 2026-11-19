@@ -12,10 +12,13 @@ import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.body
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AException
+import space.astro.shared.core.exceptions.ANotFoundException
 import space.astro.shared.core.exceptions.ATooManyRequestsException
 import space.astro.shared.core.exceptions.AUnknownException
 import space.astro.shared.core.models.discord.DiscordApplicationDto
 import space.astro.shared.core.models.discord.DiscordEntitlementDto
+import space.astro.shared.core.models.discord.DiscordGuildDto
+import space.astro.shared.core.models.discord.DiscordGuildMemberDto
 import space.astro.shared.core.models.discord.DiscordPartialGuildDto
 import space.astro.shared.core.models.discord.DiscordTokenDto
 import space.astro.shared.core.models.discord.DiscordUserDto
@@ -258,6 +261,61 @@ class DiscordApiClient(
                 }
         } catch (e: RestClientResponseException) {
             throw AUnknownException("Failed to fetch the Discord application", e)
+        }
+    }
+
+    /**
+     * Fetches the guild with its roles, the bot must be in it
+     *
+     * @throws AException
+     */
+    fun getGuild(
+        botToken: String,
+        guildId: String,
+    ): DiscordGuildDto {
+        try {
+            return client
+                .get()
+                .uri("/guilds/{guildId}", guildId)
+                .header("Authorization", "Bot $botToken")
+                .retrieve()
+                .body<DiscordGuildDto>()
+                ?: run {
+                    log.error { "Discord returned an empty guild response" }
+                    throw AUnknownException("Failed to fetch Discord guild $guildId")
+                }
+        } catch (e: HttpClientErrorException.NotFound) {
+            throw ANotFoundException("Discord guild $guildId not found", e)
+        } catch (e: RestClientResponseException) {
+            throw AUnknownException("Failed to fetch Discord guild $guildId", e)
+        }
+    }
+
+    /**
+     * Fetches a member of a guild the bot is in
+     *
+     * @throws AException
+     */
+    fun getGuildMember(
+        botToken: String,
+        guildId: String,
+        userId: String,
+    ): DiscordGuildMemberDto {
+        try {
+            return client
+                .get()
+                .uri("/guilds/{guildId}/members/{userId}", guildId, userId)
+                .header("Authorization", "Bot $botToken")
+                .retrieve()
+                .body<DiscordGuildMemberDto>()
+                ?: run {
+                    log.error { "Discord returned an empty guild member response" }
+                    throw AUnknownException("Failed to fetch member $userId of Discord guild $guildId")
+                }
+        } catch (e: HttpClientErrorException.NotFound) {
+            throw ANotFoundException("Member $userId of Discord guild $guildId not found", e)
+        } catch (e: RestClientResponseException) {
+            throw AUnknownException("Failed to fetch member $userId of Discord guild $guildId", e)
         }
     }
 }
