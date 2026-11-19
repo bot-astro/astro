@@ -35,13 +35,13 @@ class InstallAnalyticsService(
     fun recordInstall(
         source: String,
         guildId: String,
-        inviterId: String,
+        inviterId: String?,
     ) {
         val row =
             mapOf(
                 "source" to source,
                 "guild_id" to guildId.toLong(),
-                "user_id" to inviterId.toLong(),
+                "user_id" to inviterId?.toLong(),
                 "timestamp" to OffsetDateTime.now(ZoneOffset.UTC).toString(),
             )
 

@@ -8,6 +8,7 @@ import space.astro.shared.core.models.database.ConfigurationErrorEntity
 object Links {
     const val WEBSITE = "https://astro-bot.space"
     const val LOGO = "https://cdn.discordapp.com/avatars/715621848489918495/dc0affdf8de07a3d88c4d192efad649f.png?size=2048"
+    const val INTERFACE_BUTTONS_IMAGE = "$WEBSITE/new-interface-image.png"
     const val SUPPORT_SERVER = "https://discord.gg/yeXwVhg"
     const val DASHBOARD = "https://astro-bot.space/guilds"
     const val GUIDES = "https://astro-bot.space/guides"
@@ -17,7 +18,10 @@ object Links {
     const val GITHUB = "https://github.com/bot-astro/astro"
     const val BLOG_ARTICLE = "https://giuliopime.dev/blog/so-i-built-a-discord-bot"
 
-    fun invite(source: String) = "$WEBSITE/invite?src=$source"
+    // opens the install prompt directly in the Discord app, the source comes back as `state` on the website callback
+    fun invite(source: String) =
+        "https://discord.com/oauth2/authorize?client_id=715621848489918495&response_type=code" +
+            "&redirect_uri=https%3A%2F%2Fastro-bot.space%2Finvite%2Fcallback&scope=bot%20applications.commands&permissions=8&state=$source"
 
     fun guildDashboard(guildId: String) = "https://astro-bot.space/guilds/$guildId"
 

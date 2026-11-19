@@ -173,6 +173,51 @@ class AuthController(
     }
 
     @Operation(
+        summary = "Discord install callback",
+        description =
+            "Called by the website after Discord redirected there from a direct bot install link " +
+                "(opened from a button or message in Discord). Exchanges the code to get the guild the bot was added to, " +
+                "records the install with the source received as `state` and redirects to the dashboard of the guild.",
+        hidden = true,
+    )
+    @GetMapping(CentralApiEndpoint.DISCORD_INSTALL_CALLBACK)
+    fun discordInstallCallback(
+        @RequestParam("code", required = false) code: String? = null,
+        @RequestParam("state", required = false) state: String? = null,
+    ): ResponseEntity<Void> {
+        if (code == null) {
+            return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI("${frontendProperties.baseUrl}?error_code=discord_oauth_error"))
+                .build()
+        }
+
+        try {
+            val discordToken =
+                discordApiClient.getAccessToken(code, discordOAuthProperties, "${frontendProperties.baseUrl}/invite/callback")
+            val guildId = discordToken.guild?.id
+
+            if (guildId != null) {
+                installAnalyticsService.recordInstall(state?.takeIf { it in INSTALL_SOURCES } ?: UNKNOWN_INSTALL_SOURCE, guildId, null)
+            }
+
+            return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI("${frontendProperties.baseUrl}/guilds" + (guildId?.let { "/$it" } ?: "")))
+                .build()
+        } catch (e: Exception) {
+            if (e !is ABadRequestException) {
+                log.error(e) { "Discord install callback failed" }
+            }
+
+            return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI("${frontendProperties.baseUrl}?error_code=internal"))
+                .build()
+        }
+    }
+
+    @Operation(
         summary = "Get logged in user",
         description = "Returns the logged in user entity",
         security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)],
