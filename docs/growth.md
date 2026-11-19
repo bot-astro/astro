@@ -14,7 +14,7 @@ The checklist was split into three parallel packages, each in its own worktree a
 
 Contract shared by the packages:
 - `GET astro-bot.space/invite?src=<source>` redirects to api-central `/v2/auth/discord` with `source=<src>`.
-- Allowed sources: `topgg`, `dbl`, `interface`, `help`, `web-guide`, `youtube`, `reddit`, `partner`. Anything else or missing is stored as `unknown`.
+- `source` is any free label (`topgg`, `dbl`, `web-guide`, `youtube`, ...), stored as is without `:` and cut to 64 characters. Missing or blank is stored as `unknown`.
 - `source` travels in the server-side OAuth state. On the callback an install event is written to BigQuery with source, guild id and inviter id.
 
 ## What this PR contains

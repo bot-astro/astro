@@ -34,7 +34,7 @@ import java.time.ZoneOffset
 private val log = KotlinLogging.logger { }
 
 private const val UNKNOWN_INSTALL_SOURCE = "unknown"
-private val INSTALL_SOURCES = setOf("topgg", "dbl", "interface", "help", "web-guide", "youtube", "reddit", "partner")
+private const val MAX_INSTALL_SOURCE_LENGTH = 64
 
 @RestController
 @RequestMapping
@@ -58,8 +58,8 @@ class AuthController(
                 "that will be replaced with the id of the guild the bot was added to.\n" +
                 "Instead on a query parameter called `error_code` set in the baseUrl of the frontend on errors " +
                 "(errors can be: discord_oauth_error, invalid_oauth_state, internal).\n" +
-                "`source` tells where an invite came from (topgg, dbl, interface, help, web-guide, youtube, reddit, partner), " +
-                "any other value is recorded as unknown.",
+                "`source` is a free label of where an invite came from (for example topgg), " +
+                "recorded as is with the install (without `:` and cut to 64 characters), unknown if missing.",
     )
     @ApiResponses(
         ApiResponse(
@@ -74,7 +74,11 @@ class AuthController(
         @RequestParam("invite_guild_id", required = false) inviteGuildId: String? = null,
         @RequestParam("source", required = false) source: String? = null,
     ): ResponseEntity<Void> {
-        val state = oAuthStateService.create(redirectPath, source?.takeIf { it in INSTALL_SOURCES } ?: UNKNOWN_INSTALL_SOURCE)
+        val state =
+            oAuthStateService.create(
+                redirectPath,
+                source?.replace(":", "")?.take(MAX_INSTALL_SOURCE_LENGTH)?.takeIf { it.isNotBlank() } ?: UNKNOWN_INSTALL_SOURCE,
+            )
 
         val scopes =
             if (invite || inviteGuildId != null) {
