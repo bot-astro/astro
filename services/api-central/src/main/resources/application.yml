@@ -69,6 +69,10 @@ spring:
       port: ${REDIS_PORT}
       database: ${REDIS_DATABASE}
       password: ${REDIS_PASSWORD:}
+  mvc:
+    async:
+      # the AI chat streams its answer, a turn with several tool calls can take a while
+      request-timeout: 180s
   servlet:
     multipart:
       max-file-size: 5MB
@@ -177,3 +181,15 @@ central:
       - ${CA__CORS_ALLOWED_ORIGIN}
     chargebee-webhook-token: ${CA__CHARGEBEE_WEBHOOK_TOKEN}
     vote-tracker-webhook-secret: ${CA__VOTE_TRACKER_WEBHOOK_SECRET}
+
+ai:
+  openrouter-api-key: ${OPENROUTER_API_KEY}
+  openrouter-base-url: ${AI_OPENROUTER_BASE_URL:https://openrouter.ai}
+  model: ${AI_MODEL:anthropic/claude-haiku-4.5}
+  # shared secret the bot sends in the X-Internal-Token header, the internal endpoints are disabled when empty
+  internal-token: ${AI_INTERNAL_TOKEN:}
+  max-steps: ${AI_MAX_STEPS:8}
+  monthly-messages-free: ${AI_MONTHLY_MESSAGES_FREE:100}
+  monthly-messages-premium: ${AI_MONTHLY_MESSAGES_PREMIUM:1000}
+  monthly-tokens-free: ${AI_MONTHLY_TOKENS_FREE:2000000}
+  monthly-tokens-premium: ${AI_MONTHLY_TOKENS_PREMIUM:20000000}

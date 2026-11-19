@@ -86,7 +86,11 @@ class GuildGeneratorsController(
                     "Generator with ID ${updatedGeneratorSettings.id} not found for guild with id $guildId",
                 )
 
-        validatePremiumRequirements(guildSettings, guildSettings.generators[generatorIndex], updatedGeneratorSettings)
+        premiumManager.validateGeneratorPremiumRequirements(
+            guildSettings,
+            guildSettings.generators[generatorIndex],
+            updatedGeneratorSettings,
+        )
 
         guildSettings.generators[generatorIndex] = updatedGeneratorSettings
         guildSettingsRepository.save(guildSettings)
@@ -115,60 +119,61 @@ class GuildGeneratorsController(
         guildSettingsRepository.save(guildSettings)
         return ResponseEntity.ok(guildSettings)
     }
+}
 
-    /**
-     * Rejects premium settings that are being newly set, settings that were already there are left untouched
-     * so that a guild without premium can still edit the rest of the generator
-     *
-     * @throws APremiumRequiredException
-     */
-    private fun validatePremiumRequirements(
-        guildSettings: GuildSettingsEntity,
-        current: GeneratorSettings,
-        updated: GeneratorSettings,
+/**
+ * Rejects premium settings that are being newly set, settings that were already there are left untouched
+ * so that a guild without premium can still edit the rest of the generator.
+ * Shared by the generators controller and the AI assistant proposals
+ *
+ * @throws APremiumRequiredException
+ */
+fun PremiumManager.validateGeneratorPremiumRequirements(
+    guildSettings: GuildSettingsEntity,
+    current: GeneratorSettings,
+    updated: GeneratorSettings,
+) {
+    if (updated.fallbackId != null &&
+        updated.fallbackId != current.fallbackId &&
+        !canUseFallbackGenerator(guildSettings)
     ) {
-        if (updated.fallbackId != null &&
-            updated.fallbackId != current.fallbackId &&
-            !premiumManager.canUseFallbackGenerator(guildSettings)
+        throw APremiumRequiredException("Upgrade the server to use a fallback generator")
+    }
+
+    listOf(
+        updated.defaultName to current.defaultName,
+        updated.defaultLockedName to current.defaultLockedName,
+        updated.defaultHiddenName to current.defaultHiddenName,
+    ).forEach { (updatedName, currentName) ->
+        if (updatedName != null &&
+            updatedName != currentName &&
+            !canUseVCNameTemplate(guildSettings, updatedName)
         ) {
-            throw APremiumRequiredException("Upgrade the server to use a fallback generator")
+            throw APremiumRequiredException("Some variables used in the name can only be used in upgraded servers")
         }
+    }
 
-        listOf(
-            updated.defaultName to current.defaultName,
-            updated.defaultLockedName to current.defaultLockedName,
-            updated.defaultHiddenName to current.defaultHiddenName,
-        ).forEach { (updatedName, currentName) ->
-            if (updatedName != null &&
-                updatedName != currentName &&
-                !premiumManager.canUseVCNameTemplate(guildSettings, updatedName)
-            ) {
-                throw APremiumRequiredException("Some variables used in the name can only be used in upgraded servers")
-            }
-        }
+    if (updated.ownerRole != null &&
+        updated.ownerRole != current.ownerRole &&
+        !canAssignTemporaryVCOwnerRole(guildSettings)
+    ) {
+        throw APremiumRequiredException("Upgrade the server to assign a role to the owner of temporary VCs")
+    }
 
-        if (updated.ownerRole != null &&
-            updated.ownerRole != current.ownerRole &&
-            !premiumManager.canAssignTemporaryVCOwnerRole(guildSettings)
-        ) {
-            throw APremiumRequiredException("Upgrade the server to assign a role to the owner of temporary VCs")
-        }
+    if (updated.autoChat && !current.autoChat && !canCreatePrivateChatOnVCGeneration(guildSettings)) {
+        throw APremiumRequiredException("Upgrade the server to automatically create a private chat")
+    }
 
-        if (updated.autoChat && !current.autoChat && !premiumManager.canCreatePrivateChatOnVCGeneration(guildSettings)) {
-            throw APremiumRequiredException("Upgrade the server to automatically create a private chat")
-        }
+    if (updated.autoWaiting && !current.autoWaiting && !canCreateWaitingRoomOnVCGeneration(guildSettings)) {
+        throw APremiumRequiredException("Upgrade the server to automatically create a waiting room")
+    }
 
-        if (updated.autoWaiting && !current.autoWaiting && !premiumManager.canCreateWaitingRoomOnVCGeneration(guildSettings)) {
-            throw APremiumRequiredException("Upgrade the server to automatically create a waiting room")
-        }
+    // DEPRECATED: -1 is a legacy value for an unset chat interface
+    val newChatMessage =
+        (updated.defaultChatText != null && updated.defaultChatText != current.defaultChatText) ||
+            (updated.chatInterface?.let { it > -1 && it != current.chatInterface } == true)
 
-        // DEPRECATED: -1 is a legacy value for an unset chat interface
-        val newChatMessage =
-            (updated.defaultChatText != null && updated.defaultChatText != current.defaultChatText) ||
-                (updated.chatInterface?.let { it > -1 && it != current.chatInterface } == true)
-
-        if (newChatMessage && !premiumManager.canSendMessageInVCChatOnVCGeneration(guildSettings)) {
-            throw APremiumRequiredException("Upgrade the server to send a message when a temporary VC is created")
-        }
+    if (newChatMessage && !canSendMessageInVCChatOnVCGeneration(guildSettings)) {
+        throw APremiumRequiredException("Upgrade the server to send a message when a temporary VC is created")
     }
 }
