@@ -78,12 +78,11 @@ class ConfigureCommand(
                 .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_24_HOURS)
                 .await()
         thread.addThreadMember(ctx.member).await()
-        aiAssistantManager.markThread(thread.id)
 
         ctx.responder.reply(Containers.default(ctx.t("ai.configure.opened", "thread" to thread.asMention)))
 
         if (prompt == null) {
-            thread.sendMessage(AiMessages.welcome(ctx.locale, ctx.guild.selfMember.asMention)).await()
+            thread.sendMessage(AiMessages.welcome(ctx.locale)).await()
             return
         }
 

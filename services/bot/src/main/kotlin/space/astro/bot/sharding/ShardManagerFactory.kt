@@ -34,8 +34,6 @@ class ShardManagerFactory(
         listOf(
             GatewayIntent.GUILD_PRESENCES,
             GatewayIntent.GUILD_VOICE_STATES,
-            // not privileged, the content of the messages is only delivered when they mention the bot (AI assistant threads)
-            GatewayIntent.GUILD_MESSAGES,
         )
 
     @Bean

@@ -248,7 +248,7 @@
   "configuration_error.premium_creation_chat_message": "Your generator has a default creation message, but ultimate is required to use it.\nEither upgrade to ultimate or remove it!",
   "configuration_error.premium_owner_role": "Your generator has an owner role configured, but ultimate is required to use it.\nEither upgrade to ultimate or remove it!",
   "ai.thread.name": "Astro configuration - {user}",
-  "ai.thread.welcome": "## {emoji} Configure Astro by chatting\nTell me what you want to set up, for example *create a generator called Gaming with a limit of 5 users*.\nI always show what I would change and nothing is applied until you press **Approve**.\n-# Press the button below or mention {mention} in this thread to write to me.",
+  "ai.thread.welcome": "## {emoji} Configure Astro by chatting\nTell me what you want to set up, for example *create a generator called Gaming with a limit of 5 users*.\nI always show what I would change and nothing is applied until you press **Approve**.\n-# Press the button below to write to me.",
   "ai.configure.opened": "Your configuration thread is ready: {thread}",
   "ai.configure.invalid_channel": "The configuration thread can only be opened from a regular text channel, use the command in one.",
   "ai.modal.title": "Message Astro",

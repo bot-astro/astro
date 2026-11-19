@@ -29,12 +29,9 @@ object AiMessages {
     /**
      * First message of a thread opened without a prompt
      */
-    fun welcome(
-        locale: Locale,
-        botMention: String,
-    ): MessageCreateData =
+    fun welcome(locale: Locale): MessageCreateData =
         Containers.message(
-            Containers.default(L.t(locale, "ai.thread.welcome", "emoji" to Emojis.chat.formatted, "mention" to botMention)),
+            Containers.default(L.t(locale, "ai.thread.welcome", "emoji" to Emojis.chat.formatted)),
             ActionRow.of(Buttons.aiMessage(locale)),
         )
 
