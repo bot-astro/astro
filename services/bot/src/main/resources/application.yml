@@ -150,6 +150,12 @@ support:
       base-url: ${SUPPORT_BOT_ENDPOINT_BASE_URL}
       auth: ${SUPPORT_BOT_ENDPOINT_AUTH}
 
+ai:
+  assistant:
+    base-url: ${AI_ASSISTANT_BASE_URL:http://localhost:8080}
+    internal-token: ${AI_INTERNAL_TOKEN:}
+    timeout-seconds: 120
+
 vote-tracker:
   guard-enabled: ${VOTE_TRACKER_GUARD_ENABLED}
 
