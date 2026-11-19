@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.events.guild.GuildLeaveEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.bot.models.analytics.GuildEventData
+import space.astro.shared.core.models.analytics.GuildEventData
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 

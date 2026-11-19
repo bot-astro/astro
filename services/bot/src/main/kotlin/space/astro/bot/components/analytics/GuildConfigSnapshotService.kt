@@ -5,9 +5,9 @@ import net.dv8tion.jda.api.sharding.ShardManager
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import space.astro.bot.models.analytics.GuildConfigSnapshotEventData
-import space.astro.bot.properties.BigQueryProperties
 import space.astro.shared.core.clients.PremiumManager
+import space.astro.shared.core.models.analytics.GuildConfigSnapshotEventData
+import space.astro.shared.core.properties.BigQueryProperties
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import java.time.OffsetDateTime
 import java.time.ZoneOffset

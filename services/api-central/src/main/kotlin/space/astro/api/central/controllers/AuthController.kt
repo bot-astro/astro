@@ -17,16 +17,19 @@ import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.responses.AuthUserResponse
 import space.astro.api.central.services.AuthSessionService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
-import space.astro.api.central.services.InstallAnalyticsService
 import space.astro.api.central.services.OAuthStateService
+import space.astro.shared.core.clients.BigQueryService
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.exceptions.ABadRequestException
+import space.astro.shared.core.models.analytics.InstallEventData
 import space.astro.shared.core.models.database.UserEntity
 import space.astro.shared.core.properties.DiscordOAuthProperties
 import space.astro.shared.core.properties.FrontendProperties
 import space.astro.shared.core.repositories.mongo.UserRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 import java.net.URI
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 private val log = KotlinLogging.logger { }
 
@@ -44,7 +47,7 @@ class AuthController(
     private val oAuthStateService: OAuthStateService,
     private val frontendProperties: FrontendProperties,
     private val userRepository: UserRepository,
-    private val installAnalyticsService: InstallAnalyticsService,
+    private val bigQueryService: BigQueryService,
 ) {
     @Operation(
         summary = "Login via Discord",
@@ -152,7 +155,14 @@ class AuthController(
             val guildId = discordToken.guild?.id
             if (guildId != null) {
                 redirectPath = redirectPath.replace("{guild_id}", guildId)
-                installAnalyticsService.recordInstall(oAuthState.source, guildId, discordUser.id)
+                bigQueryService.push(
+                    InstallEventData(
+                        source = oAuthState.source,
+                        guildId = guildId.toLong(),
+                        userId = discordUser.id.toLong(),
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString(),
+                    ),
+                )
             }
 
             return ResponseEntity
@@ -198,7 +208,14 @@ class AuthController(
             val guildId = discordToken.guild?.id
 
             if (guildId != null) {
-                installAnalyticsService.recordInstall(state?.takeIf { it in INSTALL_SOURCES } ?: UNKNOWN_INSTALL_SOURCE, guildId, null)
+                bigQueryService.push(
+                    InstallEventData(
+                        source = state?.takeIf { it in INSTALL_SOURCES } ?: UNKNOWN_INSTALL_SOURCE,
+                        guildId = guildId.toLong(),
+                        userId = null,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString(),
+                    ),
+                )
             }
 
             return ResponseEntity

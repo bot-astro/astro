@@ -28,7 +28,6 @@ dependencies {
     }
     implementation(libs.nanoid)
     implementation(libs.chargebee)
-    implementation(libs.bigquery)
 }
 
 jib {

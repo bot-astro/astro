@@ -8,3 +8,4 @@ space.astro.shared.core.autoconfigure.ADiscordApiClient
 space.astro.shared.core.autoconfigure.AJsonMapperBuilder
 space.astro.shared.core.autoconfigure.ARedisRepositoriesAutoConfiguration
 space.astro.shared.core.autoconfigure.ATopGGClient
+space.astro.shared.core.autoconfigure.ABigQueryService

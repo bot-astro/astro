@@ -1,19 +1,19 @@
-package space.astro.bot.components.analytics
+package space.astro.shared.core.clients
 
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.InsertAllRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Service
-import space.astro.bot.models.analytics.AnalyticsEventData
-import space.astro.bot.models.analytics.ConfigurationErrorEventData
-import space.astro.bot.models.analytics.ConnectionInvocationEventData
-import space.astro.bot.models.analytics.GuildConfigSnapshotEventData
-import space.astro.bot.models.analytics.GuildEventData
-import space.astro.bot.models.analytics.SlashCommandInvocationEventData
-import space.astro.bot.models.analytics.TemporaryVCGenerationEventData
-import space.astro.bot.properties.BigQueryProperties
+import space.astro.shared.core.models.analytics.AnalyticsEventData
+import space.astro.shared.core.models.analytics.ConfigurationErrorEventData
+import space.astro.shared.core.models.analytics.ConnectionInvocationEventData
+import space.astro.shared.core.models.analytics.GuildConfigSnapshotEventData
+import space.astro.shared.core.models.analytics.GuildEventData
+import space.astro.shared.core.models.analytics.InstallEventData
+import space.astro.shared.core.models.analytics.SlashCommandInvocationEventData
+import space.astro.shared.core.models.analytics.TemporaryVCGenerationEventData
+import space.astro.shared.core.properties.BigQueryProperties
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.convertValue
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -27,7 +27,6 @@ private val log = KotlinLogging.logger { }
  * Batches analytics events and inserts them in the BigQuery table of their type.
  * When BigQuery is disabled events are only logged.
  */
-@Service
 class BigQueryService(
     private val properties: BigQueryProperties,
     private val jsonMapper: JsonMapper,
@@ -109,5 +108,6 @@ class BigQueryService(
             is ConnectionInvocationEventData -> "CONNECTION_INVOCATION"
             is ConfigurationErrorEventData -> "CONFIGURATION_ERROR"
             is GuildConfigSnapshotEventData -> "GUILD_CONFIG_SNAPSHOT"
+            is InstallEventData -> "INSTALL_EVENT"
         }
 }

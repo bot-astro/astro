@@ -20,9 +20,9 @@ import net.dv8tion.jda.api.requests.ErrorResponse
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.bot.models.analytics.GuildEventData
 import space.astro.bot.ui.Messages
 import space.astro.shared.core.lang.L
+import space.astro.shared.core.models.analytics.GuildEventData
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset

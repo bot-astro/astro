@@ -19,7 +19,7 @@ Contract shared by the packages:
 
 ## What this PR contains
 
-1. **Install attribution** (api-central): `AuthController.discord` takes `source`, keeps it in the Redis OAuth state (`OAuthStateService`, format `source:path`) and on callback writes an `INSTALL_EVENT` row through the new `InstallAnalyticsService` (disabled by default, `CA__BIGQUERY_ENABLED`, `CA__BIGQUERY_DATASET_NAME`). `GuildEventData` has a new `locale`, filled on join and removal.
+1. **Install attribution** (api-central): `AuthController.discord` takes `source`, keeps it in the Redis OAuth state (`OAuthStateService`, format `source:path`) and on callback writes an `INSTALL_EVENT` row through the shared `BigQueryService` (shared core) (disabled by default, `CA__BIGQUERY_ENABLED`, `CA__BIGQUERY_DATASET_NAME`). `GuildEventData` has a new `locale`, filled on join and removal.
 2. **Analytics views** in `docs/analytics/queries`: `daily_growth`, `removals_by_age`, `installs_by_source`.
 3. **`/help` link**: a field "Add Astro to your server" pointing to the direct install link with `state=help`.
 4. **Invites from Discord**: every invite link inside Discord (`/help` field) is the direct Discord install URL (`Links.invite(source)`), with `redirect_uri=https://astro-bot.space/invite/callback`, `scope=bot applications.commands`, `permissions=8` and the source as `state`. Discord opens the install prompt in the app and then the browser at the website callback, which forwards the code to api-central `GET /v2/auth/discord/install`. It exchanges the code (so the guild id can't be spoofed), writes the `INSTALL_EVENT` with the source (the inviter id is null, the scope has no `identify`) and redirects to the dashboard of the guild. The redirect URI must be registered in the Discord application.

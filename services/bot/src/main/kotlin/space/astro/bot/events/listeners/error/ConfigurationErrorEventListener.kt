@@ -5,7 +5,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import space.astro.bot.components.GuildAlertService
 import space.astro.bot.events.models.ConfigurationErrorEvent
-import space.astro.bot.models.analytics.ConfigurationErrorEventData
+import space.astro.shared.core.models.analytics.ConfigurationErrorEventData
 import space.astro.shared.core.repositories.mongo.ConfigurationErrorRepository
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
