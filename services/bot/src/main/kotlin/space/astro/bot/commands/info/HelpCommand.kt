@@ -88,10 +88,6 @@ class HelpCommand(
                     ctx.t("help.ultimate.content", "emoji" to Emojis.premium.formatted, "link" to Links.ULTIMATE),
                 ),
                 Containers.field(
-                    ctx.t("help.invite.title"),
-                    ctx.t("help.invite.content", "emoji" to Emojis.invite.formatted, "link" to Links.INVITE),
-                ),
-                Containers.field(
                     ctx.t("help.support.title"),
                     ctx.t("help.support.content", "emoji" to Emojis.helper.formatted, "link" to Links.SUPPORT_SERVER),
                 ),
@@ -99,6 +95,7 @@ class HelpCommand(
                     ctx.t("help.open_source.title"),
                     ctx.t("help.open_source.content", "githubLink" to Links.GITHUB, "blogLink" to Links.BLOG_ARTICLE),
                 ),
+                Containers.text(ctx.t("help.invite", "emoji" to Emojis.invite.formatted, "link" to Links.INVITE)),
                 Containers.divider(),
                 Containers.footer(
                     ctx.t(
