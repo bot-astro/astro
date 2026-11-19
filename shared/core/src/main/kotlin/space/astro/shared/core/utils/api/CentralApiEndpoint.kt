@@ -27,6 +27,16 @@ object CentralApiEndpoint {
     const val GUILD_SETTINGS_TEMPLATES = "/v2/guilds/{guildId}/settings/templates"
     const val GUILD_SETTINGS_TEMPLATE = "/v2/guilds/{guildId}/settings/templates/{templateId}"
 
+    const val GUILD_AI_CHAT = "/v2/guilds/{guildId}/ai/chat"
+    const val GUILD_AI_PROPOSAL_APPLY = "/v2/guilds/{guildId}/ai/proposals/{proposalId}/apply"
+    const val GUILD_AI_PROPOSAL_CANCEL = "/v2/guilds/{guildId}/ai/proposals/{proposalId}/cancel"
+    const val GUILD_AI_FORM_FILL = "/v2/guilds/{guildId}/ai/form-fill"
+    const val GUILD_AI_USAGE = "/v2/guilds/{guildId}/ai/usage"
+
+    const val INTERNAL_AI_TURN = "/internal/ai/guilds/{guildId}/turn"
+    const val INTERNAL_AI_PROPOSAL_APPLY = "/internal/ai/guilds/{guildId}/proposals/{proposalId}/apply"
+    const val INTERNAL_AI_PROPOSAL_CANCEL = "/internal/ai/guilds/{guildId}/proposals/{proposalId}/cancel"
+
     const val GUILD_PREMIUM_UPGRADE = "/v2/guilds/{guildId}/premium/upgrade"
     const val GUILD_PREMIUM_ENTITLEMENTS_REFRESH = "/v2/guilds/{guildId}/premium/entitlements/refresh"
 
