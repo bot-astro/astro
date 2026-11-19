@@ -55,10 +55,6 @@ class GuildGeneratorsController(
                 category = generatorCreateBody.categoryId,
                 chatCategory = generatorCreateBody.categoryId,
                 waitingCategory = generatorCreateBody.categoryId,
-                chatInterface =
-                    0.takeIf {
-                        guildSettings.interfaces.isNotEmpty() && premiumManager.canSendMessageInVCChatOnVCGeneration(guildSettings)
-                    },
                 // the variables are kept as they are, they get replaced when the temporary VC is created
                 defaultName = L.t(guildSettings.javaLocale, "temporary.vc.name.default", "nickname" to "{nickname}"),
                 defaultChatName = L.t(guildSettings.javaLocale, "temporary.chat.name.default", "vc_name" to "{vc_name}"),

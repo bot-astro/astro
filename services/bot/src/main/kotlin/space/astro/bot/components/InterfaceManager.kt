@@ -6,11 +6,6 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
-import net.dv8tion.jda.api.components.container.Container
-import net.dv8tion.jda.api.components.container.ContainerChildComponent
-import net.dv8tion.jda.api.components.mediagallery.MediaGallery
-import net.dv8tion.jda.api.components.mediagallery.MediaGalleryItem
-import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -22,7 +17,6 @@ import net.dv8tion.jda.api.requests.ErrorResponse
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder
-import net.dv8tion.jda.api.utils.messages.MessageEditData
 import org.springframework.stereotype.Component
 import space.astro.bot.ui.Containers
 import space.astro.bot.ui.Emojis
@@ -41,92 +35,78 @@ class InterfaceManager {
     private val maxButtonsPerRow = 5
 
     private fun defaultButton(
-        locale: Locale,
         id: String,
         emoji: CustomEmoji,
         row: Int,
         column: Int,
     ) = InterfaceButton(
         id = id,
-        name = L.t(locale, "interface.button.${id.substringAfterLast('/')}").padCenter(),
+        name = null,
         emoji = emoji.asMention,
         buttonStyleKey = ButtonStyle.SECONDARY.key,
         buttonDisabled = false,
         position = Pair(row, column),
     )
 
-    // buttons are as wide as their label, the invisible Hangul fillers (about two letters wide each) make them look the same size
-    private fun String.padCenter(widestLabel: Int = 8): String {
-        val fillers = Math.round((widestLabel - length) / 2.0).toInt().coerceAtLeast(0)
-        return "\u3164".repeat(fillers / 2) + this + "\u3164".repeat(fillers - fillers / 2)
-    }
-
-    private fun defaultButtons(locale: Locale) =
+    private fun defaultButtons() =
         mutableListOf(
-            defaultButton(locale, "button/vc/lock", Emojis.lock, 0, 0),
-            defaultButton(locale, "button/vc/unlock", Emojis.unlock, 0, 1),
-            defaultButton(locale, "button/vc/hide", Emojis.hide, 0, 2),
-            defaultButton(locale, "button/vc/unhide", Emojis.unhide, 0, 3),
-            defaultButton(locale, "button/vc/limit", Emojis.limit, 1, 0),
-            defaultButton(locale, "button/vc/invite", Emojis.invite, 1, 1),
-            defaultButton(locale, "button/vc/ban", Emojis.ban, 1, 2),
-            defaultButton(locale, "button/vc/permit", Emojis.permit, 1, 3),
-            defaultButton(locale, "button/vc/name", Emojis.name, 2, 0),
-            defaultButton(locale, "button/vc/bitrate", Emojis.bitrate, 2, 1),
-            defaultButton(locale, "button/vc/region", Emojis.region, 2, 2),
-            defaultButton(locale, "button/vc/template", Emojis.template, 2, 3),
-            defaultButton(locale, "button/vc/chat", Emojis.chat, 3, 0),
-            defaultButton(locale, "button/vc/waiting-room", Emojis.waitingRoom, 3, 1),
-            defaultButton(locale, "button/vc/claim", Emojis.owner, 3, 2),
-            defaultButton(locale, "button/vc/transfer", Emojis.transferOwner, 3, 3),
+            defaultButton("button/vc/lock", Emojis.lock, 0, 0),
+            defaultButton("button/vc/unlock", Emojis.unlock, 0, 1),
+            defaultButton("button/vc/hide", Emojis.hide, 0, 2),
+            defaultButton("button/vc/unhide", Emojis.unhide, 0, 3),
+            defaultButton("button/vc/limit", Emojis.limit, 1, 0),
+            defaultButton("button/vc/invite", Emojis.invite, 1, 1),
+            defaultButton("button/vc/ban", Emojis.ban, 1, 2),
+            defaultButton("button/vc/permit", Emojis.permit, 1, 3),
+            defaultButton("button/vc/name", Emojis.name, 2, 0),
+            defaultButton("button/vc/bitrate", Emojis.bitrate, 2, 1),
+            defaultButton("button/vc/region", Emojis.region, 2, 2),
+            defaultButton("button/vc/template", Emojis.template, 2, 3),
+            defaultButton("button/vc/chat", Emojis.chat, 3, 0),
+            defaultButton("button/vc/waiting-room", Emojis.waitingRoom, 3, 1),
+            defaultButton("button/vc/claim", Emojis.owner, 3, 2),
+            defaultButton("button/vc/transfer", Emojis.transferOwner, 3, 3),
         )
 
-    private fun defaultEmbedStyle(
-        locale: Locale,
-        showInvite: Boolean,
-    ) = InterfaceData.EmbedStyle(
-        url = Links.WEBSITE,
-        title = null,
-        description = L.t(locale, "interface.description"),
-        timestamp = null,
-        color = Containers.purple.rgb,
-        thumbnail = null,
-        image = null,
-        authorName = L.t(locale, "interface.author"),
-        authorUrl = Links.WEBSITE,
-        authorIconUrl = Links.LOGO,
-        footer =
-            L.t(locale, "interface.footer") +
-                if (showInvite) " • " + L.t(locale, "interface.invite", "link" to Links.invite("interface")) else "",
-        footerIconUrl = null,
-    )
+    private fun defaultEmbedStyle(locale: Locale) =
+        InterfaceData.EmbedStyle(
+            url = Links.WEBSITE,
+            title = null,
+            description = L.t(locale, "interface.description"),
+            timestamp = null,
+            color = Containers.purple.rgb,
+            thumbnail = null,
+            image = Links.INTERFACE_BUTTONS_IMAGE,
+            authorName = L.t(locale, "interface.author"),
+            authorUrl = Links.WEBSITE,
+            authorIconUrl = Links.LOGO,
+            footer = L.t(locale, "interface.footer"),
+            footerIconUrl = null,
+        )
 
     suspend fun createInterface(
         guild: Guild,
         channelId: String,
         locale: Locale,
-        showInvite: Boolean,
     ): InterfaceData {
         val channel =
             guild.getTextChannelById(channelId)
                 ?: throw ANotFoundException("Text channel with id $channelId not found")
 
-        return sendInterface(channel, locale, showInvite)
+        return sendInterface(channel, locale)
     }
 
     private suspend fun sendInterface(
         channel: TextChannel,
         locale: Locale,
-        showInvite: Boolean,
     ): InterfaceData {
         val interfaceData =
             InterfaceData(
                 channelID = channel.id,
                 // replaced with the real message id once the message is sent
                 messageID = "0",
-                buttons = defaultButtons(locale),
-                embedStyle = defaultEmbedStyle(locale, showInvite),
-                componentsV2 = true,
+                buttons = defaultButtons(),
+                embedStyle = defaultEmbedStyle(locale),
             )
 
         val message = channel.sendMessage(computeMessage(interfaceData)).await()
@@ -142,8 +122,13 @@ class InterfaceManager {
         val message = retrieveMessage(guild, interfaceData)
 
         message
-            .editMessage(computeEdit(interfaceData))
-            .await()
+            .editMessage(
+                MessageEditBuilder()
+                    .useComponentsV2(false)
+                    .setEmbeds(computeEmbed(interfaceData))
+                    .setComponents(computeComponents(interfaceData))
+                    .build(),
+            ).await()
     }
 
     suspend fun moveInterface(
@@ -220,48 +205,11 @@ class InterfaceManager {
     }
 
     fun computeMessage(interfaceData: InterfaceData): MessageCreateData =
-        if (interfaceData.componentsV2) {
-            MessageCreateBuilder()
-                .useComponentsV2()
-                .setComponents(computeContainer(interfaceData))
-                .build()
-        } else {
-            MessageCreateBuilder()
-                .useComponentsV2(false)
-                .setEmbeds(computeEmbed(interfaceData))
-                .setComponents(computeComponents(interfaceData))
-                .build()
-        }
-
-    private fun computeEdit(interfaceData: InterfaceData): MessageEditData =
-        if (interfaceData.componentsV2) {
-            MessageEditBuilder()
-                .useComponentsV2()
-                .setComponents(computeContainer(interfaceData))
-                .build()
-        } else {
-            MessageEditBuilder()
-                .useComponentsV2(false)
-                .setEmbeds(computeEmbed(interfaceData))
-                .setComponents(computeComponents(interfaceData))
-                .build()
-        }
-
-    private fun computeContainer(interfaceData: InterfaceData): Container {
-        val style = interfaceData.embedStyle
-        val children = mutableListOf<ContainerChildComponent>()
-
-        style.authorName?.let { name ->
-            children += TextDisplay.of("**$name**")
-        }
-        style.title?.let { children += TextDisplay.of("### $it") }
-        style.description?.takeIf { it.isNotBlank() }?.let { children += TextDisplay.of(it) }
-        style.image?.let { children += MediaGallery.of(MediaGalleryItem.fromUrl(it)) }
-        children += computeComponents(interfaceData)
-        style.footer?.let { children += TextDisplay.of("-# $it") }
-
-        return Containers.container(style.color, *children.toTypedArray())
-    }
+        MessageCreateBuilder()
+            .useComponentsV2(false)
+            .setEmbeds(computeEmbed(interfaceData))
+            .setComponents(computeComponents(interfaceData))
+            .build()
 
     private fun computeEmbed(interfaceData: InterfaceData): MessageEmbed {
         val embedStyle = interfaceData.embedStyle

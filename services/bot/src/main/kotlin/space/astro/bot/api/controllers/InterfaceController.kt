@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import space.astro.bot.components.InterfaceManager
 import space.astro.bot.utils.extensions.supportedLocale
-import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.exceptions.ABadRequestException
 import space.astro.shared.core.exceptions.AException
 import space.astro.shared.core.exceptions.ANotFoundException
@@ -29,7 +28,6 @@ class InterfaceController(
     private val shardManager: ShardManager,
     private val interfaceManager: InterfaceManager,
     private val guildSettingsRepository: GuildSettingsRepository,
-    private val premiumManager: PremiumManager,
 ) {
     @Operation(
         summary = "Create interface",
@@ -50,12 +48,7 @@ class InterfaceController(
 
             return ResponseEntity.ok(
                 runBlocking(Dispatchers.IO) {
-                    interfaceManager.createInterface(
-                        guild,
-                        request.channelId,
-                        guildSettings.supportedLocale,
-                        guildSettings?.let { !premiumManager.canEditInterfaceMessage(it) } ?: true,
-                    )
+                    interfaceManager.createInterface(guild, request.channelId, guildSettings.supportedLocale)
                 },
             )
         } catch (e: AException) {
