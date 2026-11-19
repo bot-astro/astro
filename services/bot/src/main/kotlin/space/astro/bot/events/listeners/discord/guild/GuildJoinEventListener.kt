@@ -26,6 +26,7 @@ import space.astro.shared.core.models.analytics.GuildEventData
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.time.Duration.Companion.milliseconds
 
 private val log = KotlinLogging.logger { }
 
@@ -119,7 +120,7 @@ class GuildJoinEventListener(
         guild: Guild,
     ): Long? {
         for (attemptDelay in AUDIT_LOG_ATTEMPT_DELAYS) {
-            delay(attemptDelay)
+            delay(attemptDelay.milliseconds)
 
             if (jda.getGuildById(guild.idLong) == null || !guild.selfMember.hasPermission(Permission.VIEW_AUDIT_LOGS)) {
                 return null
