@@ -1,6 +1,9 @@
 package space.astro.bot.ui
 
 import net.dv8tion.jda.api.components.buttons.Button
+import space.astro.bot.commands.ai.AiApproveButton
+import space.astro.bot.commands.ai.AiCancelButton
+import space.astro.bot.commands.ai.AiMessageButton
 import space.astro.bot.commands.setup.CreateGeneratorButton
 import space.astro.bot.commands.setup.CreateInterfaceButton
 import space.astro.bot.commands.setup.SetupButton
@@ -15,6 +18,18 @@ object Buttons {
 
     fun createInterface(locale: Locale) =
         Button.primary(CreateInterfaceButton.ID, L.t(locale, "button.create_interface")).withEmoji(Emojis.vcInterface)
+
+    fun aiMessage(locale: Locale) = Button.primary(AiMessageButton.ID, L.t(locale, "button.ai_message")).withEmoji(Emojis.chat)
+
+    fun aiApprove(
+        locale: Locale,
+        proposalId: String,
+    ) = Button.success("${AiApproveButton.ID}?$proposalId", L.t(locale, "button.ai_approve"))
+
+    fun aiCancel(
+        locale: Locale,
+        proposalId: String,
+    ) = Button.secondary("${AiCancelButton.ID}?$proposalId", L.t(locale, "button.ai_cancel"))
 
     fun dashboard(locale: Locale) = Button.link(Links.DASHBOARD, L.t(locale, "button.dashboard")).withEmoji(Emojis.dashboard)
 

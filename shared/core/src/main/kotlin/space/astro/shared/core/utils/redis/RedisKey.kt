@@ -93,4 +93,20 @@ object RedisKey {
     ) = "AM:$guildId:$errorHash"
 
     fun ALERT_GUILD_RATE(guildId: String) = "AR:$guildId"
+
+    fun AI_PROPOSAL(proposalId: String) = "ai:proposal:$proposalId"
+
+    fun AI_SESSION(
+        guildId: String,
+        userId: String,
+        surface: String,
+    ) = "ai:session:$guildId:$userId:$surface"
+
+    /**
+     * Format [yearMonth] as yyyy-MM
+     */
+    fun AI_LIMITS(
+        guildId: String,
+        yearMonth: String,
+    ) = "ai:limits:$guildId:$yearMonth"
 }

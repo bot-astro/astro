@@ -8,6 +8,7 @@ enum class AErrorCode {
     NOT_FOUND,
     PREMIUM_REQUIRED,
     TOO_MANY_REQUESTS,
+    CONFLICT,
 
     TRANSLATION,
     BOT_NOT_IN_GUILD,

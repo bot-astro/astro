@@ -67,3 +67,13 @@ class ATooManyRequestsException(
         message = message,
         cause = cause,
     )
+
+class AConflictException(
+    message: String,
+    cause: Throwable? = null,
+) : AException(
+        httpStatusCode = 409,
+        errorCode = AErrorCode.CONFLICT,
+        message = message,
+        cause = cause,
+    )

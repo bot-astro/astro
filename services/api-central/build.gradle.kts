@@ -28,6 +28,19 @@ dependencies {
     }
     implementation(libs.nanoid)
     implementation(libs.chargebee)
+    implementation(libs.bundles.koog)
+
+    testImplementation(libs.junit)
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    // the evals call the real model, run them with `./gradlew :services:api-central:test -Pevals`
+    useJUnitPlatform {
+        if (!project.hasProperty("evals")) {
+            excludeTags("evals")
+        }
+    }
 }
 
 jib {
