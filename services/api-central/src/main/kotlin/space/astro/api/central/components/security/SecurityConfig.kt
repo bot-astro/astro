@@ -107,7 +107,6 @@ class SecurityConfig(
                     .requestMatchers(
                         CentralApiEndpoint.DISCORD_LOGIN,
                         CentralApiEndpoint.DISCORD_OAUTH_CALLBACK,
-                        CentralApiEndpoint.DISCORD_INSTALL_CALLBACK,
                     ).permitAll()
                     .anyRequest()
                     .authenticated()

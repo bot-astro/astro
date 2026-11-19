@@ -61,14 +61,13 @@ class DiscordApiClient(
     fun getAccessToken(
         code: String,
         discordOAuthProperties: DiscordOAuthProperties,
-        redirectUri: String = discordOAuthProperties.redirectUri,
     ): DiscordTokenDto {
         val form: MultiValueMap<String, String> = LinkedMultiValueMap()
         form.add("client_id", discordOAuthProperties.id)
         form.add("client_secret", discordOAuthProperties.secret)
         form.add("grant_type", "authorization_code")
         form.add("code", code)
-        form.add("redirect_uri", redirectUri)
+        form.add("redirect_uri", discordOAuthProperties.redirectUri)
         form.add("scope", "identify email guilds")
 
         try {

@@ -3,7 +3,6 @@ package space.astro.shared.core.utils.api
 object CentralApiEndpoint {
     const val DISCORD_LOGIN = "/v2/auth/discord"
     const val DISCORD_OAUTH_CALLBACK = "/v2/auth/discord/callback"
-    const val DISCORD_INSTALL_CALLBACK = "/v2/auth/discord/install"
     const val ME = "/v2/auth/me"
     const val LOGOUT = "/v2/auth/logout"
 

@@ -89,7 +89,7 @@ class HelpCommand(
                 ),
                 Containers.field(
                     ctx.t("help.invite.title"),
-                    ctx.t("help.invite.content", "emoji" to Emojis.invite.formatted, "link" to Links.invite("help")),
+                    ctx.t("help.invite.content", "emoji" to Emojis.invite.formatted, "link" to Links.INVITE),
                 ),
                 Containers.field(
                     ctx.t("help.support.title"),
