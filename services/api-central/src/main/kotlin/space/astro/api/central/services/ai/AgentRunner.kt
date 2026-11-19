@@ -63,17 +63,25 @@ sealed interface AiTurnEvent {
     ) : AiTurnEvent
 }
 
+/**
+ * @param cost USD, null when the provider does not report it
+ */
 data class AiTurnResult(
     val text: String,
     val proposals: List<AiProposal>,
     val model: String,
     val inputTokens: Int,
     val outputTokens: Int,
+    val cost: Double?,
 )
 
+/**
+ * @param cost USD, null when the provider does not report it
+ */
 data class AiCompletion(
     val text: String,
     val model: String,
     val inputTokens: Int,
     val outputTokens: Int,
+    val cost: Double?,
 )

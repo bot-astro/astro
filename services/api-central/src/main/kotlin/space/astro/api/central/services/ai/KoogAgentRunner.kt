@@ -61,8 +61,9 @@ class KoogAgentRunner(
     override fun runTurn(
         turn: AiTurn,
         onEvent: (AiTurnEvent) -> Unit,
-    ): AiTurnResult =
-        runBlocking {
+    ): AiTurnResult {
+        val costTracker = OpenRouterCostTracker()
+        return runBlocking(costTracker) {
             val history = sessionService?.load(turn.sessionKey).orEmpty()
             val newMessages = mutableListOf<Message>(Message.User(turn.text, RequestMetaInfo.create(clock)))
             val proposals = mutableListOf<AiProposal>()
@@ -128,8 +129,10 @@ class KoogAgentRunner(
                 model = model.id,
                 inputTokens = inputTokens,
                 outputTokens = outputTokens,
+                cost = costTracker.cost,
             )
         }
+    }
 
     private fun executeTool(
         context: AiToolContext,
@@ -157,8 +160,9 @@ class KoogAgentRunner(
     override fun complete(
         systemPrompt: String,
         userPrompt: String,
-    ): AiCompletion =
-        runBlocking {
+    ): AiCompletion {
+        val costTracker = OpenRouterCostTracker()
+        return runBlocking(costTracker) {
             val response =
                 llmClient.execute(
                     Prompt(
@@ -177,6 +181,8 @@ class KoogAgentRunner(
                 model = model.id,
                 inputTokens = response.metaInfo.inputTokensCount ?: 0,
                 outputTokens = response.metaInfo.outputTokensCount ?: 0,
+                cost = costTracker.cost,
             )
         }
+    }
 }

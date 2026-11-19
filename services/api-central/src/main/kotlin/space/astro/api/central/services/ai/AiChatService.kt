@@ -79,6 +79,7 @@ class AiChatService(
             model = result.model,
             inputTokens = result.inputTokens,
             outputTokens = result.outputTokens,
+            cost = result.cost,
         )
 
         return AiChatTurnResult(result.text, result.proposals, limitReached = false)
@@ -116,6 +117,7 @@ class AiChatService(
             model = completion.model,
             inputTokens = completion.inputTokens,
             outputTokens = completion.outputTokens,
+            cost = completion.cost,
         )
 
         val answer =

@@ -23,6 +23,7 @@ class AiAuditService(
         model: String,
         inputTokens: Int,
         outputTokens: Int,
+        cost: Double?,
     ) {
         aiUsageRepository.save(
             AiUsageEntity(
@@ -32,6 +33,7 @@ class AiAuditService(
                 model = model,
                 inputTokens = inputTokens,
                 outputTokens = outputTokens,
+                cost = cost,
             ),
         )
     }

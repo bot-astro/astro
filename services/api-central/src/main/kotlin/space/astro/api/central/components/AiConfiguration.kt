@@ -1,6 +1,8 @@
 package space.astro.api.central.components
 
+import ai.koog.http.client.HttpClientFactoryResolver
 import ai.koog.prompt.executor.clients.modelsById
+import ai.koog.prompt.executor.clients.openai.base.AbstractOpenAILLMClient
 import ai.koog.prompt.executor.clients.openrouter.OpenRouterClientSettings
 import ai.koog.prompt.executor.clients.openrouter.OpenRouterLLMClient
 import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
@@ -14,6 +16,7 @@ import space.astro.api.central.services.ai.AgentRunner
 import space.astro.api.central.services.ai.AiSessionService
 import space.astro.api.central.services.ai.AiTools
 import space.astro.api.central.services.ai.KoogAgentRunner
+import space.astro.api.central.services.ai.OpenRouterCostTrackingHttpClient
 
 @Configuration
 class AiConfiguration {
@@ -24,16 +27,28 @@ class AiConfiguration {
         aiTools: AiTools,
     ): AgentRunner =
         KoogAgentRunner(
-            llmClient =
-                OpenRouterLLMClient(
-                    aiProperties.openrouterApiKey,
-                    OpenRouterClientSettings(baseUrl = aiProperties.openrouterBaseUrl),
-                ),
+            llmClient = openRouterClient(aiProperties),
             model = openRouterModel(aiProperties.model),
             maxSteps = aiProperties.maxSteps,
             sessionService = aiSessionService,
             toolExecutor = aiTools,
         )
+
+    private fun openRouterClient(aiProperties: AiProperties): OpenRouterLLMClient {
+        val settings = OpenRouterClientSettings(baseUrl = aiProperties.openrouterBaseUrl)
+        return OpenRouterLLMClient(
+            settings = settings,
+            httpClient =
+                OpenRouterCostTrackingHttpClient(
+                    AbstractOpenAILLMClient.createConfiguredHttpClient(
+                        apiKey = aiProperties.openrouterApiKey,
+                        settings = settings,
+                        httpClientFactory = HttpClientFactoryResolver.resolve(),
+                        clientName = "OpenRouterLLMClient",
+                    ),
+                ),
+        )
+    }
 
     companion object {
         /**

@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 /**
  * One turn of the AI assistant, stored for traceability and cost tracking
  *
- * @param cost cost of the turn in USD, when the provider reports it
+ * @param cost cost of the turn in USD as reported by OpenRouter, null when not reported
  */
 @Document(collection = "ai_usage")
 data class AiUsageEntity(
