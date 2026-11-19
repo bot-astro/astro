@@ -1,5 +1,6 @@
 package space.astro.api.central.components.security
 
+import jakarta.servlet.DispatcherType
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -23,6 +24,7 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 @EnableMethodSecurity
 class SecurityConfig(
     private val authFilter: AuthFilter,
+    private val internalAuthFilter: InternalAuthFilter,
     private val ipRateLimitFilter: IpRateLimitFilter,
     private val exceptionHandler: ControllersExceptionHandler,
     private val centralApiProperties: CentralApiProperties,
@@ -36,6 +38,9 @@ class SecurityConfig(
     // they would not run twice, but it's cleaner to register them only once
     @Bean
     fun authFilterRegistration(filter: AuthFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
+
+    @Bean
+    fun internalAuthFilterRegistration(filter: InternalAuthFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
 
     @Bean
     fun ipRateLimitFilterRegistration(filter: IpRateLimitFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
@@ -77,8 +82,26 @@ class SecurityConfig(
             .authorizeHttpRequests { it.anyRequest().permitAll() }
             .build()
 
+    /**
+     * Endpoints called by the other services, authenticated with the internal token
+     */
     @Bean
     @Order(3)
+    fun internalSecurityFilterChain(http: HttpSecurity): SecurityFilterChain =
+        http
+            .securityMatcher("/internal/**")
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .csrf { it.disable() }
+            .exceptionHandling {
+                it.authenticationEntryPoint { _, response, exception ->
+                    exceptionHandler.writeException(response, exception)
+                }
+            }.addFilterBefore(internalAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .authorizeHttpRequests { it.anyRequest().authenticated() }
+            .build()
+
+    @Bean
+    @Order(4)
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain =
         http
             .cors {}
@@ -100,6 +123,9 @@ class SecurityConfig(
 //            .addFilterAfter(userIdRateLimitFilter, AuthFilter::class.java)
             .authorizeHttpRequests {
                 it
+                    // the streamed AI chat completes on an async dispatch, the request was authorized before it started
+                    .dispatcherTypeMatchers(DispatcherType.ASYNC)
+                    .permitAll()
                     .requestMatchers("/docs/**")
                     .permitAll()
                     .requestMatchers("/actuator/**")
