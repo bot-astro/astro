@@ -51,6 +51,7 @@
   "help.errors.content": "Le {emoji} [`Tableau de bord`]({link}) affiche aussi toutes les erreurs qu'Astro rencontre sur ton serveur. Si quelque chose ne fonctionne pas comme prévu, consulte le tableau de bord !",
   "help.ultimate.title": "Ultimate",
   "help.ultimate.content": "Débloque des fonctionnalités de niveau supérieur avec la version premium d'Astro : {emoji} Ultimate. Découvre les fonctionnalités que tu peux débloquer avec Ultimate [`sur le site d'Astro`]({link}) !",
+  "help.invite": "Tu veux Astro sur un autre serveur aussi ? [`Ajoute Astro`]({link}) en quelques clics !",
   "help.support.title": "Assistance",
   "help.support.content": "Tu peux rejoindre le {emoji} [`Serveur d'assistance`]({link}) pour poser tes questions si quelque chose n'est pas très clair !",
   "help.open_source.title": "Open Source",

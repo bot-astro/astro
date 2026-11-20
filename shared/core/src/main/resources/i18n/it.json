@@ -51,6 +51,7 @@
   "help.errors.content": "La {emoji} [`Dashboard`]({link}) mostra anche tutti gli errori che Astro incontra mentre lavora nel tuo server. Se qualcosa non funziona come previsto, controlla la dashboard!",
   "help.ultimate.title": "Ultimate",
   "help.ultimate.content": "Sblocca funzionalità di livello superiore con la versione premium di Astro: {emoji} Ultimate. Scopri quali funzionalità puoi sbloccare con Ultimate [`sul sito di Astro`]({link})!",
+  "help.invite": "Vuoi Astro anche in un altro server? [`Aggiungi Astro`]({link}) con pochi clic!",
   "help.support.title": "Supporto",
   "help.support.content": "Puoi unirti al {emoji} [`Server di supporto`]({link}) per fare domande se qualcosa non ti è chiaro!",
   "help.open_source.title": "Open Source",
