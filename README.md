@@ -99,13 +99,13 @@ Includes a REST api used by the `bot` service, when it receives an entitlement e
 
 #### BigQuery
 BigQuery is used for gathering statistics about the bot usage, mainly commands used, guilds joined / left, temporary voice channels generated, configuration errors and a daily snapshot of each guild configuration.  
-It is completely optional and you can skip configuring it if you don't need it (`BOT__BIGQUERY_ENABLED=false`).  
+It is completely optional and you can skip configuring it if you don't need it (`BOT__BIGQUERY_ENABLED=false`). `api-central` writes the install source of each invite to `INSTALL_EVENT` and has its own `CA__BIGQUERY_ENABLED` and `CA__BIGQUERY_DATASET_NAME`.  
 
 If you instead want to use it, you need to:
 1) Create an account and a project on [Google Cloud](https://cloud.google.com/)
 2) Enable BigQuery API
 3) Create a dataset
-4) Create the 6 tables (`CONFIGURATION_ERROR`, `CONNECTION_INVOCATION`, `GUILD_CONFIG_SNAPSHOT`, `GUILD_EVENT`, `SLASH_COMMAND_INVOCATION`, `TEMPORARY_VC_GENERATION`), all partitioned by `DAY` on the `timestamp` field.  
+4) Create the 7 tables (`CONFIGURATION_ERROR`, `CONNECTION_INVOCATION`, `GUILD_CONFIG_SNAPSHOT`, `GUILD_EVENT`, `INSTALL_EVENT`, `SLASH_COMMAND_INVOCATION`, `TEMPORARY_VC_GENERATION`), all partitioned by `DAY` on the `timestamp` field.  
    The schemas are in [`infra/terraform/gcp/main.tf`](https://github.com/bot-astro/infra/blob/master/terraform/gcp/main.tf), which can also create everything for you.  
    Example queries are in [`docs/analytics/queries`](docs/analytics/queries).
 5) Create a service account with the `BigQuery Admin` permission (well that's a bit overkill so you can select the appropriate permissions if you need).  

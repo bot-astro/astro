@@ -51,6 +51,7 @@
   "help.errors.content": "Ipinapakita rin ng {emoji} [`Dashboard`]({link}) ang lahat ng error na nararanasan ng Astro sa server mo. Kung may hindi gumagana gaya ng inaasahan, tingnan ang dashboard!",
   "help.ultimate.title": "Ultimate",
   "help.ultimate.content": "I-unlock ang mga feature na mas mataas ang antas gamit ang premium na bersyon ng Astro: {emoji} Ultimate. Alamin kung anong mga feature ang ma-u-unlock mo gamit ang Ultimate [`sa website ng Astro`]({link})!",
+  "help.invite": "Gusto mo rin ng Astro sa ibang server? [`Idagdag ang Astro`]({link}) sa ilang click lang!",
   "help.support.title": "Suporta",
   "help.support.content": "Maaari kang sumali sa {emoji} [`Support server`]({link}) para magtanong kung may hindi malinaw sa iyo!",
   "help.open_source.title": "Open Source",

@@ -17,3 +17,6 @@ Run them with a cost cap, for example `bq query --use_legacy_sql=false --maximum
 | `premium_funnel.sql` | Guilds that hit a premium gate and became premium within 7 / 30 days |
 | `top_configuration_errors.sql` | Most common errors, guilds affected and how many of them are still active a month later |
 | `heavy_guilds.sql` | Top 100 guilds by temporary VCs generated, with premium flag |
+| `daily_growth.sql` | Guilds that added and removed the bot per day, and the net change |
+| `removals_by_age.sql` | How long guilds kept the bot before removing it (<1min, <1h, <1d, <30d, 30d+, pre-tracking) |
+| `installs_by_source.sql` | Joins per install source (`in_discord` when there is no website install event) and how many of those guilds are active or removed the bot |

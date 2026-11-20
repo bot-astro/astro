@@ -18,6 +18,11 @@ object Links {
     const val GITHUB = "https://github.com/bot-astro/astro"
     const val BLOG_ARTICLE = "https://giuliopime.dev/blog/so-i-built-a-discord-bot"
 
+    // opens the install prompt directly in the Discord app, then the website callback sends the user to the dashboard
+    const val INVITE =
+        "https://discord.com/oauth2/authorize?client_id=715621848489918495&response_type=code" +
+            "&redirect_uri=https%3A%2F%2Fastro-bot.space%2Finvite%2Fcallback&scope=bot%20applications.commands&permissions=8"
+
     fun guildDashboard(guildId: String) = "https://astro-bot.space/guilds/$guildId"
 
     fun guildErrors(guildId: String) = "${guildDashboard(guildId)}/errors"

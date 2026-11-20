@@ -20,12 +20,13 @@ import net.dv8tion.jda.api.requests.ErrorResponse
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import space.astro.bot.models.analytics.GuildEventData
 import space.astro.bot.ui.Messages
 import space.astro.shared.core.lang.L
+import space.astro.shared.core.models.analytics.GuildEventData
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.time.Duration.Companion.milliseconds
 
 private val log = KotlinLogging.logger { }
 
@@ -67,6 +68,7 @@ class GuildJoinEventListener(
             GuildEventData(
                 guildId = guild.idLong,
                 usersCount = guild.memberCount,
+                locale = guild.locale.locale,
                 action = GuildEventData.GuildEventAction.JOINED,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString(),
             ),
@@ -118,7 +120,7 @@ class GuildJoinEventListener(
         guild: Guild,
     ): Long? {
         for (attemptDelay in AUDIT_LOG_ATTEMPT_DELAYS) {
-            delay(attemptDelay)
+            delay(attemptDelay.milliseconds)
 
             if (jda.getGuildById(guild.idLong) == null || !guild.selfMember.hasPermission(Permission.VIEW_AUDIT_LOGS)) {
                 return null

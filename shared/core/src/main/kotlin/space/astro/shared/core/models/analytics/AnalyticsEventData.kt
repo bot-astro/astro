@@ -1,4 +1,4 @@
-package space.astro.bot.models.analytics
+package space.astro.shared.core.models.analytics
 
 /**
  * Data of an analytics event, published as a spring event and pushed to BigQuery
@@ -10,6 +10,7 @@ sealed interface AnalyticsEventData
 data class GuildEventData(
     val guildId: Long,
     val usersCount: Int,
+    val locale: String?,
     val action: GuildEventAction,
     val timestamp: String,
 ) : AnalyticsEventData {
@@ -60,5 +61,15 @@ data class GuildConfigSnapshotEventData(
     val interfaces: Int,
     val connections: Int,
     val templates: Int,
+    val timestamp: String,
+) : AnalyticsEventData
+
+/**
+ * The bot was installed in a guild through a tagged invite link
+ */
+data class InstallEventData(
+    val source: String,
+    val guildId: Long,
+    val userId: Long?,
     val timestamp: String,
 ) : AnalyticsEventData

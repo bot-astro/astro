@@ -51,6 +51,7 @@
   "help.errors.content": "O {emoji} [`Painel`]({link}) também mostra todos os erros que o Astro encontra no seu servidor. Se algo não estiver funcionando como esperado, confira o painel!",
   "help.ultimate.title": "Ultimate",
   "help.ultimate.content": "Desbloqueie recursos de outro nível com a versão premium do Astro: {emoji} Ultimate. Descubra quais recursos você pode desbloquear com o Ultimate [`no site do Astro`]({link})!",
+  "help.invite": "Quer o Astro em outro servidor também? [`Adicione o Astro`]({link}) com poucos cliques!",
   "help.support.title": "Suporte",
   "help.support.content": "Você pode entrar no {emoji} [`Servidor de suporte`]({link}) para tirar dúvidas se algo não estiver muito claro!",
   "help.open_source.title": "Código aberto",

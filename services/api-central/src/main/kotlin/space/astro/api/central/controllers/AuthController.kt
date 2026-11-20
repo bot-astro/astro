@@ -18,16 +18,23 @@ import space.astro.api.central.models.responses.AuthUserResponse
 import space.astro.api.central.services.AuthSessionService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.OAuthStateService
+import space.astro.shared.core.clients.BigQueryService
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.exceptions.ABadRequestException
+import space.astro.shared.core.models.analytics.InstallEventData
 import space.astro.shared.core.models.database.UserEntity
 import space.astro.shared.core.properties.DiscordOAuthProperties
 import space.astro.shared.core.properties.FrontendProperties
 import space.astro.shared.core.repositories.mongo.UserRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 import java.net.URI
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 private val log = KotlinLogging.logger { }
+
+private const val UNKNOWN_INSTALL_SOURCE = "unknown"
+private const val MAX_INSTALL_SOURCE_LENGTH = 64
 
 @RestController
 @RequestMapping
@@ -40,6 +47,7 @@ class AuthController(
     private val oAuthStateService: OAuthStateService,
     private val frontendProperties: FrontendProperties,
     private val userRepository: UserRepository,
+    private val bigQueryService: BigQueryService,
 ) {
     @Operation(
         summary = "Login via Discord",
@@ -49,7 +57,9 @@ class AuthController(
                 "a redirect to the provided `redirect_path` (if it contains `{guild_id}` " +
                 "that will be replaced with the id of the guild the bot was added to.\n" +
                 "Instead on a query parameter called `error_code` set in the baseUrl of the frontend on errors " +
-                "(errors can be: discord_oauth_error, invalid_oauth_state, internal).",
+                "(errors can be: discord_oauth_error, invalid_oauth_state, internal).\n" +
+                "`source` is a free label of where an invite came from (for example topgg), " +
+                "recorded as is with the install (without `:` and cut to 64 characters), unknown if missing.",
     )
     @ApiResponses(
         ApiResponse(
@@ -62,8 +72,13 @@ class AuthController(
         @RequestParam("redirect_path") redirectPath: String,
         @RequestParam("invite", defaultValue = "false") invite: Boolean,
         @RequestParam("invite_guild_id", required = false) inviteGuildId: String? = null,
+        @RequestParam("source", required = false) source: String? = null,
     ): ResponseEntity<Void> {
-        val state = oAuthStateService.create(redirectPath)
+        val state =
+            oAuthStateService.create(
+                redirectPath,
+                source?.replace(":", "")?.take(MAX_INSTALL_SOURCE_LENGTH)?.takeIf { it.isNotBlank() } ?: UNKNOWN_INSTALL_SOURCE,
+            )
 
         val scopes =
             if (invite || inviteGuildId != null) {
@@ -117,12 +132,14 @@ class AuthController(
                 .build()
         }
 
-        var redirectPath =
+        val oAuthState =
             oAuthStateService.consume(state)
                 ?: return ResponseEntity
                     .status(HttpStatus.FOUND)
                     .location(URI("${frontendProperties.baseUrl}?error_code=invalid_oauth_state"))
                     .build()
+
+        var redirectPath = oAuthState.redirectPath
 
         try {
             val discordToken = discordApiClient.getAccessToken(code, discordOAuthProperties)
@@ -142,6 +159,14 @@ class AuthController(
             val guildId = discordToken.guild?.id
             if (guildId != null) {
                 redirectPath = redirectPath.replace("{guild_id}", guildId)
+                bigQueryService.push(
+                    InstallEventData(
+                        source = oAuthState.source,
+                        guildId = guildId.toLong(),
+                        userId = discordUser.id.toLong(),
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).toString(),
+                    ),
+                )
             }
 
             return ResponseEntity

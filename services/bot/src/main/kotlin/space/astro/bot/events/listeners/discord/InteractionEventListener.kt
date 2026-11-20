@@ -26,7 +26,7 @@ import space.astro.bot.interactions.handlers.ModalHandler
 import space.astro.bot.interactions.handlers.SlashHandler
 import space.astro.bot.interactions.handlers.StringSelectHandler
 import space.astro.bot.interactions.handlers.UserContextHandler
-import space.astro.bot.models.analytics.SlashCommandInvocationEventData
+import space.astro.shared.core.models.analytics.SlashCommandInvocationEventData
 import tools.jackson.databind.json.JsonMapper
 import java.time.OffsetDateTime
 import java.time.ZoneOffset

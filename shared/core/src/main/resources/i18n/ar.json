@@ -51,6 +51,7 @@
   "help.errors.content": "تعرض {emoji} [`لوحة التحكم`]({link}) أيضًا جميع الأخطاء التي يواجهها Astro أثناء العمل في سيرفرك. إذا لم يعمل شيء كما هو متوقع، تحقق من لوحة التحكم!",
   "help.ultimate.title": "Ultimate",
   "help.ultimate.content": "افتح ميزات بمستوى أعلى مع النسخة المميزة من Astro: {emoji} Ultimate. اكتشف الميزات التي يمكنك فتحها مع Ultimate [`على موقع Astro`]({link})!",
+  "help.invite": "تريد Astro في سيرفر آخر أيضًا؟ [`أضف Astro`]({link}) إليه ببضع نقرات!",
   "help.support.title": "الدعم",
   "help.support.content": "يمكنك الانضمام إلى {emoji} [`سيرفر الدعم`]({link}) لطرح الأسئلة إذا كان هناك شيء غير واضح لك!",
   "help.open_source.title": "مفتوح المصدر",

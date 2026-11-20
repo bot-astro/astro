@@ -1,0 +1,49 @@
+# Growth work: plan and summary
+
+Implements the code part of the business growth plan (`plans/business-growth.md`, not in this repo). Install attribution comes first, because every other growth idea needs to be measured by where installs come from. The website side is in `astro-bot.space` PR #48.
+
+## Plan
+
+The checklist was split into three parallel packages, each in its own worktree and draft PR, plus a research package that wrote only drafts and reports.
+
+| Package | Where | Content |
+|---|---|---|
+| Backend | this PR | Install attribution, analytics views, `/help` link |
+| Website | astro-bot.space #48 | `/invite?src=<source>` redirect |
+| Research and drafts | `plans/drafts/` (outside git) | Data report (servers, revenue, churn, vote guard), listing copy, outreach and Reddit templates, YouTube script, translator call |
+
+Contract shared by the packages:
+- `GET astro-bot.space/invite?src=<source>` redirects to api-central `/v2/auth/discord` with `source=<src>`.
+- `source` is any free label (`topgg`, `dbl`, `web-guide`, `youtube`, ...), stored as is without `:` and cut to 64 characters. Missing or blank is stored as `unknown`.
+- `source` travels in the server-side OAuth state. On the callback an install event is written to BigQuery with source, guild id and inviter id.
+
+## What this PR contains
+
+1. **Install attribution** (api-central): `AuthController.discord` takes `source`, keeps it in the Redis OAuth state (`OAuthStateService`, format `source:path`) and on callback writes an `INSTALL_EVENT` row through the shared `BigQueryService` (shared core) (disabled by default, `CA__BIGQUERY_ENABLED`, `CA__BIGQUERY_DATASET_NAME`). `GuildEventData` has a new `locale`, filled on join and removal.
+2. **Analytics views** in `docs/analytics/queries`: `daily_growth`, `removals_by_age`, `installs_by_source`.
+3. **`/help` link**: a field "Add Astro to your server" with the direct Discord install link (`Links.INVITE`).
+4. **Installs from inside Discord**: the `/help` link, the App Directory and the Add App button never pass through api-central, so they have no `INSTALL_EVENT`. The `installs_by_source` view groups joins without an install event as `in_discord`. The `/help` link opens the install prompt in the Discord app with `redirect_uri=https://astro-bot.space/invite/callback`, which ignores the code and sends the user to the dashboard.
+5. **Interface**: unchanged apart from the `/help` link, no invite link inside it. The interface is not set as the VC chat message by default.
+
+## Tried and removed
+
+Added at first, then removed after review (the history keeps the commits and the reverts):
+- Ephemeral "Add Astro" reply after a VC rename or lock, with its service and i18n keys.
+- VoiceMaster and TempVoice detection in the inviter onboarding DM.
+- Minimal invite permissions flag. The invite keeps requesting Administrator (`permissions=8`), because Astro needs it in most cases.
+
+The search-intent guide and the Astro vs VoiceMaster page were also added to the website PR and reverted.
+
+## To do before or after merging
+
+- **Terraform**: create the `INSTALL_EVENT` table (nullable `user_id`) and add a nullable `locale` column to `GUILD_EVENT`, or the join, removal and install inserts are rejected.
+- **Prod config** on api-central: `CA__BIGQUERY_ENABLED`, `CA__BIGQUERY_DATASET_NAME` and Google credentials.
+- **Views**: create `daily_growth`, `removals_by_age` and `installs_by_source` in BigQuery like the existing ones.
+- **Translations**: only en-US was edited. After the wording is approved, sync the other languages (new keys: `interface.invite`, the `/help` field).
+- **Listings**: point the top.gg and discordbotlist invite buttons to `https://astro-bot.space/invite?src=topgg` and `?src=dbl`.
+- A state created before a deploy can record a garbage `source` for up to 10 minutes, because the OAuth state format changed. The redirect still works.
+
+## Known limits and open questions
+
+- Adopting an existing voice channel as a generator is not possible today (`createGenerator` always creates a new channel). A small endpoint taking a channel id plus a dashboard button would do it. Not built.
+- No module has test sources, so only compilation, ktlint and detekt were run. The OAuth flow and the Discord messages were checked by hand only partly.

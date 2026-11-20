@@ -1,4 +1,4 @@
-package space.astro.bot.properties
+package space.astro.shared.core.properties
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

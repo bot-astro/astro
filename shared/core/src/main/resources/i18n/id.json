@@ -51,6 +51,7 @@
   "help.errors.content": "{emoji} [`Dashboard`]({link}) juga menampilkan semua error yang ditemui Astro di servermu. Jika ada yang tidak berfungsi sesuai harapan, periksa dashboard!",
   "help.ultimate.title": "Ultimate",
   "help.ultimate.content": "Buka fitur level berikutnya dengan versi premium Astro: {emoji} Ultimate. Temukan fitur apa saja yang bisa dibuka dengan Ultimate [`di situs web Astro`]({link})!",
+  "help.invite": "Mau Astro di server lain juga? [`Tambahkan Astro`]({link}) ke sana hanya dengan beberapa klik!",
   "help.support.title": "Dukungan",
   "help.support.content": "Kamu bisa bergabung ke {emoji} [`Server dukungan`]({link}) untuk bertanya jika ada yang kurang jelas!",
   "help.open_source.title": "Sumber Terbuka",

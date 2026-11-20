@@ -51,6 +51,7 @@
   "help.errors.content": "{emoji} [`แดชบอร์ด`]({link}) ยังแสดงข้อผิดพลาดทั้งหมดที่ Astro พบในเซิร์ฟเวอร์ของคุณด้วย หากมีบางอย่างไม่ทำงานตามที่คาด ให้ตรวจสอบที่แดชบอร์ด!",
   "help.ultimate.title": "Ultimate",
   "help.ultimate.content": "ปลดล็อกฟีเจอร์ระดับถัดไปด้วย Astro เวอร์ชันพรีเมียม: {emoji} Ultimate ดูว่าปลดล็อกอะไรได้บ้างด้วย Ultimate [`บนเว็บไซต์ของ Astro`]({link})!",
+  "help.invite": "อยากได้ Astro ในเซิร์ฟเวอร์อื่นด้วยไหม? [`เพิ่ม Astro`]({link}) ได้ในไม่กี่คลิก!",
   "help.support.title": "ซัพพอร์ต",
   "help.support.content": "คุณเข้าร่วม {emoji} [`เซิร์ฟเวอร์ซัพพอร์ต`]({link}) เพื่อถามคำถามได้ หากมีเรื่องที่ยังไม่ชัดเจน!",
   "help.open_source.title": "โอเพนซอร์ส",

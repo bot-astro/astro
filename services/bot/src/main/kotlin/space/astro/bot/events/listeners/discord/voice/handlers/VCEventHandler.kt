@@ -8,12 +8,12 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 import space.astro.bot.events.publishers.ConfigurationErrorEventPublisher
 import space.astro.bot.exceptions.ConfigurationException
-import space.astro.bot.models.analytics.ConnectionInvocationEventData
-import space.astro.bot.models.analytics.TemporaryVCGenerationEventData
 import space.astro.bot.models.discord.SimpleMemberRolesManager
 import space.astro.bot.models.discord.vc.event.VCEvent
 import space.astro.bot.properties.PodProperties
 import space.astro.bot.utils.extensions.toConfigurationErrorDto
+import space.astro.shared.core.models.analytics.ConnectionInvocationEventData
+import space.astro.shared.core.models.analytics.TemporaryVCGenerationEventData
 import space.astro.shared.core.models.database.ConfigurationErrorCode
 import java.time.Duration
 import java.time.OffsetDateTime

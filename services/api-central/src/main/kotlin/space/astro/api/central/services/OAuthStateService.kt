@@ -8,6 +8,11 @@ import java.util.*
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
+data class OAuthState(
+    val redirectPath: String,
+    val source: String,
+)
+
 @Service
 class OAuthStateService(
     private val redis: StringRedisTemplate,
@@ -18,8 +23,12 @@ class OAuthStateService(
      * Creates a state string to be used to verify the OAuth flow
      *
      * @param redirectPath the path to redirect to after the flow is complete
+     * @param source where the invite came from, must not contain `:`
      */
-    fun create(redirectPath: String): String {
+    fun create(
+        redirectPath: String,
+        source: String,
+    ): String {
         val bytes = ByteArray(16)
         secureRandom.nextBytes(bytes)
 
@@ -31,7 +40,7 @@ class OAuthStateService(
 
         redis.opsForValue().set(
             RedisKey.OAUTH_STATE(state),
-            redirectPath,
+            "$source:$redirectPath",
             10.minutes.toJavaDuration(),
         )
 
@@ -39,10 +48,17 @@ class OAuthStateService(
     }
 
     /**
-     * Gets the redirect path related to a state string and
+     * Gets the data related to a state string and
      * deletes the state afterward
      *
-     * @return the redirect direct path or null if the state is invalid
+     * @return the redirect path and source or null if the state is invalid
      */
-    fun consume(state: String): String? = redis.opsForValue().getAndDelete(RedisKey.OAUTH_STATE(state))
+    fun consume(state: String): OAuthState? {
+        val value = redis.opsForValue().getAndDelete(RedisKey.OAUTH_STATE(state)) ?: return null
+
+        return OAuthState(
+            redirectPath = value.substringAfter(':'),
+            source = value.substringBefore(':'),
+        )
+    }
 }
