@@ -167,7 +167,7 @@ class VCNameManager(
         val incrementalPosition =
             vcPositionManager.getIncrementalPosition(
                 generatorId = ctx.generatorSettings.id,
-                excludedVCId = null,
+                excludedVCId = ctx.temporaryVCEntity.id,
                 temporaryVCs = ctx.temporaryVCEntities,
             )
         ctx.temporaryVCEntity.incrementalPosition = incrementalPosition
@@ -189,7 +189,7 @@ class VCNameManager(
                 GeneratorSettings.InitialPosition.AFTER -> rawPosition + VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
                 GeneratorSettings.InitialPosition.BEFORE -> rawPosition - VCPositionManager.RAW_POSITIONS_WAITING_ROOM_DISTANCE
                 GeneratorSettings.InitialPosition.BOTTOM -> null
-            } ?: return
+            }?.coerceAtLeast(0) ?: return
 
         waitingRoomManager.setPosition(waitingRoomRawPosition)
         ctx.markWaitingRoomManagerAsUpdated()
