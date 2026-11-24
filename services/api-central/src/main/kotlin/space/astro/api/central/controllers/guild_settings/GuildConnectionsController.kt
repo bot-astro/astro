@@ -1,6 +1,8 @@
 package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -19,7 +21,15 @@ class GuildConnectionsController(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val premiumManager: PremiumManager,
 ) {
-    @Operation(summary = "Create connection")
+    @Operation(
+        operationId = "guilds.connections.create",
+        summary = "Create connection",
+        description =
+            "Creates a voice role: a role that Astro assigns to, removes from or toggles on members " +
+                "when they join the voice channel whose id is the `id` of the body. " +
+                "Returns the updated guild settings. " +
+                "Fails with 403 PREMIUM_REQUIRED if the guild reached the voice roles limit of a free server.",
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTIONS)
     @CanManageGuildMiddleware
     fun createConnection(
@@ -39,7 +49,13 @@ class GuildConnectionsController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Update connection")
+    @Operation(
+        operationId = "guilds.connections.update",
+        summary = "Update connection",
+        description =
+            "Replaces the connection with the request body, it is not a partial update: send all the fields. " +
+                "Returns the updated guild settings. Idempotent.",
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTION)
     @CanManageGuildMiddleware
     fun updateConnection(
@@ -62,7 +78,18 @@ class GuildConnectionsController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Delete connection")
+    @Operation(
+        operationId = "guilds.connections.delete",
+        summary = "Delete connection",
+        description =
+            "Removes the voice role connection from the guild settings. The Discord role is not touched. " +
+                "Succeeds also when the connection does not exist. Returns the updated guild settings.",
+        extensions = [
+            Extension(
+                properties = [ExtensionProperty(name = "x-forge-require-confirmation", value = "This removes the voice role connection.")],
+            ),
+        ],
+    )
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTION)
     @CanManageGuildMiddleware
     fun deleteConnection(

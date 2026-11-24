@@ -2,6 +2,8 @@ package space.astro.api.central.controllers.guild_settings
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -24,7 +26,14 @@ class GuildTemplatesController(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val premiumManager: PremiumManager,
 ) {
-    @Operation(summary = "Create template")
+    @Operation(
+        operationId = "guilds.templates.create",
+        summary = "Create template",
+        description =
+            "Saves a preset of temporary VC settings. The `id` of the body is ignored, a new one is generated. " +
+                "Returns the updated guild settings, the new template is the last of `templates`. " +
+                "Fails with 403 PREMIUM_REQUIRED if the guild reached the templates limit of a free server.",
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_TEMPLATES)
     @CanManageGuildMiddleware
     fun createTemplate(
@@ -45,7 +54,14 @@ class GuildTemplatesController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Update template")
+    @Operation(
+        operationId = "guilds.templates.update",
+        summary = "Update template",
+        description =
+            "Replaces the template with the request body, it is not a partial update: send all the fields. " +
+                "The `id` of the body is ignored, the path decides which template is updated. " +
+                "Returns the updated guild settings. Idempotent.",
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_TEMPLATE)
     @CanManageGuildMiddleware
     fun updateTemplate(
@@ -68,7 +84,16 @@ class GuildTemplatesController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Delete template")
+    @Operation(
+        operationId = "guilds.templates.delete",
+        summary = "Delete template",
+        description = "Removes the template from the guild. Succeeds also when it does not exist. Returns the updated guild settings.",
+        extensions = [
+            Extension(
+                properties = [ExtensionProperty(name = "x-forge-require-confirmation", value = "This deletes the template.")],
+            ),
+        ],
+    )
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_TEMPLATE)
     @CanManageGuildMiddleware
     fun deleteTemplate(

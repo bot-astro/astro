@@ -1,5 +1,6 @@
 package space.astro.api.central.models.responses
 
+import io.swagger.v3.oas.annotations.media.Schema
 import space.astro.shared.core.lang.localizedDescription
 import space.astro.shared.core.models.database.ConfigurationErrorCode
 import space.astro.shared.core.models.database.ConfigurationErrorEntity
@@ -9,9 +10,11 @@ data class ConfigurationErrorResponse(
     val id: String,
     val guildId: String,
     val code: ConfigurationErrorCode,
+    @field:Schema(description = "What went wrong, in the language of the guild")
     val description: String,
     val guide: ConfigurationErrorEntity.Guide?,
     val premiumRequired: Boolean,
+    @field:Schema(description = "When it happened, in epoch milliseconds")
     val timestamp: Long,
 ) {
     companion object {

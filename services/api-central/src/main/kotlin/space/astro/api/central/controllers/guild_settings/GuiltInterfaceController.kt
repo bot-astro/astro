@@ -1,6 +1,8 @@
 package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -25,7 +27,25 @@ class GuiltInterfaceController(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val premiumManager: PremiumManager,
 ) {
-    @Operation(summary = "Create interface")
+    @Operation(
+        operationId = "guilds.interfaces.create",
+        summary = "Create interface",
+        description =
+            "Sends the interface message, with the buttons members use to control their temporary VC, " +
+                "in the given text channel and registers it. Returns the updated guild settings, the new interface is " +
+                "the last of `interfaces`. " +
+                "Fails with 403 PREMIUM_REQUIRED if the guild reached the interfaces limit of a free server.",
+        extensions = [
+            Extension(
+                properties = [
+                    ExtensionProperty(
+                        name = "x-forge-require-confirmation",
+                        value = "This sends a new message in a channel of the Discord guild.",
+                    ),
+                ],
+            ),
+        ],
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_INTERFACES)
     @CanManageGuildMiddleware
     fun createInterface(
@@ -51,7 +71,15 @@ class GuiltInterfaceController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Update interface")
+    @Operation(
+        operationId = "guilds.interfaces.update",
+        summary = "Update interface",
+        description =
+            "Replaces ALL the settings of an interface (embed style and buttons) with the request body, it is not a partial update: " +
+                "get the current interface from the guild settings, change the fields you need and send the whole object back. " +
+                "Edits the interface message on Discord. Changing the embed style or the order of the buttons needs premium " +
+                "(403 PREMIUM_REQUIRED). Returns the updated guild settings. Idempotent.",
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_INTERFACE)
     @CanManageGuildMiddleware
     fun updateInterface(
@@ -90,7 +118,23 @@ class GuiltInterfaceController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Move interface to another channel")
+    @Operation(
+        operationId = "guilds.interfaces.move",
+        summary = "Move interface to another channel",
+        description =
+            "Sends the interface message again in another text channel. The interface gets a new id (its message id), " +
+                "read it from the returned guild settings. Returns the updated guild settings.",
+        extensions = [
+            Extension(
+                properties = [
+                    ExtensionProperty(
+                        name = "x-forge-require-confirmation",
+                        value = "This sends the interface message in another channel, it gets a new id.",
+                    ),
+                ],
+            ),
+        ],
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_INTERFACE_MOVE)
     @CanManageGuildMiddleware
     fun moveInterface(
@@ -120,7 +164,23 @@ class GuiltInterfaceController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Delete interface")
+    @Operation(
+        operationId = "guilds.interfaces.delete",
+        summary = "Delete interface",
+        description =
+            "Removes the interface from the guild settings and deletes its message on Discord " +
+                "(a failure to delete the message is ignored). Returns the updated guild settings.",
+        extensions = [
+            Extension(
+                properties = [
+                    ExtensionProperty(
+                        name = "x-forge-require-confirmation",
+                        value = "This deletes the interface message on Discord.",
+                    ),
+                ],
+            ),
+        ],
+    )
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_INTERFACE)
     @CanManageGuildMiddleware
     fun deleteInterface(

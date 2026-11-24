@@ -1,6 +1,8 @@
 package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -35,8 +37,23 @@ class GuildPremiumController(
     private val discordApplicationProperties: DiscordApplicationProperties,
 ) {
     @Operation(
+        operationId = "guilds.premium.upgrade",
         summary = "Upgrade guild",
-        description = "Upgrades the guild to premium using one of the available Chargebee subscriptions of the user",
+        description =
+            "Upgrades the guild to premium using one of the active Chargebee subscriptions of the logged in user, " +
+                "which uses up one of its available upgrades (see the subscriptions endpoint). " +
+                "Fails with 400 if the guild is already upgraded or the subscription has no upgrades left, " +
+                "and with 404 if the subscription is not an active one of the user. Returns the updated guild settings.",
+        extensions = [
+            Extension(
+                properties = [
+                    ExtensionProperty(
+                        name = "x-forge-require-confirmation",
+                        value = "This uses up one upgrade of the user's subscription.",
+                    ),
+                ],
+            ),
+        ],
     )
     @PostMapping(CentralApiEndpoint.GUILD_PREMIUM_UPGRADE)
     @CanManageGuildMiddleware
@@ -80,8 +97,16 @@ class GuildPremiumController(
     }
 
     @Operation(
+        operationId = "guilds.premium.downgrade",
         summary = "Downgrade guild",
-        description = "Removes the premium given to the guild via a Chargebee subscription, frees the upgrade for another guild",
+        description =
+            "Removes the premium given to the guild via a Chargebee subscription and frees the upgrade for another guild. " +
+                "Only the user that upgraded the guild can do it (403 UNAUTHORIZED for anyone else). Returns the updated guild settings.",
+        extensions = [
+            Extension(
+                properties = [ExtensionProperty(name = "x-forge-require-confirmation", value = "This removes premium from the guild.")],
+            ),
+        ],
     )
     @DeleteMapping(CentralApiEndpoint.GUILD_PREMIUM_UPGRADE)
     @CanManageGuildMiddleware
@@ -109,8 +134,12 @@ class GuildPremiumController(
     }
 
     @Operation(
+        operationId = "guilds.premium.refreshEntitlements",
         summary = "Refresh guild entitlements",
-        description = "Fetches the entitlements of the guild from Discord and stores the new or changed ones",
+        description =
+            "Fetches the premium entitlements that the guild bought on Discord and stores the new or changed ones. " +
+                "Use it after the guild bought premium on Discord so that it applies immediately. " +
+                "Returns the updated guild settings. Idempotent.",
     )
     @PostMapping(CentralApiEndpoint.GUILD_PREMIUM_ENTITLEMENTS_REFRESH)
     @CanManageGuildMiddleware

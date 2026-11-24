@@ -2,9 +2,11 @@ package space.astro.api.central.controllers
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -12,7 +14,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.util.UriComponentsBuilder
-import space.astro.api.central.components.OpenApiConfiguration
 import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.responses.AuthUserResponse
 import space.astro.api.central.services.AuthSessionService
@@ -50,6 +51,8 @@ class AuthController(
     private val bigQueryService: BigQueryService,
 ) {
     @Operation(
+        operationId = "auth.login",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
         summary = "Login via Discord",
         description =
             "Perform Discord OAuth flow, " +
@@ -67,6 +70,7 @@ class AuthController(
             description = "Redirect to Discord authorization.",
         ),
     )
+    @SecurityRequirements
     @GetMapping(CentralApiEndpoint.DISCORD_LOGIN)
     fun discord(
         @RequestParam("redirect_path") redirectPath: String,
@@ -119,6 +123,7 @@ class AuthController(
         description = "Endpoint called by Discord containing the code & state for the first part of the OAuth flow",
         hidden = true,
     )
+    @SecurityRequirements
     @GetMapping(CentralApiEndpoint.DISCORD_OAUTH_CALLBACK)
     fun discordCallback(
         @RequestParam("code", required = false) code: String? = null,
@@ -187,9 +192,9 @@ class AuthController(
     }
 
     @Operation(
+        operationId = "auth.me",
         summary = "Get logged in user",
-        description = "Returns the logged in user entity",
-        security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)],
+        description = "Returns the id, Discord username and avatar hash of the logged in user. Use it to check that the session is valid.",
     )
     @GetMapping(CentralApiEndpoint.ME)
     fun me(
@@ -217,8 +222,8 @@ class AuthController(
     @Operation(
         summary = "Logout",
         description = "Logout and delete the session cookie",
-        operationId = "logout",
-        security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)],
+        operationId = "auth.logout",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
     )
     @ApiResponses(
         ApiResponse(

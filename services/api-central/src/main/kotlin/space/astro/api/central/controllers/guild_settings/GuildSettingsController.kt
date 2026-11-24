@@ -1,6 +1,9 @@
 package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -25,7 +28,16 @@ class GuildSettingsController(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val temporaryVCRepository: TemporaryVCRepository,
 ) {
-    @Operation(summary = "Get guild settings")
+    @Operation(
+        operationId = "guilds.settings.get",
+        summary = "Get guild settings",
+        description =
+            "Returns the full configuration of Astro in the guild: language, bot profile, premium status, " +
+                "generators, interfaces, voice roles (connections), templates and entitlements. " +
+                "Creates the default settings if the guild has none yet. " +
+                "Read this first to learn the ids needed by the other guild endpoints. " +
+                "Fails with 404 BOT_NOT_IN_GUILD if Astro was not added to the guild.",
+    )
     @GetMapping(CentralApiEndpoint.GUILD_SETTINGS)
     @CanManageGuildMiddleware
     fun getGuildSettings(
@@ -49,7 +61,13 @@ class GuildSettingsController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Update guild settings")
+    @Operation(
+        operationId = "guilds.settings.update",
+        summary = "Update guild settings",
+        description =
+            "Sets the language of the bot in the guild and whether Astro keeps working when it lacks the Administrator permission. " +
+                "Both fields are required and replace the current values. Returns the updated guild settings.",
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS)
     @CanManageGuildMiddleware
     fun updateGuildSettings(
@@ -70,8 +88,13 @@ class GuildSettingsController(
     }
 
     @Operation(
+        operationId = "guilds.settings.updateProfile",
         summary = "Update bot profile",
-        description = "Any null value will reset the corresponding field to the default value",
+        description =
+            "Sets the nickname, bio, avatar and banner that Astro shows in this guild. " +
+                "All four fields are replaced: a missing or null field resets it to the default Astro value, " +
+                "so send the current values of the fields that must stay. " +
+                "Avatar and banner are image urls, upload them with the media endpoints first.",
     )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_PROFILE)
     @CanManageGuildMiddleware
@@ -103,7 +126,25 @@ class GuildSettingsController(
         return ResponseEntity.ok().build()
     }
 
-    @Operation(summary = "Clear temporary VCs cache")
+    @Operation(
+        operationId = "guilds.settings.clearVcCache",
+        summary = "Clear temporary VCs cache",
+        description =
+            "Forgets which voice channels Astro tracks as temporary VCs in the guild. " +
+                "Use it when temporary VCs got stuck or out of sync, for example after being deleted manually. " +
+                "The VCs are not deleted from Discord.",
+        extensions = [
+            Extension(
+                properties = [
+                    ExtensionProperty(
+                        name = "x-forge-require-confirmation",
+                        value = "This stops Astro from tracking the current temporary VCs of the guild.",
+                    ),
+                ],
+            ),
+        ],
+    )
+    @ApiResponse(responseCode = "204", description = "The cache was cleared.")
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_VC_CACHE)
     @CanManageGuildMiddleware
     fun clearVcsCache(
