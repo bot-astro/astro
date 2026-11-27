@@ -69,8 +69,12 @@ class ShardManagerFactory(
             ).setMemberCachePolicy(MemberCachePolicy.VOICE)
             .enableCache(CacheFlag.VOICE_STATE, CacheFlag.MEMBER_OVERRIDES, CacheFlag.ACTIVITY)
             .setSessionController(redisShardSessionController)
-            .setHttpClient(IOUtil.newHttpClientBuilder().addInterceptor(DiscordHttpMetricsInterceptor(registry)).build())
-            .setShardsTotal(botShardProperties.totalShards)
+            .setHttpClient(
+                IOUtil
+                    .newHttpClientBuilder()
+                    .addInterceptor(DiscordHttpMetricsInterceptor(registry, podProperties.getParsedOrdinal()))
+                    .build(),
+            ).setShardsTotal(botShardProperties.totalShards)
             .setShards(shardList)
             .setActivity(activity)
             .addEventListeners(jdaToSpringEventBridge)
