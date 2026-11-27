@@ -7,6 +7,7 @@ import okhttp3.Response
 
 class DiscordHttpMetricsInterceptor(
     private val registry: MeterRegistry,
+    private val podId: Int,
 ) : Interceptor {
     private val snowflake = Regex("\\d{17,20}")
     private val interactionPath = Regex("interactions/\\{id}.*")
@@ -18,6 +19,7 @@ class DiscordHttpMetricsInterceptor(
 
         Counter
             .builder("http.discord.requests")
+            .tag("pod_id", podId.toString())
             .tag("method", request.method)
             .tag("status", response.code.toString())
             .tag("uri", normalize(request.url.toString()))
