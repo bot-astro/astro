@@ -1,0 +1,9 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "space.astro-bot/astro",
+  "title": "Astro",
+  "description": "Configure the Astro Discord bot: temporary voice channels, voice roles, interfaces, templates",
+  "repository": { "url": "https://github.com/bot-astro/astro-mcp", "source": "github" },
+  "version": "1.0.0",
+  "remotes": [{ "type": "streamable-http", "url": "https://mcp.astro-bot.space/mcp" }]
+}

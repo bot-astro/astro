@@ -1,0 +1,62 @@
+version: v1.0
+name: Publish MCP
+
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu2404
+
+global_job_config:
+  prologue:
+    commands:
+      - checkout
+      - export VERSION=$(jq -r .version services/mcp-server/server.json)
+
+blocks:
+  - name: Publish to the MCP Registry
+    dependencies: []
+    task:
+      secrets:
+        - name: mcp-registry
+      env_vars:
+        - name: MCP_PUBLISHER_VERSION
+          value: v1.8.8
+      jobs:
+        - name: Publish server.json, skipped when the version is already published
+          commands:
+            - cd services/mcp-server
+            # registry versions are immutable, publishing the same one twice fails
+            - |
+              if [ "$(curl -s -o /dev/null -w '%{http_code}' "https://registry.modelcontextprotocol.io/v0.1/servers/space.astro-bot%2Fastro/versions/$VERSION")" = "200" ]; then
+                echo "Version $VERSION is already in the MCP Registry, skipping"
+              else
+                curl --fail --location --silent --show-error "https://github.com/modelcontextprotocol/registry/releases/download/$MCP_PUBLISHER_VERSION/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher &&
+                  ./mcp-publisher validate &&
+                  ./mcp-publisher login dns --domain astro-bot.space --private-key "$MCP_REGISTRY_KEY" &&
+                  ./mcp-publisher publish
+              fi
+
+  - name: Sync the plugin to bot-astro/astro-mcp
+    dependencies: []
+    task:
+      secrets:
+        - name: astro-mcp-deploy-key
+      jobs:
+        - name: Push services/mcp-server/plugin and tag the version
+          commands:
+            - chmod 600 ~/.ssh/astro_mcp_deploy_key
+            - export GIT_SSH_COMMAND="ssh -i ~/.ssh/astro_mcp_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+            - git clone git@github.com:bot-astro/astro-mcp.git /tmp/astro-mcp
+            - rsync -a --delete --exclude .git services/mcp-server/plugin/ /tmp/astro-mcp/
+            - cd /tmp/astro-mcp
+            - git config user.name "Semaphore CI"
+            - git config user.email "ci@astro-bot.space"
+            - git add -A
+            - git diff --cached --quiet || git commit -m "sync from bot-astro/astro@$SEMAPHORE_GIT_SHA"
+            - git push origin HEAD:main
+            - |
+              if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" > /dev/null; then
+                echo "Tag v$VERSION already exists"
+              else
+                git tag "v$VERSION" && git push origin "v$VERSION"
+              fi

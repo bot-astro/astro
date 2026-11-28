@@ -1,0 +1,8 @@
+node_modules
+dist
+openapi.json
+src/**/*.test.ts
+plugin/*
+!plugin/skills
+Dockerfile
+.dockerignore

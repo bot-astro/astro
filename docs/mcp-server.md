@@ -16,9 +16,19 @@ Experiment: generate an MCP server from the api-central OpenAPI spec with [Cloud
 `services/mcp-server`, `npm run dev` (needs api-central running, Node 24):
 
 - Resource server only. `GET /.well-known/oauth-protected-resource/mcp` points at api-central as the authorization server, `/mcp` answers `401` with `WWW-Authenticate: Bearer resource_metadata="..."` without a valid token. A token is valid if `POST /oauth/introspect` on api-central says it is active, its audience is this server and it has `guilds:read`. It is forwarded as is to every tool call, so api-central keeps enforcing scopes and guild permissions. With a read only token the server lists only the tools with `readOnlyHint`. CORS is open (`*`, no cookies) on `/mcp` and the metadata for browser clients.
-- Config: `MCP_PORT` (9002), `MCP_PUBLIC_URL` (`http://localhost:9002/mcp`), `API_CENTRAL_URL` (`http://localhost:9001`), `API_CENTRAL_PUBLIC_URL` (issuer, same as `CA__PUBLIC_URL` of api-central).
+- Config (env, default in brackets):
+  - `MCP_PORT` (9002), `MCP_PUBLIC_URL` (`http://localhost:9002/mcp`)
+  - `MCP_MANAGEMENT_PORT` (9102): `GET /healthz` (liveness) and `GET /readyz` (200 once api-central's authorization server metadata is loaded, 503 before and while shutting down). Not to be exposed by the Service.
+  - `API_CENTRAL_URL` (`http://localhost:9001`), `API_CENTRAL_PUBLIC_URL` (issuer, same as `CA__PUBLIC_URL` of api-central)
+  - `SENTRY_DSN` (unset = Sentry off), `SENTRY_ENVIRONMENT` (`production`). The release is the `package.json` version.
+  - `OTEL_ENDPOINT` (unset = metrics off): the OTLP HTTP receiver, `/v1/metrics` is appended like in api-central.
+  - `MCP_SHUTDOWN_DRAIN_MS` (5000): how long it keeps accepting after `SIGTERM` before closing.
+- Operations: the metadata is loaded with retries (exponential backoff up to 30 s), so the server starts before api-central. On `SIGTERM` readiness goes 503, it keeps serving for the drain delay, stops accepting, waits for in-flight requests and exits, after 25 s at the latest. Logs are JSON lines on stdout. `X-Request-Id` (the incoming one, else a new UUID) is in the logs, the response and every call to api-central (introspection and tools).
+- Introspection results of active tokens are cached 30 s (at most until `exp`) by SHA-256 of the token, at most 10000 entries, so a revoked token keeps working here up to 30 s.
+- Metrics: `mcp.tool.calls` (`tool`, `status` = `ok`, `error` or `4xx`/`5xx`, `error_code` from api-central's error body), `mcp.tool.duration` (seconds, `tool`), `mcp.introspection.failures` (`reason` = `unreachable`, `http_<status>`, `audience`). Resource `service.name=mcp-server`.
+- Image: `services/mcp-server/Dockerfile` (`docker build services/mcp-server`), pushed to `ghcr.io/bot-astro/mcp-server` by CI. Version in `package.json`, `server.json` (MCP Registry), `plugin/.claude-plugin/plugin.json` and `marketplace.json` must match, CI checks it.
 - Every `POST` and `PATCH` gets a fresh `Idempotency-Key`.
-- Skills: `services/mcp-server/plugin/skills/*/SKILL.md` are Agent Skills (the open `SKILL.md` format that Claude Code, Codex, Cursor, Gemini CLI and others read), written once and used three ways: the server sends them as `instructions` on `initialize` and serves them as MCP resources (`skill://astro/<name>/SKILL.md`) and prompts, so any MCP client gets them; the `plugin` folder is a Claude Code plugin (`.claude-plugin/plugin.json`, `.mcp.json`, `skills/`); and the folders can be copied to the skills directory of any agent that supports the format. Skills: `configure-astro` (workflow and rules for changes) and `diagnose-astro` (find why Astro misbehaves). `plugin/.mcp.json` points at localhost, set the production URL before publishing it.
+- Skills: `services/mcp-server/plugin/skills/*/SKILL.md` are Agent Skills (the open `SKILL.md` format that Claude Code, Codex, Cursor, Gemini CLI and others read), written once and used three ways: the server sends them as `instructions` on `initialize` and serves them as MCP resources (`skill://astro/<name>/SKILL.md`) and prompts, so any MCP client gets them; the `plugin` folder is a Claude Code plugin (`.claude-plugin/plugin.json`, `.mcp.json`, `skills/`); and the folders can be copied to the skills directory of any agent that supports the format. Skills: `configure-astro` (workflow and rules for changes) and `diagnose-astro` (find why Astro misbehaves). `plugin/.mcp.json` points at production; the `plugin` folder is the root of the public repo `bot-astro/astro-mcp` (a plugin marketplace, synced by the "Publish MCP" promotion).
 - Tools (`src/exposed-tools.ts`, an allow-list over the generated ones): list guilds, channels, roles and channel permissions; get the settings; update settings and bot profile (`PATCH`, `dryRun` available); create, update, delete generators, interfaces (also move), voice role connections and templates; set the updates channel; list guild errors.
 - Not exposed: billing, premium, media, the setup wizard, `auth.me`, `discord.users.getSelf` (it returns the email, so that open decision is closed), clearing the VC cache and the error log.
 - No ad-hoc endpoints were needed: the `PATCH` endpoints are partial updates with `dryRun`, so the model does not resend whole objects. Writes return the whole guild settings, no slim responses (decided).
@@ -105,7 +115,7 @@ Hardening:
 
 Not done yet:
 
-- Set `CA__PUBLIC_URL` (issuer) and `CA__MCP_RESOURCE_URL` in api-central and the matching variables of the MCP server in each environment, and deploy it (no Dockerfile or manifests yet).
+- Set `CA__PUBLIC_URL` (issuer) and `CA__MCP_RESOURCE_URL` in api-central and the matching variables of the MCP server in each environment, and deploy it (no k8s manifests yet).
 - No endpoint for the user to see and revoke grants, and no RFC 7009 revocation (the grant can only be deleted from Redis).
 - A reused authorization code does not revoke the tokens it produced.
 - No tests, api-central has no test setup. The hardening above was only compiled and linted on the api-central side, the MCP server side is covered by `npm test`.
