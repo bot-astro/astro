@@ -59,10 +59,12 @@ class AuthFilter(
         // (userId, sessionId), for the tokens of MCP clients the session id is the id of the token
         // the dashboard session can do everything, the tokens of MCP clients only what their scopes allow
         var scopes = AuthScope.ALL
+        var mcpGrantId: String? = null
         val identity: Pair<String, String> =
             if (bearerToken != null) {
                 val token = mcpOAuthService.getAccessToken(bearerToken) ?: return
                 scopes = token.scopes
+                mcpGrantId = token.grantId
                 Pair(token.userId, token.tokenId)
             } else if (cookieValue != null) {
                 val (userId, sessionId) = authSessionService.getUserAndSessionIdFromCookie(cookieValue)
@@ -89,7 +91,7 @@ class AuthFilter(
 
         val authContext =
             AuthContext(
-                authPrincipal = AuthPrincipal(sessionId, userId, discordAccessToken),
+                authPrincipal = AuthPrincipal(sessionId, userId, discordAccessToken, mcpGrantId),
                 authorities = scopes.map { SimpleGrantedAuthority(it) },
             )
         SecurityContextHolder.getContext().authentication = authContext

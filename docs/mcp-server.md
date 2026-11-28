@@ -99,16 +99,19 @@ Hardening:
 - **Audience (RFC 8707)**: `resource` on authorize and token must be `CA__MCP_RESOURCE_URL` (`invalid_target` otherwise, a missing one defaults to it). It is stored in the code and the tokens, and `/oauth/introspect` returns it as `aud`, the MCP server rejects any other.
 - **Scopes**: introspection returns `scope`, the MCP server hides the write tools from read only tokens. The consent page lets the user grant read only when the client asked for write, the granted scopes are in the token response.
 - **Refresh token reuse**: every authorization is a grant (`MG:` key, 30 days, renewed on rotation) and all its tokens check it. A rotated refresh token is remembered (`MRU:`), using it again deletes the grant, so the leaked and the legitimate tokens stop working (access tokens within seconds, they check the grant on every request). A client that retries a refresh after a timeout also hits this and has to log in again.
+- **Code reuse (RFC 6749 4.1.2)**: an exchanged code is remembered for 10 minutes (`MACU:` → grant id), using it again deletes the grant.
+- **Revocation (RFC 7009)**: `POST /oauth/revoke` (in the metadata as `revocation_endpoint`) always answers 200. A refresh token deletes its grant, an access token only itself.
+- **Connected apps**: `GET /v2/auth/grants` lists the active grants of the user (`id`, `client_id`, `client_name`, `scopes`, `created_at`, `last_used_at` from `MGL:`, updated on every Bearer request), `DELETE /v2/auth/grants/{id}` deletes one (204, 404 if not the user's). Only with the dashboard session, a Bearer token gets 403. Marked `x-forge-skip`, so they never become tools.
+- **Rate limit**: authenticated requests (cookie or Bearer) share one bucket per user (`UserIdRateLimitFilter`), anonymous ones are limited by IP, so MCP users don't share the bucket of the MCP pod's IP.
 - **Logout**: the dashboard logout keeps the Discord token while the user has active grants (`MUG:` set), so MCP tokens survive it.
 - **CORS**: `/oauth/token` and the metadata allow any origin without credentials.
 - **CIMD fetch**: OkHttp with a DNS lookup that rejects non public addresses, so the connection goes only to the checked addresses.
 
+Tests: `OAuthServerFlowTest` (`@SpringBootTest`, Testcontainers Mongo and Redis, Discord and the CIMD fetch mocked) covers authorize, consent, token, refresh, refresh and code reuse, introspection, revocation and the grants endpoints. Run with `./gradlew :services:api-central:test`, it needs Docker.
+
 Not done yet:
 
 - Set `CA__PUBLIC_URL` (issuer) and `CA__MCP_RESOURCE_URL` in api-central and the matching variables of the MCP server in each environment, and deploy it (no Dockerfile or manifests yet).
-- No endpoint for the user to see and revoke grants, and no RFC 7009 revocation (the grant can only be deleted from Redis).
-- A reused authorization code does not revoke the tokens it produced.
-- No tests, api-central has no test setup. The hardening above was only compiled and linted on the api-central side, the MCP server side is covered by `npm test`.
 
 ## API conventions
 

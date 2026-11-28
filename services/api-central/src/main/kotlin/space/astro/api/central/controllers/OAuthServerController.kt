@@ -47,6 +47,8 @@ class OAuthServerController(
             "authorization_endpoint" to issuer + CentralApiEndpoint.OAUTH_AUTHORIZE,
             "token_endpoint" to issuer + CentralApiEndpoint.OAUTH_TOKEN,
             "introspection_endpoint" to issuer + CentralApiEndpoint.OAUTH_INTROSPECT,
+            "revocation_endpoint" to issuer + CentralApiEndpoint.OAUTH_REVOKE,
+            "revocation_endpoint_auth_methods_supported" to listOf("none"),
             "response_types_supported" to listOf("code"),
             "grant_types_supported" to listOf("authorization_code", "refresh_token"),
             "code_challenge_methods_supported" to listOf("S256"),
@@ -286,6 +288,18 @@ class OAuthServerController(
             }
 
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(body)
+    }
+
+    /**
+     * Token revocation (RFC 7009), it answers 200 also for unknown tokens.
+     * Clients are public, so like introspection it does not need its own authentication.
+     */
+    @PostMapping(CentralApiEndpoint.OAUTH_REVOKE, consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
+    fun revoke(
+        @RequestParam("token", required = false) token: String?,
+    ): ResponseEntity<Void> {
+        if (token != null) mcpOAuthService.revokeToken(token)
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).build()
     }
 
     private fun tokenError(

@@ -28,6 +28,9 @@ dependencies {
     }
     implementation(libs.nanoid)
     implementation(libs.chargebee)
+
+    testImplementation(libs.bundles.spring.test)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 jib {

@@ -20,6 +20,7 @@ import space.astro.api.central.components.ControllersExceptionHandler
 import space.astro.api.central.components.IdempotencyFilter
 import space.astro.api.central.components.RequestIdFilter
 import space.astro.api.central.components.security.ratelimit.IpRateLimitFilter
+import space.astro.api.central.components.security.ratelimit.UserIdRateLimitFilter
 import space.astro.api.central.models.auth.AuthScope
 import space.astro.shared.core.exceptions.AInsufficientScopeException
 import space.astro.shared.core.properties.api_central.CentralApiProperties
@@ -30,6 +31,7 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 class SecurityConfig(
     private val authFilter: AuthFilter,
     private val ipRateLimitFilter: IpRateLimitFilter,
+    private val userIdRateLimitFilter: UserIdRateLimitFilter,
     private val idempotencyFilter: IdempotencyFilter,
     private val exceptionHandler: ControllersExceptionHandler,
     private val centralApiProperties: CentralApiProperties,
@@ -46,6 +48,9 @@ class SecurityConfig(
 
     @Bean
     fun ipRateLimitFilterRegistration(filter: IpRateLimitFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
+
+    @Bean
+    fun userIdRateLimitFilterRegistration(filter: UserIdRateLimitFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
 
     @Bean
     fun idempotencyFilterRegistration(filter: IdempotencyFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
@@ -108,10 +113,13 @@ class SecurityConfig(
                     response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer error=\"insufficient_scope\", scope=\"$requiredScope\"")
                     exceptionHandler.writeException(response, AInsufficientScopeException(requiredScope))
                 }
-            }.addFilterBefore(ipRateLimitFilter, UsernamePasswordAuthenticationFilter::class.java)
-            .addFilterAfter(authFilter, IpRateLimitFilter::class.java)
-            .addFilterAfter(idempotencyFilter, AuthFilter::class.java)
-//            .addFilterAfter(userIdRateLimitFilter, AuthFilter::class.java)
+            }
+            // MCP requests all come from the IP of the MCP server, so logged in users are limited by user id
+            // and only anonymous requests by IP
+            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAfter(ipRateLimitFilter, AuthFilter::class.java)
+            .addFilterAfter(userIdRateLimitFilter, IpRateLimitFilter::class.java)
+            .addFilterAfter(idempotencyFilter, UserIdRateLimitFilter::class.java)
             .authorizeHttpRequests {
                 it
                     .requestMatchers("/docs/**")
@@ -126,6 +134,7 @@ class SecurityConfig(
                         CentralApiEndpoint.OAUTH_CONSENT,
                         CentralApiEndpoint.OAUTH_TOKEN,
                         CentralApiEndpoint.OAUTH_INTROSPECT,
+                        CentralApiEndpoint.OAUTH_REVOKE,
                     ).permitAll()
                     .requestMatchers(RequestMatcher { it.method.isReadMethod() })
                     .hasAuthority(AuthScope.GUILDS_READ)
@@ -163,6 +172,7 @@ class SecurityConfig(
         return UrlBasedCorsConfigurationSource().apply {
             registerCorsConfiguration(CentralApiEndpoint.OAUTH_SERVER_METADATA, publicOAuthConfig)
             registerCorsConfiguration(CentralApiEndpoint.OAUTH_TOKEN, publicOAuthConfig)
+            registerCorsConfiguration(CentralApiEndpoint.OAUTH_REVOKE, publicOAuthConfig)
             registerCorsConfiguration("/**", config)
         }
     }
