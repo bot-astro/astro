@@ -19,11 +19,26 @@ data class McpAuthRequest(
 
 data class McpAuthCode(
     val clientId: String,
+    val clientName: String,
     val redirectUri: String,
     val codeChallenge: String,
     val scopes: List<String>,
     val resource: String,
     val userId: String,
+)
+
+/**
+ * An authorization of a user to an MCP client, shared by all the tokens obtained by refreshing
+ *
+ * @param createdAt epoch millis
+ */
+data class McpGrant(
+    val grantId: String,
+    val userId: String,
+    val clientId: String,
+    val clientName: String,
+    val scopes: List<String>,
+    val createdAt: Long,
 )
 
 /**

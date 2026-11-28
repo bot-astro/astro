@@ -132,6 +132,12 @@ bigquery = { module = "com.google.cloud:google-cloud-bigquery", version.ref = "b
 
 # Testing
 junit = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
+testcontainers-mongodb = { module = "org.testcontainers:testcontainers-mongodb" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 
 [bundles]
 service-core=[
@@ -170,6 +176,13 @@ icu4j = [
     "icu4j",
     "icu4j-charset",
     "icu4j-localespi"
+]
+spring-test = [
+    "spring-boot-starter-test",
+    "spring-boot-starter-webmvc-test",
+    "spring-boot-testcontainers",
+    "testcontainers-junit-jupiter",
+    "testcontainers-mongodb"
 ]
 bucket4j = [
     "bucket4j",

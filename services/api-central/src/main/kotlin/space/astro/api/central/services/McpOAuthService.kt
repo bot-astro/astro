@@ -4,6 +4,7 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import space.astro.api.central.models.mcp.McpAuthCode
 import space.astro.api.central.models.mcp.McpAuthRequest
+import space.astro.api.central.models.mcp.McpGrant
 import space.astro.api.central.models.mcp.McpToken
 import space.astro.shared.core.utils.redis.RedisKey
 import tools.jackson.databind.json.JsonMapper
@@ -21,6 +22,12 @@ data class McpTokenPair(
     val scopes: List<String>,
 )
 
+data class McpGrantUsage(
+    val grant: McpGrant,
+    /** epoch millis, null if no token of the grant was used yet */
+    val lastUsedAt: Long?,
+)
+
 data class McpTokenIntrospection(
     val token: McpToken,
     val expiresInSeconds: Long,
@@ -33,7 +40,8 @@ data class McpTokenIntrospection(
  * Codes and tokens are random and only their SHA-256 is stored in Redis.
  *
  * Every authorization creates a grant, the tokens obtained by refreshing belong to the same grant.
- * Deleting the grant stops all of them, this is what happens when a refresh token is used twice.
+ * Deleting the grant stops all of them, this is what happens when a refresh token or a code is used twice,
+ * when the user disconnects the client or when the client revokes its refresh token.
  */
 @Service
 class McpOAuthService(
@@ -43,6 +51,7 @@ class McpOAuthService(
     companion object {
         val AUTH_REQUEST_TTL: Duration = Duration.ofMinutes(10)
         val AUTH_CODE_TTL: Duration = Duration.ofMinutes(1)
+        val AUTH_CODE_USED_TTL: Duration = Duration.ofMinutes(10)
         val ACCESS_TOKEN_TTL: Duration = Duration.ofHours(1)
         val REFRESH_TOKEN_TTL: Duration = Duration.ofDays(30)
     }
@@ -87,7 +96,15 @@ class McpOAuthService(
         redis.opsForValue().set(
             RedisKey.MCP_AUTH_CODE(sha256(code)),
             jsonMapper.writeValueAsString(
-                McpAuthCode(request.clientId, request.redirectUri, request.codeChallenge, grantedScopes, request.resource, userId),
+                McpAuthCode(
+                    request.clientId,
+                    request.clientName,
+                    request.redirectUri,
+                    request.codeChallenge,
+                    grantedScopes,
+                    request.resource,
+                    userId,
+                ),
             ),
             AUTH_CODE_TTL,
         )
@@ -98,6 +115,8 @@ class McpOAuthService(
 
     /**
      * @param resource the `resource` of the token request, if the client sent it
+     * A code that was already exchanged revokes the tokens issued from it (RFC 6749 4.1.2).
+     *
      * @return the tokens, or null if the code is invalid or was issued for another client, redirect URI or resource,
      * or the PKCE verifier does not match
      */
@@ -108,10 +127,15 @@ class McpOAuthService(
         codeVerifier: String,
         resource: String?,
     ): McpTokenPair? {
+        val hash = sha256(code)
         // the code is deleted even if the checks below fail so it can't be guessed by retrying
-        val authCode: McpAuthCode =
-            redis.opsForValue().getAndDelete(RedisKey.MCP_AUTH_CODE(sha256(code)))?.let { jsonMapper.readValue(it) }
-                ?: return null
+        val authCode: McpAuthCode? =
+            redis.opsForValue().getAndDelete(RedisKey.MCP_AUTH_CODE(hash))?.let { jsonMapper.readValue(it) }
+
+        if (authCode == null) {
+            redis.opsForValue().get(RedisKey.MCP_AUTH_CODE_USED(hash))?.let { revokeGrant(it) }
+            return null
+        }
 
         val challenge =
             Base64.getUrlEncoder().withoutPadding().encodeToString(
@@ -124,7 +148,20 @@ class McpOAuthService(
             return null
         }
 
-        return issueTokens(randomString(), authCode.userId, clientId, authCode.scopes, authCode.resource)
+        val grant =
+            McpGrant(
+                grantId = randomString(),
+                userId = authCode.userId,
+                clientId = clientId,
+                clientName = authCode.clientName,
+                scopes = authCode.scopes,
+                createdAt = System.currentTimeMillis(),
+            )
+        redis.opsForValue().set(RedisKey.MCP_GRANT(grant.grantId), jsonMapper.writeValueAsString(grant), REFRESH_TOKEN_TTL)
+        redis.opsForSet().add(RedisKey.MCP_USER_GRANTS(grant.userId), grant.grantId)
+        redis.opsForValue().set(RedisKey.MCP_AUTH_CODE_USED(hash), grant.grantId, AUTH_CODE_USED_TTL)
+
+        return issueTokens(grant.grantId, authCode.userId, clientId, authCode.scopes, authCode.resource)
     }
 
     /**
@@ -153,12 +190,21 @@ class McpOAuthService(
         return issueTokens(token.grantId, token.userId, clientId, token.scopes, token.resource)
     }
 
-    fun getAccessToken(accessToken: String): McpToken? =
-        redis
-            .opsForValue()
-            .get(RedisKey.MCP_ACCESS_TOKEN(sha256(accessToken)))
-            ?.let<String, McpToken> { jsonMapper.readValue(it) }
-            ?.takeIf { isGrantActive(it.grantId) }
+    fun getAccessToken(accessToken: String): McpToken? {
+        val token =
+            redis
+                .opsForValue()
+                .get(RedisKey.MCP_ACCESS_TOKEN(sha256(accessToken)))
+                ?.let<String, McpToken> { jsonMapper.readValue(it) }
+                ?.takeIf { isGrantActive(it.grantId) }
+                ?: return null
+        redis.opsForValue().set(
+            RedisKey.MCP_GRANT_LAST_USED(token.grantId),
+            System.currentTimeMillis().toString(),
+            REFRESH_TOKEN_TTL,
+        )
+        return token
+    }
 
     /**
      * @return the access token and the seconds it is still valid for, or null if it is not valid
@@ -178,10 +224,58 @@ class McpOAuthService(
         return active.isNotEmpty()
     }
 
+    /**
+     * @return the active grants of the user, oldest first
+     */
+    fun listGrants(userId: String): List<McpGrantUsage> {
+        val key = RedisKey.MCP_USER_GRANTS(userId)
+        val grantIds = redis.opsForSet().members(key).orEmpty()
+        val grants = grantIds.mapNotNull { getGrant(it) }
+        val ended = grantIds - grants.map { it.grantId }.toSet()
+        if (ended.isNotEmpty()) redis.opsForSet().remove(key, *ended.toTypedArray())
+
+        return grants
+            .sortedBy { it.createdAt }
+            .map { McpGrantUsage(it, redis.opsForValue().get(RedisKey.MCP_GRANT_LAST_USED(it.grantId))?.toLongOrNull()) }
+    }
+
+    /**
+     * Revokes every token of the grant
+     *
+     * @return false if the user has no active grant with this id
+     */
+    fun revokeUserGrant(
+        userId: String,
+        grantId: String,
+    ): Boolean {
+        if (getGrant(grantId)?.userId != userId) return false
+        revokeGrant(grantId)
+        return true
+    }
+
+    /**
+     * Token revocation (RFC 7009): a refresh token revokes its whole grant, an access token only itself.
+     * Unknown tokens are ignored.
+     */
+    fun revokeToken(token: String) {
+        val hash = sha256(token)
+        val refreshToken: McpToken? = redis.opsForValue().get(RedisKey.MCP_REFRESH_TOKEN(hash))?.let { jsonMapper.readValue(it) }
+        if (refreshToken != null) {
+            revokeGrant(refreshToken.grantId)
+            return
+        }
+        redis.delete(RedisKey.MCP_ACCESS_TOKEN(hash))
+    }
+
+    private fun getGrant(grantId: String): McpGrant? =
+        redis.opsForValue().get(RedisKey.MCP_GRANT(grantId))?.let { jsonMapper.readValue(it) }
+
     private fun isGrantActive(grantId: String) = redis.hasKey(RedisKey.MCP_GRANT(grantId))
 
     private fun revokeGrant(grantId: String) {
-        redis.delete(RedisKey.MCP_GRANT(grantId))
+        val grant = getGrant(grantId) ?: return
+        redis.delete(listOf(RedisKey.MCP_GRANT(grantId), RedisKey.MCP_GRANT_LAST_USED(grantId)))
+        redis.opsForSet().remove(RedisKey.MCP_USER_GRANTS(grant.userId), grantId)
     }
 
     private fun issueTokens(
@@ -201,8 +295,7 @@ class McpOAuthService(
                 resource = resource,
             )
         // the grant lives as long as its newest refresh token
-        redis.opsForValue().set(RedisKey.MCP_GRANT(grantId), userId, REFRESH_TOKEN_TTL)
-        redis.opsForSet().add(RedisKey.MCP_USER_GRANTS(userId), grantId)
+        redis.expire(RedisKey.MCP_GRANT(grantId), REFRESH_TOKEN_TTL)
         val serializedToken = jsonMapper.writeValueAsString(token)
         val accessToken = randomString()
         val refreshToken = randomString()

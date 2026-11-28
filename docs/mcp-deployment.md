@@ -35,10 +35,10 @@ Claude, ChatGPT, Cursor, VS Code, Claude Code --HTTPS + OAuth (api-central is th
 
 api-central:
 
-- [ ] Rate limit by user for Bearer requests. `IpRateLimitFilter` uses `remoteAddr`, so every MCP user would share the MCP pod's IP and one bucket. Enable `UserIdRateLimitFilter` for authenticated requests (it is commented out in `SecurityConfig`) and keep the IP limit for anonymous ones.
-- [ ] Grant management: `GET /v2/auth/grants` (connected apps of the user) and `DELETE /v2/auth/grants/{id}`, plus RFC 7009 `POST /oauth/revoke`. Directories expect users to be able to disconnect an app.
-- [ ] Revoke the tokens of a reused authorization code.
-- [ ] Integration test of the OAuth flow (authorize, consent, token, refresh, reuse, introspect). api-central has no test setup yet: add `@SpringBootTest` with Testcontainers for Mongo and Redis, Discord mocked.
+- [x] Rate limit by user for Bearer requests. `IpRateLimitFilter` uses `remoteAddr`, so every MCP user would share the MCP pod's IP and one bucket. Enable `UserIdRateLimitFilter` for authenticated requests (it is commented out in `SecurityConfig`) and keep the IP limit for anonymous ones.
+- [x] Grant management: `GET /v2/auth/grants` (connected apps of the user) and `DELETE /v2/auth/grants/{id}`, plus RFC 7009 `POST /oauth/revoke`. Directories expect users to be able to disconnect an app.
+- [x] Revoke the tokens of a reused authorization code.
+- [x] Integration test of the OAuth flow (authorize, consent, token, refresh, reuse, introspect). api-central has no test setup yet: add `@SpringBootTest` with Testcontainers for Mongo and Redis, Discord mocked.
 
 MCP server:
 

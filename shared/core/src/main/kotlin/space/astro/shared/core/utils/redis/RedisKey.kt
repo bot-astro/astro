@@ -75,6 +75,9 @@ object RedisKey {
 
     fun MCP_AUTH_CODE(codeHash: String) = "MAC:$codeHash"
 
+    /** Authorization codes that were already exchanged, to revoke their grant if they are used again */
+    fun MCP_AUTH_CODE_USED(codeHash: String) = "MACU:$codeHash"
+
     fun MCP_ACCESS_TOKEN(tokenHash: String) = "MAT:$tokenHash"
 
     fun MCP_REFRESH_TOKEN(tokenHash: String) = "MRT:$tokenHash"
@@ -84,6 +87,9 @@ object RedisKey {
 
     /** A grant of a user to an MCP client, the tokens of the grant stop working when it is deleted */
     fun MCP_GRANT(grantId: String) = "MG:$grantId"
+
+    /** Epoch millis of the last request made with a token of the grant */
+    fun MCP_GRANT_LAST_USED(grantId: String) = "MGL:$grantId"
 
     /** Ids of the grants of a user */
     fun MCP_USER_GRANTS(userId: String) = "MUG:$userId"

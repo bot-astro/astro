@@ -5,12 +5,15 @@ object CentralApiEndpoint {
     const val DISCORD_OAUTH_CALLBACK = "/v2/auth/discord/callback"
     const val ME = "/v2/auth/me"
     const val LOGOUT = "/v2/auth/logout"
+    const val AUTH_GRANTS = "/v2/auth/grants"
+    const val AUTH_GRANT = "/v2/auth/grants/{grantId}"
 
     const val OAUTH_SERVER_METADATA = "/.well-known/oauth-authorization-server"
     const val OAUTH_AUTHORIZE = "/oauth/authorize"
     const val OAUTH_CONSENT = "/oauth/consent"
     const val OAUTH_TOKEN = "/oauth/token"
     const val OAUTH_INTROSPECT = "/oauth/introspect"
+    const val OAUTH_REVOKE = "/oauth/revoke"
 
     const val ACTUATOR_READINESS = "/actuator/custom/readiness"
     const val ACTUATOR_SHUTDOWN = "/actuator/custom/shutdown"

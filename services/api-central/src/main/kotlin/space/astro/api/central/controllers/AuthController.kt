@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.util.UriComponentsBuilder
 import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.responses.AuthUserResponse
+import space.astro.api.central.models.responses.McpGrantResponse
 import space.astro.api.central.services.AuthSessionService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
 import space.astro.api.central.services.McpOAuthService
@@ -24,6 +25,8 @@ import space.astro.api.central.services.OAuthStateService
 import space.astro.shared.core.clients.BigQueryService
 import space.astro.shared.core.clients.DiscordApiClient
 import space.astro.shared.core.exceptions.ABadRequestException
+import space.astro.shared.core.exceptions.ANotFoundException
+import space.astro.shared.core.exceptions.AUnauthorizedException
 import space.astro.shared.core.models.analytics.InstallEventData
 import space.astro.shared.core.models.database.UserEntity
 import space.astro.shared.core.properties.DiscordOAuthProperties
@@ -31,6 +34,7 @@ import space.astro.shared.core.properties.FrontendProperties
 import space.astro.shared.core.repositories.mongo.UserRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 import java.net.URI
+import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -266,5 +270,61 @@ class AuthController(
                 HttpHeaders.SET_COOKIE,
                 authSessionService.createExpiredSessionCookie().toString(),
             ).build()
+    }
+
+    @Operation(
+        operationId = "auth.grants.list",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
+        summary = "List connected apps",
+        description = "Returns the MCP clients the logged in user has authorized and that still have valid tokens. Dashboard session only.",
+    )
+    @GetMapping(CentralApiEndpoint.AUTH_GRANTS)
+    fun listGrants(
+        @AuthenticationPrincipal authPrincipal: AuthPrincipal,
+    ): ResponseEntity<List<McpGrantResponse>> {
+        requireDashboardSession(authPrincipal)
+
+        return ResponseEntity.ok(
+            mcpOAuthService.listGrants(authPrincipal.userId).map { (grant, lastUsedAt) ->
+                McpGrantResponse(
+                    id = grant.grantId,
+                    clientId = grant.clientId,
+                    clientName = grant.clientName,
+                    scopes = grant.scopes,
+                    createdAt = Instant.ofEpochMilli(grant.createdAt).toString(),
+                    lastUsedAt = lastUsedAt?.let { Instant.ofEpochMilli(it).toString() },
+                )
+            },
+        )
+    }
+
+    @Operation(
+        operationId = "auth.grants.delete",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
+        summary = "Disconnect an app",
+        description = "Revokes every access and refresh token of the grant. Dashboard session only.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "204", description = "Grant revoked."),
+        ApiResponse(responseCode = "404", description = "The user has no active grant with this id."),
+    )
+    @DeleteMapping(CentralApiEndpoint.AUTH_GRANT)
+    fun deleteGrant(
+        @PathVariable grantId: String,
+        @AuthenticationPrincipal authPrincipal: AuthPrincipal,
+    ): ResponseEntity<Void> {
+        requireDashboardSession(authPrincipal)
+
+        if (!mcpOAuthService.revokeUserGrant(authPrincipal.userId, grantId)) {
+            throw ANotFoundException("Grant not found")
+        }
+        return ResponseEntity.noContent().build()
+    }
+
+    // an MCP client must not be able to see or revoke the other apps of the user
+    private fun requireDashboardSession(authPrincipal: AuthPrincipal) {
+        if (authPrincipal.mcpGrantId != null) {
+            throw AUnauthorizedException("Only available with the dashboard session")
+        }
     }
 }
