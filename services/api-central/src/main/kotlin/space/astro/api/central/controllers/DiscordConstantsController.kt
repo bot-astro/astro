@@ -16,7 +16,7 @@ class DiscordConstantsController {
         summary = "Get channel related permissions",
         description =
             "Lists the Discord permissions that apply to channels, with their ids. " +
-                "The ids are the values accepted by `ownerPermissionIds` of a generator.",
+                "The ids are the values accepted by `owner_permission_ids` of a generator.",
     )
     @GetMapping(CentralApiEndpoint.DISCORD_CHANNEL_RELATED_PERMISSIONS)
     fun getChannelRelatedPermissions(): ResponseEntity<List<DiscordPermissionMeta>> =

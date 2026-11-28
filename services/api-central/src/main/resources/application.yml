@@ -6,6 +6,9 @@ info:
 logging:
   level:
     root: ${CA__LOG_LEVEL}
+  pattern:
+    # requestId comes from RequestIdFilter
+    level: "%5p [%X{requestId:-}]"
 
 server:
   port: ${CA__PORT}
@@ -175,5 +178,7 @@ central:
     session-cookie-same-site: ${CA__SESSION_COOKIE_SAME_SITE}
     cors-allowed-origins:
       - ${CA__CORS_ALLOWED_ORIGIN}
+    public-url: ${CA__PUBLIC_URL}
+    mcp-resource-url: ${CA__MCP_RESOURCE_URL:http://localhost:9002/mcp}
     chargebee-webhook-token: ${CA__CHARGEBEE_WEBHOOK_TOKEN}
     vote-tracker-webhook-secret: ${CA__VOTE_TRACKER_WEBHOOK_SECRET}

@@ -69,6 +69,30 @@ object RedisKey {
         sessionId: String,
     ) = "AT:$userId:$sessionId"
 
+    fun OAUTH_STATE_MCP_REQUEST(state: String) = "OSM:$state"
+
+    fun MCP_AUTH_REQUEST(id: String) = "MAR:$id"
+
+    fun MCP_AUTH_CODE(codeHash: String) = "MAC:$codeHash"
+
+    fun MCP_ACCESS_TOKEN(tokenHash: String) = "MAT:$tokenHash"
+
+    fun MCP_REFRESH_TOKEN(tokenHash: String) = "MRT:$tokenHash"
+
+    /** Refresh tokens that were already rotated, to detect their reuse */
+    fun MCP_REFRESH_TOKEN_USED(tokenHash: String) = "MRU:$tokenHash"
+
+    /** A grant of a user to an MCP client, the tokens of the grant stop working when it is deleted */
+    fun MCP_GRANT(grantId: String) = "MG:$grantId"
+
+    /** Ids of the grants of a user */
+    fun MCP_USER_GRANTS(userId: String) = "MUG:$userId"
+
+    fun IDEMPOTENCY(
+        userId: String,
+        keyHash: String,
+    ) = "IDK:$userId:$keyHash"
+
     fun DISCORD_USER_TOKEN(userId: String) = "DUT:$userId"
 
     fun DISCORD_USER_GUILDS() = "DUG"

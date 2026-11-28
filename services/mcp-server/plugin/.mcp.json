@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "astro": {
+      "type": "http",
+      "url": "http://localhost:9002/mcp"
+    }
+  }
+}

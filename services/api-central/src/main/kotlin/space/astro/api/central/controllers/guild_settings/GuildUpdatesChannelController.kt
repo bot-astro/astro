@@ -24,9 +24,9 @@ class GuildUpdatesChannelController(
         summary = "Update updates channel",
         description =
             "Moves the updates channel (where Astro posts announcements and setup alerts) to another text channel, " +
-                "creates a new one with `createChannel`, or disables it with a null `channelId`. " +
+                "creates a new one with `create_channel`, or disables it with a null `channel_id`. " +
                 "Setting the channel that is already in use sets it up again. Returns the updated guild settings, " +
-                "`updatesChannelId` is the new channel.",
+                "`updates_channel_id` is the new channel.",
     )
     @PutMapping(CentralApiEndpoint.GUILD_SETTINGS_UPDATES_CHANNEL)
     @CanManageGuildMiddleware

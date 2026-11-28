@@ -41,7 +41,7 @@ class DiscordController(
         operationId = "discord.guilds.list",
         summary = "Get user guilds",
         description =
-            "Lists the Discord guilds the logged in user is a member of. `canManage` tells whether the user can manage the guild, " +
+            "Lists the Discord guilds the logged in user is a member of. `can_manage` tells whether the user can manage the guild, " +
                 "only those can be configured with the guild endpoints. Start here to find the `guildId` of a guild by its name.",
     )
     @GetMapping(CentralApiEndpoint.DISCORD_USER_GUILDS)

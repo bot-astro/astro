@@ -3,19 +3,16 @@ package space.astro.api.central.components.security.ratelimit
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.web.filter.OncePerRequestFilter
+import space.astro.api.central.components.ControllersExceptionHandler
 import space.astro.api.central.services.RateLimitingService
-import space.astro.shared.core.exceptions.AErrorCode
-import space.astro.shared.core.exceptions.AErrorResponse
-import tools.jackson.databind.json.JsonMapper
+import space.astro.shared.core.exceptions.ATooManyRequestsException
 import kotlin.math.max
 import kotlin.time.Duration.Companion.nanoseconds
 
 abstract class BaseRateLimitFilter(
     private val rateLimitingService: RateLimitingService,
-    private val jsonMapper: JsonMapper,
+    private val exceptionHandler: ControllersExceptionHandler,
 ) : OncePerRequestFilter() {
     /**
      * Resolves the identifier used to select the rate-limit bucket.
@@ -46,24 +43,10 @@ abstract class BaseRateLimitFilter(
                     probe.nanosToWaitForRefill.nanoseconds.inWholeSeconds,
                 )
 
-            response.status = HttpStatus.TOO_MANY_REQUESTS.value()
-            response.setHeader(
-                "Retry-After",
-                retryAfterSeconds.toString(),
+            exceptionHandler.writeException(
+                response,
+                ATooManyRequestsException("Rate limited, try again in $retryAfterSeconds seconds", retryAfterSeconds),
             )
-            response.contentType = MediaType.APPLICATION_JSON_VALUE
-
-            val errorResponse =
-                AErrorResponse(
-                    code = AErrorCode.TOO_MANY_REQUESTS,
-                    message = "Rate limited, try again in $retryAfterSeconds seconds",
-                )
-
-            jsonMapper.writeValue(
-                response.writer,
-                errorResponse,
-            )
-
             return
         }
 

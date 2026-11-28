@@ -2,6 +2,7 @@ package space.astro.api.central.controllers
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.extensions.Extension
 import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -18,6 +19,7 @@ import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.responses.AuthUserResponse
 import space.astro.api.central.services.AuthSessionService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
+import space.astro.api.central.services.McpOAuthService
 import space.astro.api.central.services.OAuthStateService
 import space.astro.shared.core.clients.BigQueryService
 import space.astro.shared.core.clients.DiscordApiClient
@@ -46,6 +48,7 @@ class AuthController(
     private val authSessionService: AuthSessionService,
     private val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
     private val oAuthStateService: OAuthStateService,
+    private val mcpOAuthService: McpOAuthService,
     private val frontendProperties: FrontendProperties,
     private val userRepository: UserRepository,
     private val bigQueryService: BigQueryService,
@@ -77,11 +80,13 @@ class AuthController(
         @RequestParam("invite", defaultValue = "false") invite: Boolean,
         @RequestParam("invite_guild_id", required = false) inviteGuildId: String? = null,
         @RequestParam("source", required = false) source: String? = null,
+        @Parameter(hidden = true) @RequestParam("mcp_request_id", required = false) mcpRequestId: String? = null,
     ): ResponseEntity<Void> {
         val state =
             oAuthStateService.create(
                 redirectPath,
                 source?.replace(":", "")?.take(MAX_INSTALL_SOURCE_LENGTH)?.takeIf { it.isNotBlank() } ?: UNKNOWN_INSTALL_SOURCE,
+                mcpRequestId,
             )
 
         val scopes =
@@ -174,6 +179,20 @@ class AuthController(
                 )
             }
 
+            if (oAuthState.mcpRequestId != null) {
+                mcpOAuthService.setAuthRequestUser(oAuthState.mcpRequestId, discordUser.id)
+                return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(
+                        UriComponentsBuilder
+                            .fromPath(CentralApiEndpoint.OAUTH_CONSENT)
+                            .queryParam("request_id", oAuthState.mcpRequestId)
+                            .build()
+                            .toUri(),
+                    ).headers(headers)
+                    .build()
+            }
+
             return ResponseEntity
                 .status(HttpStatus.FOUND)
                 .location(URI("${frontendProperties.baseUrl}$redirectPath"))
@@ -235,7 +254,10 @@ class AuthController(
     fun logout(
         @AuthenticationPrincipal authPrincipal: AuthPrincipal,
     ): ResponseEntity<Void> {
-        discordUserTokenPersistenceService.delete(authPrincipal.userId)
+        // MCP clients use the Discord token too, so it stays while the user has granted access to one
+        if (!mcpOAuthService.hasActiveGrants(authPrincipal.userId)) {
+            discordUserTokenPersistenceService.delete(authPrincipal.userId)
+        }
         authSessionService.deleteSession(authPrincipal.userId, authPrincipal.sessionId)
 
         return ResponseEntity
