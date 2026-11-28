@@ -1,0 +1,15 @@
+{
+  "name": "astro-mcp",
+  "owner": { "name": "Astro", "url": "https://astro-bot.space" },
+  "metadata": { "description": "The Astro Discord bot for AI agents: MCP server and skills" },
+  "plugins": [
+    {
+      "name": "astro",
+      "source": "./",
+      "description": "Configure the Astro Discord bot: temporary voice channels, voice roles, interfaces, templates",
+      "version": "1.0.0",
+      "category": "productivity",
+      "homepage": "https://astro-bot.space"
+    }
+  ]
+}

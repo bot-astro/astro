@@ -32,24 +32,35 @@ const mcp = 'http://localhost:19002/mcp';
 before(async () => {
   await new Promise<void>((resolve) => stub.listen(19001, resolve));
   server = spawn('npx', ['tsx', 'src/index.ts'], {
-    env: { ...process.env, MCP_PORT: '19002', API_CENTRAL_URL: 'http://localhost:19001' },
+    env: { ...process.env, MCP_PORT: '19002', MCP_MANAGEMENT_PORT: '19102', API_CENTRAL_URL: 'http://localhost:19001' },
     stdio: 'pipe',
   });
-  await new Promise<void>((resolve) => server.stdout!.on('data', () => resolve()));
+  await waitFor(async () => (await fetch('http://localhost:19102/readyz')).status === 200);
 });
+
+async function waitFor(check: () => Promise<boolean>) {
+  for (let i = 0; i < 100; i++) {
+    if (await check().catch(() => false)) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error('timed out');
+}
 
 after(() => {
   server.kill();
   stub.close();
 });
 
-const rpc = (method: string, params: unknown, token?: string) =>
+const rpc = (method: string, params: unknown, token?: string, headers: Record<string, string> = {}) =>
   fetch(mcp, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
       accept: 'application/json, text/event-stream',
       ...(token && { authorization: `Bearer ${token}` }),
+      ...headers,
     },
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
   });
@@ -125,4 +136,40 @@ test('the skills are served as instructions, resources and prompts', async () =>
   assert.match(read.contents[0].text, /guilds_settings_get/);
   const prompts = await result(await rpc('prompts/list', {}, 'good'));
   assert.equal(prompts.prompts.length, 2);
+});
+
+test('caches the introspection of an active token', async () => {
+  received.length = 0;
+  await rpc('tools/list', {}, 'cached');
+  await rpc('tools/list', {}, 'cached');
+  assert.equal(received.filter((req) => req.url === '/oauth/introspect').length, 1);
+  received.length = 0;
+  await rpc('tools/list', {}, 'bad');
+  await rpc('tools/list', {}, 'bad');
+  assert.equal(received.filter((req) => req.url === '/oauth/introspect').length, 2);
+});
+
+test('forwards the request id to api-central and returns it', async () => {
+  received.length = 0;
+  const headers = { 'x-request-id': 'req-123' };
+  const response = await rpc('tools/call', { name: 'guilds_settings_get', arguments: { path: { guildId: '1' } } }, 'requestid', headers);
+  assert.equal(response.headers.get('x-request-id'), 'req-123');
+  assert.equal(received.find((req) => req.url === '/oauth/introspect')?.headers['x-request-id'], 'req-123');
+  assert.equal(received.find((req) => req.url === '/v2/guilds/1/settings')?.headers['x-request-id'], 'req-123');
+  const generated = await rpc('tools/list', {}, 'good');
+  assert.match(generated.headers.get('x-request-id') ?? '', /^[0-9a-f-]{36}$/);
+});
+
+test('is live but not ready until api-central answers, and exits on SIGTERM', async () => {
+  const starting = spawn('npx', ['tsx', 'src/index.ts'], {
+    env: { ...process.env, MCP_PORT: '19003', MCP_MANAGEMENT_PORT: '19103', MCP_SHUTDOWN_DRAIN_MS: '0', API_CENTRAL_URL: 'http://localhost:19009' },
+    stdio: 'pipe',
+  });
+  await waitFor(async () => (await fetch('http://localhost:19103/healthz')).status === 200);
+  assert.equal((await fetch('http://localhost:19103/readyz')).status, 503);
+  assert.equal((await fetch('http://localhost:19003/mcp', { method: 'POST' })).status, 503);
+  const exited = new Promise<number | null>((resolve) => starting.on('exit', resolve));
+  // npx forwards the signal to the node process
+  starting.kill('SIGTERM');
+  assert.equal(await exited, 0);
 });

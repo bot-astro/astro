@@ -127,6 +127,38 @@ blocks:
             - cache store gradle-caches_entitlements-expiration-job ~/.gradle/caches
             - cache store gradle-wrapper_entitlements-expiration-job ~/.gradle/wrapper
 
+  # mcp-server
+  - name: Build, test and push mcp-server
+    dependencies: []
+    run:
+      when: |
+        branch = 'master' and change_in(['/services/mcp-server/', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+    task:
+      secrets:
+        - name: github
+      prologue:
+        commands:
+          - sem-version node 24
+          - cd services/mcp-server
+          - cache restore npm-mcp-server-$(checksum package-lock.json)
+      jobs:
+        - name: Build, test and push mcp-server
+          commands:
+            - npm ci
+            - npx tsc --noEmit
+            - npm test
+            # the registry, the plugin tag and McpServer all show this version
+            - VERSION=$(jq -r .version package.json)
+            - '[ "$(jq -r .version server.json)" = "$VERSION" ] || (echo "server.json version differs from package.json $VERSION" && exit 1)'
+            - '[ "$(jq -r .version plugin/.claude-plugin/plugin.json)" = "$VERSION" ] || (echo "plugin.json version differs from package.json $VERSION" && exit 1)'
+            - '[ "$(jq -r ".plugins[0].version" plugin/.claude-plugin/marketplace.json)" = "$VERSION" ] || (echo "marketplace.json version differs from package.json $VERSION" && exit 1)'
+            - echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+            - docker buildx build --push -t ghcr.io/$GHCR_ORGANIZATION/mcp-server:$SEMAPHORE_GIT_SHA -t ghcr.io/$GHCR_ORGANIZATION/mcp-server:$VERSION -t ghcr.io/$GHCR_ORGANIZATION/mcp-server:latest .
+      epilogue:
+        on_pass:
+          commands:
+            - cache store npm-mcp-server-$(checksum package-lock.json) ~/.npm
+
 promotions:
   # bot
   # Staging deploy disabled for now (pipeline file kept, re-enable by uncommenting):
@@ -167,3 +199,15 @@ promotions:
   #       result = 'passed' and branch = 'master' and change_in(['/services/entitlements-expiration-job/', '/shared/', '/build.gradle.kts', '/settings.gradle.kts', '/.semaphore/', '/gradle/libs.versions.toml', '/build-logic/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
   - name: Deploy entitlements-expiration-job to production
     pipeline_file: deploy/entitlements-expiration-job/production.yml
+
+  # mcp-server
+  # Staging deploy disabled for now (pipeline file kept, re-enable by uncommenting):
+  # - name: Deploy mcp-server to staging
+  #   pipeline_file: deploy/mcp-server/staging.yml
+  #   auto_promote:
+  #     when: |
+  #       result = 'passed' and branch = 'master' and change_in(['/services/mcp-server/', '/.semaphore/'], { branch_range: '$SEMAPHORE_GIT_COMMIT_RANGE' })
+  - name: Deploy mcp-server to production
+    pipeline_file: deploy/mcp-server/production.yml
+  - name: Publish MCP
+    pipeline_file: publish/mcp.yml

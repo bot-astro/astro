@@ -1,5 +1,10 @@
 {
   "name": "astro",
-  "description": "Configure the Astro Discord bot (temporary voice channels, voice roles, interfaces, templates) from your AI agent",
-  "version": "0.0.1"
+  "version": "1.0.0",
+  "description": "Configure the Astro Discord bot: temporary voice channels, voice roles, interfaces, templates",
+  "author": { "name": "Astro", "url": "https://astro-bot.space" },
+  "homepage": "https://astro-bot.space",
+  "repository": "https://github.com/bot-astro/astro-mcp",
+  "license": "MIT",
+  "keywords": ["discord", "astro", "voice channels", "mcp"]
 }

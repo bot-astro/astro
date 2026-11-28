@@ -42,15 +42,15 @@ api-central:
 
 MCP server:
 
-- [ ] `GET /healthz` (liveness) and readiness that checks api-central's metadata was loaded.
-- [ ] Retry loading the authorization server metadata at startup instead of crashing when api-central is not up yet.
-- [ ] Graceful shutdown on `SIGTERM` (stop accepting, finish in-flight requests).
-- [ ] Forward `X-Request-Id` to api-central and log it.
-- [ ] Sentry (`@sentry/node`) and OTLP metrics: tool calls by tool and status, latency, introspection failures.
-- [ ] Short cache (30 s) of introspection results by token hash, to halve the calls to api-central.
-- [ ] `Dockerfile`: multi-stage, `node:24-alpine`, `npm ci --omit=dev`, `tsc`, runs as non-root, copies `plugin/skills`.
-- [ ] `plugin/.mcp.json` with the production URL.
-- [ ] `server.json` for the MCP Registry, remote only (no `packages`):
+- [x] `GET /healthz` (liveness) and readiness that checks api-central's metadata was loaded.
+- [x] Retry loading the authorization server metadata at startup instead of crashing when api-central is not up yet.
+- [x] Graceful shutdown on `SIGTERM` (stop accepting, finish in-flight requests).
+- [x] Forward `X-Request-Id` to api-central and log it.
+- [x] Sentry (`@sentry/node`) and OTLP metrics: tool calls by tool and status, latency, introspection failures.
+- [x] Short cache (30 s) of introspection results by token hash, to halve the calls to api-central.
+- [x] `Dockerfile`: multi-stage, `node:24-alpine`, `npm ci --omit=dev`, `tsc`, runs as non-root, copies `plugin/skills`.
+- [x] `plugin/.mcp.json` with the production URL.
+- [x] `server.json` for the MCP Registry, remote only (no `packages`):
   ```json
   {
     "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
@@ -89,9 +89,9 @@ Website (`astro-bot.space` repo):
 
 ## Phase 3: CI/CD (Semaphore)
 
-- [ ] Block "Build, test and push mcp-server", `change_in(['/services/mcp-server/', '/.semaphore/'])` on `master`: `npm ci`, `tsc --noEmit`, `npm test`, `docker buildx build --push ghcr.io/bot-astro/mcp-server:<sha>`.
-- [ ] `.semaphore/deploy/mcp-server` promotion that bumps the tag in `infra`, manual like the other production promotions.
-- [ ] Promotion "Publish MCP" (manual, after the deploy):
+- [x] Block "Build, test and push mcp-server", `change_in(['/services/mcp-server/', '/.semaphore/'])` on `master`: `npm ci`, `tsc --noEmit`, `npm test`, `docker buildx build --push ghcr.io/bot-astro/mcp-server:<sha>`.
+- [x] `.semaphore/deploy/mcp-server` promotion that bumps the tag in `infra`, manual like the other production promotions.
+- [x] Promotion "Publish MCP" (manual, after the deploy):
   - publish `server.json` to the MCP Registry: `mcp-publisher login dns --domain astro-bot.space --private-key $MCP_REGISTRY_KEY` then `mcp-publisher publish`. The Ed25519 private key is a Semaphore secret (from Infisical). A version can be published only once and never changed, so the step is skipped when the version in `server.json` is already in the registry, and CI fails if `server.json` and `package.json` versions differ
   - sync `services/mcp-server/plugin` to `bot-astro/astro-mcp` and tag it with the same version
 
