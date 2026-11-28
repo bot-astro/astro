@@ -27,6 +27,14 @@ run-support-bot env="dev": (run "support-bot" env)
 run-entitlements-expiration-job env="dev": (run "entitlements-expiration-job" env)
 
 
+# --- mcp server ---
+
+# export the api-central OpenAPI spec and regenerate the MCP tools from it (needs mongo and redis running)
+mcp-generate:
+    ./gradlew --console=plain :services:api-central:generateOpenApiDocs
+    cd services/mcp-server && npm run generate
+
+
 # --- docker compose (mongo, redis + ui tools) ---
 
 docker-up *services:

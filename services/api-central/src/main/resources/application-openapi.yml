@@ -1,0 +1,88 @@
+# Used by generateOpenApiDocs to boot api-central with only Mongo and Redis and export the OpenAPI spec.
+# Every secret is a placeholder: nothing calls Discord, Chargebee, BigQuery, R2 or the bots at startup.
+
+logging:
+  level:
+    root: INFO
+
+# not the dev ports, so it can run next to a local api-central
+server:
+  port: 9011
+
+management:
+  server:
+    port: 9111
+
+spring:
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/AstroOpenApi}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: 0
+
+sentry:
+  dsn: ""
+
+chargebee:
+  site-name: openapi
+  api-key: openapi
+  server-ultimate-plan-id: openapi
+
+support:
+  bot:
+    endpoint:
+      base-url: http://localhost:1
+      auth: openapi
+
+discord:
+  api:
+    base-url: http://localhost:1
+  application:
+    id: "0"
+    token: openapi
+  oauth:
+    id: "0"
+    secret: openapi
+    redirect-uri: http://localhost:1
+
+bot:
+  endpoint:
+    localhost: true
+    port: 1
+    pod-name: openapi
+    service-name: openapi
+    namespace: openapi
+  shard:
+    manager:
+      total-shards: 1
+      total-pods: 1
+      login-factor: 1
+
+frontend:
+  base-url: http://localhost:1
+
+r2:
+  endpoint-url: http://localhost:1
+  access-key-id: openapi
+  secret-access-key: openapi
+  bucket-name: openapi
+  public-url: http://localhost:1
+
+bigquery:
+  enabled: false
+
+central:
+  api:
+    session-cookie-name: session
+    session-cookie-allow-origin: http://localhost:1
+    session-cookie-domain: localhost
+    session-cookie-secure: false
+    session-cookie-same-site: Lax
+    cors-allowed-origins:
+      - http://localhost:1
+    # written as the spec server url, the default API_CENTRAL_URL of the MCP server
+    public-url: http://localhost:9001
+    chargebee-webhook-token: openapi
+    vote-tracker-webhook-secret: openapi

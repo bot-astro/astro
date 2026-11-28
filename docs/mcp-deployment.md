@@ -71,10 +71,10 @@ Website (`astro-bot.space` repo):
 
 ## Phase 1: generation pipeline
 
-- [ ] api-central: add `springdoc-openapi-gradle-plugin`, `generateOpenApiDocs` writes `services/mcp-server/openapi.json`. Spring profile `openapi` that disables Discord, Chargebee and BigQuery startup calls.
-- [ ] `justfile`: `mcp-generate` = `generateOpenApiDocs` + `npm run generate` + format.
-- [ ] Semaphore drift check, on every branch when `services/api-central/`, `shared/` or `services/mcp-server/` change: start Mongo and Redis with `sem-service`, run `just mcp-generate`, `git diff --exit-code services/mcp-server`. A failure means "run `just mcp-generate` and commit".
-- [ ] `npm test` already fails if an allow-listed tool disappears from the generated set (`exposedTools` throws).
+- [x] api-central: add `springdoc-openapi-gradle-plugin`, `generateOpenApiDocs` writes `services/mcp-server/openapi.json`. Spring profile `openapi` that disables Discord, Chargebee and BigQuery startup calls.
+- [x] `justfile`: `mcp-generate` = `generateOpenApiDocs` + `npm run generate` + format.
+- [x] Semaphore drift check, on every branch when `services/api-central/`, `shared/` or `services/mcp-server/` change: start Mongo and Redis with `sem-service`, run `just mcp-generate`, `git diff --exit-code services/mcp-server`. A failure means "run `just mcp-generate` and commit".
+- [x] `npm test` already fails if an allow-listed tool disappears from the generated set (`exposedTools` throws).
 
 ## Phase 2: infrastructure (`infra` repo)
 

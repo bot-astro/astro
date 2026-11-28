@@ -19,6 +19,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse
 import io.swagger.v3.oas.models.responses.ApiResponses
 import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.security.SecurityScheme
+import io.swagger.v3.oas.models.servers.Server
 import io.swagger.v3.oas.models.tags.Tag
 import org.springdoc.core.customizers.OpenApiCustomizer
 import org.springdoc.core.customizers.OperationCustomizer
@@ -26,9 +27,12 @@ import org.springdoc.core.providers.ObjectMapperProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import space.astro.shared.core.exceptions.AErrorCode
+import space.astro.shared.core.properties.api_central.CentralApiProperties
 
 @Configuration
-class OpenApiConfiguration {
+class OpenApiConfiguration(
+    private val centralApiProperties: CentralApiProperties,
+) {
     companion object {
         const val SESSION_SECURITY_NAME = "session"
         const val CHARGEBEE_WEBHOOK_SECURITY_NAME = "chargebeeWebhook"
@@ -119,7 +123,8 @@ class OpenApiConfiguration {
                         numbers.
                         """.trimIndent(),
                     ),
-            ).tags(
+            ).servers(listOf(Server().url(centralApiProperties.publicUrl.trimEnd('/'))))
+            .tags(
                 listOf(
                     Tag().name("Authentication").description("Discord login and the logged in user."),
                     Tag()

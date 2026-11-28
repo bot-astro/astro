@@ -21,6 +21,7 @@ icu4j = "68.1"
 springDependencyManagementPlugin = "1.1.7"
 springBootPlugin = "4.1.0"
 springdoc = "3.1.0"
+springdocGradlePlugin = "1.9.0"
 
 # Logging and monitoring
 sentryPlugin = "6.24.0"
@@ -61,6 +62,7 @@ kotlin-jvm-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plug
 kotlin-serialization-plugin = { group = "org.jetbrains.kotlin.plugin.serialization", name = "org.jetbrains.kotlin.plugin.serialization.gradle.plugin", version.ref = "kotlin" }
 kotlin-spring-plugin = { module = "org.jetbrains.kotlin.plugin.spring:org.jetbrains.kotlin.plugin.spring.gradle.plugin", version.ref = "kotlin" }
 spring-boot-plugin = { module = "org.springframework.boot:org.springframework.boot.gradle.plugin", version.ref = "springBootPlugin" }
+springdoc-openapi-gradle-plugin = { module = "org.springdoc.openapi-gradle-plugin:org.springdoc.openapi-gradle-plugin.gradle.plugin", version.ref = "springdocGradlePlugin" }
 spring-dependency-management-plugin = { module = "io.spring.dependency-management:io.spring.dependency-management.gradle.plugin", version.ref = "springDependencyManagementPlugin" }
 jib-plugin = { module = "com.google.cloud.tools.jib:com.google.cloud.tools.jib.gradle.plugin", version.ref = "jib" }
 ktlint-plugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
