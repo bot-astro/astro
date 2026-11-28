@@ -1,6 +1,8 @@
 package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
@@ -22,7 +24,26 @@ class GuildSetupController(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val premiumManager: PremiumManager,
 ) {
-    @Operation(summary = "Set up Astro, same as the /setup command")
+    @Operation(
+        operationId = "guilds.setup.run",
+        summary = "Set up Astro, same as the /setup command",
+        description =
+            "Creates a category with a generator voice channel and an interface channel, and an updates channel if the guild has none, " +
+                "then saves them in the guild settings. Returns the created channels and the updated settings. " +
+                "Fails with 403 PREMIUM_REQUIRED if the guild already has the maximum number of generators or " +
+                "interfaces of a free server. " +
+                "Not idempotent: every call creates a new set of channels.",
+        extensions = [
+            Extension(
+                properties = [
+                    ExtensionProperty(
+                        name = "x-forge-require-confirmation",
+                        value = "This creates new channels in the Discord guild.",
+                    ),
+                ],
+            ),
+        ],
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_SETUP)
     @CanManageGuildMiddleware
     fun setup(

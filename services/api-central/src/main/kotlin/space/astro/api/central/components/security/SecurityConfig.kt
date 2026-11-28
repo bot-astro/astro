@@ -4,6 +4,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
+import org.springframework.http.HttpHeaders
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -11,11 +12,16 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.util.matcher.RequestMatcher
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import space.astro.api.central.components.ControllersExceptionHandler
+import space.astro.api.central.components.IdempotencyFilter
+import space.astro.api.central.components.RequestIdFilter
 import space.astro.api.central.components.security.ratelimit.IpRateLimitFilter
+import space.astro.api.central.models.auth.AuthScope
+import space.astro.shared.core.exceptions.AInsufficientScopeException
 import space.astro.shared.core.properties.api_central.CentralApiProperties
 import space.astro.shared.core.utils.api.CentralApiEndpoint
 
@@ -24,6 +30,7 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 class SecurityConfig(
     private val authFilter: AuthFilter,
     private val ipRateLimitFilter: IpRateLimitFilter,
+    private val idempotencyFilter: IdempotencyFilter,
     private val exceptionHandler: ControllersExceptionHandler,
     private val centralApiProperties: CentralApiProperties,
 ) {
@@ -39,6 +46,9 @@ class SecurityConfig(
 
     @Bean
     fun ipRateLimitFilterRegistration(filter: IpRateLimitFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
+
+    @Bean
+    fun idempotencyFilterRegistration(filter: IdempotencyFilter) = FilterRegistrationBean(filter).apply { isEnabled = false }
 
     /**
      * Chargebee webhooks, authenticated with basic auth instead of the user session
@@ -92,11 +102,15 @@ class SecurityConfig(
                 it.authenticationEntryPoint { _, response, exception ->
                     exceptionHandler.writeException(response, exception)
                 }
-                it.accessDeniedHandler { _, response, exception ->
-                    exceptionHandler.writeException(response, exception)
+                // the only rule that denies a logged in user is the scope check at the end of the chain
+                it.accessDeniedHandler { request, response, _ ->
+                    val requiredScope = if (request.method.isReadMethod()) AuthScope.GUILDS_READ else AuthScope.GUILDS_WRITE
+                    response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer error=\"insufficient_scope\", scope=\"$requiredScope\"")
+                    exceptionHandler.writeException(response, AInsufficientScopeException(requiredScope))
                 }
             }.addFilterBefore(ipRateLimitFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterAfter(authFilter, IpRateLimitFilter::class.java)
+            .addFilterAfter(idempotencyFilter, AuthFilter::class.java)
 //            .addFilterAfter(userIdRateLimitFilter, AuthFilter::class.java)
             .authorizeHttpRequests {
                 it
@@ -107,9 +121,16 @@ class SecurityConfig(
                     .requestMatchers(
                         CentralApiEndpoint.DISCORD_LOGIN,
                         CentralApiEndpoint.DISCORD_OAUTH_CALLBACK,
+                        CentralApiEndpoint.OAUTH_SERVER_METADATA,
+                        CentralApiEndpoint.OAUTH_AUTHORIZE,
+                        CentralApiEndpoint.OAUTH_CONSENT,
+                        CentralApiEndpoint.OAUTH_TOKEN,
+                        CentralApiEndpoint.OAUTH_INTROSPECT,
                     ).permitAll()
+                    .requestMatchers(RequestMatcher { it.method.isReadMethod() })
+                    .hasAuthority(AuthScope.GUILDS_READ)
                     .anyRequest()
-                    .authenticated()
+                    .hasAuthority(AuthScope.GUILDS_WRITE)
             }.build()
 
     @Bean
@@ -118,13 +139,33 @@ class SecurityConfig(
             CorsConfiguration().apply {
                 allowedOrigins = centralApiProperties.corsAllowedOrigins
                 allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                allowedHeaders = listOf("authorization", "content-type")
-                exposedHeaders = listOf("Retry-After")
+                allowedHeaders = listOf("authorization", "content-type", "idempotency-key")
+                exposedHeaders =
+                    listOf(
+                        "Retry-After",
+                        RequestIdFilter.HEADER,
+                        IdempotencyFilter.REPLAYED_HEADER,
+                        "X-Rate-Limit-Limit",
+                        "X-Rate-Limit-Remaining",
+                    )
                 allowCredentials = true
             }
 
+        // browser based MCP clients on any origin read the metadata and use the token endpoint, with no cookies
+        val publicOAuthConfig =
+            CorsConfiguration().apply {
+                allowedOriginPatterns = listOf("*")
+                allowedMethods = listOf("GET", "POST", "OPTIONS")
+                allowedHeaders = listOf("content-type")
+                allowCredentials = false
+            }
+
         return UrlBasedCorsConfigurationSource().apply {
+            registerCorsConfiguration(CentralApiEndpoint.OAUTH_SERVER_METADATA, publicOAuthConfig)
+            registerCorsConfiguration(CentralApiEndpoint.OAUTH_TOKEN, publicOAuthConfig)
             registerCorsConfiguration("/**", config)
         }
     }
+
+    private fun String.isReadMethod() = this == "GET" || this == "HEAD"
 }

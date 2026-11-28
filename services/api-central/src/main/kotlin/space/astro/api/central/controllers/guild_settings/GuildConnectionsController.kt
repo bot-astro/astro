@@ -1,9 +1,14 @@
 package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import space.astro.api.central.components.MergePatchHelper
+import space.astro.api.central.components.SupportsDryRun
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.exceptions.ANotFoundException
@@ -12,14 +17,24 @@ import space.astro.shared.core.models.database.guildSettings.ConnectionData
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
+import tools.jackson.databind.JsonNode
 
 @RestController
 @Tag(name = "Connections settings")
 class GuildConnectionsController(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val premiumManager: PremiumManager,
+    private val mergePatchHelper: MergePatchHelper,
 ) {
-    @Operation(summary = "Create connection")
+    @Operation(
+        operationId = "guilds.connections.create",
+        summary = "Create connection",
+        description =
+            "Creates a voice role: a role that Astro assigns to, removes from or toggles on members " +
+                "when they join the voice channel whose id is the `id` of the body. " +
+                "Returns the updated guild settings. " +
+                "Fails with 403 PREMIUM_REQUIRED if the guild reached the voice roles limit of a free server.",
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTIONS)
     @CanManageGuildMiddleware
     fun createConnection(
@@ -39,7 +54,15 @@ class GuildConnectionsController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Update connection")
+    @Operation(
+        operationId = "guilds.connections.replace",
+        summary = "Replace connection",
+        description =
+            "Replaces the connection with the request body, it is not a partial update: send all the fields. " +
+                "Returns the updated guild settings. Idempotent. " +
+                "Prefer the PATCH endpoint, which changes only the fields you send.",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTION)
     @CanManageGuildMiddleware
     fun updateConnection(
@@ -62,7 +85,52 @@ class GuildConnectionsController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Delete connection")
+    @Operation(
+        operationId = "guilds.connections.update",
+        summary = "Update connection",
+        description =
+            "Changes only the fields present in the body (JSON Merge Patch), a null field resets it to its default. " +
+                "The `id` in the body is ignored. Returns the updated guild settings. Idempotent.",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-merge-patch-of", value = "ConnectionData")])],
+    )
+    @PatchMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTION)
+    @CanManageGuildMiddleware
+    @SupportsDryRun
+    fun patchConnection(
+        @PathVariable guildId: String,
+        @PathVariable connectionId: String,
+        @Parameter(description = "When true nothing is saved and the guild settings the update would produce are returned.")
+        @RequestParam(defaultValue = "false") dryRun: Boolean,
+        @RequestBody patch: JsonNode,
+    ): ResponseEntity<GuildSettingsEntity> {
+        val guildSettings =
+            guildSettingsRepository.findByGuildID(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+
+        val connectionIndex =
+            guildSettings.connections
+                .indexOfFirst { it.id == connectionId }
+                .takeIf { it != -1 }
+                ?: throw ANotFoundException("Connection with ID $connectionId not found in Astro database")
+
+        guildSettings.connections[connectionIndex] =
+            mergePatchHelper.apply(guildSettings.connections[connectionIndex], patch, ConnectionData::class.java).copy(id = connectionId)
+        if (!dryRun) guildSettingsRepository.save(guildSettings)
+        return ResponseEntity.ok(guildSettings)
+    }
+
+    @Operation(
+        operationId = "guilds.connections.delete",
+        summary = "Delete connection",
+        description =
+            "Removes the voice role connection from the guild settings. The Discord role is not touched. " +
+                "Succeeds also when the connection does not exist. Returns the updated guild settings.",
+        extensions = [
+            Extension(
+                properties = [ExtensionProperty(name = "x-forge-require-confirmation", value = "This removes the voice role connection.")],
+            ),
+        ],
+    )
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_CONNECTION)
     @CanManageGuildMiddleware
     fun deleteConnection(

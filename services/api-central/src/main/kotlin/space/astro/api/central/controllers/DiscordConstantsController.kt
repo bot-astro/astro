@@ -11,7 +11,13 @@ import space.astro.shared.core.utils.api.CentralApiEndpoint
 @RestController
 @Tag(name = "Discord constants")
 class DiscordConstantsController {
-    @Operation(summary = "Get channel related permissions")
+    @Operation(
+        operationId = "discord.constants.listChannelPermissions",
+        summary = "Get channel related permissions",
+        description =
+            "Lists the Discord permissions that apply to channels, with their ids. " +
+                "The ids are the values accepted by `owner_permission_ids` of a generator.",
+    )
     @GetMapping(CentralApiEndpoint.DISCORD_CHANNEL_RELATED_PERMISSIONS)
     fun getChannelRelatedPermissions(): ResponseEntity<List<DiscordPermissionMeta>> =
         ResponseEntity.ok(DiscordPermissionMeta.channelsRelatedPermissions)

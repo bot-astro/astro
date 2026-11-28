@@ -1,5 +1,6 @@
 package space.astro.api.central.models.responses
 
+import io.swagger.v3.oas.annotations.media.Schema
 import space.astro.shared.core.models.database.MediaEntity
 import space.astro.shared.core.properties.R2Properties
 
@@ -8,6 +9,7 @@ data class MediaResponse(
     val type: MediaEntity.MediaType,
     val fileName: String,
     val url: String,
+    @field:Schema(description = "Upload time in epoch milliseconds")
     val createdAt: Long,
 ) {
     companion object {

@@ -2,9 +2,12 @@ package space.astro.api.central.controllers
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -12,11 +15,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.util.UriComponentsBuilder
-import space.astro.api.central.components.OpenApiConfiguration
 import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.responses.AuthUserResponse
 import space.astro.api.central.services.AuthSessionService
 import space.astro.api.central.services.DiscordUserTokenPersistenceService
+import space.astro.api.central.services.McpOAuthService
 import space.astro.api.central.services.OAuthStateService
 import space.astro.shared.core.clients.BigQueryService
 import space.astro.shared.core.clients.DiscordApiClient
@@ -45,11 +48,14 @@ class AuthController(
     private val authSessionService: AuthSessionService,
     private val discordUserTokenPersistenceService: DiscordUserTokenPersistenceService,
     private val oAuthStateService: OAuthStateService,
+    private val mcpOAuthService: McpOAuthService,
     private val frontendProperties: FrontendProperties,
     private val userRepository: UserRepository,
     private val bigQueryService: BigQueryService,
 ) {
     @Operation(
+        operationId = "auth.login",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
         summary = "Login via Discord",
         description =
             "Perform Discord OAuth flow, " +
@@ -67,17 +73,20 @@ class AuthController(
             description = "Redirect to Discord authorization.",
         ),
     )
+    @SecurityRequirements
     @GetMapping(CentralApiEndpoint.DISCORD_LOGIN)
     fun discord(
         @RequestParam("redirect_path") redirectPath: String,
         @RequestParam("invite", defaultValue = "false") invite: Boolean,
         @RequestParam("invite_guild_id", required = false) inviteGuildId: String? = null,
         @RequestParam("source", required = false) source: String? = null,
+        @Parameter(hidden = true) @RequestParam("mcp_request_id", required = false) mcpRequestId: String? = null,
     ): ResponseEntity<Void> {
         val state =
             oAuthStateService.create(
                 redirectPath,
                 source?.replace(":", "")?.take(MAX_INSTALL_SOURCE_LENGTH)?.takeIf { it.isNotBlank() } ?: UNKNOWN_INSTALL_SOURCE,
+                mcpRequestId,
             )
 
         val scopes =
@@ -119,6 +128,7 @@ class AuthController(
         description = "Endpoint called by Discord containing the code & state for the first part of the OAuth flow",
         hidden = true,
     )
+    @SecurityRequirements
     @GetMapping(CentralApiEndpoint.DISCORD_OAUTH_CALLBACK)
     fun discordCallback(
         @RequestParam("code", required = false) code: String? = null,
@@ -169,6 +179,20 @@ class AuthController(
                 )
             }
 
+            if (oAuthState.mcpRequestId != null) {
+                mcpOAuthService.setAuthRequestUser(oAuthState.mcpRequestId, discordUser.id)
+                return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(
+                        UriComponentsBuilder
+                            .fromPath(CentralApiEndpoint.OAUTH_CONSENT)
+                            .queryParam("request_id", oAuthState.mcpRequestId)
+                            .build()
+                            .toUri(),
+                    ).headers(headers)
+                    .build()
+            }
+
             return ResponseEntity
                 .status(HttpStatus.FOUND)
                 .location(URI("${frontendProperties.baseUrl}$redirectPath"))
@@ -187,9 +211,9 @@ class AuthController(
     }
 
     @Operation(
+        operationId = "auth.me",
         summary = "Get logged in user",
-        description = "Returns the logged in user entity",
-        security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)],
+        description = "Returns the id, Discord username and avatar hash of the logged in user. Use it to check that the session is valid.",
     )
     @GetMapping(CentralApiEndpoint.ME)
     fun me(
@@ -217,8 +241,8 @@ class AuthController(
     @Operation(
         summary = "Logout",
         description = "Logout and delete the session cookie",
-        operationId = "logout",
-        security = [SecurityRequirement(name = OpenApiConfiguration.SESSION_SECURITY_NAME)],
+        operationId = "auth.logout",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
     )
     @ApiResponses(
         ApiResponse(
@@ -230,7 +254,10 @@ class AuthController(
     fun logout(
         @AuthenticationPrincipal authPrincipal: AuthPrincipal,
     ): ResponseEntity<Void> {
-        discordUserTokenPersistenceService.delete(authPrincipal.userId)
+        // MCP clients use the Discord token too, so it stays while the user has granted access to one
+        if (!mcpOAuthService.hasActiveGrants(authPrincipal.userId)) {
+            discordUserTokenPersistenceService.delete(authPrincipal.userId)
+        }
         authSessionService.deleteSession(authPrincipal.userId, authPrincipal.sessionId)
 
         return ResponseEntity

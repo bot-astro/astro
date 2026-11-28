@@ -2,13 +2,20 @@ package space.astro.api.central.controllers.guild_settings
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import space.astro.api.central.components.MergePatchHelper
+import space.astro.api.central.components.SupportsDryRun
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.shared.core.clients.PremiumManager
 import space.astro.shared.core.exceptions.ANotFoundException
@@ -17,14 +24,23 @@ import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.models.database.guildSettings.TemplateData
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
+import tools.jackson.databind.JsonNode
 
 @RestController
 @Tag(name = "Templates settings")
 class GuildTemplatesController(
     private val guildSettingsRepository: GuildSettingsRepository,
     private val premiumManager: PremiumManager,
+    private val mergePatchHelper: MergePatchHelper,
 ) {
-    @Operation(summary = "Create template")
+    @Operation(
+        operationId = "guilds.templates.create",
+        summary = "Create template",
+        description =
+            "Saves a preset of temporary VC settings. The `id` of the body is ignored, a new one is generated. " +
+                "Returns the updated guild settings, the new template is the last of `templates`. " +
+                "Fails with 403 PREMIUM_REQUIRED if the guild reached the templates limit of a free server.",
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_TEMPLATES)
     @CanManageGuildMiddleware
     fun createTemplate(
@@ -45,7 +61,16 @@ class GuildTemplatesController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Update template")
+    @Operation(
+        operationId = "guilds.templates.replace",
+        summary = "Replace template",
+        description =
+            "Replaces the template with the request body, it is not a partial update: send all the fields. " +
+                "The `id` of the body is ignored, the path decides which template is updated. " +
+                "Returns the updated guild settings. Idempotent. " +
+                "Prefer the PATCH endpoint, which changes only the fields you send.",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_TEMPLATE)
     @CanManageGuildMiddleware
     fun updateTemplate(
@@ -68,7 +93,50 @@ class GuildTemplatesController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Delete template")
+    @Operation(
+        operationId = "guilds.templates.update",
+        summary = "Update template",
+        description =
+            "Changes only the fields present in the body (JSON Merge Patch), a null field resets it to its default. " +
+                "The `id` in the body is ignored. Returns the updated guild settings. Idempotent.",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-merge-patch-of", value = "TemplateData")])],
+    )
+    @PatchMapping(CentralApiEndpoint.GUILD_SETTINGS_TEMPLATE)
+    @CanManageGuildMiddleware
+    @SupportsDryRun
+    fun patchTemplate(
+        @PathVariable guildId: String,
+        @PathVariable templateId: String,
+        @Parameter(description = "When true nothing is saved and the guild settings the update would produce are returned.")
+        @RequestParam(defaultValue = "false") dryRun: Boolean,
+        @RequestBody patch: JsonNode,
+    ): ResponseEntity<GuildSettingsEntity> {
+        val guildSettings =
+            guildSettingsRepository.findByGuildID(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+
+        val templateIndex =
+            guildSettings.templates
+                .indexOfFirst { it.id == templateId }
+                .takeIf { it != -1 }
+                ?: throw ANotFoundException("Template with ID $templateId not found for guild with id $guildId")
+
+        guildSettings.templates[templateIndex] =
+            mergePatchHelper.apply(guildSettings.templates[templateIndex], patch, TemplateData::class.java).copy(id = templateId)
+        if (!dryRun) guildSettingsRepository.save(guildSettings)
+        return ResponseEntity.ok(guildSettings)
+    }
+
+    @Operation(
+        operationId = "guilds.templates.delete",
+        summary = "Delete template",
+        description = "Removes the template from the guild. Succeeds also when it does not exist. Returns the updated guild settings.",
+        extensions = [
+            Extension(
+                properties = [ExtensionProperty(name = "x-forge-require-confirmation", value = "This deletes the template.")],
+            ),
+        ],
+    )
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_TEMPLATE)
     @CanManageGuildMiddleware
     fun deleteTemplate(

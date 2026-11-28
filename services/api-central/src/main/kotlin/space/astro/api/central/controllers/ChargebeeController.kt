@@ -3,6 +3,12 @@ package space.astro.api.central.controllers
 import com.chargebee.v4.models.hostedPage.params.HostedPageCheckoutNewForItemsParams
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -11,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import space.astro.api.central.components.OpenApiConfiguration
 import space.astro.api.central.models.auth.AuthPrincipal
 import space.astro.api.central.models.requests.ChargebeeCheckoutBody
 import space.astro.api.central.models.requests.ChargebeeWebhookBody
@@ -45,8 +52,19 @@ class ChargebeeController(
     private val jsonMapper: JsonMapper,
 ) {
     @Operation(
+        operationId = "billing.createPortalSession",
         summary = "Create portal session",
         description = "Returns the url of the Chargebee portal where the user can manage the subscriptions",
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "The url of the portal, as plain text.",
+        content = [
+            Content(
+                mediaType = "text/plain",
+                schema = Schema(type = "string", example = "https://astro.chargebeeportal.com/portal/v2/..."),
+            ),
+        ],
     )
     @GetMapping(CentralApiEndpoint.CHARGEBEE_PORTAL_SESSION)
     fun createPortalSession(
@@ -60,8 +78,21 @@ class ChargebeeController(
     }
 
     @Operation(
+        operationId = "billing.createCheckout",
         summary = "Create checkout",
-        description = "Returns the Chargebee hosted page (as JSON) that the user has to complete to buy the subscription",
+        description =
+            "Returns the Chargebee hosted page (as JSON, with its `url`) that the user has to open and complete to buy " +
+                "`quantity` premium upgrades, billed monthly or yearly. Nothing is bought until the user completes the page.",
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "The Chargebee hosted page, open its `url` to complete the purchase.",
+        content = [
+            Content(
+                mediaType = "application/json",
+                schema = Schema(type = "object", example = "{\"id\": \"hp_...\", \"url\": \"https://astro.chargebee.com/pages/v3/...\"}"),
+            ),
+        ],
     )
     @PostMapping(CentralApiEndpoint.CHARGEBEE_CHECKOUT)
     fun createCheckout(
@@ -108,6 +139,7 @@ class ChargebeeController(
     }
 
     @Operation(
+        operationId = "billing.listSubscriptions",
         summary = "Get subscriptions",
         description = "Active subscriptions of the user and the guilds that they upgraded with them",
     )
@@ -121,6 +153,10 @@ class ChargebeeController(
     }
 
     @Operation(
+        operationId = "webhooks.chargebee.subscriptionCreated",
+        tags = [OpenApiConfiguration.WEBHOOKS_TAG],
+        security = [SecurityRequirement(name = OpenApiConfiguration.CHARGEBEE_WEBHOOK_SECURITY_NAME)],
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
         summary = "Subscription created webhook",
         description = "Called by Chargebee, authenticated with basic auth by the security config",
     )
@@ -153,6 +189,10 @@ class ChargebeeController(
     }
 
     @Operation(
+        operationId = "webhooks.chargebee.subscriptionCancelled",
+        tags = [OpenApiConfiguration.WEBHOOKS_TAG],
+        security = [SecurityRequirement(name = OpenApiConfiguration.CHARGEBEE_WEBHOOK_SECURITY_NAME)],
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
         summary = "Subscription cancelled webhook",
         description = "Called by Chargebee, authenticated with basic auth by the security config",
     )

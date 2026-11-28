@@ -1,0 +1,5 @@
+{
+  "name": "astro",
+  "description": "Configure the Astro Discord bot (temporary voice channels, voice roles, interfaces, templates) from your AI agent",
+  "version": "0.0.1"
+}

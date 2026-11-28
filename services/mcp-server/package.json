@@ -1,0 +1,22 @@
+{
+  "name": "astro-mcp-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "forge generate openapi.json --target mcp --out src/tools",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "tsx --test src/*.test.ts"
+  },
+  "dependencies": {
+    "@cloudflare/forge": "^0.3.0",
+    "@modelcontextprotocol/node": "^2.1.2",
+    "@modelcontextprotocol/server": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.7",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

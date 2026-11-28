@@ -1,9 +1,14 @@
 package space.astro.api.central.controllers.guild_settings
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import space.astro.api.central.components.MergePatchHelper
+import space.astro.api.central.components.SupportsDryRun
 import space.astro.api.central.components.middlewares.CanManageGuildMiddleware
 import space.astro.api.central.models.requests.GeneratorCreateBody
 import space.astro.shared.core.clients.BotApiClient
@@ -16,6 +21,7 @@ import space.astro.shared.core.models.database.guildSettings.GeneratorSettings
 import space.astro.shared.core.models.database.guildSettings.GuildSettingsEntity
 import space.astro.shared.core.repositories.mongo.GuildSettingsRepository
 import space.astro.shared.core.utils.api.CentralApiEndpoint
+import tools.jackson.databind.JsonNode
 
 @RestController
 @Tag(name = "Generators settings")
@@ -23,8 +29,28 @@ class GuildGeneratorsController(
     private val botApiClient: BotApiClient,
     private val guildSettingsRepository: GuildSettingsRepository,
     private val premiumManager: PremiumManager,
+    private val mergePatchHelper: MergePatchHelper,
 ) {
-    @Operation(summary = "Create generator")
+    @Operation(
+        operationId = "guilds.generators.create",
+        summary = "Create generator",
+        description =
+            "Creates a voice channel in the guild and registers it as a generator: when a member joins it, " +
+                "Astro creates a temporary VC for them. The new generator gets the default settings, " +
+                "change them with the update endpoint. Returns the updated guild settings, the new generator is the " +
+                "last of `generators`. " +
+                "Fails with 403 PREMIUM_REQUIRED if the guild reached the generators limit of a free server.",
+        extensions = [
+            Extension(
+                properties = [
+                    ExtensionProperty(
+                        name = "x-forge-require-confirmation",
+                        value = "This creates a new voice channel in the Discord guild.",
+                    ),
+                ],
+            ),
+        ],
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATORS)
     @CanManageGuildMiddleware
     fun createGenerator(
@@ -66,7 +92,18 @@ class GuildGeneratorsController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Update generator")
+    @Operation(
+        operationId = "guilds.generators.replace",
+        summary = "Replace generator",
+        description =
+            "Replaces ALL the settings of a generator with the request body, it is not a partial update: " +
+                "get the current generator from the guild settings, change the fields you need and send the whole object back. " +
+                "The `id` in the body is ignored, the path decides which generator is updated. " +
+                "Settings that need premium fail with 403 PREMIUM_REQUIRED only when they are newly set, " +
+                "values already stored are kept. Returns the updated guild settings. Idempotent. " +
+                "Prefer the PATCH endpoint, which changes only the fields you send.",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
+    )
     @PostMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATOR)
     @CanManageGuildMiddleware
     fun updateGenerator(
@@ -93,7 +130,65 @@ class GuildGeneratorsController(
         return ResponseEntity.ok(guildSettings)
     }
 
-    @Operation(summary = "Delete generator")
+    @Operation(
+        operationId = "guilds.generators.update",
+        summary = "Update generator",
+        description =
+            "Changes only the fields present in the body (JSON Merge Patch): nested objects like `rename_conditions` are " +
+                "merged field by field, lists are replaced as a whole, and a null field resets it to its default. " +
+                "The `id` in the body is ignored. Settings that need premium fail with 403 PREMIUM_REQUIRED only when " +
+                "they are newly set. Returns the updated guild settings. Idempotent.",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-merge-patch-of", value = "GeneratorSettings")])],
+    )
+    @PatchMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATOR)
+    @CanManageGuildMiddleware
+    @SupportsDryRun
+    fun patchGenerator(
+        @PathVariable guildId: String,
+        @PathVariable generatorId: String,
+        @Parameter(description = "When true nothing is saved and the guild settings the update would produce are returned.")
+        @RequestParam(defaultValue = "false") dryRun: Boolean,
+        @RequestBody patch: JsonNode,
+    ): ResponseEntity<GuildSettingsEntity> {
+        val guildSettings =
+            guildSettingsRepository.findByGuildID(guildId)
+                ?: throw ANotFoundException("Guild with ID $guildId not found in Astro database")
+
+        val generatorIndex =
+            guildSettings.generators
+                .indexOfFirst { it.id == generatorId }
+                .takeIf { it != -1 }
+                ?: throw ANotFoundException("Generator with ID $generatorId not found for guild with id $guildId")
+
+        val currentGenerator = guildSettings.generators[generatorIndex]
+        val updatedGenerator =
+            mergePatchHelper.apply(currentGenerator, patch, GeneratorSettings::class.java).copy(id = generatorId)
+
+        validatePremiumRequirements(guildSettings, currentGenerator, updatedGenerator)
+
+        guildSettings.generators[generatorIndex] = updatedGenerator
+        if (!dryRun) guildSettingsRepository.save(guildSettings)
+        return ResponseEntity.ok(guildSettings)
+    }
+
+    @Operation(
+        operationId = "guilds.generators.delete",
+        summary = "Delete generator",
+        description =
+            "Removes the generator from the guild settings and deletes its voice channel on Discord " +
+                "(a failure to delete the channel is ignored). Temporary VCs it already created are not deleted. " +
+                "Returns the updated guild settings.",
+        extensions = [
+            Extension(
+                properties = [
+                    ExtensionProperty(
+                        name = "x-forge-require-confirmation",
+                        value = "This deletes the generator and its voice channel on Discord.",
+                    ),
+                ],
+            ),
+        ],
+    )
     @DeleteMapping(CentralApiEndpoint.GUILD_SETTINGS_GENERATOR)
     @CanManageGuildMiddleware
     fun deleteGenerator(

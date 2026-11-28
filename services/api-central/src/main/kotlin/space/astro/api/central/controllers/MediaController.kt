@@ -1,6 +1,9 @@
 package space.astro.api.central.controllers
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.extensions.Extension
+import io.swagger.v3.oas.annotations.extensions.ExtensionProperty
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -44,7 +47,11 @@ class MediaController(
         const val MAX_FILE_NAME_LENGTH = 100
     }
 
-    @Operation(summary = "Get media of the guild")
+    @Operation(
+        operationId = "guilds.media.list",
+        summary = "Get media of the guild",
+        description = "Lists the images uploaded for the guild, newest first, with their public url. Optionally filtered by type.",
+    )
     @GetMapping(CentralApiEndpoint.GUILD_MEDIA)
     @CanManageGuildMiddleware
     fun getMedia(
@@ -59,7 +66,15 @@ class MediaController(
                 .map { MediaResponse.from(it, r2Properties) },
         )
 
-    @Operation(summary = "Upload media")
+    @Operation(
+        operationId = "guilds.media.upload",
+        extensions = [Extension(properties = [ExtensionProperty(name = "x-forge-skip", value = "true", parseValue = true)])],
+        summary = "Upload media",
+        description =
+            "Uploads an image (png, jpeg, gif or webp, max 5MB) as multipart form data: `meta` (JSON with the media type) " +
+                "and `media` (the file). Returns the media with its public url, usable as avatar, banner or interface image. " +
+                "Limited per day per guild (429) and to 200 files per guild.",
+    )
     @PostMapping(CentralApiEndpoint.GUILD_MEDIA)
     @CanManageGuildMiddleware
     fun uploadMedia(
@@ -141,7 +156,22 @@ class MediaController(
         return ResponseEntity.ok(MediaResponse.from(mediaEntity, r2Properties))
     }
 
-    @Operation(summary = "Delete media")
+    @Operation(
+        operationId = "guilds.media.delete",
+        summary = "Delete media",
+        description = "Deletes an uploaded image. Places that still use its url, like the bot avatar, will show a broken image.",
+        extensions = [
+            Extension(
+                properties = [
+                    ExtensionProperty(
+                        name = "x-forge-require-confirmation",
+                        value = "This permanently deletes the uploaded image.",
+                    ),
+                ],
+            ),
+        ],
+    )
+    @ApiResponse(responseCode = "204", description = "The media was deleted.")
     @DeleteMapping(CentralApiEndpoint.GUILD_MEDIA_ITEM)
     @CanManageGuildMiddleware
     fun deleteMedia(

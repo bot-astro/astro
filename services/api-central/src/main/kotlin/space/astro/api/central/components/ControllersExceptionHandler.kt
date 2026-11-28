@@ -2,6 +2,7 @@ package space.astro.api.central.components
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.MDC
 import org.springframework.beans.TypeMismatchException
 import org.springframework.expression.ExpressionInvocationTargetException
 import org.springframework.http.HttpHeaders
@@ -19,7 +20,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import space.astro.shared.core.exceptions.AErrorCode
 import space.astro.shared.core.exceptions.AErrorResponse
 import space.astro.shared.core.exceptions.AException
-import space.astro.shared.core.exceptions.ATooManyRequestsException
+import tools.jackson.core.JacksonException
+import tools.jackson.databind.exc.UnrecognizedPropertyException
 import tools.jackson.databind.json.JsonMapper
 
 private val log = KotlinLogging.logger { }
@@ -33,6 +35,7 @@ class ControllersExceptionHandler(
         val code: AErrorCode,
         val message: String,
         val headers: HttpHeaders = HttpHeaders.EMPTY,
+        val param: String? = null,
     )
 
     @ExceptionHandler(Exception::class)
@@ -52,21 +55,19 @@ class ControllersExceptionHandler(
             .status(r.status)
             .headers(r.headers)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(AErrorResponse(code = r.code, message = r.message))
+            .body(AErrorResponse(code = r.code, message = r.message, param = r.param, requestId = MDC.get(RequestIdFilter.MDC_KEY)))
     }
 
     private fun resolve(e: Exception): Resolved =
         when (e) {
-            is ATooManyRequestsException ->
+            is AException ->
                 Resolved(
                     e.httpStatusCode,
                     e.errorCode,
-                    e.message ?: "Rate limited.",
-                    HttpHeaders().apply { set(HttpHeaders.RETRY_AFTER, e.retryAfterSeconds.toString()) },
+                    e.message ?: "Request failed.",
+                    HttpHeaders().apply { e.retryAfterSeconds?.let { set(HttpHeaders.RETRY_AFTER, it.toString()) } },
+                    e.param,
                 )
-
-            is AException ->
-                Resolved(e.httpStatusCode, e.errorCode, e.message ?: "Request failed.")
 
             is AuthenticationException ->
                 Resolved(HttpStatus.UNAUTHORIZED.value(), AErrorCode.UNAUTHENTICATED, "Authentication is required.")
@@ -75,17 +76,46 @@ class ControllersExceptionHandler(
                 Resolved(HttpStatus.FORBIDDEN.value(), AErrorCode.UNAUTHORIZED, "Access denied.")
 
             is MethodArgumentTypeMismatchException ->
-                Resolved(HttpStatus.BAD_REQUEST.value(), AErrorCode.INVALID_REQUEST, "Invalid value for parameter '${e.name}'.")
+                Resolved(
+                    HttpStatus.BAD_REQUEST.value(),
+                    AErrorCode.INVALID_REQUEST,
+                    "Invalid value for parameter '${e.name}'.",
+                    param = e.name,
+                )
 
             is MissingServletRequestParameterException ->
                 Resolved(
                     HttpStatus.BAD_REQUEST.value(),
                     AErrorCode.INVALID_REQUEST,
                     "Required parameter '${e.parameterName}' is missing or empty.",
+                    param = e.parameterName,
                 )
 
-            is HttpMessageNotReadableException ->
-                Resolved(HttpStatus.BAD_REQUEST.value(), AErrorCode.INVALID_REQUEST, "Invalid request body.")
+            is HttpMessageNotReadableException, is JacksonException -> {
+                val jacksonException =
+                    generateSequence<Throwable>(e) { it.cause }
+                        .filterIsInstance<JacksonException>()
+                        .firstOrNull()
+                // the path of the field that failed to parse, like `rename_conditions.enabled` or `buttons[0].label`
+                val path =
+                    jacksonException
+                        ?.path
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.fold("") { acc, ref ->
+                            if (ref.propertyName != null) {
+                                if (acc.isEmpty()) ref.propertyName else "$acc.${ref.propertyName}"
+                            } else {
+                                "$acc[${ref.index}]"
+                            }
+                        }
+                val message =
+                    when {
+                        path == null -> "Invalid request body."
+                        jacksonException is UnrecognizedPropertyException -> "Invalid request body: unknown field '$path'."
+                        else -> "Invalid request body: the field '$path' is missing or has an invalid value."
+                    }
+                Resolved(HttpStatus.BAD_REQUEST.value(), AErrorCode.INVALID_REQUEST, message, param = path)
+            }
 
             is TypeMismatchException ->
                 Resolved(HttpStatus.BAD_REQUEST.value(), AErrorCode.INVALID_REQUEST, "Invalid request parameter.")

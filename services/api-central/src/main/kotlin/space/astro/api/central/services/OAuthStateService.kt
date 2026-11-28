@@ -11,6 +11,8 @@ import kotlin.time.toJavaDuration
 data class OAuthState(
     val redirectPath: String,
     val source: String,
+    /** Set when the login was started by an MCP client authorization request */
+    val mcpRequestId: String?,
 )
 
 @Service
@@ -24,10 +26,12 @@ class OAuthStateService(
      *
      * @param redirectPath the path to redirect to after the flow is complete
      * @param source where the invite came from, must not contain `:`
+     * @param mcpRequestId id of the MCP authorization request to continue after the login
      */
     fun create(
         redirectPath: String,
         source: String,
+        mcpRequestId: String? = null,
     ): String {
         val bytes = ByteArray(16)
         secureRandom.nextBytes(bytes)
@@ -44,6 +48,10 @@ class OAuthStateService(
             10.minutes.toJavaDuration(),
         )
 
+        if (mcpRequestId != null) {
+            redis.opsForValue().set(RedisKey.OAUTH_STATE_MCP_REQUEST(state), mcpRequestId, 10.minutes.toJavaDuration())
+        }
+
         return state
     }
 
@@ -59,6 +67,7 @@ class OAuthStateService(
         return OAuthState(
             redirectPath = value.substringAfter(':'),
             source = value.substringBefore(':'),
+            mcpRequestId = redis.opsForValue().getAndDelete(RedisKey.OAUTH_STATE_MCP_REQUEST(state)),
         )
     }
 }
