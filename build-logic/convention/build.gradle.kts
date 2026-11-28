@@ -16,4 +16,5 @@ dependencies {
     implementation(libs.sentry.plugin)
     implementation(libs.spring.boot.plugin)
     implementation(libs.spring.dependency.management.plugin)
+    implementation(libs.springdoc.openapi.gradle.plugin)
 }

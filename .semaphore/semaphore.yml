@@ -127,6 +127,38 @@ blocks:
             - cache store gradle-caches_entitlements-expiration-job ~/.gradle/caches
             - cache store gradle-wrapper_entitlements-expiration-job ~/.gradle/wrapper
 
+  # mcp-server tools drift check
+  - name: Check generated MCP tools
+    dependencies: []
+    run:
+      when: |
+        change_in(['/services/api-central/', '/shared/', '/services/mcp-server/', '/build-logic/', '/gradle/libs.versions.toml', '/justfile'])
+    task:
+      prologue:
+        commands:
+          - cache restore gradle-caches_mcp-generate
+          - cache restore gradle-wrapper_mcp-generate
+          - checkout
+          - sem-service start mongodb 8.0
+          - sem-service start redis 7
+          - sem-version node 24
+          - which just || sudo snap install just --classic
+          - cd services/mcp-server && npm ci && cd ../..
+      jobs:
+        - name: Regenerate the OpenAPI spec and the MCP tools
+          commands:
+            - just mcp-generate
+            # intent-to-add so that new generated files show in the diff too
+            - git add --intent-to-add services/mcp-server
+            - git diff --exit-code services/mcp-server || (echo "The generated MCP tools are out of date, run \`just mcp-generate\` and commit" && exit 1)
+      epilogue:
+        on_pass:
+          commands:
+            - cache delete gradle-caches_mcp-generate
+            - cache delete gradle-wrapper_mcp-generate
+            - cache store gradle-caches_mcp-generate ~/.gradle/caches
+            - cache store gradle-wrapper_mcp-generate ~/.gradle/wrapper
+
 promotions:
   # bot
   # Staging deploy disabled for now (pipeline file kept, re-enable by uncommenting):

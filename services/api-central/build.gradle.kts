@@ -2,6 +2,7 @@ project.version = "6.0.0"
 
 plugins {
     id("service-conventions")
+    id("openapi-conventions")
 }
 
 // the AWS SDK needs the coroutines version it was built against, Spring Boot's BOM would downgrade it
@@ -28,6 +29,12 @@ dependencies {
     }
     implementation(libs.nanoid)
     implementation(libs.chargebee)
+}
+
+openApi {
+    apiDocsUrl = "http://localhost:9011/docs/openapi.json"
+    outputDir = rootProject.layout.projectDirectory.dir("services/mcp-server")
+    outputFileName = "openapi.json"
 }
 
 jib {

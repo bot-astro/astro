@@ -22,18 +22,16 @@ Experiment: generate an MCP server from the api-central OpenAPI spec with [Cloud
 - Tools (`src/exposed-tools.ts`, an allow-list over the generated ones): list guilds, channels, roles and channel permissions; get the settings; update settings and bot profile (`PATCH`, `dryRun` available); create, update, delete generators, interfaces (also move), voice role connections and templates; set the updates channel; list guild errors.
 - Not exposed: billing, premium, media, the setup wizard, `auth.me`, `discord.users.getSelf` (it returns the email, so that open decision is closed), clearing the VC cache and the error log.
 - No ad-hoc endpoints were needed: the `PATCH` endpoints are partial updates with `dryRun`, so the model does not resend whole objects. Writes return the whole guild settings, no slim responses (decided).
-- `src/tools` is generated, do not edit. Regenerate with `curl localhost:9001/docs/openapi.json -o openapi.json && npm run generate`.
+- `src/tools` is generated, do not edit. Regenerate with `just mcp-generate`.
 
 ## Reproduce
 
 ```sh
-# infra (Docker) and the service, port 9001 comes from Infisical
 docker compose up -d mongo redis
-infisical run --env=dev -- ./gradlew :services:api-central:bootRun
-
-curl localhost:9001/docs/openapi.json -o openapi.json
-npx @cloudflare/forge@0.3.0 generate openapi.json --target mcp --out tools
+just mcp-generate
 ```
+
+`mcp-generate` runs `generateOpenApiDocs`, which boots api-central with the `openapi` profile (placeholder secrets, only Mongo and Redis, port 9011 so it can run next to a local api-central) and writes `services/mcp-server/openapi.json`, then `npm run generate` (forge) writes `src/tools`. Both are committed: CI regenerates them and fails on a diff, so run it and commit after changing the API.
 
 Forge generates only the tools as data (`tools/index.ts` exports `tools` and `registerTools`). The server around them is ours:
 
