@@ -118,11 +118,9 @@ class McpOAuthService(
                 MessageDigest.getInstance("SHA-256").digest(codeVerifier.toByteArray()),
             )
 
-        if (authCode.clientId != clientId ||
-            authCode.redirectUri != redirectUri ||
-            (resource != null && resource != authCode.resource) ||
-            !MessageDigest.isEqual(challenge.toByteArray(), authCode.codeChallenge.toByteArray())
-        ) {
+        val sameRequest = authCode.clientId == clientId && authCode.redirectUri == redirectUri
+        val sameResource = resource == null || resource == authCode.resource
+        if (!sameRequest || !sameResource || !MessageDigest.isEqual(challenge.toByteArray(), authCode.codeChallenge.toByteArray())) {
             return null
         }
 

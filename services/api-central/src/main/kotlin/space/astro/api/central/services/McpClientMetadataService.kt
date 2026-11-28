@@ -115,14 +115,9 @@ class McpClientMetadataService(
             }
 
         val pathSegments = uri.path?.split("/").orEmpty()
-        if (uri.scheme != "https" ||
-            uri.host.isNullOrEmpty() ||
-            uri.userInfo != null ||
-            uri.fragment != null ||
-            uri.path.isNullOrEmpty() ||
-            uri.path == "/" ||
-            pathSegments.any { it == "." || it == ".." }
-        ) {
+        val validOrigin = uri.scheme == "https" && !uri.host.isNullOrEmpty() && uri.userInfo == null
+        val validPath = !uri.path.isNullOrEmpty() && uri.path != "/" && pathSegments.none { it == "." || it == ".." }
+        if (!validOrigin || uri.fragment != null || !validPath) {
             throw InvalidClientMetadataException(
                 "The client_id must be an https URL with a path, without credentials, fragment or dot segments",
             )
@@ -138,20 +133,15 @@ class McpClientMetadataService(
                 throw InvalidClientMetadataException("The host of the client_id can't be resolved")
             }
 
-        if (addresses.any {
-                it.isAnyLocalAddress ||
-                    it.isLoopbackAddress ||
-                    it.isLinkLocalAddress ||
-                    it.isSiteLocalAddress ||
-                    it.isMulticastAddress ||
-                    isUniqueLocalIpv6(it)
-            }
-        ) {
+        if (addresses.any { isLocalAddress(it) || it.isMulticastAddress || isUniqueLocalIpv6(it) }) {
             throw InvalidClientMetadataException("The host of the client_id is not public")
         }
 
         return addresses.toList()
     }
+
+    private fun isLocalAddress(address: InetAddress) =
+        address.isAnyLocalAddress || address.isLoopbackAddress || address.isLinkLocalAddress || address.isSiteLocalAddress
 
     private fun isUniqueLocalIpv6(address: InetAddress) = address.address.size == 16 && (address.address[0].toInt() and 0xfe) == 0xfc
 
